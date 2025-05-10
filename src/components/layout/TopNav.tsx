@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Moon, Sun, Menu, Search, User, ShieldAlert, MessageSquare, LogOut } from 'lucide-react'
+import { Bell, Moon, Sun, Menu, Search, User, ShieldAlert, MessageSquare, LogOut, X } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -19,19 +19,32 @@ export function TopNav() {
   const { setTheme, theme } = useTheme()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+    // 切換側邊欄的可見性
+    const mobileMenu = document.getElementById('mobile-sidebar')
+    if (mobileMenu) {
+      if (isMobileMenuOpen) {
+        mobileMenu.classList.add('hidden')
+      } else {
+        mobileMenu.classList.remove('hidden')
+      }
+    }
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2 md:gap-4">
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Menu className="h-5 w-5" />
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleMobileMenu}>
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
-          <Link to="/" className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
               <span className="text-primary-foreground font-bold">護</span>
             </div>
             <span className="hidden font-bold text-lg md:inline-block">長者照護系統</span>
-          </Link>
+          </a>
         </div>
 
         <div className="flex-1 mx-4 max-w-md hidden md:flex">
@@ -154,4 +167,4 @@ export function TopNav() {
       </div>
     </header>
   )
-} 
+}

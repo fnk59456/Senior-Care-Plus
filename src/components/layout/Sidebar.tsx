@@ -3,92 +3,89 @@
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
-  Activity,
-  Bell,
   Home,
-  Map,
-  Settings,
-  Users,
-  CalendarClock,
-  MonitorSmartphone,
-  UserCog,
-  MoreHorizontal,
   HeartPulse,
+  CalendarClock,
+  Map,
+  Users,
+  UserCog,
+  MonitorSmartphone,
+  Lightbulb,
+  Settings,
   HelpCircle,
   Sparkles,
-  Lightbulb
 } from 'lucide-react'
 
 const navigation = [
-  { 
-    name: '首頁', 
-    href: '/', 
-    icon: Home, 
+  {
+    name: '首頁',
+    href: '/',
+    icon: Home,
     color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300',
-    description: '返回系統首頁'
+    description: '返回系統首頁',
   },
-  { 
-    name: '健康監控', 
-    href: '/health', 
-    icon: HeartPulse, 
+  {
+    name: '健康監控',
+    href: '/health',
+    icon: HeartPulse,
     color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-300',
-    description: '即時監測生命體徵'
+    description: '即時監測生命體徵',
   },
-  { 
-    name: '定時提醒', 
-    href: '/reminders', 
-    icon: CalendarClock, 
+  {
+    name: '定時提醒',
+    href: '/reminders',
+    icon: CalendarClock,
     color: 'bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300',
-    description: '服藥與照顧提醒'
+    description: '服藥與照顧提醒',
   },
-  { 
-    name: '室內定位', 
-    href: '/location', 
-    icon: Map, 
+  {
+    name: '室內定位',
+    href: '/location',
+    icon: Map,
     color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300',
-    description: '位置追蹤與安全區域'
+    description: '位置追蹤與安全區域',
   },
-  { 
-    name: '院友管理', 
-    href: '/residents', 
-    icon: Users, 
+  {
+    name: '院友管理',
+    href: '/residents',
+    icon: Users,
     color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300',
-    description: '管理院友資料與記錄'
+    description: '管理院友資料與記錄',
   },
-  { 
-    name: '員工管理', 
-    href: '/staff', 
-    icon: UserCog, 
+  {
+    name: '員工管理',
+    href: '/staff',
+    icon: UserCog,
     color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-300',
-    description: '護理人員和職員管理'
+    description: '護理人員和職員管理',
   },
-  { 
-    name: '設備管理', 
-    href: '/devices', 
-    icon: MonitorSmartphone, 
+  {
+    name: '設備管理',
+    href: '/devices',
+    icon: MonitorSmartphone,
     color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-300',
-    description: '照護設備管理與維護'
+    description: '照護設備管理與維護',
   },
-  { 
-    name: '更多功能', 
-    href: '/more', 
-    icon: Lightbulb, 
+  {
+    name: '更多功能',
+    href: '/more',
+    icon: Lightbulb,
     color: 'bg-amber-100 text-amber-600 dark:bg-amber-800/40 dark:text-amber-300',
-    description: '探索智慧照護功能'
+    description: '探索智慧照護功能',
   },
-  { 
-    name: '設置', 
-    href: '/settings', 
-    icon: Settings, 
+  {
+    name: '設置',
+    href: '/settings',
+    icon: Settings,
     color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
-    description: '系統設置與偏好設定'
+    description: '系統設置與偏好設定',
   },
-  { 
-    name: '幫助中心', 
-    href: '/help', 
-    icon: HelpCircle, 
+  {
+    name: '幫助中心',
+    href: '/help',
+    icon: HelpCircle,
     color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300',
-    description: '使用指南與支援'
+    description: '使用指南與支援',
   },
 ]
 
@@ -105,43 +102,18 @@ export function Sidebar() {
           </div>
           <span className="font-bold text-lg">長者照護系統</span>
         </div>
-        
+
         <div className="flex-1 overflow-auto py-4 px-3">
           <div className="space-y-1">
-            <div className="px-3 pb-3 border-b">
-              <h2 className="mb-2 text-lg font-semibold tracking-tight">主要功能</h2>
-              <nav className="grid items-start text-sm font-medium gap-2">
-                {navigation.slice(0, 4).map((item) => (
-                  <NavItem key={item.name} item={item} pathname={pathname} />
-                ))}
-              </nav>
-            </div>
-            
-            <div className="px-3 py-3 border-b">
-              <h2 className="mb-2 text-lg font-semibold tracking-tight">管理功能</h2>
-              <nav className="grid items-start text-sm font-medium gap-2">
-                {navigation.slice(4, 7).map((item) => (
-                  <NavItem key={item.name} item={item} pathname={pathname} />
-                ))}
-              </nav>
-            </div>
-            
-            <div className="px-3 pt-3">
-              <h2 className="mb-2 text-lg font-semibold tracking-tight">系統</h2>
-              <nav className="grid items-start text-sm font-medium gap-2">
-                {navigation.slice(7).map((item) => (
-                  <NavItem key={item.name} item={item} pathname={pathname} />
-                ))}
-              </nav>
-            </div>
+            <SidebarSection title="主要功能" items={navigation.slice(0, 4)} pathname={pathname} />
+            <SidebarSection title="管理功能" items={navigation.slice(4, 7)} pathname={pathname} />
+            <SidebarSection title="系統" items={navigation.slice(7)} pathname={pathname} />
           </div>
         </div>
-        
+
         <div className="border-t px-3 py-4">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-muted-foreground">
-              © 2024 長者照護系統
-            </div>
+            <div className="text-sm font-medium text-muted-foreground">© 2024 長者照護系統</div>
             <div className="flex items-center space-x-2">
               <Sparkles className="h-4 w-4 text-primary" />
               <span className="text-xs text-primary">專業版</span>
@@ -153,40 +125,59 @@ export function Sidebar() {
   )
 }
 
-function NavItem({ item, pathname }: { item: any, pathname: string }) {
-  const isActive = pathname === item.href
-  const Icon = item.icon
-  
+function SidebarSection({
+  title,
+  items,
+  pathname,
+}: {
+  title: string
+  items: typeof navigation
+  pathname: string
+}) {
   return (
-    <Link
-      to={item.href}
-      className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all group relative",
-        isActive
-          ? "bg-primary/10 text-primary font-semibold shadow-sm"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-      )}
-    >
-      <span 
-        className={cn(
-          "rounded-full p-2 flex items-center justify-center transition-all duration-200", 
-          item.color,
-          isActive ? "shadow-inner" : "group-hover:shadow"
-        )}
-      > 
-        <Icon className="h-5 w-5" />
-      </span>
-      <div className="flex flex-col">
-        <span>{item.name}</span>
-        {isActive && (
-          <span className="text-xs text-muted-foreground font-normal">
-            {item.description}
-          </span>
-        )}
-      </div>
-      {isActive && (
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-primary rounded-full" />
-      )}
-    </Link>
+    <div className="px-3 pb-3 border-b">
+      <h2 className="mb-2 text-lg font-semibold tracking-tight">{title}</h2>
+      <nav className="grid items-start text-sm font-medium gap-2">
+        {items.map((item) => {
+          console.log("渲染項目：", item.name, "=>", item.href)
+
+          return (
+            <Link
+              key={item.href}
+              to={item.href}
+              onClick={() => {
+                console.log("點擊：", item.name, "=>", item.href)
+              }}
+              className={cn(
+                "flex w-full items-center text-left gap-3 rounded-lg px-3 py-2.5 transition-all group relative",
+                pathname === item.href
+                  ? "bg-primary/10 text-primary font-semibold shadow-sm"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <span
+                className={cn(
+                  "rounded-full p-2 flex items-center justify-center transition-all duration-200",
+                  item.color,
+                  pathname === item.href ? "shadow-inner" : "group-hover:shadow"
+                )}
+              >
+                <item.icon className="h-5 w-5" />
+              </span>
+              <div className="flex flex-col">
+                <span>{item.name}</span>
+                {pathname === item.href && (
+                  <span className="text-xs text-muted-foreground font-normal">{item.description}</span>
+                )}
+              </div>
+              {pathname === item.href && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-primary rounded-full" />
+              )}
+            </Link>
+          )
+        })}
+      </nav>
+    </div>
   )
-} 
+}
+
