@@ -12,10 +12,14 @@ import ResidentDetailPage from './pages/ResidentDetailPage'
 import SettingsPage from './pages/SettingsPage'
 import './index.css'
 
+// 根據部署與開發環境動態設定 basename
+const isProd = import.meta.env.PROD
+const basename = isProd ? '/Senior-Care-Plus' : '/'
+
 function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <Router>
+      <Router basename={basename}>
         <MainLayout>
           <Routes>
             <Route path="/" element={<HomePage />} />
