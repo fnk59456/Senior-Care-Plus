@@ -13,12 +13,19 @@ export function MainLayout({ children }: MainLayoutProps) {
     <div className="min-h-screen bg-background flex flex-col">
       <TopNav />
       <div className="flex flex-1 overflow-hidden">
-        {/* 只保留桌面端側邊欄 */}
-        <div className="w-64 border-r bg-background">
+        {/* 桌面端側邊欄 */}
+        <div className="hidden md:block w-64">
           <Sidebar />
         </div>
-
-        {/* 主內容 */}
+        
+        {/* 移動端側邊欄 (初始隱藏) */}
+        <div id="mobile-sidebar" className="fixed inset-0 z-40 hidden md:hidden">
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute left-0 top-0 bottom-0 w-64 bg-background shadow-xl">
+            <Sidebar />
+          </div>
+        </div>
+        
         <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
           <div className="container mx-auto max-w-7xl">
             {children}
@@ -27,4 +34,4 @@ export function MainLayout({ children }: MainLayoutProps) {
       </div>
     </div>
   )
-}
+} 

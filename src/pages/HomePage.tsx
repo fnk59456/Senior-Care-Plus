@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { 
-  Activity, CalendarClock, MapPin, Users, UserCog, 
-  MonitorSmartphone, ArrowRight, LineChart, Bell, 
-  ClipboardCheck, HeartPulse, Sparkles 
+import {
+  Activity, CalendarClock, MapPin, Users, UserCog,
+  MonitorSmartphone, ArrowRight, LineChart, Bell,
+  ClipboardCheck, HeartPulse, Sparkles
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -69,8 +69,8 @@ export default function HomePage() {
     <div className="space-y-8">
       {/* 歡迎區域 */}
       <div className="relative overflow-hidden rounded-xl bg-gradient-custom p-8 text-primary-foreground shadow-lg mb-8">
-        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-primary-foreground/10 blur-3xl" />
-        <div className="absolute left-1/2 bottom-0 h-32 w-32 rounded-full bg-primary-foreground/20 blur-2xl" />
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-primary-foreground/10 blur-3xl pointer-events-none" />
+        <div className="absolute left-1/2 bottom-0 h-32 w-32 rounded-full bg-primary-foreground/20 blur-2xl pointer-events-none" />
 
         <div className="relative z-10 max-w-3xl">
           <div className="flex items-center gap-3 mb-4">
@@ -89,13 +89,13 @@ export default function HomePage() {
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <Link to="/health" className="flex items-center">
+            <Link to="/health">
               <Button size="lg" className="btn-glow font-semibold px-6 py-6 h-auto">
                 立即開始使用
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/help" className="flex items-center">
+            <Link to="/help">
               <Button
                 variant="outline"
                 size="lg"
@@ -150,7 +150,7 @@ export default function HomePage() {
           },
         ].map((stat, i) => (
           <Link to={stat.href} key={i}>
-            <Card className="card-float overflow-hidden border-0 shadow-md hover:-translate-y-1 hover:shadow-lg transition-all">
+            <Card className="card-float overflow-hidden border-0 shadow-md hover:scale-[1.01] hover:shadow-lg transition-transform">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                 <div className={`rounded-full p-2 ${stat.color} ${stat.bgColor}`}>
@@ -174,9 +174,11 @@ export default function HomePage() {
         </h2>
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
-            <Link to={feature.href} key={feature.title} className="group">
-              <Card className={`card-float transition-all hover:-translate-y-1 hover:shadow-lg border-0 overflow-hidden ${feature.bgLight} ${feature.bgDark}`}>
-                <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300 ${feature.color}`} />
+            <Link to={feature.href} key={feature.title} className="group relative block">
+              <Card
+                className={`card-float transition-transform hover:scale-[1.01] hover:shadow-lg border-0 overflow-hidden ${feature.bgLight} ${feature.bgDark}`}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300 ${feature.color} pointer-events-none`} />
                 <CardHeader>
                   <div className="flex items-center gap-4">
                     <div className="icon-container">{feature.icon}</div>
