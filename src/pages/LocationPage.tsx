@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from "react"
 // @ts-ignore
 import mqtt from "mqtt"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import mapImage from "@/assets/map.jpg"
 
 // 地圖圖片路徑
-const MAP_IMG = "/assets/map.jpg"
+const MAP_IMG = mapImage
 // 地圖實際像素大小（請依map.jpg實際尺寸調整，這裡假設800x1600）
 const MAP_WIDTH = 800
 const MAP_HEIGHT = 1600
