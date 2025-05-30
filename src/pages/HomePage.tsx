@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import {
   Activity, CalendarClock, MapPin, Users, UserCog,
   MonitorSmartphone, ArrowRight, LineChart, Bell,
-  ClipboardCheck, HeartPulse, Sparkles
+  ClipboardCheck, HeartPulse, Sparkles, Heart
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -45,13 +45,13 @@ const features = [
     bgDark: "dark:bg-red-900/20",
   },
   {
-    title: "員工管理",
-    icon: <UserCog className="h-8 w-8 text-white" />,
-    desc: "管理護理人員與工作人員資訊",
-    href: "/staff",
-    color: "from-teal-500 to-teal-700",
-    bgLight: "bg-teal-50",
-    bgDark: "dark:bg-teal-900/20",
+    title: "心跳監測",
+    icon: <Heart className="h-8 w-8 text-white" />,
+    desc: "即時監控長者心率變化與異常警示",
+    href: "/heart-rate",
+    color: "from-pink-500 to-pink-700",
+    bgLight: "bg-pink-50",
+    bgDark: "dark:bg-pink-900/20",
   },
   {
     title: "設備管理",
