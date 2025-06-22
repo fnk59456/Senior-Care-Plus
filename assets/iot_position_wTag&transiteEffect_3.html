@@ -1,0 +1,298 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D IoT Device Visualization</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #status { 
+            position: absolute; 
+            bottom: 10px; 
+            width: 100%; 
+            text-align: center; 
+            color: white; 
+            background: rgba(0, 0, 0, 0.7); 
+            padding: 10px; 
+            font-family: Arial, sans-serif;
+        }
+        .device-label {
+            position: absolute;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            pointer-events: none;
+            text-shadow: 1px 1px 2px black;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">Connecting to MQTT broker...</div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.7.2/mqtt.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Transparent floor plan
+        const floorLenX = 20;
+        const floorLenY = 20;
+        const floorGeometry = new THREE.PlaneGeometry(floorLenX, floorLenY);
+        const floorMaterial = new THREE.MeshBasicMaterial({
+            color: 0xaaaaaa,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.DoubleSide
+        });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = Math.PI / 2;
+        scene.add(floor);
+
+        // Grid helper for reference
+        const grid = new THREE.GridHelper(floorLenX, floorLenY, 0x444444, 0x888888);
+        scene.add(grid);
+
+        // Camera position
+        camera.position.set(5, 5, 5);
+        camera.lookAt(0, 0, 0);
+
+        // Mouse controls
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let theta = 0, phi = Math.PI / 3;
+        let radius = 10;
+
+        document.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - previousMousePosition.x;
+                const deltaY = e.clientY - previousMousePosition.y;
+                theta -= deltaX * 0.005;
+                phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi - deltaY * 0.005));
+                updateCamera();
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        document.addEventListener('mouseup', () => isDragging = false);
+
+        document.addEventListener('wheel', (e) => {
+            radius = Math.max(2, Math.min(20, radius + e.deltaY * 0.01));
+            updateCamera();
+        });
+
+        function updateCamera() {
+            camera.position.x = radius * Math.sin(phi) * Math.cos(theta);
+            camera.position.z = radius * Math.sin(phi) * Math.sin(theta);
+            camera.position.y = radius * Math.cos(phi);
+            camera.lookAt(0, 0, 0);
+        }
+
+        // Panning
+        let isPanning = false;
+        let panStart = { x: 0, y: 0 };
+        const panOffset = new THREE.Vector3();
+
+        document.addEventListener('mousedown', (e) => {
+            if (e.button === 2) { // Right-click for panning
+                isPanning = true;
+                panStart = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isPanning) {
+                const deltaX = (e.clientX - panStart.x) * 0.01;
+                const deltaY = (e.clientY - panStart.y) * 0.01;
+                panOffset.x -= deltaX * Math.cos(theta);
+                panOffset.z -= deltaX * Math.sin(theta);
+                panOffset.y += deltaY;
+                panStart = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (e.button === 2) isPanning = false;
+        });
+        document.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Device management
+        const devices = {};
+        const colors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff]; // Red, Green, Blue, Yellow, Magenta
+
+        function createOrUpdateDevice(id, x, y, z) {
+            let device = devices[id];
+            if (!device) {
+                // Create sphere
+                const geometry = new THREE.SphereGeometry(0.2, 32, 32);
+                const material = new THREE.MeshBasicMaterial({ color: colors[id - 1] });
+                const sphere = new THREE.Mesh(geometry, material);
+                scene.add(sphere);
+
+                // Create label
+                const label = document.createElement('div');
+                label.className = 'device-label';
+                label.textContent = `ID: ${id}`;
+                document.body.appendChild(label);
+
+                device = { sphere, label, target: new THREE.Vector3(x, z, -y), current: new THREE.Vector3(x, z, -y) };
+                devices[id] = device;
+            } else {
+                device.target.set(x, z, -y);
+            }
+        }
+
+        // Smooth transition animation
+        function animateDevices() {
+            for (const id in devices) {
+                const device = devices[id];
+                const current = device.current;
+                const target = device.target;
+                const delta = 0.1; // Transition speed
+                current.lerp(target, delta);
+                device.sphere.position.copy(current);
+
+                // Update label position
+                const vector = device.sphere.position.clone().project(camera);
+                const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+                const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+                device.label.style.left = `${x + 10}px`;
+                device.label.style.top = `${y - 10}px`;
+            }
+        }
+
+        // MQTT setup
+        const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8);
+        const options = {
+            clientId: clientId,
+            protocol: 'wss', // Use WebSocket secure for MQTT connection (TLS enabled)
+            username: 'testweb1',
+            password: 'Aa000000'
+        };
+        const subtopic = 'UWB/GW16B8_Loca';	//'UWB/GWCF18_Loca';
+        const client = mqtt.connect('wss://067ec32ef1344d3bb20c4e53abdde99a.s1.eu.hivemq.cloud:8884/mqtt', options);
+//        const client = mqtt.connect('wss://test.mosquitto.org:8081');
+        const statusDiv = document.getElementById('status');
+
+        client.on('connect', () => {
+            statusDiv.textContent = 'Connected to MQTT broker';
+            statusDiv.style.background = 'rgba(0, 128, 0, 0.7)';
+            client.subscribe(subtopic, (err) => {
+                if (err) console.error('Subscription error:', err);
+            });
+        });
+
+        client.on('error', (err) => {
+            statusDiv.textContent = `MQTT error: ${err.message}`;
+            statusDiv.style.background = 'rgba(255, 0, 0, 0.7)';
+        });
+
+        client.on('close', () => {
+            statusDiv.textContent = 'Disconnected from MQTT broker';
+            statusDiv.style.background = 'rgba(255, 0, 0, 0.7)';
+        });
+
+        client.on('message', (topic, message) => {
+            try {
+                // Log raw message for debugging
+                console.log('Raw MQTT message:', message.toString());
+
+                const data = JSON.parse(message.toString());
+
+                // Validate message structure
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Message is not a valid object');
+                }
+                if (data.content !== 'location') {
+                    throw new Error('Invalid content type: ' + data.content);
+                }
+                if (!data.id || typeof data.id !== 'number') {
+                    throw new Error('Invalid or missing id');
+                }
+                if (!data.position || typeof data.position !== 'object') {
+                    throw new Error('Missing or invalid position object');
+                }
+                if (typeof data.position.x !== 'number' || 
+                    typeof data.position.y !== 'number' || 
+                    typeof data.position.z !== 'number') {
+                    throw new Error('Invalid position coordinates');
+                }
+
+                if (data.content === 'location' && data.position) {
+                    const { id, position: { x, y, z } } = data;
+                    if (1) {	//(id >= 1 && id <= 5) {
+                        createOrUpdateDevice(id, x, y, z);
+                    }
+                }
+            } catch (e) {
+                console.error('Error parsing MQTT message:', e);
+            }
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            animateDevices();
+            floor.position.copy(panOffset);
+            grid.position.copy(panOffset);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
