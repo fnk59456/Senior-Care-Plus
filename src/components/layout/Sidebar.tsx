@@ -2,6 +2,7 @@
 
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
+import { useEmergencyCall } from '@/contexts/EmergencyCallContext'
 import {
   Home,
   HeartPulse,
@@ -14,6 +15,7 @@ import {
   Settings,
   HelpCircle,
   Sparkles,
+  Phone,
 } from 'lucide-react'
 
 const navigation = [
@@ -23,6 +25,13 @@ const navigation = [
     icon: Home,
     color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300',
     description: '返回系統首頁',
+  },
+  {
+    name: '緊急呼叫',
+    href: '/emergency-call',
+    icon: Phone,
+    color: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300',
+    description: '快速發送緊急求助信號',
   },
   {
     name: '健康監控',
@@ -105,9 +114,9 @@ export function Sidebar() {
 
         <div className="flex-1 overflow-auto py-4 px-3">
           <div className="space-y-1">
-            <SidebarSection title="主要功能" items={navigation.slice(0, 4)} pathname={pathname} />
-            <SidebarSection title="管理功能" items={navigation.slice(4, 7)} pathname={pathname} />
-            <SidebarSection title="系統" items={navigation.slice(7)} pathname={pathname} />
+            <SidebarSection title="主要功能" items={navigation.slice(0, 5)} pathname={pathname} />
+            <SidebarSection title="管理功能" items={navigation.slice(5, 8)} pathname={pathname} />
+            <SidebarSection title="系統" items={navigation.slice(8)} pathname={pathname} />
           </div>
         </div>
 
@@ -134,12 +143,18 @@ function SidebarSection({
   items: typeof navigation
   pathname: string
 }) {
+  const { hasActiveCall } = useEmergencyCall()
+
   return (
     <div className="px-3 pb-3 border-b">
       <h2 className="mb-2 text-lg font-semibold tracking-tight">{title}</h2>
       <nav className="grid items-start text-sm font-medium gap-2">
         {items.map((item) => {
           console.log("渲染項目：", item.name, "=>", item.href)
+          
+          // 檢查是否為緊急呼叫項目
+          const isEmergencyCall = item.href === '/emergency-call'
+          const shouldShowAlert = isEmergencyCall && hasActiveCall
 
           return (
             <Link
@@ -150,6 +165,7 @@ function SidebarSection({
               }}
               className={cn(
                 "flex w-full items-center text-left gap-3 rounded-lg px-3 py-2.5 transition-all group relative",
+                shouldShowAlert ? "border border-red-200 dark:border-red-800" : "",
                 pathname === item.href
                   ? "bg-primary/10 text-primary font-semibold shadow-sm"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -159,17 +175,23 @@ function SidebarSection({
                 className={cn(
                   "rounded-full p-2 flex items-center justify-center transition-all duration-200",
                   item.color,
+                  shouldShowAlert ? "animate-pulse" : "",
                   pathname === item.href ? "shadow-inner" : "group-hover:shadow"
                 )}
               >
                 <item.icon className="h-5 w-5" />
               </span>
               <div className="flex flex-col">
-                <span>{item.name}</span>
+                <span className={shouldShowAlert ? "font-semibold" : ""}>{item.name}</span>
                 {pathname === item.href && (
                   <span className="text-xs text-muted-foreground font-normal">{item.description}</span>
                 )}
               </div>
+              {shouldShowAlert && pathname !== item.href && (
+                <span className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">
+                  !
+                </span>
+              )}
               {pathname === item.href && (
                 <span className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-primary rounded-full" />
               )}

@@ -55,46 +55,28 @@ export default function LocationPage() {
       if (topic !== MQTT_TOPICS[0] && topic !== MQTT_TOPICS[1]) return
       try {
         const rawMessage = new TextDecoder().decode(payload)
-        console.log('收到 MQTT 原始訊息:', rawMessage)
-        
         const msg = JSON.parse(rawMessage)
-        console.log('解析後的訊息:', msg)
         
         if (msg.content === "location" && msg.id && msg.position) {
-          console.log('訊息格式正確，處理位置資料:', {
-            id: msg.id,
-            position: msg.position
-          })
-          
           // 處理 id 可能是 number 的情況
           const deviceId = String(msg.id)
-          setPatients(prev => {
-            const newPatients = {
-              ...prev,
-              [deviceId]: {
-                id: deviceId,
-                name: msg.name || `設備-${deviceId}`,
-                position: {
-                  x: msg.position.x,
-                  y: msg.position.y,
-                  quality: msg.position.quality || 0, // 如果沒有 quality 則預設為 0
-                  z: msg.position.z, // 保留 z 座標（雖然 2D 地圖不使用）
-                },
-                updatedAt: Date.now(),
+          setPatients(prev => ({
+            ...prev,
+            [deviceId]: {
+              id: deviceId,
+              name: msg.name || `設備-${deviceId}`,
+              position: {
+                x: msg.position.x,
+                y: msg.position.y,
+                quality: msg.position.quality || 0, // 如果沒有 quality 則預設為 0
+                z: msg.position.z, // 保留 z 座標（雖然 2D 地圖不使用）
               },
-            }
-            console.log('更新後的病人資料:', newPatients)
-            return newPatients
-          })
-        } else {
-          console.log('訊息格式不符合要求:', {
-            content: msg.content,
-            hasId: !!msg.id,
-            hasPosition: !!msg.position
-          })
+              updatedAt: Date.now(),
+            },
+          }))
         }
       } catch (error) {
-        console.error('解析 MQTT 訊息時發生錯誤:', error)
+        console.error('MQTT 訊息解析錯誤:', error)
       }
     })
     return () => {

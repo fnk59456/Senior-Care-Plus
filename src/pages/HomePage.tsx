@@ -3,11 +3,21 @@ import { Button } from "@/components/ui/button"
 import {
   Activity, CalendarClock, MapPin, Users, UserCog,
   MonitorSmartphone, ArrowRight, LineChart, Bell,
-  ClipboardCheck, HeartPulse, Sparkles, Heart
+  ClipboardCheck, HeartPulse, Sparkles, Heart, Phone
 } from "lucide-react"
 import { Link } from "react-router-dom"
 
 const features = [
+  {
+    title: "緊急呼叫",
+    icon: <Phone className="h-8 w-8 text-white" />,
+    desc: "快速發送緊急求助信號，確保及時獲得協助",
+    href: "/emergency-call",
+    color: "from-red-600 to-red-800",
+    bgLight: "bg-red-50",
+    bgDark: "dark:bg-red-900/20",
+    priority: true,
+  },
   {
     title: "健康監控",
     icon: <Activity className="h-8 w-8 text-white" />,
@@ -176,18 +186,33 @@ export default function HomePage() {
           {features.map((feature) => (
             <Link to={feature.href} key={feature.title} className="group relative block">
               <Card
-                className={`card-float transition-transform hover:scale-[1.01] hover:shadow-lg border-0 overflow-hidden ${feature.bgLight} ${feature.bgDark}`}
+                className={`card-float transition-transform hover:scale-[1.01] hover:shadow-lg border-0 overflow-hidden ${
+                  feature.priority 
+                    ? 'ring-2 ring-red-200 dark:ring-red-800 shadow-lg' 
+                    : ''
+                } ${feature.bgLight} ${feature.bgDark}`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300 ${feature.color} pointer-events-none`} />
+                {feature.priority && (
+                  <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    緊急
+                  </div>
+                )}
                 <CardHeader>
                   <div className="flex items-center gap-4">
-                    <div className="icon-container">{feature.icon}</div>
-                    <CardTitle className="text-xl">{feature.title}</CardTitle>
+                    <div className={`icon-container ${feature.priority ? 'animate-pulse' : ''}`}>
+                      {feature.icon}
+                    </div>
+                    <CardTitle className={`text-xl ${feature.priority ? 'text-red-700 dark:text-red-400' : ''}`}>
+                      {feature.title}
+                    </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">{feature.desc}</p>
-                  <div className="mt-4 flex items-center text-sm text-primary font-medium">
+                  <div className={`mt-4 flex items-center text-sm font-medium ${
+                    feature.priority ? 'text-red-600 dark:text-red-400' : 'text-primary'
+                  }`}>
                     <span>查看詳情</span>
                     <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-2" />
                   </div>
