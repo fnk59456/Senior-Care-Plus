@@ -12,6 +12,8 @@ import RemindersPage from './pages/RemindersPage'
 import ResidentsPage from './pages/ResidentsPage'
 import ResidentDetailPage from './pages/ResidentDetailPage'
 import SettingsPage from './pages/SettingsPage'
+import DiaperMonitoringPage from './pages/DiaperMonitoringPage'
+import DeviceManagementPage from './pages/DeviceManagementPage'
 import './index.css'
 
 // 根據部署與開發環境動態設定 basename
@@ -33,9 +35,10 @@ function App() {
             <Route path="/reminders" element={<RemindersPage />} />
             <Route path="/residents" element={<ResidentsPage />} />
             <Route path="/residents/:id" element={<ResidentDetailPage />} />
+            <Route path="/diaper-monitoring" element={<DiaperMonitoringPage />} />
+            <Route path="/devices" element={<DeviceManagementPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/staff" element={<Placeholder title="員工管理頁面" />} />
-            <Route path="/devices" element={<Placeholder title="設備管理頁面" />} />
             <Route path="/more" element={<Placeholder title="更多功能頁面" />} />
             <Route path="/help" element={<Placeholder title="幫助中心" />} />
             <Route path="*" element={<Placeholder title="404 - 頁面不存在" />} />

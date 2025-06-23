@@ -54,10 +54,10 @@ const features = [
     bgDark: "dark:bg-pink-900/20",
   },
   {
-    title: "設備管理",
+    title: "尿布監測",
     icon: <MonitorSmartphone className="h-8 w-8 text-white" />,
-    desc: "追蹤與管理照護設備",
-    href: "/devices",
+    desc: "即時監測尿布濕度狀態與更換記錄",
+    href: "/diaper-monitoring",
     color: "from-orange-500 to-orange-700",
     bgLight: "bg-orange-50",
     bgDark: "dark:bg-orange-900/20",
