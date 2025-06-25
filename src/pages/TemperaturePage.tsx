@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { Thermometer, TrendingUp, Clock, AlertTriangle } from "lucide-react"
+import { useLocation } from "react-router-dom"
 
 // MQTT設置
 const MQTT_URL = "ws://localhost:9001"
@@ -25,6 +26,12 @@ const USERS = [
   { id: "E004", name: "趙六" },
   { id: "E005", name: "錢七" }
 ]
+
+// 根據患者名稱獲取用戶ID
+const getUserIdByName = (patientName: string): string => {
+  const user = USERS.find(u => u.name === patientName)
+  return user ? user.id : "E001" // 默認返回張三
+}
 
 type TemperatureRecord = {
   id: string
@@ -44,7 +51,13 @@ type ChartDataPoint = {
 }
 
 export default function TemperaturePage() {
-  const [selectedUser, setSelectedUser] = useState<string>("E005") // 默認選擇錢七
+  const location = useLocation()
+  const patientName = location.state?.patientName
+  
+  const [selectedUser, setSelectedUser] = useState<string>(() => {
+    // 如果從HealthPage傳遞了患者名稱，則使用該患者，否則默認選擇張三
+    return patientName ? getUserIdByName(patientName) : "E001"
+  })
   const [activeTab, setActiveTab] = useState<string>("today")
   const [temperatureRecords, setTemperatureRecords] = useState<TemperatureRecord[]>([])
   const [connected, setConnected] = useState(false)
@@ -328,6 +341,13 @@ export default function TemperaturePage() {
           <Thermometer className="mr-3 h-8 w-8 text-red-500" />
           體溫監測
         </h1>
+        {patientName && (
+          <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-800 text-sm font-medium">
+              📋 從健康監控頁面導航 - 當前患者: {patientName}
+            </p>
+          </div>
+        )}
         <p className="text-muted-foreground mb-4">
           即時監控長者體溫變化，及時發現異常情況
         </p>

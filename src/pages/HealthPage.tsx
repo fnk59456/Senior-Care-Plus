@@ -1,213 +1,167 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
 import { 
-  Thermometer, Heart, Droplet, Activity, LucideGlassWater, 
-  CircleDollarSign, Weight, LineChart, Bed, Clock, BookOpen, Download 
+  Thermometer, Heart, Baby, Phone, Clock, Bed,
+  Bell, Menu, Pause, User, CircleDot
 } from "lucide-react"
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
-const healthMetrics = [/* 保留不變，略 */]
-const timeRanges = ["24小時", "7天", "30天", "90天", "半年", "1年"]
+// 患者數據
+const patients = [
+  {
+    id: 1,
+    name: "張三",
+    age: 80,
+    gcs: 8,
+    status: "正常",
+    statusColor: "bg-green-500",
+    avatar: "ZS"
+  },
+  {
+    id: 2,
+    name: "李四", 
+    age: 70,
+    gcs: 13,
+    status: "正常",
+    statusColor: "bg-green-500",
+    avatar: "LS"
+  },
+  {
+    id: 3,
+    name: "王五",
+    age: 75,
+    gcs: 10,
+    status: "異常",
+    statusColor: "bg-red-500",
+    avatar: "WW"
+  }
+]
+
+// 監控功能圖標配置
+const monitoringIcons = [
+  { icon: Thermometer, color: "text-red-500", route: "/temperature" },
+  { icon: Heart, color: "text-gray-500", route: "/heart-rate" },
+  { icon: Baby, color: "text-purple-500", route: "/diaper-monitoring" },
+  { icon: Phone, color: "text-gray-500", route: "/emergency-call" },
+  { icon: Clock, color: "text-gray-500", route: "/reminders" },
+  { icon: Bed, color: "text-gray-500", route: "/location" },
+  { icon: Bell, color: "text-yellow-500", route: "/settings" },
+  { icon: Menu, color: "text-gray-500", route: "/residents" },
+  { icon: Pause, color: "text-gray-500", route: "/devices" }
+]
 
 export default function HealthPage() {
-  const [selectedTimeRange, setSelectedTimeRange] = useState("7天")
-  const [selectedTab, setSelectedTab] = useState("overview")
+  const [selectedFilter, setSelectedFilter] = useState("全部")
+  const navigate = useNavigate()
+
+  const filters = ["全部", "異常", "正常"]
+
+  // 根據選擇的篩選器過濾患者
+  const filteredPatients = patients.filter(patient => {
+    if (selectedFilter === "全部") return true
+    return patient.status === selectedFilter
+  })
+
+  // 處理圖標點擊導航
+  const handleIconClick = (route: string, patientName: string) => {
+    // 將患者信息作為state傳遞到目標頁面
+    navigate(route, { state: { patientName } })
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold">健康監測</h1>
-        <p className="text-muted-foreground">
-          全面監測長者的健康狀況，包括生命體徵、活動指標和照護紀錄。
-        </p>
+    <div className="min-h-screen bg-gray-50 p-4">
+      {/* 頁面標題 */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 bg-blue-500">
+            <AvatarFallback className="text-white">
+              <User className="h-6 w-6" />
+            </AvatarFallback>
+          </Avatar>
+          <h1 className="text-xl font-bold text-gray-900">長者照護系統</h1>
+        </div>
+        <Button variant="ghost" size="sm">
+          <Bell className="h-5 w-5" />
+        </Button>
       </div>
 
-      <Tabs defaultValue="overview" className="w-full" onValueChange={setSelectedTab}>
-        <div className="flex justify-between items-center mb-4">
-          <TabsList>
-            <TabsTrigger value="overview">概覽</TabsTrigger>
-            <TabsTrigger value="vitals">生命體徵</TabsTrigger>
-            <TabsTrigger value="activity">活動監測</TabsTrigger>
-            <TabsTrigger value="records">照護紀錄</TabsTrigger>
-          </TabsList>
-
-          <div className="flex items-center gap-2">
-            <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-              <SelectTrigger className="w-[100px]">
-                <SelectValue placeholder="時間範圍" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeRanges.map((range) => (
-                  <SelectItem key={range} value={range}>{range}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="sm" className="gap-2">
-              <Download className="h-4 w-4" />
-              <span>匯出</span>
+      {/* 監控標題 */}
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">監控</h2>
+        
+        {/* 狀態篩選器 */}
+        <div className="flex gap-2 mb-6">
+          {filters.map((filter) => (
+            <Button
+              key={filter}
+              variant={selectedFilter === filter ? "default" : "outline"}
+              onClick={() => setSelectedFilter(filter)}
+              className={`rounded-full px-6 py-2 text-sm font-medium ${
+                selectedFilter === filter 
+                  ? "bg-blue-500 text-white hover:bg-blue-600" 
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              {filter}
             </Button>
-          </div>
-        </div>
-
-        {/* === 概覽頁籤 === */}
-        <TabsContent value="overview" className="mt-0">
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-            {healthMetrics.map((metric, index) => (
-              <Card key={index} className="overflow-hidden transition-all hover:shadow-md">
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-medium">{metric.title}</CardTitle>
-                    <div className={`rounded-full p-1.5 ${metric.color}`}>
-                      {metric.icon}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col gap-1">
-                    <div className="text-2xl font-bold">{metric.value}</div>
-                    <div className="flex justify-between text-xs">
-                      <span className={`font-medium px-2 py-0.5 rounded-full ${
-                        metric.status === "正常" || metric.status === "良好"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                      }`}>
-                        {metric.status}
-                      </span>
-                      <span className="text-muted-foreground">{metric.lastUpdated}</span>
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      <div>{metric.range}</div>
-                      <div>{metric.details}</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* 健康趨勢圖表 */}
-          <Card className="mt-6">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle>健康趨勢分析</CardTitle>
-                  <CardDescription>顯示過去{selectedTimeRange}的健康指標趨勢</CardDescription>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">體溫</Button>
-                  <Button variant="outline" size="sm">心率</Button>
-                  <Button variant="outline" size="sm">血壓</Button>
-                  <Button variant="outline" size="sm">血糖</Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px] w-full flex items-center justify-center border rounded-md bg-muted/20">
-                <div className="flex flex-col items-center gap-2">
-                  <LineChart className="h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">健康數據趨勢圖 - {selectedTimeRange}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* === 其他頁籤內容 === */}
-        <TabsContent value="vitals" className="mt-0">
-          <Card>
-            <CardHeader>
-              <CardTitle>生命體徵詳細數據</CardTitle>
-              <CardDescription>
-                包含體溫、心率、血壓、血氧等關鍵生命指標的詳細記錄
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px] w-full flex items-center justify-center border rounded-md bg-muted/20">
-                <div className="flex flex-col items-center gap-2">
-                  <Activity className="h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">生命體徵詳細數據表格與圖表</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="activity" className="mt-0">
-          <Card>
-            <CardHeader>
-              <CardTitle>日常活動監測</CardTitle>
-              <CardDescription>
-                包含行動能力、活動量、睡眠質量等活動相關指標
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px] w-full flex items-center justify-center border rounded-md bg-muted/20">
-                <div className="flex flex-col items-center gap-2">
-                  <Clock className="h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">活動監測數據與分析</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="records" className="mt-0">
-          <Card>
-            <CardHeader>
-              <CardTitle>照護紀錄</CardTitle>
-              <CardDescription>
-                包含用藥紀錄、護理紀錄、診斷報告等照護相關資訊
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px] w-full flex items-center justify-center border rounded-md bg-muted/20">
-                <div className="flex flex-col items-center gap-2">
-                  <BookOpen className="h-12 w-12 text-muted-foreground" />
-                  <p className="text-muted-foreground">照護紀錄與病史資料</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* === 異常提醒區塊 === */}
-      <div className="border-t pt-6">
-        <h2 className="mb-4 text-xl font-semibold">異常提醒</h2>
-        <div className="flex gap-4 overflow-auto pb-2">
-          <Card className="min-w-[250px] flex-shrink-0 border-l-4 border-l-amber-500">
-            <CardHeader className="py-3">
-              <CardTitle className="text-sm font-medium">血壓略高於正常範圍</CardTitle>
-            </CardHeader>
-            <CardContent className="py-2">
-              <p className="text-xs text-muted-foreground">今日早晨測量: 142/88</p>
-              <p className="text-xs mt-1">建議: 觀察並於明日複測，注意飲食控制鹽分攝取</p>
-            </CardContent>
-          </Card>
-
-          <Card className="min-w-[250px] flex-shrink-0 border-l-4 border-l-blue-500">
-            <CardHeader className="py-3">
-              <CardTitle className="text-sm font-medium">睡眠品質下降</CardTitle>
-            </CardHeader>
-            <CardContent className="py-2">
-              <p className="text-xs text-muted-foreground">過去一週平均睡眠時間: 5.8小時</p>
-              <p className="text-xs mt-1">建議: 檢查睡眠環境，考慮調整晚間照護流程</p>
-            </CardContent>
-          </Card>
-
-          <Card className="min-w-[250px] flex-shrink-0 border-l-4 border-l-green-500">
-            <CardHeader className="py-3">
-              <CardTitle className="text-sm font-medium">體重恢復正常</CardTitle>
-            </CardHeader>
-            <CardContent className="py-2">
-              <p className="text-xs text-muted-foreground">本月增加: 1.5kg (目前: 65kg)</p>
-              <p className="text-xs mt-1">備註: 營養補充計畫執行良好，繼續維持</p>
-            </CardContent>
-          </Card>
+          ))}
         </div>
       </div>
+
+      {/* 患者卡片列表 */}
+      <div className="space-y-4">
+        {filteredPatients.map((patient) => (
+          <Card key={patient.id} className="bg-white shadow-sm border-0 rounded-2xl overflow-hidden">
+            <CardContent className="p-6">
+              {/* 患者基本信息 */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16 bg-gray-200">
+                    <AvatarFallback className="text-gray-600 text-lg font-medium">
+                      {patient.avatar}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-1">{patient.name}</h3>
+                    <p className="text-gray-600">年齡: {patient.age}, GCS: {patient.gcs}</p>
+                  </div>
+                </div>
+                <div className={`w-4 h-4 rounded-full ${patient.statusColor}`}></div>
+              </div>
+
+              {/* 監控功能圖標網格 */}
+              <div className="grid grid-cols-3 gap-4">
+                {monitoringIcons.map((item, index) => {
+                  const IconComponent = item.icon
+                  return (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      className="h-16 w-full bg-gray-100 hover:bg-gray-200 rounded-xl p-4 flex items-center justify-center transition-colors"
+                      onClick={() => handleIconClick(item.route, patient.name)}
+                    >
+                      <IconComponent className={`h-6 w-6 ${item.color}`} />
+                    </Button>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* 空狀態提示 */}
+      {filteredPatients.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-gray-400 mb-2">
+            <CircleDot className="h-12 w-12 mx-auto" />
+          </div>
+          <p className="text-gray-500">目前沒有{selectedFilter}狀態的患者</p>
+        </div>
+      )}
     </div>
   )
 }

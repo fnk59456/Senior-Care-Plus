@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { Heart, TrendingUp, Clock, AlertTriangle } from "lucide-react"
+import { useLocation } from "react-router-dom"
 
 // MQTT設置
 const MQTT_URL = "ws://localhost:9001"
@@ -27,6 +28,12 @@ const USERS = [
   { id: "user005", name: "陳七" }
 ]
 
+// 根據患者名稱獲取用戶ID
+const getUserIdByName = (patientName: string): string => {
+  const user = USERS.find(u => u.name === patientName)
+  return user ? user.id : "user001" // 默認返回張三
+}
+
 type HeartRateRecord = {
   id: string
   name: string
@@ -45,7 +52,13 @@ type ChartDataPoint = {
 }
 
 export default function HeartRatePage() {
-  const [selectedUser, setSelectedUser] = useState<string>("user001") // 默認選擇張三
+  const location = useLocation()
+  const patientName = location.state?.patientName
+  
+  const [selectedUser, setSelectedUser] = useState<string>(() => {
+    // 如果從HealthPage傳遞了患者名稱，則使用該患者，否則默認選擇張三
+    return patientName ? getUserIdByName(patientName) : "user001"
+  })
   const [activeTab, setActiveTab] = useState<string>("today")
   const [heartRateRecords, setHeartRateRecords] = useState<HeartRateRecord[]>([])
   const [connected, setConnected] = useState(false)
@@ -329,6 +342,13 @@ export default function HeartRatePage() {
           <Heart className="mr-3 h-8 w-8 text-pink-500" />
           心跳監測
         </h1>
+        {patientName && (
+          <div className="mb-3 p-3 bg-pink-50 border border-pink-200 rounded-lg">
+            <p className="text-pink-800 text-sm font-medium">
+              💗 從健康監控頁面導航 - 當前患者: {patientName}
+            </p>
+          </div>
+        )}
         <p className="text-muted-foreground mb-4">
           即時監控長者心率變化，及時發現異常情況
         </p>

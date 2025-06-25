@@ -20,6 +20,7 @@ import {
 } from "lucide-react"
 // @ts-ignore
 import mqtt from "mqtt"
+import { useLocation } from "react-router-dom"
 
 // MQTT配置 (暫時註解，等實際連接時啟用)
 // const MQTT_URL = "wss://067ec32ef1344d3bb20c4e53abdde99a.s1.eu.hivemq.cloud:8884/mqtt"
@@ -137,9 +138,21 @@ interface Patient {
   records: DiaperRecord[]
 }
 
+// 根據患者名稱獲取患者ID
+const getPatientIdByName = (patientName: string): string => {
+  const patient = MOCK_PATIENTS.find(p => p.name === patientName)
+  return patient ? patient.id : MOCK_PATIENTS[0].id // 默認返回第一個患者
+}
+
 export default function DiaperMonitoringPage() {
+  const location = useLocation()
+  const patientName = location.state?.patientName
+  
   const [patients, setPatients] = useState<Patient[]>(MOCK_PATIENTS)
-  const [selectedPatient, setSelectedPatient] = useState<string>(MOCK_PATIENTS[0].id)
+  const [selectedPatient, setSelectedPatient] = useState<string>(() => {
+    // 如果從HealthPage傳遞了患者名稱，則使用該患者，否則默認選擇第一個
+    return patientName ? getPatientIdByName(patientName) : MOCK_PATIENTS[0].id
+  })
   const [selectedTab, setSelectedTab] = useState("today")
   const [autoNotification, setAutoNotification] = useState(true)
   const [showRecordModal, setShowRecordModal] = useState(false)
@@ -203,6 +216,13 @@ export default function DiaperMonitoringPage() {
       {/* 頁面標題 */}
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">尿布監測</h1>
+        {patientName && (
+          <div className="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+            <p className="text-purple-800 text-sm font-medium">
+              👶 從健康監控頁面導航 - 當前患者: {patientName}
+            </p>
+          </div>
+        )}
         <p className="text-muted-foreground">
           即時監測長者尿布濕度狀態，確保舒適與健康
         </p>
