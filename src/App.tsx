@@ -16,6 +16,7 @@ import SettingsPage from './pages/SettingsPage'
 import DiaperMonitoringPage from './pages/DiaperMonitoringPage'
 import DeviceManagementPage from './pages/DeviceManagementPage'
 import EmergencyCallPage from './pages/EmergencyCallPage'
+import StaffManagementPage from './pages/StaffManagementPage'
 import './index.css'
 
 // 根據部署與開發環境動態設定 basename
@@ -41,7 +42,7 @@ function App() {
               <Route path="/diaper-monitoring" element={<DiaperMonitoringPage />} />
               <Route path="/devices" element={<DeviceManagementPage />} />
               <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/staff" element={<Placeholder title="員工管理頁面" />} />
+              <Route path="/staff" element={<StaffManagementPage />} />
               <Route path="/more" element={<Placeholder title="更多功能頁面" />} />
               <Route path="/help" element={<Placeholder title="幫助中心" />} />
               <Route path="/emergency-call" element={<EmergencyCallPage />} />
