@@ -1,125 +1,97 @@
-# 長者照護系統 Web 版 (Senior Care Plus Web)
+# Senior Care Plus 長者照護平台
 
-這是一個使用 Next.js、React、Tailwind CSS 和 shadcn/ui 構建的長者照護系統 Web 版本。
+## 📝 專案簡介
+Senior Care Plus 是一個專為長者照護設計的全方位數位平台，旨在提供便捷、專業且人性化的照護服務解決方案。本平台整合了照護資源管理、健康監測、緊急通報等多項功能，為長者及其家屬提供完整的照護支援系統。
 
-## 技術棧
+## ✨ 主要功能
+- **智慧照護排程系統**
+  - 自動化排班管理
+  - 照護人員即時定位追蹤
+  - 智能工作量分配
 
-- Next.js 14
-- React 18
-- TypeScript
-- Tailwind CSS
-- shadcn/ui
-- NextAuth.js
-- React Query
-- Recharts
+- **健康監測中心**
+  - 即時生命徵象監測
+  - 用藥提醒與追蹤
+  - 健康報告自動生成
 
-## 專案結構
+- **緊急通報系統**
+  - 一鍵緊急求助
+  - 自動定位與通報
+  - 即時通知相關人員
 
-```
-src/
-├── components/          # 可重用組件
-│   ├── ui/             # shadcn/ui 組件
-│   ├── forms/          # 表單相關組件
-│   ├── charts/         # 圖表組件
-│   └── layout/         # 布局組件
-├── features/           # 功能模組
-│   ├── auth/          # 認證相關
-│   ├── health/        # 健康監測
-│   ├── reminder/      # 提醒系統
-│   ├── location/      # 位置追蹤
-│   └── management/    # 管理功能
-├── lib/               # 工具函數和配置
-├── hooks/             # 自定義 Hooks
-├── types/             # TypeScript 類型定義
-└── pages/             # 頁面組件
-```
+- **家屬互動平台**
+  - 即時照護狀況回報
+  - 視訊通話功能
+  - 照護日誌查詢
 
-## 主要功能
+## 🛠 技術棧
+- **前端框架**
+  - React.js
+  - TypeScript
+  - Next.js
+  - Tailwind CSS
 
-1. 用戶管理系統
-   - 登入與註冊
-   - 個人資料管理
-   - 多用戶類型支援
+- **後端技術**
+  - Node.js
+  - Express.js
+  - MongoDB
 
-2. 健康監測功能
-   - 體溫監測
-   - 心率監測
-   - 尿布監測
+- **開發工具**
+  - Vite
+  - ESLint
+  - Prettier
+  - Git
 
-3. 提醒系統
-   - 多功能提醒
-   - 週期性提醒
-   - 提醒通知
+## 🚀 快速開始
 
-4. 位置追蹤功能
-   - 地圖顯示
-   - 安全區域設置
-   - 位置歷史記錄
+### 環境需求
+- Node.js 16.0 或以上
+- npm 7.0 或以上
 
-5. 管理功能
-   - 院友管理
-   - 員工管理
-   - 設備管理
-
-## 開始使用
-
-1. 安裝依賴：
+### 安裝步驟
+1. 克隆專案
 ```bash
+git clone https://github.com/your-username/senior-care-plus.git
+```
+
+2. 安裝依賴
+```bash
+cd senior-care-plus
 npm install
 ```
 
-2. 運行開發服務器：
+3. 啟動開發伺服器
 ```bash
 npm run dev
 ```
 
-3. 構建生產版本：
-```bash
-npm run build
-```
+4. 開啟瀏覽器訪問 `http://localhost:3000`
 
-4. 運行生產版本：
-```bash
-npm start
-```
+## 📦 部署
+本專案支援多種部署方式：
+- Vercel
+- AWS
+- Docker 容器化部署
 
-## 環境變數
+## 🤝 貢獻指南
+我們歡迎各種形式的貢獻，包括但不限於：
+- 提交 Bug 報告
+- 提出新功能建議
+- 改進文檔
+- 提交 Pull Request
 
-創建 `.env.local` 文件並設置以下變數：
+## 📄 授權協議
+本專案採用 MIT 授權協議 - 詳見 [LICENSE](LICENSE) 文件
 
-```env
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key
-DATABASE_URL=your-database-url
-```
+## 👥 團隊成員
+- 專案負責人：[姓名]
+- 前端開發：[姓名]
+- 後端開發：[姓名]
+- UI/UX 設計：[姓名]
 
-## 開發指南
+## 📞 聯絡方式
+- 電子郵件：your-email@example.com
+- 專案網站：https://senior-care-plus.example.com
 
-1. 組件開發
-   - 使用 shadcn/ui 組件庫
-   - 遵循 TypeScript 類型定義
-   - 使用 Tailwind CSS 進行樣式設計
-
-2. 狀態管理
-   - 使用 React Query 進行服務器狀態管理
-   - 使用 React Context 進行客戶端狀態管理
-
-3. 路由管理
-   - 使用 Next.js 的文件系統路由
-   - 實現動態路由和嵌套路由
-
-4. 認證授權
-   - 使用 NextAuth.js 進行身份驗證
-   - 實現角色基礎的訪問控制
-
-## 貢獻指南
-
-1. Fork 專案
-2. 創建功能分支
-3. 提交更改
-4. 推送到分支
-5. 創建 Pull Request
-
-## 授權
-
-MIT License 
+## 🙏 致謝
+感謝所有為這個專案做出貢獻的開發者和設計師。
