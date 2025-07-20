@@ -2,7 +2,7 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './components/providers/ThemeProvider'
 import { EmergencyCallProvider } from './contexts/EmergencyCallContext'
-import { MainLayout } from './components/layout/MainLayout'  
+import { MainLayout } from './components/layout/MainLayout'
 import HomePage from './pages/HomePage'
 import HealthPage from './pages/HealthPage'
 import NewHealthPage from './pages/NewHealthPage'
@@ -17,6 +17,7 @@ import DiaperMonitoringPage from './pages/DiaperMonitoringPage'
 import DeviceManagementPage from './pages/DeviceManagementPage'
 import EmergencyCallPage from './pages/EmergencyCallPage'
 import StaffManagementPage from './pages/StaffManagementPage'
+import UWBLocationPage from './pages/UWBLocationPage'
 import './index.css'
 
 // 根據部署與開發環境動態設定 basename
@@ -43,6 +44,7 @@ function App() {
               <Route path="/devices" element={<DeviceManagementPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/staff" element={<StaffManagementPage />} />
+              <Route path="/uwb-location" element={<UWBLocationPage />} />
               <Route path="/more" element={<Placeholder title="更多功能頁面" />} />
               <Route path="/help" element={<Placeholder title="幫助中心" />} />
               <Route path="/emergency-call" element={<EmergencyCallPage />} />

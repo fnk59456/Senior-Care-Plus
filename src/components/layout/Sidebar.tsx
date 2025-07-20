@@ -11,6 +11,7 @@ import {
   Users,
   UserCog,
   MonitorSmartphone,
+  Building2,
   Lightbulb,
   Settings,
   HelpCircle,
@@ -76,6 +77,13 @@ const navigation = [
     description: '照護設備管理與維護',
   },
   {
+    name: '養老院管理',
+    href: '/uwb-location',
+    icon: Building2,
+    color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-300',
+    description: 'UWB定位系統場域管理',
+  },
+  {
     name: '更多功能',
     href: '/more',
     icon: Lightbulb,
@@ -115,8 +123,8 @@ export function Sidebar() {
         <div className="flex-1 overflow-auto py-4 px-3">
           <div className="space-y-1">
             <SidebarSection title="主要功能" items={navigation.slice(0, 5)} pathname={pathname} />
-            <SidebarSection title="管理功能" items={navigation.slice(5, 8)} pathname={pathname} />
-            <SidebarSection title="系統" items={navigation.slice(8)} pathname={pathname} />
+            <SidebarSection title="管理功能" items={navigation.slice(5, 9)} pathname={pathname} />
+            <SidebarSection title="系統" items={navigation.slice(9)} pathname={pathname} />
           </div>
         </div>
 
@@ -151,7 +159,7 @@ function SidebarSection({
       <nav className="grid items-start text-sm font-medium gap-2">
         {items.map((item) => {
           console.log("渲染項目：", item.name, "=>", item.href)
-          
+
           // 檢查是否為緊急呼叫項目
           const isEmergencyCall = item.href === '/emergency-call'
           const shouldShowAlert = isEmergencyCall && hasActiveCall
