@@ -27,7 +27,15 @@ import {
     Square,
     RefreshCw,
     Signal,
-    Battery
+    Battery,
+    Upload,
+    Map,
+    Target,
+    Crosshair,
+    Save,
+    RotateCcw,
+    Image,
+    Ruler
 } from "lucide-react"
 
 // 數據類型定義
@@ -44,12 +52,17 @@ interface Floor {
     homeId: string
     name: string
     level: number
-    mapImage?: string
+    mapImage?: string // base64圖片數據
     dimensions?: {
         width: number
         height: number
         realWidth: number // 實際寬度(米)
         realHeight: number // 實際高度(米)
+    }
+    calibration?: {
+        originPixel: { x: number, y: number } // 原點的pixel坐標
+        pixelToMeterRatio: number // pixel/米比例
+        isCalibrated: boolean // 是否已校準
     }
     createdAt: Date
 }
@@ -124,11 +137,17 @@ const MOCK_FLOORS: Floor[] = [
         homeId: "home_1",
         name: "1樓大廳",
         level: 1,
+        mapImage: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y5ZjlmOSIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8IS0tIERhaWw0dSBIYWxsIC0tPgogIDxyZWN0IHg9IjIwIiB5PSIyMCIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNlZWUiIHN0cm9rZT0iIzY2NiIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPHRleHQgeD0iMTAwIiB5PSI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjMzMzIj7lpKflu4A8L3RleHQ+CiAgPCEtLSBNZWRpY2FsIFJvb20gLS0+CiAgPHJlY3QgeD0iMjAwIiB5PSIyMCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxMjAiIGZpbGw9IiNmNWY1ZjUiIHN0cm9rZT0iIzY2NiIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgPHRleHQgeD0iMjkwIiB5PSI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjMzMzIj7ljLvogYvlrqQ8L3RleHQ+CiAgPCEtLSBDb3JyaWRvciAtLT4KICA8cmVjdCB4PSIyMCIgeT0iMTYwIiB3aWR0aD0iMzYwIiBoZWlnaHQ9IjEyMCIgZmlsbD0iI2Y5ZjlmOSIgc3Ryb2tlPSIjNjY2IiBzdHJva2Utd2lkdGg9IjEiLz4KICA8dGV4dCB4PSIyMDAiIHk9IjIyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjMzMzIj7ot5DlubM8L3RleHQ+Cjwvc3ZnPg==", // 簡單的樓層示意圖
         dimensions: {
             width: 800,
             height: 600,
             realWidth: 40,
             realHeight: 30
+        },
+        calibration: {
+            originPixel: { x: 50, y: 50 },
+            pixelToMeterRatio: 10,
+            isCalibrated: true
         },
         createdAt: new Date("2024-01-16")
     },
@@ -304,6 +323,14 @@ export default function UWBLocationPage() {
     // Tag管理相關狀態
     const [showTagForm, setShowTagForm] = useState(false)
     const [editingTag, setEditingTag] = useState<TagDevice | null>(null)
+
+    // 地圖相關狀態
+    const [showMapCalibration, setShowMapCalibration] = useState(false)
+    const [calibratingFloor, setCalibratingFloor] = useState<Floor | null>(null)
+    const [uploadedImage, setUploadedImage] = useState<string>("")
+    const [calibrationStep, setCalibrationStep] = useState<'upload' | 'setOrigin' | 'setRatio' | 'complete'>('upload')
+    const [selectedOrigin, setSelectedOrigin] = useState<{ x: number, y: number } | null>(null)
+    const [pixelToMeterRatio, setPixelToMeterRatio] = useState<number>(100)
 
     // 表單狀態
     const [showHomeForm, setShowHomeForm] = useState(false)
@@ -533,6 +560,106 @@ export default function UWBLocationPage() {
         setAnchors(prev => prev.filter(anchor => anchor.id !== id))
     }
 
+    // 地圖上傳處理
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        if (file) {
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                const result = e.target?.result as string
+                setUploadedImage(result)
+                setCalibrationStep('setOrigin')
+            }
+            reader.readAsDataURL(file)
+        }
+    }
+
+    // 開始地圖標定流程
+    const startMapCalibration = (floor: Floor) => {
+        setCalibratingFloor(floor)
+        setShowMapCalibration(true)
+        setCalibrationStep('upload')
+        setUploadedImage(floor.mapImage || "")
+        setSelectedOrigin(floor.calibration?.originPixel || null)
+        setPixelToMeterRatio(floor.calibration?.pixelToMeterRatio || 100)
+
+        if (floor.mapImage) {
+            setCalibrationStep(floor.calibration?.isCalibrated ? 'complete' : 'setOrigin')
+        }
+    }
+
+    // 地圖點擊設定原點
+    const handleMapClick = (event: React.MouseEvent<HTMLImageElement>) => {
+        if (calibrationStep !== 'setOrigin') return
+
+        const rect = event.currentTarget.getBoundingClientRect()
+        const x = event.clientX - rect.left
+        const y = event.clientY - rect.top
+
+        setSelectedOrigin({ x, y })
+        setCalibrationStep('setRatio')
+    }
+
+    // 保存地圖標定
+    const saveMapCalibration = () => {
+        if (!calibratingFloor || !selectedOrigin || !uploadedImage) return
+
+        // 確保比例值有效
+        const validRatio = pixelToMeterRatio >= 0.01 ? pixelToMeterRatio : 100
+
+        const updatedFloor: Floor = {
+            ...calibratingFloor,
+            mapImage: uploadedImage,
+            calibration: {
+                originPixel: selectedOrigin,
+                pixelToMeterRatio: validRatio,
+                isCalibrated: true
+            }
+        }
+
+        setFloors(prev => prev.map(floor =>
+            floor.id === calibratingFloor.id ? updatedFloor : floor
+        ))
+
+        // 同步更新狀態中的比例值
+        if (validRatio !== pixelToMeterRatio) {
+            setPixelToMeterRatio(validRatio)
+        }
+
+        setCalibrationStep('complete')
+    }
+
+    // 重置地圖標定
+    const resetMapCalibration = () => {
+        setShowMapCalibration(false)
+        setCalibratingFloor(null)
+        setUploadedImage("")
+        setCalibrationStep('upload')
+        setSelectedOrigin(null)
+        setPixelToMeterRatio(100)
+    }
+
+    // 坐標系轉換工具
+    const convertPixelToMeter = (pixelCoord: { x: number, y: number }, floor: Floor) => {
+        if (!floor.calibration?.isCalibrated) return null
+
+        const { originPixel, pixelToMeterRatio } = floor.calibration
+        return {
+            x: (pixelCoord.x - originPixel.x) / pixelToMeterRatio,
+            y: (originPixel.y - pixelCoord.y) / pixelToMeterRatio // Y軸反向
+        }
+    }
+
+    const convertMeterToPixel = (meterCoord: { x: number, y: number }, floor: Floor) => {
+        if (!floor.calibration?.isCalibrated) return null
+
+        const { originPixel, pixelToMeterRatio } = floor.calibration
+        return {
+            x: originPixel.x + (meterCoord.x * pixelToMeterRatio),
+            y: originPixel.y - (meterCoord.y * pixelToMeterRatio) // Y軸反向
+        }
+    }
+
     return (
         <div className="space-y-6">
             {/* 標題區域 */}
@@ -658,41 +785,109 @@ export default function UWBLocationPage() {
 
                     {/* 系統狀態概覽 */}
                     {selectedHome && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>當前場域狀態 - {homes.find(h => h.id === selectedHome)?.name}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="space-y-4">
-                                    {currentFloors.map(floor => {
-                                        const floorGateways = gateways.filter(g => g.floorId === floor.id)
-                                        const onlineCount = floorGateways.filter(g => g.status === 'online').length
+                        <>
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>當前場域狀態 - {homes.find(h => h.id === selectedHome)?.name}</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        {currentFloors.map(floor => {
+                                            const floorGateways = gateways.filter(g => g.floorId === floor.id)
+                                            const onlineCount = floorGateways.filter(g => g.status === 'online').length
 
-                                        return (
-                                            <div key={floor.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                                <div className="flex items-center gap-3">
-                                                    <Layers3 className="h-5 w-5 text-blue-500" />
-                                                    <div>
-                                                        <div className="font-medium">{floor.name}</div>
-                                                        <div className="text-sm text-muted-foreground">
-                                                            樓層 {floor.level} | {floor.dimensions?.realWidth}m × {floor.dimensions?.realHeight}m
+                                            return (
+                                                <div key={floor.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                                    <div className="flex items-center gap-3">
+                                                        <Layers3 className="h-5 w-5 text-blue-500" />
+                                                        <div>
+                                                            <div className="font-medium">{floor.name}</div>
+                                                            <div className="text-sm text-muted-foreground">
+                                                                樓層 {floor.level} | {floor.dimensions?.realWidth}m × {floor.dimensions?.realHeight}m
+                                                            </div>
                                                         </div>
                                                     </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className={
+                                                                floor.calibration?.isCalibrated ? "bg-green-100 text-green-700 border-green-200" :
+                                                                    floor.mapImage ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-gray-100 text-gray-600"
+                                                            }
+                                                        >
+                                                            {
+                                                                floor.calibration?.isCalibrated ? "地圖已標定" :
+                                                                    floor.mapImage ? "地圖已上傳" : "無地圖"
+                                                            }
+                                                        </Badge>
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className={onlineCount > 0 ? "bg-green-100 text-green-700 border-green-200" : ""}
+                                                        >
+                                                            {onlineCount}/{floorGateways.length} 閘道器在線
+                                                        </Badge>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className={onlineCount > 0 ? "bg-green-100 text-green-700 border-green-200" : ""}
-                                                    >
-                                                        {onlineCount}/{floorGateways.length} 閘道器在線
-                                                    </Badge>
-                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* 地圖標定進度統計 */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center">
+                                        <Map className="mr-2 h-5 w-5 text-cyan-500" />
+                                        地圖標定進度
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="text-center p-4 bg-green-50 rounded-lg">
+                                            <div className="text-2xl font-bold text-green-600">
+                                                {currentFloors.filter(f => f.calibration?.isCalibrated).length}
                                             </div>
-                                        )
-                                    })}
-                                </div>
-                            </CardContent>
-                        </Card>
+                                            <div className="text-sm text-green-700">已完成標定</div>
+                                        </div>
+                                        <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                                            <div className="text-2xl font-bold text-yellow-600">
+                                                {currentFloors.filter(f => f.mapImage && !f.calibration?.isCalibrated).length}
+                                            </div>
+                                            <div className="text-sm text-yellow-700">待標定</div>
+                                        </div>
+                                        <div className="text-center p-4 bg-gray-50 rounded-lg">
+                                            <div className="text-2xl font-bold text-gray-600">
+                                                {currentFloors.filter(f => !f.mapImage).length}
+                                            </div>
+                                            <div className="text-sm text-gray-700">未上傳地圖</div>
+                                        </div>
+                                    </div>
+
+                                    {/* 標定進度條 */}
+                                    <div className="mt-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-medium">整體進度</span>
+                                            <span className="text-sm text-muted-foreground">
+                                                {currentFloors.length > 0
+                                                    ? Math.round((currentFloors.filter(f => f.calibration?.isCalibrated).length / currentFloors.length) * 100)
+                                                    : 0}%
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div
+                                                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                                                style={{
+                                                    width: `${currentFloors.length > 0
+                                                        ? (currentFloors.filter(f => f.calibration?.isCalibrated).length / currentFloors.length) * 100
+                                                        : 0}%`
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </>
                     )}
                 </TabsContent>
 
@@ -842,6 +1037,14 @@ export default function UWBLocationPage() {
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
+                                                        onClick={() => startMapCalibration(floor)}
+                                                        title="地圖標定"
+                                                    >
+                                                        <Map className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
                                                         onClick={() => {
                                                             setEditingItem(floor)
                                                             setFloorForm({
@@ -880,6 +1083,21 @@ export default function UWBLocationPage() {
                                                     </div>
                                                 )}
                                                 <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-muted-foreground">地圖狀態</span>
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className={
+                                                            floor.calibration?.isCalibrated ? "bg-green-100 text-green-700 border-green-200" :
+                                                                floor.mapImage ? "bg-yellow-100 text-yellow-700 border-yellow-200" : ""
+                                                        }
+                                                    >
+                                                        {
+                                                            floor.calibration?.isCalibrated ? "已標定" :
+                                                                floor.mapImage ? "已上傳" : "未上傳"
+                                                        }
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center justify-between">
                                                     <span className="text-sm text-muted-foreground">閘道器數量</span>
                                                     <Badge variant="outline">{floorGateways.length}</Badge>
                                                 </div>
@@ -892,6 +1110,38 @@ export default function UWBLocationPage() {
                                                         {floorGateways.filter(g => g.status === 'online').length}/{floorGateways.length}
                                                     </Badge>
                                                 </div>
+
+                                                {/* 顯示地圖預覽 */}
+                                                {floor.mapImage && (
+                                                    <div className="mt-3 pt-3 border-t">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-sm font-medium">地圖預覽</span>
+                                                            {floor.calibration?.isCalibrated && (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    比例: {floor.calibration.pixelToMeterRatio}px/m
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        <div className="relative">
+                                                            <img
+                                                                src={floor.mapImage}
+                                                                alt={`${floor.name} 地圖`}
+                                                                className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80"
+                                                                onClick={() => startMapCalibration(floor)}
+                                                            />
+                                                            {floor.calibration?.originPixel && (
+                                                                <div
+                                                                    className="absolute w-2 h-2 bg-red-500 rounded-full border border-white transform -translate-x-1 -translate-y-1"
+                                                                    style={{
+                                                                        left: `${(floor.calibration.originPixel.x / 400) * 100}%`,
+                                                                        top: `${(floor.calibration.originPixel.y / 300) * 100}%`
+                                                                    }}
+                                                                    title="座標原點"
+                                                                />
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </CardContent>
                                     </Card>
@@ -957,6 +1207,291 @@ export default function UWBLocationPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                    )}
+
+                    {/* 地圖標定模態框 */}
+                    {showMapCalibration && calibratingFloor && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                            <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto m-4">
+                                <div className="p-6">
+                                    <div className="flex items-center justify-between mb-6">
+                                        <h2 className="text-2xl font-bold flex items-center">
+                                            <Map className="mr-3 h-6 w-6" />
+                                            {calibratingFloor.name} - 地圖標定
+                                        </h2>
+                                        <Button variant="outline" onClick={resetMapCalibration}>
+                                            <Trash2 className="h-4 w-4 mr-1" />
+                                            關閉
+                                        </Button>
+                                    </div>
+
+                                    {/* 步驟指示器 */}
+                                    <div className="flex items-center mb-6">
+                                        <div className={`flex items-center ${calibrationStep === 'upload' ? 'text-blue-600' : 'text-green-600'}`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'upload' ? 'border-blue-600 bg-blue-50' : 'border-green-600 bg-green-50'
+                                                }`}>
+                                                {calibrationStep === 'upload' ? '1' : <CheckCircle2 className="h-5 w-5" />}
+                                            </div>
+                                            <span className="ml-2">上傳地圖</span>
+                                        </div>
+                                        <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
+                                        <div className={`flex items-center ${calibrationStep === 'setOrigin' ? 'text-blue-600' :
+                                            ['setRatio', 'complete'].includes(calibrationStep) ? 'text-green-600' : 'text-gray-400'
+                                            }`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'setOrigin' ? 'border-blue-600 bg-blue-50' :
+                                                ['setRatio', 'complete'].includes(calibrationStep) ? 'border-green-600 bg-green-50' : 'border-gray-300'
+                                                }`}>
+                                                {calibrationStep === 'setOrigin' ? '2' :
+                                                    ['setRatio', 'complete'].includes(calibrationStep) ? <CheckCircle2 className="h-5 w-5" /> : '2'}
+                                            </div>
+                                            <span className="ml-2">設定原點</span>
+                                        </div>
+                                        <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
+                                        <div className={`flex items-center ${calibrationStep === 'setRatio' ? 'text-blue-600' :
+                                            calibrationStep === 'complete' ? 'text-green-600' : 'text-gray-400'
+                                            }`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'setRatio' ? 'border-blue-600 bg-blue-50' :
+                                                calibrationStep === 'complete' ? 'border-green-600 bg-green-50' : 'border-gray-300'
+                                                }`}>
+                                                {calibrationStep === 'setRatio' ? '3' :
+                                                    calibrationStep === 'complete' ? <CheckCircle2 className="h-5 w-5" /> : '3'}
+                                            </div>
+                                            <span className="ml-2">設定比例</span>
+                                        </div>
+                                    </div>
+
+                                    {/* 步驟1: 上傳地圖 */}
+                                    {calibrationStep === 'upload' && (
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle className="flex items-center">
+                                                    <Upload className="mr-2 h-5 w-5" />
+                                                    上傳樓層地圖
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="space-y-4">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        請上傳 {calibratingFloor.name} 的室內地圖。支援 PNG、JPG、SVG 格式。
+                                                    </p>
+                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                                        <Image className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={handleImageUpload}
+                                                            className="hidden"
+                                                            id="map-upload"
+                                                        />
+                                                        <label
+                                                            htmlFor="map-upload"
+                                                            className="cursor-pointer inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                        >
+                                                            <Upload className="h-4 w-4 mr-2" />
+                                                            選擇地圖文件
+                                                        </label>
+                                                        <p className="text-sm text-muted-foreground mt-2">
+                                                            或拖拽圖片到此區域
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* 步驟2: 設定原點 */}
+                                    {calibrationStep === 'setOrigin' && uploadedImage && (
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle className="flex items-center">
+                                                    <Target className="mr-2 h-5 w-5" />
+                                                    設定座標原點
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="space-y-4">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        請點擊地圖上的任意位置設定為座標原點 (0,0)。通常建議選擇房間或走廊的角落作為參考點。
+                                                    </p>
+                                                    <div className="relative border rounded-lg overflow-hidden">
+                                                        <img
+                                                            src={uploadedImage}
+                                                            alt="樓層地圖"
+                                                            className="w-full max-h-96 object-contain cursor-crosshair"
+                                                            onClick={handleMapClick}
+                                                        />
+                                                        {selectedOrigin && (
+                                                            <div
+                                                                className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
+                                                                style={{
+                                                                    left: selectedOrigin.x,
+                                                                    top: selectedOrigin.y
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    {selectedOrigin && (
+                                                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                                            <div className="flex items-center">
+                                                                <Crosshair className="h-5 w-5 text-green-600 mr-2" />
+                                                                <span className="text-sm font-medium">
+                                                                    原點已設定: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})
+                                                                </span>
+                                                            </div>
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => setCalibrationStep('setRatio')}
+                                                            >
+                                                                下一步
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* 步驟3: 設定比例 */}
+                                    {calibrationStep === 'setRatio' && (
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle className="flex items-center">
+                                                    <Ruler className="mr-2 h-5 w-5" />
+                                                    設定座標比例
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="space-y-4">
+                                                    <p className="text-sm text-muted-foreground">
+                                                        請輸入像素與實際距離的轉換比例。例如：如果地圖上 100 像素代表實際的 1 公尺，則輸入 100；如果 1 像素代表 2 公尺，則輸入 0.5。
+                                                    </p>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="text-sm font-medium mb-2 block">
+                                                                比例設定 (像素/公尺)
+                                                            </label>
+                                                            <Input
+                                                                type="number"
+                                                                value={pixelToMeterRatio}
+                                                                onChange={(e) => {
+                                                                    const inputValue = e.target.value
+                                                                    const value = parseFloat(inputValue)
+
+                                                                    // 允許空值或正在輸入的中間狀態
+                                                                    if (inputValue === '' || inputValue === '0' || inputValue === '0.') {
+                                                                        setPixelToMeterRatio(parseFloat(inputValue) || 0)
+                                                                    } else if (!isNaN(value) && value > 0) {
+                                                                        setPixelToMeterRatio(value)
+                                                                    }
+                                                                }}
+                                                                onBlur={(e) => {
+                                                                    const value = parseFloat(e.target.value)
+                                                                    // 輸入完成時進行最終驗證
+                                                                    if (isNaN(value) || value < 0.01) {
+                                                                        setPixelToMeterRatio(100) // 回到預設值
+                                                                    }
+                                                                }}
+                                                                placeholder="100"
+                                                                min="0.01"
+                                                                step="0.01"
+                                                            />
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                {pixelToMeterRatio} 像素 = 1 公尺
+                                                            </p>
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-sm font-medium mb-2 block">
+                                                                預覽計算
+                                                            </label>
+                                                            <div className="p-3 bg-gray-50 rounded border text-sm">
+                                                                {pixelToMeterRatio > 0 ? (
+                                                                    <>
+                                                                        <div>100px = {(100 / pixelToMeterRatio).toFixed(2)}m</div>
+                                                                        <div>200px = {(200 / pixelToMeterRatio).toFixed(2)}m</div>
+                                                                        <div>500px = {(500 / pixelToMeterRatio).toFixed(2)}m</div>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="text-gray-400">請輸入有效的比例值</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => setCalibrationStep('setOrigin')}
+                                                        >
+                                                            <RotateCcw className="h-4 w-4 mr-2" />
+                                                            上一步
+                                                        </Button>
+                                                        <Button
+                                                            onClick={saveMapCalibration}
+                                                            disabled={!pixelToMeterRatio || pixelToMeterRatio < 0.01}
+                                                        >
+                                                            <Save className="h-4 w-4 mr-2" />
+                                                            保存標定
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+
+                                    {/* 步驟4: 完成 */}
+                                    {calibrationStep === 'complete' && (
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle className="flex items-center text-green-600">
+                                                    <CheckCircle2 className="mr-2 h-5 w-5" />
+                                                    標定完成
+                                                </CardTitle>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="space-y-4">
+                                                    <div className="p-4 bg-green-50 rounded-lg">
+                                                        <h3 className="font-medium text-green-800 mb-2">標定資訊</h3>
+                                                        <div className="space-y-1 text-sm text-green-700">
+                                                            <div>樓層: {calibratingFloor.name}</div>
+                                                            {selectedOrigin && (
+                                                                <div>原點位置: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)}) 像素</div>
+                                                            )}
+                                                            <div>比例: {pixelToMeterRatio} 像素/公尺</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="relative border rounded-lg overflow-hidden">
+                                                        <img
+                                                            src={uploadedImage}
+                                                            alt="已標定地圖"
+                                                            className="w-full max-h-64 object-contain"
+                                                        />
+                                                        {selectedOrigin && (
+                                                            <div
+                                                                className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2"
+                                                                style={{
+                                                                    left: selectedOrigin.x,
+                                                                    top: selectedOrigin.y
+                                                                }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <Button variant="outline" onClick={resetMapCalibration}>
+                                                            完成
+                                                        </Button>
+                                                        <Button
+                                                            variant="outline"
+                                                            onClick={() => setCalibrationStep('setOrigin')}
+                                                        >
+                                                            重新標定
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     )}
                 </TabsContent>
 
