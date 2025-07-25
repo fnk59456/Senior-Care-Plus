@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
+// @ts-ignore
+import mqtt from "mqtt"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,8 +37,18 @@ import {
     Save,
     RotateCcw,
     Image,
-    Ruler
+    Ruler,
+    Loader2 as CloudIcon,
+    RefreshCw as RefreshIcon
 } from "lucide-react"
+
+// 雲端 MQTT 設置
+const CLOUD_MQTT_URL = "wss://067ec32ef1344d3bb20c4e53abdde99a.s1.eu.hivemq.cloud:8884/mqtt"
+const CLOUD_MQTT_TOPIC = "UWB/UWB_Gateway"
+const CLOUD_MQTT_OPTIONS = {
+    username: 'testweb1',
+    password: 'Aa000000'
+}
 
 // 數據類型定義
 interface Home {
@@ -111,6 +123,65 @@ interface TagDevice {
         timestamp: Date
     }
     createdAt: Date
+}
+
+// 雲端 Gateway 數據類型
+type CloudGatewayData = {
+    content: string
+    gateway_id: number
+    name: string
+    fw_ver: string
+    fw_serial: number
+    uwb_hw_com_ok: string
+    uwb_joined: string
+    uwb_network_id: number
+    connected_ap: string
+    wifi_tx_power: number
+    set_wifi_max_tx_power: number
+    ble_scan_time: number
+    ble_scan_pause_time: number
+    battery_voltage: number
+    five_v_plugged: string
+    uwb_tx_power_changed: string
+    uwb_tx_power: {
+        boost_norm: number
+        boost_500: number
+        boost_250: number
+        boost_125: number
+    }
+    pub_topic: {
+        anchor_config: string
+        tag_config: string
+        location: string
+        message: string
+        ack_from_node: string
+        health: string
+    }
+    sub_topic: {
+        downlink: string
+    }
+    discard_iot_data_time: number
+    discarded_iot_data: number
+    total_discarded_data: number
+    first_sync: string
+    last_sync: string
+    current: string
+    receivedAt: Date
+}
+
+// 發現的 Gateway 類型
+type DiscoveredGateway = {
+    gateway_id: number
+    name: string
+    fw_ver: string
+    uwb_joined: string
+    uwb_network_id: number
+    connected_ap: string
+    battery_voltage: number
+    five_v_plugged: string
+    lastSeen: Date
+    recordCount: number
+    isOnline: boolean
 }
 
 // 模擬數據
@@ -315,6 +386,16 @@ export default function UWBLocationPage() {
     const [selectedHome, setSelectedHome] = useState<string>(MOCK_HOMES[0]?.id || "")
     const [activeTab, setActiveTab] = useState("overview")
 
+    // 雲端 MQTT 相關狀態
+    const [cloudConnected, setCloudConnected] = useState(false)
+    const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
+    const [cloudError, setCloudError] = useState<string>("")
+    const [cloudReconnectAttempts, setCloudReconnectAttempts] = useState(0)
+    const [cloudGatewayData, setCloudGatewayData] = useState<CloudGatewayData[]>([])
+    const [discoveredGateways, setDiscoveredGateways] = useState<DiscoveredGateway[]>([])
+    const [selectedDiscoveredGateway, setSelectedDiscoveredGateway] = useState<number | null>(null)
+    const cloudClientRef = useRef<mqtt.MqttClient | null>(null)
+
     // Anchor配對相關狀態
     const [pairingInProgress, setPairingInProgress] = useState(false)
     const [selectedGateway, setSelectedGateway] = useState<string>("")
@@ -369,6 +450,197 @@ export default function UWBLocationPage() {
 
     // 獲取在線的Gateway列表（用於Anchor配對）
     const onlineGateways = currentGateways.filter(gw => gw.status === 'online')
+
+    // 雲端 MQTT 連接
+    useEffect(() => {
+        setCloudConnectionStatus("連接中...")
+        setCloudError("")
+
+        const cloudClient = mqtt.connect(CLOUD_MQTT_URL, {
+            ...CLOUD_MQTT_OPTIONS,
+            reconnectPeriod: 5000,
+            connectTimeout: 15000,
+            keepalive: 60,
+            clean: true,
+            clientId: `uwb-web-client-${Math.random().toString(16).slice(2, 8)}`
+        })
+        cloudClientRef.current = cloudClient
+
+        cloudClient.on("connect", () => {
+            console.log("雲端 MQTT 已連接，Client ID:", cloudClient.options.clientId)
+            setCloudConnected(true)
+            setCloudConnectionStatus("已連線")
+            setCloudError("")
+            setCloudReconnectAttempts(0)
+        })
+
+        cloudClient.on("reconnect", () => {
+            console.log("雲端 MQTT 重新連接中...")
+            setCloudConnected(false)
+            setCloudReconnectAttempts(prev => prev + 1)
+            setCloudConnectionStatus(`重新連接中... (第${cloudReconnectAttempts + 1}次嘗試)`)
+        })
+
+        cloudClient.on("close", () => {
+            console.log("雲端 MQTT 連接關閉")
+            setCloudConnected(false)
+            setCloudConnectionStatus("連接已關閉")
+        })
+
+        cloudClient.on("error", (error) => {
+            console.error("雲端 MQTT 連接錯誤:", error)
+            setCloudConnected(false)
+            setCloudError(error.message || "連接錯誤")
+            setCloudConnectionStatus("連接錯誤")
+        })
+
+        cloudClient.on("offline", () => {
+            console.log("雲端 MQTT 離線")
+            setCloudConnected(false)
+            setCloudConnectionStatus("離線")
+        })
+
+        cloudClient.subscribe(CLOUD_MQTT_TOPIC, (err) => {
+            if (err) {
+                console.error("雲端 MQTT 訂閱失敗:", err)
+            } else {
+                console.log("已訂閱雲端主題:", CLOUD_MQTT_TOPIC)
+            }
+        })
+
+        cloudClient.on("message", (topic: string, payload: Uint8Array) => {
+            if (topic !== CLOUD_MQTT_TOPIC) return
+            try {
+                const rawMessage = new TextDecoder().decode(payload)
+                const msg = JSON.parse(rawMessage)
+                console.log("收到雲端 Gateway MQTT 消息:", msg)
+
+                // 處理 Gateway Topic 數據
+                if (msg.content === "gateway topic") {
+                    console.log("處理 Gateway Topic 數據...")
+
+                    const gatewayData: CloudGatewayData = {
+                        content: msg.content,
+                        gateway_id: msg["gateway id"] || 0,
+                        name: msg.name || "",
+                        fw_ver: msg["fw ver"] || "",
+                        fw_serial: msg["fw serial"] || 0,
+                        uwb_hw_com_ok: msg["UWB HW Com OK"] || "",
+                        uwb_joined: msg["UWB Joined"] || "",
+                        uwb_network_id: msg["UWB Network ID"] || 0,
+                        connected_ap: msg["connected AP"] || "",
+                        wifi_tx_power: msg["Wifi tx power(dBm)"] || 0,
+                        set_wifi_max_tx_power: msg["set Wifi max tx power(dBm)"] || 0,
+                        ble_scan_time: msg["ble scan time"] || 0,
+                        ble_scan_pause_time: msg["ble scan pause time"] || 0,
+                        battery_voltage: msg["battery voltage"] || 0,
+                        five_v_plugged: msg["5V plugged"] || "",
+                        uwb_tx_power_changed: msg["uwb tx power changed"] || "",
+                        uwb_tx_power: {
+                            boost_norm: msg["uwb tx power"]?.["boost norm(5.0~30.5dB)"] || 0,
+                            boost_500: msg["uwb tx power"]?.["boost 500(5.0~30.5dB)"] || 0,
+                            boost_250: msg["uwb tx power"]?.["boost 250(5.0~30.5dB)"] || 0,
+                            boost_125: msg["uwb tx power"]?.["boost 125(5.0~30.5dB)"] || 0
+                        },
+                        pub_topic: {
+                            anchor_config: msg["pub topic"]?.["anchor config"] || "",
+                            tag_config: msg["pub topic"]?.["tag config"] || "",
+                            location: msg["pub topic"]?.["location"] || "",
+                            message: msg["pub topic"]?.["message"] || "",
+                            ack_from_node: msg["pub topic"]?.["ack from node"] || "",
+                            health: msg["pub topic"]?.["health"] || ""
+                        },
+                        sub_topic: {
+                            downlink: msg["sub topic"]?.["downlink"] || ""
+                        },
+                        discard_iot_data_time: msg["discard IOT data time(0.1s)"] || 0,
+                        discarded_iot_data: msg["discarded IOT data"] || 0,
+                        total_discarded_data: msg["total discarded data"] || 0,
+                        first_sync: msg["1st sync"] || "",
+                        last_sync: msg["last sync"] || "",
+                        current: msg.current || "",
+                        receivedAt: new Date()
+                    }
+
+                    console.log("解析的 Gateway 數據:", gatewayData)
+
+                    // 更新原始數據列表
+                    setCloudGatewayData(prev => {
+                        const newData = [gatewayData, ...prev].slice(0, 50)
+                        return newData
+                    })
+
+                    // 檢查並更新發現的 Gateway 列表
+                    if (gatewayData.gateway_id && gatewayData.name) {
+                        setDiscoveredGateways(prev => {
+                            const existingGateway = prev.find(g => g.gateway_id === gatewayData.gateway_id)
+
+                            if (existingGateway) {
+                                // 更新現有 Gateway
+                                const updatedGateways = prev.map(g =>
+                                    g.gateway_id === gatewayData.gateway_id
+                                        ? {
+                                            ...g,
+                                            name: gatewayData.name,
+                                            fw_ver: gatewayData.fw_ver,
+                                            uwb_joined: gatewayData.uwb_joined,
+                                            uwb_network_id: gatewayData.uwb_network_id,
+                                            connected_ap: gatewayData.connected_ap,
+                                            battery_voltage: gatewayData.battery_voltage,
+                                            five_v_plugged: gatewayData.five_v_plugged,
+                                            lastSeen: new Date(),
+                                            recordCount: g.recordCount + 1,
+                                            isOnline: gatewayData.uwb_joined === "yes" && gatewayData.five_v_plugged === "yes"
+                                        }
+                                        : g
+                                )
+                                console.log("更新現有 Gateway，總數:", updatedGateways.length)
+                                return updatedGateways
+                            } else {
+                                // 添加新 Gateway
+                                const newGateway: DiscoveredGateway = {
+                                    gateway_id: gatewayData.gateway_id,
+                                    name: gatewayData.name,
+                                    fw_ver: gatewayData.fw_ver,
+                                    uwb_joined: gatewayData.uwb_joined,
+                                    uwb_network_id: gatewayData.uwb_network_id,
+                                    connected_ap: gatewayData.connected_ap,
+                                    battery_voltage: gatewayData.battery_voltage,
+                                    five_v_plugged: gatewayData.five_v_plugged,
+                                    lastSeen: new Date(),
+                                    recordCount: 1,
+                                    isOnline: gatewayData.uwb_joined === "yes" && gatewayData.five_v_plugged === "yes"
+                                }
+                                const updatedGateways = [...prev, newGateway]
+                                console.log("添加新 Gateway:", newGateway)
+                                console.log("更新後總 Gateway 數:", updatedGateways.length)
+                                return updatedGateways
+                            }
+                        })
+
+                        // 如果還沒有選擇 Gateway，自動選擇第一個
+                        setSelectedDiscoveredGateway(prev => {
+                            if (prev === null) {
+                                console.log("自動選擇 Gateway:", gatewayData.gateway_id)
+                                return gatewayData.gateway_id
+                            }
+                            return prev
+                        })
+                    }
+                } else {
+                    console.log("⚠️ 非 Gateway Topic 數據，內容:", msg.content)
+                }
+
+            } catch (error) {
+                console.error('雲端 Gateway MQTT 訊息解析錯誤:', error)
+            }
+        })
+
+        return () => {
+            console.log("清理雲端 Gateway MQTT 連接")
+            cloudClient.end()
+        }
+    }, [])
 
     // 處理表單提交
     const handleHomeSubmit = () => {
@@ -464,6 +736,7 @@ export default function UWBLocationPage() {
         setGatewayForm({ name: "", macAddress: "", ipAddress: "", floorId: "" })
         setShowGatewayForm(false)
         setEditingItem(null)
+        setSelectedDiscoveredGateway(null)
     }
 
     // 刪除功能
@@ -1499,11 +1772,199 @@ export default function UWBLocationPage() {
                 <TabsContent value="gateways" className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-semibold">閘道器管理</h2>
-                        <Button onClick={() => setShowGatewayForm(true)} disabled={currentFloors.length === 0}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            新增閘道器
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button onClick={() => setShowGatewayForm(true)} disabled={currentFloors.length === 0}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                手動新增
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    if (cloudClientRef.current) {
+                                        console.log("手動重連雲端MQTT...")
+                                        setCloudConnectionStatus("手動重連中...")
+                                        cloudClientRef.current.reconnect()
+                                    }
+                                }}
+                                disabled={cloudConnected}
+                            >
+                                <RefreshIcon className="h-4 w-4 mr-2" />
+                                重連雲端
+                            </Button>
+                        </div>
                     </div>
+
+                    {/* 雲端 MQTT 連線狀態 */}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg flex items-center">
+                                    <CloudIcon className="mr-3 h-5 w-5 text-blue-500" />
+                                    雲端閘道器發現
+                                </CardTitle>
+                                <div className="text-sm">
+                                    {cloudConnected ? (
+                                        <span className="text-green-600 flex items-center">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                            連線正常
+                                        </span>
+                                    ) : (
+                                        <span className="text-red-500 flex items-center">
+                                            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                                            {cloudConnectionStatus}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
+                                    <div className="font-semibold">雲端 MQTT 狀態</div>
+                                    <div className="flex items-center justify-between">
+                                        <span>伺服器 ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
+                                        <span className={cloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
+                                            {cloudConnectionStatus}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span>主題 ({CLOUD_MQTT_TOPIC}):</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            等待 content: "gateway topic"
+                                        </span>
+                                    </div>
+                                    {cloudError && (
+                                        <div className="text-xs text-red-500">
+                                            錯誤: {cloudError}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                    <div className="bg-blue-50 p-3 rounded-lg">
+                                        <div className="font-medium text-blue-800">發現的閘道器</div>
+                                        <div className="text-2xl font-bold text-blue-600">{discoveredGateways.length}</div>
+                                    </div>
+                                    <div className="bg-green-50 p-3 rounded-lg">
+                                        <div className="font-medium text-green-800">在線閘道器</div>
+                                        <div className="text-2xl font-bold text-green-600">
+                                            {discoveredGateways.filter(g => g.isOnline).length}
+                                        </div>
+                                    </div>
+                                    <div className="bg-purple-50 p-3 rounded-lg">
+                                        <div className="font-medium text-purple-800">MQTT消息</div>
+                                        <div className="text-2xl font-bold text-purple-600">{cloudGatewayData.length}</div>
+                                    </div>
+                                </div>
+
+                                {/* 發現的閘道器列表 */}
+                                {discoveredGateways.length > 0 ? (
+                                    <div className="space-y-3">
+                                        <div className="font-medium">發現的雲端閘道器：</div>
+                                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                                            {discoveredGateways.map(gateway => (
+                                                <div key={gateway.gateway_id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`p-2 rounded-full ${gateway.isOnline
+                                                            ? 'bg-green-100 text-green-600'
+                                                            : 'bg-gray-100 text-gray-600'
+                                                            }`}>
+                                                            <Wifi className="h-4 w-4" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-medium flex items-center gap-2">
+                                                                {gateway.name}
+                                                                <Badge
+                                                                    variant="secondary"
+                                                                    className={gateway.isOnline
+                                                                        ? "bg-green-100 text-green-700 border-green-200"
+                                                                        : "bg-gray-100 text-gray-700 border-gray-200"
+                                                                    }
+                                                                >
+                                                                    {gateway.isOnline ? '在線' : '離線'}
+                                                                </Badge>
+                                                            </div>
+                                                            <div className="text-sm text-muted-foreground">
+                                                                ID: {gateway.gateway_id} | 韌體: {gateway.fw_ver} | 網路: {gateway.uwb_network_id}
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground">
+                                                                AP: {gateway.connected_ap} | 電壓: {gateway.battery_voltage}V |
+                                                                最後更新: {gateway.lastSeen.toLocaleTimeString('zh-TW')}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                setSelectedDiscoveredGateway(gateway.gateway_id)
+                                                                // 填入閘道器表單
+                                                                setGatewayForm({
+                                                                    name: gateway.name,
+                                                                    macAddress: `GW:${gateway.gateway_id.toString(16).toUpperCase()}`,
+                                                                    ipAddress: "192.168.1.100", // 預設IP
+                                                                    floorId: currentFloors[0]?.id || ""
+                                                                })
+                                                                setShowGatewayForm(true)
+                                                            }}
+                                                            disabled={currentFloors.length === 0}
+                                                        >
+                                                            <Plus className="h-4 w-4 mr-1" />
+                                                            加入系統
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-muted-foreground">
+                                        <AlertCircle className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                                        <p className="font-medium">尚未發現任何雲端閘道器</p>
+                                        <div className="text-xs space-y-1 mt-2">
+                                            <p>請確認：</p>
+                                            <p>1. 雲端 MQTT 模擬器已啟動</p>
+                                            <p>2. 模擬器發送 content: "gateway topic" 格式的數據</p>
+                                            <p>3. 數據包含 "gateway id" 和 name 字段</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 原始數據檢視器 - 用於調試 */}
+                                <div className="mt-6">
+                                    <details className="group">
+                                        <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
+                                            🔍 查看原始 Gateway MQTT 數據 (調試用)
+                                        </summary>
+                                        <div className="mt-2 space-y-2 text-xs">
+                                            <div className="text-muted-foreground">
+                                                點擊下方數據可展開查看完整內容
+                                            </div>
+                                            <div className="max-h-60 overflow-y-auto space-y-2">
+                                                {cloudGatewayData.slice(0, 5).map((data, index) => (
+                                                    <details key={index} className="border rounded p-2 bg-slate-50">
+                                                        <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
+                                                            [{index + 1}] {data.content} - Gateway ID: {data.gateway_id} - {data.receivedAt.toLocaleString('zh-TW')}
+                                                        </summary>
+                                                        <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
+                                                            {JSON.stringify(data, null, 2)}
+                                                        </pre>
+                                                    </details>
+                                                ))}
+                                            </div>
+                                            <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                                                <div className="font-semibold mb-1">閘道器發現條件：</div>
+                                                <div>• 必須有 content: "gateway topic"</div>
+                                                <div>• 必須有 "gateway id" 和 name 字段</div>
+                                                <div>• UWB Joined: "yes" 且 5V plugged: "yes" 視為在線</div>
+                                            </div>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     {currentFloors.length === 0 ? (
                         <Card>
@@ -1597,7 +2058,24 @@ export default function UWBLocationPage() {
                     {showGatewayForm && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>{editingItem ? "編輯閘道器" : "新增閘道器"}</CardTitle>
+                                <CardTitle className="flex items-center">
+                                    {selectedDiscoveredGateway ? (
+                                        <>
+                                            <CloudIcon className="mr-2 h-5 w-5 text-blue-500" />
+                                            {editingItem ? "編輯閘道器" : "加入雲端閘道器到系統"}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Plus className="mr-2 h-5 w-5" />
+                                            {editingItem ? "編輯閘道器" : "手動新增閘道器"}
+                                        </>
+                                    )}
+                                </CardTitle>
+                                {selectedDiscoveredGateway && (
+                                    <div className="text-sm text-muted-foreground mt-2">
+                                        從雲端發現的閘道器 (ID: {selectedDiscoveredGateway}) 加入到選定的樓層
+                                    </div>
+                                )}
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
