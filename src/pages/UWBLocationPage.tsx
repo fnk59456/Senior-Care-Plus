@@ -73,7 +73,13 @@ interface Floor {
     }
     calibration?: {
         originPixel: { x: number, y: number } // 原點的pixel坐標
+        originCoordinates?: { x: number, y: number } // 原點的實際坐標
         pixelToMeterRatio: number // pixel/米比例
+        scalePoints?: { // 比例標定的兩個點
+            point1: { x: number, y: number } | null
+            point2: { x: number, y: number } | null
+        }
+        realDistance?: number // 兩點之間的實際距離(米)
         isCalibrated: boolean // 是否已校準
     }
     createdAt: Date
@@ -409,8 +415,11 @@ export default function UWBLocationPage() {
     const [showMapCalibration, setShowMapCalibration] = useState(false)
     const [calibratingFloor, setCalibratingFloor] = useState<Floor | null>(null)
     const [uploadedImage, setUploadedImage] = useState<string>("")
-    const [calibrationStep, setCalibrationStep] = useState<'upload' | 'setOrigin' | 'setRatio' | 'complete'>('upload')
+    const [calibrationStep, setCalibrationStep] = useState<'upload' | 'setOrigin' | 'setScale' | 'complete'>('upload')
     const [selectedOrigin, setSelectedOrigin] = useState<{ x: number, y: number } | null>(null)
+    const [originCoordinates, setOriginCoordinates] = useState<{ x: number, y: number }>({ x: 0, y: 0 })
+    const [scalePoints, setScalePoints] = useState<{ point1: { x: number, y: number } | null, point2: { x: number, y: number } | null }>({ point1: null, point2: null })
+    const [realDistance, setRealDistance] = useState<number>(1)
     const [pixelToMeterRatio, setPixelToMeterRatio] = useState<number>(100)
 
     // 表單狀態
@@ -854,6 +863,9 @@ export default function UWBLocationPage() {
         setCalibrationStep('upload')
         setUploadedImage(floor.mapImage || "")
         setSelectedOrigin(floor.calibration?.originPixel || null)
+        setOriginCoordinates(floor.calibration?.originCoordinates || { x: 0, y: 0 })
+        setScalePoints(floor.calibration?.scalePoints || { point1: null, point2: null })
+        setRealDistance(floor.calibration?.realDistance || 1)
         setPixelToMeterRatio(floor.calibration?.pixelToMeterRatio || 100)
 
         if (floor.mapImage) {
@@ -861,31 +873,49 @@ export default function UWBLocationPage() {
         }
     }
 
-    // 地圖點擊設定原點
+    // 地圖點擊處理
     const handleMapClick = (event: React.MouseEvent<HTMLImageElement>) => {
-        if (calibrationStep !== 'setOrigin') return
-
         const rect = event.currentTarget.getBoundingClientRect()
         const x = event.clientX - rect.left
         const y = event.clientY - rect.top
 
-        setSelectedOrigin({ x, y })
-        setCalibrationStep('setRatio')
+        if (calibrationStep === 'setOrigin') {
+            setSelectedOrigin({ x, y })
+            // 不自動跳轉，等用戶輸入座標後手動進入下一步
+        } else if (calibrationStep === 'setScale') {
+            if (!scalePoints.point1) {
+                setScalePoints(prev => ({ ...prev, point1: { x, y } }))
+            } else if (!scalePoints.point2) {
+                setScalePoints(prev => ({ ...prev, point2: { x, y } }))
+            } else {
+                // 重新選擇第一個點
+                setScalePoints({ point1: { x, y }, point2: null })
+            }
+        }
     }
 
     // 保存地圖標定
     const saveMapCalibration = () => {
-        if (!calibratingFloor || !selectedOrigin || !uploadedImage) return
+        if (!calibratingFloor || !selectedOrigin || !uploadedImage || !scalePoints.point1 || !scalePoints.point2) return
 
-        // 確保比例值有效
-        const validRatio = pixelToMeterRatio >= 0.01 ? pixelToMeterRatio : 100
+        // 計算兩點之間的像素距離
+        const pixelDistance = Math.sqrt(
+            Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
+            Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
+        )
+
+        // 計算像素/公尺比例
+        const calculatedRatio = pixelDistance / realDistance
 
         const updatedFloor: Floor = {
             ...calibratingFloor,
             mapImage: uploadedImage,
             calibration: {
                 originPixel: selectedOrigin,
-                pixelToMeterRatio: validRatio,
+                originCoordinates: originCoordinates,
+                pixelToMeterRatio: calculatedRatio,
+                scalePoints: scalePoints,
+                realDistance: realDistance,
                 isCalibrated: true
             }
         }
@@ -895,9 +925,7 @@ export default function UWBLocationPage() {
         ))
 
         // 同步更新狀態中的比例值
-        if (validRatio !== pixelToMeterRatio) {
-            setPixelToMeterRatio(validRatio)
-        }
+        setPixelToMeterRatio(calculatedRatio)
 
         setCalibrationStep('complete')
     }
@@ -909,6 +937,9 @@ export default function UWBLocationPage() {
         setUploadedImage("")
         setCalibrationStep('upload')
         setSelectedOrigin(null)
+        setOriginCoordinates({ x: 0, y: 0 })
+        setScalePoints({ point1: null, point2: null })
+        setRealDistance(1)
         setPixelToMeterRatio(100)
     }
 
@@ -1509,24 +1540,24 @@ export default function UWBLocationPage() {
                                         </div>
                                         <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
                                         <div className={`flex items-center ${calibrationStep === 'setOrigin' ? 'text-blue-600' :
-                                            ['setRatio', 'complete'].includes(calibrationStep) ? 'text-green-600' : 'text-gray-400'
+                                            ['setScale', 'complete'].includes(calibrationStep) ? 'text-green-600' : 'text-gray-400'
                                             }`}>
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'setOrigin' ? 'border-blue-600 bg-blue-50' :
-                                                ['setRatio', 'complete'].includes(calibrationStep) ? 'border-green-600 bg-green-50' : 'border-gray-300'
+                                                ['setScale', 'complete'].includes(calibrationStep) ? 'border-green-600 bg-green-50' : 'border-gray-300'
                                                 }`}>
                                                 {calibrationStep === 'setOrigin' ? '2' :
-                                                    ['setRatio', 'complete'].includes(calibrationStep) ? <CheckCircle2 className="h-5 w-5" /> : '2'}
+                                                    ['setScale', 'complete'].includes(calibrationStep) ? <CheckCircle2 className="h-5 w-5" /> : '2'}
                                             </div>
                                             <span className="ml-2">設定原點</span>
                                         </div>
                                         <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
-                                        <div className={`flex items-center ${calibrationStep === 'setRatio' ? 'text-blue-600' :
+                                        <div className={`flex items-center ${calibrationStep === 'setScale' ? 'text-blue-600' :
                                             calibrationStep === 'complete' ? 'text-green-600' : 'text-gray-400'
                                             }`}>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'setRatio' ? 'border-blue-600 bg-blue-50' :
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'setScale' ? 'border-blue-600 bg-blue-50' :
                                                 calibrationStep === 'complete' ? 'border-green-600 bg-green-50' : 'border-gray-300'
                                                 }`}>
-                                                {calibrationStep === 'setRatio' ? '3' :
+                                                {calibrationStep === 'setScale' ? '3' :
                                                     calibrationStep === 'complete' ? <CheckCircle2 className="h-5 w-5" /> : '3'}
                                             </div>
                                             <span className="ml-2">設定比例</span>
@@ -1584,7 +1615,7 @@ export default function UWBLocationPage() {
                                             <CardContent>
                                                 <div className="space-y-4">
                                                     <p className="text-sm text-muted-foreground">
-                                                        請點擊地圖上的任意位置設定為座標原點 (0,0)。通常建議選擇房間或走廊的角落作為參考點。
+                                                        請點擊地圖上的任意位置設定為座標原點，然後輸入該點的實際座標。通常建議選擇房間或走廊的角落作為參考點。
                                                     </p>
                                                     <div className="relative border rounded-lg overflow-hidden">
                                                         <img
@@ -1604,19 +1635,53 @@ export default function UWBLocationPage() {
                                                         )}
                                                     </div>
                                                     {selectedOrigin && (
-                                                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                                        <div className="space-y-4 p-4 bg-green-50 rounded-lg">
                                                             <div className="flex items-center">
                                                                 <Crosshair className="h-5 w-5 text-green-600 mr-2" />
                                                                 <span className="text-sm font-medium">
-                                                                    原點已設定: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})
+                                                                    原點像素位置: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})
                                                                 </span>
                                                             </div>
-                                                            <Button
-                                                                size="sm"
-                                                                onClick={() => setCalibrationStep('setRatio')}
-                                                            >
-                                                                下一步
-                                                            </Button>
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <label className="text-sm font-medium mb-2 block">
+                                                                        實際 X 座標 (米)
+                                                                    </label>
+                                                                    <Input
+                                                                        type="number"
+                                                                        value={originCoordinates.x}
+                                                                        onChange={(e) => setOriginCoordinates(prev => ({
+                                                                            ...prev,
+                                                                            x: parseFloat(e.target.value) || 0
+                                                                        }))}
+                                                                        placeholder="0"
+                                                                        step="0.1"
+                                                                    />
+                                                                </div>
+                                                                <div>
+                                                                    <label className="text-sm font-medium mb-2 block">
+                                                                        實際 Y 座標 (米)
+                                                                    </label>
+                                                                    <Input
+                                                                        type="number"
+                                                                        value={originCoordinates.y}
+                                                                        onChange={(e) => setOriginCoordinates(prev => ({
+                                                                            ...prev,
+                                                                            y: parseFloat(e.target.value) || 0
+                                                                        }))}
+                                                                        placeholder="0"
+                                                                        step="0.1"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex justify-end">
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => setCalibrationStep('setScale')}
+                                                                >
+                                                                    下一步
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -1625,7 +1690,7 @@ export default function UWBLocationPage() {
                                     )}
 
                                     {/* 步驟3: 設定比例 */}
-                                    {calibrationStep === 'setRatio' && (
+                                    {calibrationStep === 'setScale' && (
                                         <Card>
                                             <CardHeader>
                                                 <CardTitle className="flex items-center">
@@ -1636,59 +1701,128 @@ export default function UWBLocationPage() {
                                             <CardContent>
                                                 <div className="space-y-4">
                                                     <p className="text-sm text-muted-foreground">
-                                                        請輸入像素與實際距離的轉換比例。例如：如果地圖上 100 像素代表實際的 1 公尺，則輸入 100；如果 1 像素代表 2 公尺，則輸入 0.5。
+                                                        請在地圖上點選兩個點，然後輸入這兩點之間的實際距離。系統將自動計算像素與公尺的轉換比例。
                                                     </p>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        <div>
-                                                            <label className="text-sm font-medium mb-2 block">
-                                                                比例設定 (像素/公尺)
-                                                            </label>
-                                                            <Input
-                                                                type="number"
-                                                                value={pixelToMeterRatio}
-                                                                onChange={(e) => {
-                                                                    const inputValue = e.target.value
-                                                                    const value = parseFloat(inputValue)
-
-                                                                    // 允許空值或正在輸入的中間狀態
-                                                                    if (inputValue === '' || inputValue === '0' || inputValue === '0.') {
-                                                                        setPixelToMeterRatio(parseFloat(inputValue) || 0)
-                                                                    } else if (!isNaN(value) && value > 0) {
-                                                                        setPixelToMeterRatio(value)
-                                                                    }
+                                                    <div className="relative border rounded-lg overflow-hidden">
+                                                        <img
+                                                            src={uploadedImage}
+                                                            alt="樓層地圖"
+                                                            className="w-full max-h-96 object-contain cursor-crosshair"
+                                                            onClick={handleMapClick}
+                                                        />
+                                                        {/* 顯示原點 */}
+                                                        {selectedOrigin && (
+                                                            <div
+                                                                className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1.5 -translate-y-1.5"
+                                                                style={{
+                                                                    left: selectedOrigin.x,
+                                                                    top: selectedOrigin.y
                                                                 }}
-                                                                onBlur={(e) => {
-                                                                    const value = parseFloat(e.target.value)
-                                                                    // 輸入完成時進行最終驗證
-                                                                    if (isNaN(value) || value < 0.01) {
-                                                                        setPixelToMeterRatio(100) // 回到預設值
-                                                                    }
-                                                                }}
-                                                                placeholder="100"
-                                                                min="0.01"
-                                                                step="0.01"
+                                                                title={`原點 (${originCoordinates.x}, ${originCoordinates.y})`}
                                                             />
-                                                            <p className="text-xs text-muted-foreground mt-1">
-                                                                {pixelToMeterRatio} 像素 = 1 公尺
-                                                            </p>
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-sm font-medium mb-2 block">
-                                                                預覽計算
-                                                            </label>
-                                                            <div className="p-3 bg-gray-50 rounded border text-sm">
-                                                                {pixelToMeterRatio > 0 ? (
-                                                                    <>
-                                                                        <div>100px = {(100 / pixelToMeterRatio).toFixed(2)}m</div>
-                                                                        <div>200px = {(200 / pixelToMeterRatio).toFixed(2)}m</div>
-                                                                        <div>500px = {(500 / pixelToMeterRatio).toFixed(2)}m</div>
-                                                                    </>
-                                                                ) : (
-                                                                    <div className="text-gray-400">請輸入有效的比例值</div>
+                                                        )}
+                                                        {/* 顯示比例標定點 */}
+                                                        {scalePoints.point1 && (
+                                                            <div
+                                                                className="absolute w-4 h-4 bg-blue-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
+                                                                style={{
+                                                                    left: scalePoints.point1.x,
+                                                                    top: scalePoints.point1.y
+                                                                }}
+                                                                title="比例點1"
+                                                            />
+                                                        )}
+                                                        {scalePoints.point2 && (
+                                                            <div
+                                                                className="absolute w-4 h-4 bg-green-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
+                                                                style={{
+                                                                    left: scalePoints.point2.x,
+                                                                    top: scalePoints.point2.y
+                                                                }}
+                                                                title="比例點2"
+                                                            />
+                                                        )}
+                                                        {/* 顯示連線 */}
+                                                        {scalePoints.point1 && scalePoints.point2 && (
+                                                            <svg
+                                                                className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                                                                style={{ zIndex: 10 }}
+                                                            >
+                                                                <line
+                                                                    x1={scalePoints.point1.x}
+                                                                    y1={scalePoints.point1.y}
+                                                                    x2={scalePoints.point2.x}
+                                                                    y2={scalePoints.point2.y}
+                                                                    stroke="#f59e0b"
+                                                                    strokeWidth="2"
+                                                                    strokeDasharray="5,5"
+                                                                />
+                                                            </svg>
+                                                        )}
+                                                    </div>
+
+                                                    {/* 點選狀態顯示 */}
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <div className="text-sm font-medium">選擇的點:</div>
+                                                            <div className="space-y-1 text-xs">
+                                                                <div className={`flex items-center ${scalePoints.point1 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                                                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                                                                    點1: {scalePoints.point1 ?
+                                                                        `(${scalePoints.point1.x.toFixed(0)}, ${scalePoints.point1.y.toFixed(0)})` :
+                                                                        '請點擊地圖選擇'}
+                                                                </div>
+                                                                <div className={`flex items-center ${scalePoints.point2 ? 'text-green-600' : 'text-gray-400'}`}>
+                                                                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                                                    點2: {scalePoints.point2 ?
+                                                                        `(${scalePoints.point2.x.toFixed(0)}, ${scalePoints.point2.y.toFixed(0)})` :
+                                                                        '請點擊地圖選擇'}
+                                                                </div>
+                                                                {scalePoints.point1 && scalePoints.point2 && (
+                                                                    <div className="text-amber-600 font-medium">
+                                                                        像素距離: {Math.sqrt(
+                                                                            Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
+                                                                            Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
+                                                                        ).toFixed(1)} px
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         </div>
+                                                        <div>
+                                                            <label className="text-sm font-medium mb-2 block">
+                                                                實際距離 (米)
+                                                            </label>
+                                                            <Input
+                                                                type="number"
+                                                                value={realDistance}
+                                                                onChange={(e) => {
+                                                                    const value = parseFloat(e.target.value)
+                                                                    if (!isNaN(value) && value > 0) {
+                                                                        setRealDistance(value)
+                                                                    }
+                                                                }}
+                                                                placeholder="1.0"
+                                                                min="0.01"
+                                                                step="0.1"
+                                                                disabled={!scalePoints.point1 || !scalePoints.point2}
+                                                            />
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                輸入兩點之間的實際距離
+                                                            </p>
+                                                            {scalePoints.point1 && scalePoints.point2 && realDistance > 0 && (
+                                                                <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
+                                                                    <div className="font-medium text-blue-800">計算結果:</div>
+                                                                    <div className="text-blue-700">
+                                                                        比例: {(Math.sqrt(
+                                                                            Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
+                                                                            Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
+                                                                        ) / realDistance).toFixed(2)} 像素/公尺
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
+
                                                     <div className="flex gap-2">
                                                         <Button
                                                             variant="outline"
@@ -1698,8 +1832,15 @@ export default function UWBLocationPage() {
                                                             上一步
                                                         </Button>
                                                         <Button
+                                                            variant="outline"
+                                                            onClick={() => setScalePoints({ point1: null, point2: null })}
+                                                            disabled={!scalePoints.point1 && !scalePoints.point2}
+                                                        >
+                                                            重選點
+                                                        </Button>
+                                                        <Button
                                                             onClick={saveMapCalibration}
-                                                            disabled={!pixelToMeterRatio || pixelToMeterRatio < 0.01}
+                                                            disabled={!scalePoints.point1 || !scalePoints.point2 || realDistance <= 0}
                                                         >
                                                             <Save className="h-4 w-4 mr-2" />
                                                             保存標定
@@ -1726,9 +1867,21 @@ export default function UWBLocationPage() {
                                                         <div className="space-y-1 text-sm text-green-700">
                                                             <div>樓層: {calibratingFloor.name}</div>
                                                             {selectedOrigin && (
-                                                                <div>原點位置: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)}) 像素</div>
+                                                                <div>原點像素位置: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})</div>
                                                             )}
-                                                            <div>比例: {pixelToMeterRatio} 像素/公尺</div>
+                                                            <div>原點實際座標: ({originCoordinates.x}, {originCoordinates.y}) 米</div>
+                                                            {scalePoints.point1 && scalePoints.point2 && (
+                                                                <>
+                                                                    <div>標定點1: ({scalePoints.point1.x.toFixed(0)}, {scalePoints.point1.y.toFixed(0)}) 像素</div>
+                                                                    <div>標定點2: ({scalePoints.point2.x.toFixed(0)}, {scalePoints.point2.y.toFixed(0)}) 像素</div>
+                                                                    <div>實際距離: {realDistance} 米</div>
+                                                                    <div>像素距離: {Math.sqrt(
+                                                                        Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
+                                                                        Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
+                                                                    ).toFixed(1)} 像素</div>
+                                                                </>
+                                                            )}
+                                                            <div>比例: {pixelToMeterRatio.toFixed(2)} 像素/公尺</div>
                                                         </div>
                                                     </div>
                                                     <div className="relative border rounded-lg overflow-hidden">
