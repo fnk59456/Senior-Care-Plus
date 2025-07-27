@@ -1192,7 +1192,7 @@ export default function UWBLocationPage() {
         return { x: displayX, y: displayY }
     }
 
-    // 將實際座標轉換為地圖像素座標
+    // 將實際座標轉換為地圖像素座標（自然尺寸）
     const convertToMapPixels = (x: number, y: number, floor: Floor) => {
         if (!floor.calibration || !floor.calibration.isCalibrated) {
             return null
@@ -1226,6 +1226,24 @@ export default function UWBLocationPage() {
         console.log(`---`)
 
         return { x: pixelX, y: pixelY }
+    }
+
+    // 將實際座標轉換為地圖顯示座標（考慮圖片縮放）
+    const convertRealToDisplayCoords = (x: number, y: number, floor: Floor, imgElement: HTMLImageElement) => {
+        // 首先轉換為自然尺寸的像素座標
+        const naturalPixelCoords = convertToMapPixels(x, y, floor)
+        if (!naturalPixelCoords) return null
+
+        // 然後將自然座標轉換為顯示座標
+        const displayCoords = convertNaturalToDisplayCoords(naturalPixelCoords.x, naturalPixelCoords.y, imgElement)
+
+        console.log(`🔄 實際座標到顯示座標轉換:`)
+        console.log(`- 實際座標: (${x}, ${y}) 米`)
+        console.log(`- 自然像素座標: (${naturalPixelCoords.x.toFixed(1)}, ${naturalPixelCoords.y.toFixed(1)}) px`)
+        console.log(`- 顯示座標: (${displayCoords.x.toFixed(1)}, ${displayCoords.y.toFixed(1)}) px`)
+        console.log(`---`)
+
+        return displayCoords
     }
 
     // 獲取指定樓層的 Anchor 列表
@@ -3233,34 +3251,58 @@ export default function UWBLocationPage() {
                                             <img
                                                 src={floor.mapImage}
                                                 alt={`${floor.name} 地圖`}
-                                                className="w-full h-full object-contain bg-gray-50"
+                                                className="w-full h-full object-contain bg-gray-50 anchor-map-image"
+                                                onLoad={(e) => {
+                                                    // 圖片加載完成後觸發重新渲染
+                                                    setImageLoaded(prev => !prev)
+                                                }}
                                             />
 
                                             {/* 座標原點 */}
-                                            {floor.calibration?.originPixel && (
-                                                <div
-                                                    className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
-                                                    style={{
-                                                        left: `${floor.calibration.originPixel.x}px`,
-                                                        top: `${floor.calibration.originPixel.y}px`
-                                                    }}
-                                                    title={`座標原點 (${floor.calibration.originCoordinates?.x || 0}, ${floor.calibration.originCoordinates?.y || 0})`}
-                                                />
-                                            )}
+                                            {floor.calibration?.originPixel && (() => {
+                                                const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
+                                                if (!imgElement || imgElement.naturalWidth === 0) return null
+
+                                                // 將原點的自然座標轉換為當前圖片的顯示座標
+                                                const displayCoords = convertNaturalToDisplayCoords(
+                                                    floor.calibration.originPixel.x,
+                                                    floor.calibration.originPixel.y,
+                                                    imgElement
+                                                )
+
+                                                console.log(`🎯 Anchor地圖原點顯示:`)
+                                                console.log(`- 原點自然座標: (${floor.calibration.originPixel.x}, ${floor.calibration.originPixel.y})`)
+                                                console.log(`- 原點顯示座標: (${displayCoords.x.toFixed(1)}, ${displayCoords.y.toFixed(1)})`)
+
+                                                return (
+                                                    <div
+                                                        className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
+                                                        style={{
+                                                            left: `${displayCoords.x}px`,
+                                                            top: `${displayCoords.y}px`
+                                                        }}
+                                                        title={`座標原點 (${floor.calibration.originCoordinates?.x || 0}, ${floor.calibration.originCoordinates?.y || 0})`}
+                                                    />
+                                                )
+                                            })()}
 
                                             {/* Anchor 位置 */}
                                             {floorAnchors.map(anchor => {
                                                 if (!anchor.position) return null
-                                                const pixelPos = convertToMapPixels(anchor.position.x, anchor.position.y, floor)
-                                                if (!pixelPos) return null
+
+                                                const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
+                                                if (!imgElement || imgElement.naturalWidth === 0) return null
+
+                                                const displayPos = convertRealToDisplayCoords(anchor.position.x, anchor.position.y, floor, imgElement)
+                                                if (!displayPos) return null
 
                                                 return (
                                                     <div
                                                         key={anchor.id}
                                                         className="absolute transform -translate-x-1/2 -translate-y-1/2"
                                                         style={{
-                                                            left: `${pixelPos.x}px`,
-                                                            top: `${pixelPos.y}px`
+                                                            left: `${displayPos.x}px`,
+                                                            top: `${displayPos.y}px`
                                                         }}
                                                     >
                                                         {/* Anchor 圖標 */}
