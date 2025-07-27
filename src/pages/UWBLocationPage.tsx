@@ -388,6 +388,8 @@ const MOCK_TAGS: TagDevice[] = [
     }
 ]
 
+
+
 // 雲端 Anchor 數據類型
 type CloudAnchorData = {
     content: string
@@ -1132,6 +1134,64 @@ export default function UWBLocationPage() {
         setAnchors(prev => [...prev, newAnchor])
     }
 
+    // 獲取圖片在 object-contain 模式下的實際顯示信息
+    const getImageDisplayInfo = (imgElement: HTMLImageElement) => {
+        const naturalWidth = imgElement.naturalWidth
+        const naturalHeight = imgElement.naturalHeight
+        const containerWidth = imgElement.clientWidth
+        const containerHeight = imgElement.clientHeight
+
+        const aspectRatio = naturalWidth / naturalHeight
+        const containerAspectRatio = containerWidth / containerHeight
+
+        let actualImageWidth, actualImageHeight, offsetX, offsetY
+
+        if (aspectRatio > containerAspectRatio) {
+            // 圖片較寬，以容器寬度為準
+            actualImageWidth = containerWidth
+            actualImageHeight = containerWidth / aspectRatio
+            offsetX = 0
+            offsetY = (containerHeight - actualImageHeight) / 2
+        } else {
+            // 圖片較高，以容器高度為準
+            actualImageWidth = containerHeight * aspectRatio
+            actualImageHeight = containerHeight
+            offsetX = (containerWidth - actualImageWidth) / 2
+            offsetY = 0
+        }
+
+        return {
+            naturalWidth,
+            naturalHeight,
+            containerWidth,
+            containerHeight,
+            actualImageWidth,
+            actualImageHeight,
+            offsetX,
+            offsetY
+        }
+    }
+
+    // 將圖片自然座標轉換為顯示座標
+    const convertNaturalToDisplayCoords = (naturalX: number, naturalY: number, imgElement: HTMLImageElement) => {
+        const info = getImageDisplayInfo(imgElement)
+
+        console.log(`🔧 convertNaturalToDisplayCoords 調試:`)
+        console.log(`- 圖片自然尺寸: ${info.naturalWidth} x ${info.naturalHeight}`)
+        console.log(`- 圖片容器尺寸: ${info.containerWidth} x ${info.containerHeight}`)
+        console.log(`- 圖片實際顯示尺寸: ${info.actualImageWidth.toFixed(1)} x ${info.actualImageHeight.toFixed(1)}`)
+        console.log(`- 圖片偏移: (${info.offsetX.toFixed(1)}, ${info.offsetY.toFixed(1)})`)
+        console.log(`- 輸入自然座標: (${naturalX.toFixed(1)}, ${naturalY.toFixed(1)})`)
+
+        const displayX = info.offsetX + (naturalX / info.naturalWidth) * info.actualImageWidth
+        const displayY = info.offsetY + (naturalY / info.naturalHeight) * info.actualImageHeight
+
+        console.log(`- 輸出顯示座標: (${displayX.toFixed(1)}, ${displayY.toFixed(1)})`)
+        console.log(`---`)
+
+        return { x: displayX, y: displayY }
+    }
+
     // 將實際座標轉換為地圖像素座標
     const convertToMapPixels = (x: number, y: number, floor: Floor) => {
         if (!floor.calibration || !floor.calibration.isCalibrated) {
@@ -1145,8 +1205,25 @@ export default function UWBLocationPage() {
         const deltaY = y - (originCoordinates?.y || 0)
 
         // 轉換為像素距離
+        // 注意：Y軸需要反向，因為圖像座標系Y軸向下為正，而實際座標系Y軸向上為正
         const pixelX = originPixel.x + (deltaX * pixelToMeterRatio)
-        const pixelY = originPixel.y + (deltaY * pixelToMeterRatio)
+        const pixelY = originPixel.y - (deltaY * pixelToMeterRatio) // 注意這裡是減號
+
+        console.log(`🎯 座標轉換調試:`)
+        console.log(`- 實際座標: (${x}, ${y}) 米`)
+        console.log(`- 原點實際座標: (${originCoordinates?.x || 0}, ${originCoordinates?.y || 0}) 米`)
+        console.log(`- 原點像素座標: (${originPixel.x}, ${originPixel.y}) px`)
+        console.log(`- 距離差值: (${deltaX}, ${deltaY}) 米`)
+        console.log(`- 比例: ${pixelToMeterRatio.toFixed(2)} 像素/米`)
+        console.log(`- X計算: ${originPixel.x} + (${deltaX} * ${pixelToMeterRatio.toFixed(2)}) = ${pixelX.toFixed(1)}`)
+        console.log(`- Y計算: ${originPixel.y} - (${deltaY} * ${pixelToMeterRatio.toFixed(2)}) = ${pixelY.toFixed(1)} (注意Y軸反向)`)
+        console.log(`- 轉換後像素座標: (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)}) px`)
+
+        // 邊界檢查
+        if (pixelX < -100 || pixelX > 2000 || pixelY < -100 || pixelY > 2000) {
+            console.warn(`⚠️ 座標超出合理範圍: (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`)
+        }
+        console.log(`---`)
 
         return { x: pixelX, y: pixelY }
     }
@@ -1285,23 +1362,57 @@ export default function UWBLocationPage() {
         }
     }
 
+    // 圖片加載狀態和引用
+    const [imageLoaded, setImageLoaded] = useState(false)
+    const mapImageRef = useRef<HTMLImageElement>(null)
+    const scaleImageRef = useRef<HTMLImageElement>(null)
+
     // 地圖點擊處理
     const handleMapClick = (event: React.MouseEvent<HTMLImageElement>) => {
-        const rect = event.currentTarget.getBoundingClientRect()
-        const x = event.clientX - rect.left
-        const y = event.clientY - rect.top
+        const imgElement = event.currentTarget
+        const rect = imgElement.getBoundingClientRect()
+        const info = getImageDisplayInfo(imgElement)
+
+        // 計算相對於容器的點擊位置
+        const clickX = event.clientX - rect.left
+        const clickY = event.clientY - rect.top
+
+        // 檢查是否點擊在實際圖片區域內
+        if (clickX < info.offsetX || clickY < info.offsetY ||
+            clickX > info.offsetX + info.actualImageWidth || clickY > info.offsetY + info.actualImageHeight) {
+            console.warn(`點擊位置超出圖片區域: (${clickX.toFixed(1)}, ${clickY.toFixed(1)})`)
+            console.warn(`圖片實際區域: ${info.offsetX.toFixed(1)}-${(info.offsetX + info.actualImageWidth).toFixed(1)} x ${info.offsetY.toFixed(1)}-${(info.offsetY + info.actualImageHeight).toFixed(1)}`)
+            return
+        }
+
+        // 轉換為圖片內的相對座標，然後縮放到自然尺寸
+        const relativeX = (clickX - info.offsetX) / info.actualImageWidth
+        const relativeY = (clickY - info.offsetY) / info.actualImageHeight
+        const imageX = relativeX * info.naturalWidth
+        const imageY = relativeY * info.naturalHeight
+
+        console.log(`🎯 地圖點擊詳細信息:`)
+        console.log(`- 容器尺寸: ${info.containerWidth} x ${info.containerHeight}`)
+        console.log(`- 圖片自然尺寸: ${info.naturalWidth} x ${info.naturalHeight}`)
+        console.log(`- 圖片實際顯示尺寸: ${info.actualImageWidth.toFixed(1)} x ${info.actualImageHeight.toFixed(1)}`)
+        console.log(`- 圖片偏移: (${info.offsetX.toFixed(1)}, ${info.offsetY.toFixed(1)})`)
+        console.log(`- 點擊位置(容器): (${clickX.toFixed(1)}, ${clickY.toFixed(1)})`)
+        console.log(`- 點擊位置(圖片): (${imageX.toFixed(1)}, ${imageY.toFixed(1)})`)
 
         if (calibrationStep === 'setOrigin') {
-            setSelectedOrigin({ x, y })
-            // 不自動跳轉，等用戶輸入座標後手動進入下一步
+            setSelectedOrigin({ x: imageX, y: imageY })
+            console.log(`✅ 設定原點: (${imageX.toFixed(1)}, ${imageY.toFixed(1)}) px`)
         } else if (calibrationStep === 'setScale') {
             if (!scalePoints.point1) {
-                setScalePoints(prev => ({ ...prev, point1: { x, y } }))
+                setScalePoints(prev => ({ ...prev, point1: { x: imageX, y: imageY } }))
+                console.log(`✅ 設定比例點1: (${imageX.toFixed(1)}, ${imageY.toFixed(1)}) px`)
             } else if (!scalePoints.point2) {
-                setScalePoints(prev => ({ ...prev, point2: { x, y } }))
+                setScalePoints(prev => ({ ...prev, point2: { x: imageX, y: imageY } }))
+                console.log(`✅ 設定比例點2: (${imageX.toFixed(1)}, ${imageY.toFixed(1)}) px`)
             } else {
                 // 重新選擇第一個點
-                setScalePoints({ point1: { x, y }, point2: null })
+                setScalePoints({ point1: { x: imageX, y: imageY }, point2: null })
+                console.log(`✅ 重新設定比例點1: (${imageX.toFixed(1)}, ${imageY.toFixed(1)}) px`)
             }
         }
     }
@@ -1856,8 +1967,8 @@ export default function UWBLocationPage() {
                                                                 <div
                                                                     className="absolute w-2 h-2 bg-red-500 rounded-full border border-white transform -translate-x-1 -translate-y-1"
                                                                     style={{
-                                                                        left: `${(floor.calibration.originPixel.x / 400) * 100}%`,
-                                                                        top: `${(floor.calibration.originPixel.y / 300) * 100}%`
+                                                                        left: `${floor.calibration.originPixel.x}px`,
+                                                                        top: `${floor.calibration.originPixel.y}px`
                                                                     }}
                                                                     title="座標原點"
                                                                 />
@@ -1873,8 +1984,8 @@ export default function UWBLocationPage() {
                                                                         key={anchor.id}
                                                                         className="absolute w-3 h-3 bg-blue-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-sm"
                                                                         style={{
-                                                                            left: `${(pixelPos.x / 400) * 100}%`,
-                                                                            top: `${(pixelPos.y / 300) * 100}%`
+                                                                            left: `${pixelPos.x}px`,
+                                                                            top: `${pixelPos.y}px`
                                                                         }}
                                                                         title={`${anchor.name} (${anchor.position.x.toFixed(1)}, ${anchor.position.y.toFixed(1)}, ${anchor.position.z.toFixed(1)})`}
                                                                     />
@@ -2054,22 +2165,40 @@ export default function UWBLocationPage() {
                                                     <p className="text-sm text-muted-foreground">
                                                         請點擊地圖上的任意位置設定為座標原點，然後輸入該點的實際座標。通常建議選擇房間或走廊的角落作為參考點。
                                                     </p>
-                                                    <div className="relative border rounded-lg overflow-hidden">
+                                                    <div className="relative border-2 border-blue-300 rounded-lg overflow-hidden bg-blue-50">
                                                         <img
+                                                            ref={mapImageRef}
                                                             src={uploadedImage}
                                                             alt="樓層地圖"
-                                                            className="w-full max-h-96 object-contain cursor-crosshair"
+                                                            className="w-full max-h-96 object-contain cursor-crosshair hover:opacity-90 transition-opacity map-calibration-image"
                                                             onClick={handleMapClick}
+                                                            onLoad={() => setImageLoaded(true)}
                                                         />
-                                                        {selectedOrigin && (
-                                                            <div
-                                                                className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
-                                                                style={{
-                                                                    left: selectedOrigin.x,
-                                                                    top: selectedOrigin.y
-                                                                }}
-                                                            />
-                                                        )}
+                                                        {/* 點擊提示 */}
+                                                        <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded shadow-sm">
+                                                            點擊地圖設定原點
+                                                        </div>
+                                                        {selectedOrigin && imageLoaded && (() => {
+                                                            const imgElement = mapImageRef.current
+
+                                                            if (!imgElement || imgElement.naturalWidth === 0) {
+                                                                console.warn('圖片元素未找到或未加載完成')
+                                                                return null
+                                                            }
+
+                                                            const displayCoords = convertNaturalToDisplayCoords(selectedOrigin.x, selectedOrigin.y, imgElement)
+
+                                                            return (
+                                                                <div
+                                                                    className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse shadow-lg"
+                                                                    style={{
+                                                                        left: displayCoords.x,
+                                                                        top: displayCoords.y
+                                                                    }}
+                                                                    title={`原點: 自然座標(${selectedOrigin.x.toFixed(0)}, ${selectedOrigin.y.toFixed(0)}) 顯示座標(${displayCoords.x.toFixed(0)}, ${displayCoords.y.toFixed(0)})`}
+                                                                />
+                                                            )
+                                                        })()}
                                                     </div>
                                                     {selectedOrigin && (
                                                         <div className="space-y-4 p-4 bg-green-50 rounded-lg">
@@ -2111,7 +2240,18 @@ export default function UWBLocationPage() {
                                                                     />
                                                                 </div>
                                                             </div>
-                                                            <div className="flex justify-end">
+                                                            <div className="flex justify-between">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => {
+                                                                        setSelectedOrigin(null)
+                                                                        setOriginCoordinates({ x: 0, y: 0 })
+                                                                    }}
+                                                                >
+                                                                    <RotateCcw className="h-4 w-4 mr-1" />
+                                                                    重選原點
+                                                                </Button>
                                                                 <Button
                                                                     size="sm"
                                                                     onClick={() => setCalibrationStep('setScale')}
@@ -2140,62 +2280,97 @@ export default function UWBLocationPage() {
                                                     <p className="text-sm text-muted-foreground">
                                                         請在地圖上點選兩個點，然後輸入這兩點之間的實際距離。系統將自動計算像素與公尺的轉換比例。
                                                     </p>
-                                                    <div className="relative border rounded-lg overflow-hidden">
+                                                    <div className="relative border-2 border-green-300 rounded-lg overflow-hidden bg-green-50">
                                                         <img
+                                                            ref={scaleImageRef}
                                                             src={uploadedImage}
                                                             alt="樓層地圖"
-                                                            className="w-full max-h-96 object-contain cursor-crosshair"
+                                                            className="w-full max-h-96 object-contain cursor-crosshair hover:opacity-90 transition-opacity map-calibration-image"
                                                             onClick={handleMapClick}
+                                                            onLoad={() => setImageLoaded(true)}
                                                         />
+                                                        {/* 點擊提示 */}
+                                                        <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow-sm">
+                                                            點擊兩個點設定比例
+                                                        </div>
                                                         {/* 顯示原點 */}
-                                                        {selectedOrigin && (
-                                                            <div
-                                                                className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1.5 -translate-y-1.5"
-                                                                style={{
-                                                                    left: selectedOrigin.x,
-                                                                    top: selectedOrigin.y
-                                                                }}
-                                                                title={`原點 (${originCoordinates.x}, ${originCoordinates.y})`}
-                                                            />
-                                                        )}
-                                                        {/* 顯示比例標定點 */}
-                                                        {scalePoints.point1 && (
-                                                            <div
-                                                                className="absolute w-4 h-4 bg-blue-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
-                                                                style={{
-                                                                    left: scalePoints.point1.x,
-                                                                    top: scalePoints.point1.y
-                                                                }}
-                                                                title="比例點1"
-                                                            />
-                                                        )}
-                                                        {scalePoints.point2 && (
-                                                            <div
-                                                                className="absolute w-4 h-4 bg-green-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
-                                                                style={{
-                                                                    left: scalePoints.point2.x,
-                                                                    top: scalePoints.point2.y
-                                                                }}
-                                                                title="比例點2"
-                                                            />
-                                                        )}
-                                                        {/* 顯示連線 */}
-                                                        {scalePoints.point1 && scalePoints.point2 && (
-                                                            <svg
-                                                                className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                                                                style={{ zIndex: 10 }}
-                                                            >
-                                                                <line
-                                                                    x1={scalePoints.point1.x}
-                                                                    y1={scalePoints.point1.y}
-                                                                    x2={scalePoints.point2.x}
-                                                                    y2={scalePoints.point2.y}
-                                                                    stroke="#f59e0b"
-                                                                    strokeWidth="2"
-                                                                    strokeDasharray="5,5"
+                                                        {selectedOrigin && (() => {
+                                                            const imgElement = scaleImageRef.current
+                                                            if (!imgElement) return null
+
+                                                            const displayCoords = convertNaturalToDisplayCoords(selectedOrigin.x, selectedOrigin.y, imgElement)
+
+                                                            return (
+                                                                <div
+                                                                    className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 shadow-lg"
+                                                                    style={{
+                                                                        left: displayCoords.x,
+                                                                        top: displayCoords.y
+                                                                    }}
+                                                                    title={`原點: 自然座標(${selectedOrigin.x.toFixed(0)}, ${selectedOrigin.y.toFixed(0)}) 實際(${originCoordinates.x}, ${originCoordinates.y})米`}
                                                                 />
-                                                            </svg>
-                                                        )}
+                                                            )
+                                                        })()}
+                                                        {/* 顯示比例標定點 */}
+                                                        {scalePoints.point1 && (() => {
+                                                            const imgElement = scaleImageRef.current
+                                                            if (!imgElement) return null
+
+                                                            const displayCoords = convertNaturalToDisplayCoords(scalePoints.point1.x, scalePoints.point1.y, imgElement)
+
+                                                            return (
+                                                                <div
+                                                                    className="absolute w-4 h-4 bg-blue-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
+                                                                    style={{
+                                                                        left: displayCoords.x,
+                                                                        top: displayCoords.y
+                                                                    }}
+                                                                    title="比例點1"
+                                                                />
+                                                            )
+                                                        })()}
+                                                        {scalePoints.point2 && (() => {
+                                                            const imgElement = scaleImageRef.current
+                                                            if (!imgElement) return null
+
+                                                            const displayCoords = convertNaturalToDisplayCoords(scalePoints.point2.x, scalePoints.point2.y, imgElement)
+
+                                                            return (
+                                                                <div
+                                                                    className="absolute w-4 h-4 bg-green-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
+                                                                    style={{
+                                                                        left: displayCoords.x,
+                                                                        top: displayCoords.y
+                                                                    }}
+                                                                    title="比例點2"
+                                                                />
+                                                            )
+                                                        })()}
+                                                        {/* 顯示連線 */}
+                                                        {scalePoints.point1 && scalePoints.point2 && (() => {
+                                                            const imgElement = scaleImageRef.current
+                                                            if (!imgElement) return null
+
+                                                            const displayCoords1 = convertNaturalToDisplayCoords(scalePoints.point1.x, scalePoints.point1.y, imgElement)
+                                                            const displayCoords2 = convertNaturalToDisplayCoords(scalePoints.point2.x, scalePoints.point2.y, imgElement)
+
+                                                            return (
+                                                                <svg
+                                                                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                                                                    style={{ zIndex: 10 }}
+                                                                >
+                                                                    <line
+                                                                        x1={displayCoords1.x}
+                                                                        y1={displayCoords1.y}
+                                                                        x2={displayCoords2.x}
+                                                                        y2={displayCoords2.y}
+                                                                        stroke="#f59e0b"
+                                                                        strokeWidth="2"
+                                                                        strokeDasharray="5,5"
+                                                                    />
+                                                                </svg>
+                                                            )
+                                                        })()}
                                                     </div>
 
                                                     {/* 點選狀態顯示 */}
@@ -3066,8 +3241,8 @@ export default function UWBLocationPage() {
                                                 <div
                                                     className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
                                                     style={{
-                                                        left: `${(floor.calibration.originPixel.x / 400) * 100}%`,
-                                                        top: `${(floor.calibration.originPixel.y / 300) * 100}%`
+                                                        left: `${floor.calibration.originPixel.x}px`,
+                                                        top: `${floor.calibration.originPixel.y}px`
                                                     }}
                                                     title={`座標原點 (${floor.calibration.originCoordinates?.x || 0}, ${floor.calibration.originCoordinates?.y || 0})`}
                                                 />
@@ -3080,30 +3255,29 @@ export default function UWBLocationPage() {
                                                 if (!pixelPos) return null
 
                                                 return (
-                                                    <div key={anchor.id} className="absolute transform -translate-x-1/2 -translate-y-1/2">
-                                                        <div
-                                                            className="relative"
-                                                            style={{
-                                                                left: `${(pixelPos.x / 400) * 100}%`,
-                                                                top: `${(pixelPos.y / 300) * 100}%`
-                                                            }}
-                                                        >
-                                                            {/* Anchor 圖標 */}
-                                                            <div className={`w-6 h-6 rounded-full border-2 border-white shadow-lg flex items-center justify-center ${anchor.cloudData?.initiator === 1 ? 'bg-orange-500' : 'bg-blue-500'
-                                                                }`}>
-                                                                <Anchor className="w-3 h-3 text-white" />
-                                                            </div>
+                                                    <div
+                                                        key={anchor.id}
+                                                        className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                                                        style={{
+                                                            left: `${pixelPos.x}px`,
+                                                            top: `${pixelPos.y}px`
+                                                        }}
+                                                    >
+                                                        {/* Anchor 圖標 */}
+                                                        <div className={`w-6 h-6 rounded-full border-2 border-white shadow-lg flex items-center justify-center ${anchor.cloudData?.initiator === 1 ? 'bg-orange-500' : 'bg-blue-500'
+                                                            }`}>
+                                                            <Anchor className="w-3 h-3 text-white" />
+                                                        </div>
 
-                                                            {/* Anchor 標籤 */}
-                                                            <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm border">
-                                                                <div className="font-medium">{anchor.name}</div>
-                                                                <div className="text-muted-foreground">
-                                                                    ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
-                                                                </div>
-                                                                {anchor.cloudData?.initiator === 1 && (
-                                                                    <div className="text-orange-600 text-xs">主錨點</div>
-                                                                )}
+                                                        {/* Anchor 標籤 */}
+                                                        <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm border">
+                                                            <div className="font-medium">{anchor.name}</div>
+                                                            <div className="text-muted-foreground">
+                                                                ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
                                                             </div>
+                                                            {anchor.cloudData?.initiator === 1 && (
+                                                                <div className="text-orange-600 text-xs">主錨點</div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )
@@ -3576,6 +3750,6 @@ export default function UWBLocationPage() {
                     )}
                 </TabsContent>
             </Tabs>
-        </div>
+        </div >
     )
 }
