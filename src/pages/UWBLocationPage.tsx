@@ -1470,11 +1470,19 @@ export default function UWBLocationPage() {
         console.log(`✅ Anchor 座標已更新:`)
         console.log(`- 新座標: (${newPosition.x.toFixed(2)}, ${newPosition.y.toFixed(2)}, ${newPosition.z.toFixed(2)})`)
 
-        // 清理校正狀態並關閉彈窗
-        setCalibratingAnchor(null)
-
         // 顯示成功提示
         console.log(`🎉 ${calibratingAnchor.name} 座標校正完成！`)
+
+        // 詢問是否要發送配置到雲端
+        const shouldSendToCloud = confirm(`✅ ${calibratingAnchor.name} 座標已更新！\n\n是否要將新座標發送到雲端硬體？\n\n點擊「確定」可進一步配置參數並發送`)
+
+        if (shouldSendToCloud) {
+            // 開啟配置對話框
+            openConfigDialog(calibratingAnchor, newPosition)
+        } else {
+            // 清理校正狀態
+            setCalibratingAnchor(null)
+        }
     }
 
     // 取消 Anchor 座標校正
@@ -1523,8 +1531,137 @@ export default function UWBLocationPage() {
         console.log(`- Anchor: ${calibratingAnchor.name}`)
         console.log(`- 新座標: (${finalCoords.x.toFixed(2)}, ${finalCoords.y.toFixed(2)}, ${finalCoords.z.toFixed(2)})`)
 
-        // 清理狀態
-        cancelAnchorCalibration()
+        // 詢問是否要發送配置到雲端
+        const shouldSendToCloud = confirm(`✅ ${calibratingAnchor.name} 座標已更新！\n\n是否要將新座標發送到雲端硬體？\n\n點擊「確定」可進一步配置參數並發送`)
+
+        if (shouldSendToCloud) {
+            // 開啟配置對話框
+            openConfigDialog(calibratingAnchor, finalCoords)
+        } else {
+            // 清理狀態
+            cancelAnchorCalibration()
+        }
+    }
+
+    // 發送 Anchor 配置到雲端
+    const sendAnchorConfigToCloud = async (anchor: AnchorDevice, position: { x: number, y: number, z: number }) => {
+        try {
+            setSendingConfig(true)
+
+            // 找到對應的 Gateway 來獲取 downlink topic
+            const gateway = gateways.find(g => g.id === anchor.gatewayId)
+            if (!gateway || !gateway.cloudData?.sub_topic?.downlink) {
+                console.error('❌ 找不到 Gateway 或 downlink 主題')
+                alert('找不到對應的 Gateway 下行鏈路主題')
+                return false
+            }
+
+            // 檢查 downlink 是否已包含 UWB/ 前綴
+            const downlinkValue = gateway.cloudData.sub_topic.downlink
+            const downlinkTopic = downlinkValue.startsWith('UWB/') ? downlinkValue : `UWB/${downlinkValue}`
+
+            console.log(`🔍 MQTT 主題檢查:`)
+            console.log(`- 原始 downlink 值: "${downlinkValue}"`)
+            console.log(`- 最終主題: "${downlinkTopic}"`)
+
+            // 構建配置訊息
+            const configMessage = {
+                content: "configChange",
+                gateway_id: gateway.cloudData.gateway_id,
+                node: "ANCHOR",
+                name: anchor.cloudData?.name || anchor.name,
+                id: anchor.cloudData?.id || parseInt(anchor.macAddress.replace(/[^0-9]/g, '')),
+                fw_update: anchorConfigForm.fw_update,
+                led: anchorConfigForm.led,
+                ble: anchorConfigForm.ble,
+                initiator: anchorConfigForm.initiator,
+                position: {
+                    x: position.x,
+                    y: position.y,
+                    z: position.z
+                },
+                serial_no: 1302
+            }
+
+            console.log(`🚀 準備發送 Anchor 配置到雲端:`)
+            console.log(`- 主題: ${downlinkTopic}`)
+            console.log(`- Gateway ID: ${gateway.cloudData.gateway_id}`)
+            console.log(`- Anchor 名稱: ${configMessage.name} (來源: ${anchor.cloudData?.name ? '雲端' : '本地'})`)
+            console.log(`- Anchor ID: ${configMessage.id} (來源: ${anchor.cloudData?.id ? '雲端' : 'MAC轉換'})`)
+            console.log(`- MAC 地址: ${anchor.macAddress}`)
+            console.log(`- 位置: (${position.x}, ${position.y}, ${position.z})`)
+            console.log(`- 配置參數:`, anchorConfigForm)
+
+            // 使用雲端 MQTT 客戶端發送
+            if (cloudClientRef.current && cloudConnected) {
+                const messageJson = JSON.stringify(configMessage)
+
+                cloudClientRef.current.publish(downlinkTopic, messageJson, (error) => {
+                    if (error) {
+                        console.error('❌ 發送配置失敗:', error)
+                        alert('發送配置失敗: ' + error.message)
+                    } else {
+                        console.log('✅ Anchor 配置已成功發送到雲端')
+                        alert(`✅ 已將 ${anchor.name} 的新座標發送到雲端硬體`)
+
+                        // 記錄發送的完整訊息
+                        console.log('📤 發送的完整訊息:')
+                        console.log(JSON.stringify(configMessage, null, 2))
+                    }
+                })
+            } else {
+                console.error('❌ 雲端 MQTT 未連接')
+                alert('雲端 MQTT 未連接，無法發送配置')
+                return false
+            }
+
+            return true
+
+        } catch (error) {
+            console.error('❌ 發送 Anchor 配置時發生錯誤:', error)
+            alert('發送配置時發生錯誤: ' + error)
+            return false
+        } finally {
+            setSendingConfig(false)
+        }
+    }
+
+    // 開啟配置發送對話框
+    const openConfigDialog = (anchor: AnchorDevice, newPosition: { x: number, y: number, z: number }) => {
+        setAnchorConfigForm({
+            fw_update: anchor.cloudData?.fw_update || 0,
+            led: anchor.cloudData?.led || 1,
+            ble: anchor.cloudData?.ble || 1,
+            initiator: anchor.cloudData?.initiator || 0
+        })
+
+        // 先關閉校正彈窗，再開啟配置發送對話框
+        setCalibratingAnchor(null)
+        setShowConfigDialog(true)
+
+        // 保存當前 anchor 和位置信息到臨時狀態，以便發送時使用
+        setAnchorPositionInput({
+            x: newPosition.x.toString(),
+            y: newPosition.y.toString(),
+            z: newPosition.z.toString(),
+            coordinateType: 'real'
+        })
+
+        // 將 anchor 信息保存到配置表單中，但不設置 calibratingAnchor
+        // 我們需要一個新的狀態來保存正在配置的 anchor
+        setConfigAnchor(anchor)
+    }
+
+    // 關閉配置對話框
+    const closeConfigDialog = () => {
+        setShowConfigDialog(false)
+        setConfigAnchor(null)
+        setAnchorConfigForm({
+            fw_update: 0,
+            led: 1,
+            ble: 1,
+            initiator: 0
+        })
     }
 
     // 地圖上傳處理
@@ -1571,6 +1708,17 @@ export default function UWBLocationPage() {
         y: '',
         z: '',
         coordinateType: 'real' as 'real' | 'pixel' // 座標類型：真實座標或像素座標
+    })
+
+    // Anchor 配置發送相關狀態
+    const [sendingConfig, setSendingConfig] = useState(false)
+    const [showConfigDialog, setShowConfigDialog] = useState(false)
+    const [configAnchor, setConfigAnchor] = useState<AnchorDevice | null>(null) // 正在配置的 Anchor
+    const [anchorConfigForm, setAnchorConfigForm] = useState({
+        fw_update: 0,
+        led: 1,
+        ble: 1,
+        initiator: 0
     })
 
     // 地圖點擊處理
@@ -3679,13 +3827,26 @@ export default function UWBLocationPage() {
                                                                         variant="outline"
                                                                         onClick={() => startAnchorCalibration(anchor)}
                                                                         disabled={calibratingAnchor !== null}
+                                                                        title="校正座標"
                                                                     >
                                                                         <Target className="h-4 w-4" />
                                                                     </Button>
+                                                                    {anchor.position && (
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={() => openConfigDialog(anchor, anchor.position!)}
+                                                                            disabled={sendingConfig}
+                                                                            title="發送配置到雲端"
+                                                                        >
+                                                                            <Upload className="h-4 w-4" />
+                                                                        </Button>
+                                                                    )}
                                                                     <Button
                                                                         size="sm"
                                                                         variant="outline"
                                                                         onClick={() => deleteAnchor(anchor.id)}
+                                                                        title="刪除錨點"
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
                                                                     </Button>
@@ -4010,7 +4171,7 @@ export default function UWBLocationPage() {
             </Tabs>
 
             {/* Anchor 座標校正彈窗 */}
-            {calibratingAnchor && (
+            {calibratingAnchor && !showConfigDialog && (
                 <div className="fixed top-4 right-4 z-50 w-80">
                     <Card className="w-full shadow-2xl border-2 border-green-200">
                         <CardHeader className="pb-3">
@@ -4120,6 +4281,192 @@ export default function UWBLocationPage() {
                                 <div className="text-orange-600">
                                     點擊左側地圖 = 快速設定 | 手動輸入 = 精確座標
                                 </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* Anchor 配置發送對話框 */}
+            {showConfigDialog && configAnchor && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <Card className="w-full max-w-lg mx-4">
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center">
+                                    <Upload className="mr-2 h-5 w-5 text-blue-500" />
+                                    發送配置到雲端 - {configAnchor.name}
+                                </CardTitle>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={closeConfigDialog}
+                                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                                >
+                                    ✕
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {/* 座標預覽 */}
+                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <div className="font-medium text-blue-800 mb-2">📍 新座標位置</div>
+                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                    <div className="text-center">
+                                        <div className="text-blue-600 font-medium">X 座標</div>
+                                        <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.x).toFixed(3)}</div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-blue-600 font-medium">Y 座標</div>
+                                        <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.y).toFixed(3)}</div>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="text-blue-600 font-medium">Z 座標</div>
+                                        <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.z).toFixed(3)}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 配置參數 */}
+                            <div className="space-y-3">
+                                <div className="font-medium text-gray-800">🔧 Anchor 配置參數</div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-medium">韌體更新</label>
+                                        <Select
+                                            value={anchorConfigForm.fw_update.toString()}
+                                            onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, fw_update: parseInt(value) }))}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="0">關閉</SelectItem>
+                                                <SelectItem value="1">開啟</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-sm font-medium">LED 狀態</label>
+                                        <Select
+                                            value={anchorConfigForm.led.toString()}
+                                            onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, led: parseInt(value) }))}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="0">關閉</SelectItem>
+                                                <SelectItem value="1">開啟</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-sm font-medium">BLE 狀態</label>
+                                        <Select
+                                            value={anchorConfigForm.ble.toString()}
+                                            onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, ble: parseInt(value) }))}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="0">關閉</SelectItem>
+                                                <SelectItem value="1">開啟</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-sm font-medium">發起者</label>
+                                        <Select
+                                            value={anchorConfigForm.initiator.toString()}
+                                            onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, initiator: parseInt(value) }))}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="0">一般錨點</SelectItem>
+                                                <SelectItem value="1">主錨點</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Anchor 信息顯示 */}
+                            <div className="bg-yellow-50 p-3 rounded border border-yellow-200 text-xs">
+                                <div className="font-medium mb-2 text-yellow-800">🏷️ Anchor 設備信息:</div>
+                                <div className="grid grid-cols-2 gap-2 text-yellow-700">
+                                    <div>
+                                        <span className="font-medium">設備名稱:</span> {configAnchor.cloudData?.name || configAnchor.name}
+                                    </div>
+                                    <div>
+                                        <span className="font-medium">設備 ID:</span> {configAnchor.cloudData?.id || parseInt(configAnchor.macAddress.replace(/[^0-9]/g, '')) || '未知'}
+                                    </div>
+                                    <div>
+                                        <span className="font-medium">MAC 地址:</span> {configAnchor.macAddress}
+                                    </div>
+                                    <div>
+                                        <span className="font-medium">當前狀態:</span> {configAnchor.cloudData?.initiator === 1 ? '主錨點' : '一般錨點'}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 發送信息預覽 */}
+                            <div className="bg-gray-50 p-3 rounded border text-xs">
+                                <div className="font-medium mb-2">📤 將發送到:</div>
+                                <div className="text-gray-600">
+                                    主題: {(() => {
+                                        const gateway = gateways.find(g => g.id === configAnchor.gatewayId)
+                                        const downlinkValue = gateway?.cloudData?.sub_topic?.downlink || '未知'
+                                        return downlinkValue === '未知' ? 'UWB/未知' :
+                                            downlinkValue.startsWith('UWB/') ? downlinkValue : `UWB/${downlinkValue}`
+                                    })()}
+                                </div>
+                                <div className="text-gray-600">
+                                    Gateway ID: {gateways.find(g => g.id === configAnchor.gatewayId)?.cloudData?.gateway_id || '未知'}
+                                </div>
+                            </div>
+
+                            {/* 按鈕 */}
+                            <div className="flex gap-2 pt-2">
+                                <Button
+                                    onClick={async () => {
+                                        if (!configAnchor) return
+
+                                        const position = {
+                                            x: parseFloat(anchorPositionInput.x),
+                                            y: parseFloat(anchorPositionInput.y),
+                                            z: parseFloat(anchorPositionInput.z)
+                                        }
+                                        const success = await sendAnchorConfigToCloud(configAnchor, position)
+                                        if (success) {
+                                            closeConfigDialog()
+                                        }
+                                    }}
+                                    className="flex-1"
+                                    disabled={sendingConfig}
+                                >
+                                    {sendingConfig ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                            發送中...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Upload className="h-4 w-4 mr-2" />
+                                            發送到雲端硬體
+                                        </>
+                                    )}
+                                </Button>
+                                <Button variant="outline" onClick={closeConfigDialog} disabled={sendingConfig}>
+                                    取消
+                                </Button>
                             </div>
                         </CardContent>
                     </Card>
