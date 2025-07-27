@@ -1349,6 +1349,184 @@ export default function UWBLocationPage() {
         setAnchors(prev => prev.filter(anchor => anchor.id !== id))
     }
 
+    // 開始 Anchor 座標校正（手動輸入模式）
+    const startAnchorCalibration = (anchor: AnchorDevice) => {
+        setCalibratingAnchor(anchor)
+        setAnchorPositionInput({
+            x: anchor.position?.x.toString() || '',
+            y: anchor.position?.y.toString() || '',
+            z: anchor.position?.z.toString() || '',
+            coordinateType: 'real'
+        })
+    }
+
+    // 地圖上雙擊 Anchor 開始校正
+    const startAnchorMapCalibration = (anchor: AnchorDevice, mapClickEvent: React.MouseEvent) => {
+        console.log(`🎯 開始 Anchor 地圖雙擊校正: ${anchor.name}`)
+
+        // 阻止事件冒泡
+        mapClickEvent.preventDefault()
+        mapClickEvent.stopPropagation()
+
+        // 直接查詢圖片元素
+        const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
+        if (!imgElement) {
+            console.error('❌ 找不到地圖圖片元素')
+            return
+        }
+
+        // 找到 Anchor 所屬的樓層
+        const gateway = gateways.find(g => g.id === anchor.gatewayId)
+        const floor = floors.find(f => f.id === gateway?.floorId)
+        if (!floor || !floor.calibration?.isCalibrated) {
+            console.error('❌ 找不到樓層或樓層未校準')
+            return
+        }
+
+        console.log(`📍 找到樓層: ${floor.name}, Gateway: ${gateway?.name}`)
+
+        // 獲取當前 Anchor 在地圖上的顯示位置，然後模擬點擊該位置
+        const displayPos = convertRealToDisplayCoords(anchor.position!.x, anchor.position!.y, floor, imgElement)
+        if (!displayPos) {
+            console.error('❌ 無法計算 Anchor 顯示位置')
+            return
+        }
+
+        console.log(`📍 Anchor 當前顯示位置: (${displayPos.x.toFixed(1)}, ${displayPos.y.toFixed(1)})`)
+
+        // 進入地圖點擊校正模式
+        setCalibratingAnchor(anchor)
+        setAnchorPositionInput({
+            x: anchor.position?.x.toString() || '',
+            y: anchor.position?.y.toString() || '',
+            z: anchor.position?.z.toString() || '',
+            coordinateType: 'real'
+        })
+
+        console.log(`✅ 已進入 ${anchor.name} 的地圖點擊校正模式`)
+        console.log(`📍 請在地圖上點擊新的位置來設定 Anchor 座標`)
+    }
+
+    // 地圖點擊校正處理
+    const handleMapClickCalibration = (event: React.MouseEvent<HTMLImageElement>) => {
+        if (!calibratingAnchor) return
+
+        console.log(`🎯 地圖點擊校正: ${calibratingAnchor.name}`)
+
+        const imgElement = event.currentTarget
+        // 找到 Anchor 所屬的樓層
+        const gateway = gateways.find(g => g.id === calibratingAnchor.gatewayId)
+        const floor = floors.find(f => f.id === gateway?.floorId)
+        if (!floor || !floor.calibration?.isCalibrated) {
+            console.error('❌ 找不到樓層或樓層未校準')
+            return
+        }
+
+        const info = getImageDisplayInfo(imgElement)
+        const rect = imgElement.getBoundingClientRect()
+
+        // 計算點擊位置
+        const clickX = event.clientX - rect.left
+        const clickY = event.clientY - rect.top
+
+        // 檢查是否點擊在圖片區域內
+        if (clickX < info.offsetX || clickY < info.offsetY ||
+            clickX > info.offsetX + info.actualImageWidth || clickY > info.offsetY + info.actualImageHeight) {
+            console.warn('點擊位置超出圖片區域')
+            return
+        }
+
+        // 轉換為圖片自然座標
+        const relativeX = (clickX - info.offsetX) / info.actualImageWidth
+        const relativeY = (clickY - info.offsetY) / info.actualImageHeight
+        const naturalX = relativeX * info.naturalWidth
+        const naturalY = relativeY * info.naturalHeight
+
+        // 轉換為真實座標
+        const realCoords = convertPixelToMeter({ x: naturalX, y: naturalY }, floor)
+        if (!realCoords) {
+            console.error('❌ 無法轉換為真實座標')
+            return
+        }
+
+        console.log(`📍 地圖點擊校正結果:`)
+        console.log(`- 點擊位置: (${clickX.toFixed(1)}, ${clickY.toFixed(1)})`)
+        console.log(`- 自然座標: (${naturalX.toFixed(1)}, ${naturalY.toFixed(1)})`)
+        console.log(`- 真實座標: (${realCoords.x.toFixed(2)}, ${realCoords.y.toFixed(2)})`)
+
+        // 直接更新 Anchor 位置（保持原有的 Z 座標）
+        const newPosition = {
+            x: realCoords.x,
+            y: realCoords.y,
+            z: calibratingAnchor.position?.z || 2.5 // 如果沒有 Z 座標，預設 2.5 米
+        }
+
+        setAnchors(prev => prev.map(a =>
+            a.id === calibratingAnchor.id
+                ? { ...a, position: newPosition }
+                : a
+        ))
+
+        console.log(`✅ Anchor 座標已更新:`)
+        console.log(`- 新座標: (${newPosition.x.toFixed(2)}, ${newPosition.y.toFixed(2)}, ${newPosition.z.toFixed(2)})`)
+
+        // 清理校正狀態並關閉彈窗
+        setCalibratingAnchor(null)
+
+        // 顯示成功提示
+        console.log(`🎉 ${calibratingAnchor.name} 座標校正完成！`)
+    }
+
+    // 取消 Anchor 座標校正
+    const cancelAnchorCalibration = () => {
+        setCalibratingAnchor(null)
+        setAnchorPositionInput({ x: '', y: '', z: '', coordinateType: 'real' })
+    }
+
+
+
+    // 保存 Anchor 座標校正
+    const saveAnchorCalibration = () => {
+        if (!calibratingAnchor) return
+
+        const x = parseFloat(anchorPositionInput.x)
+        const y = parseFloat(anchorPositionInput.y)
+        const z = parseFloat(anchorPositionInput.z)
+
+        if (isNaN(x) || isNaN(y) || isNaN(z)) {
+            alert('請輸入有效的座標數值')
+            return
+        }
+
+        let finalCoords = { x, y, z }
+
+        // 如果輸入的是像素座標，需要轉換為真實座標
+        if (anchorPositionInput.coordinateType === 'pixel') {
+            const gateway = gateways.find(g => g.id === calibratingAnchor.gatewayId)
+            const floor = floors.find(f => f.id === gateway?.floorId)
+            if (floor && floor.calibration?.isCalibrated) {
+                const realCoords = convertPixelToMeter({ x, y }, floor)
+                if (realCoords) {
+                    finalCoords = { x: realCoords.x, y: realCoords.y, z }
+                }
+            }
+        }
+
+        // 更新 Anchor 位置
+        setAnchors(prev => prev.map(anchor =>
+            anchor.id === calibratingAnchor.id
+                ? { ...anchor, position: finalCoords }
+                : anchor
+        ))
+
+        console.log(`✅ Anchor 座標已更新:`)
+        console.log(`- Anchor: ${calibratingAnchor.name}`)
+        console.log(`- 新座標: (${finalCoords.x.toFixed(2)}, ${finalCoords.y.toFixed(2)}, ${finalCoords.z.toFixed(2)})`)
+
+        // 清理狀態
+        cancelAnchorCalibration()
+    }
+
     // 地圖上傳處理
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
@@ -1384,6 +1562,16 @@ export default function UWBLocationPage() {
     const [imageLoaded, setImageLoaded] = useState(false)
     const mapImageRef = useRef<HTMLImageElement>(null)
     const scaleImageRef = useRef<HTMLImageElement>(null)
+
+    // Anchor 座標校正相關狀態
+    const [calibratingAnchor, setCalibratingAnchor] = useState<AnchorDevice | null>(null)
+    const [anchorCalibrationMode, setAnchorCalibrationMode] = useState<'manual'>('manual') // 移除地圖點選模式
+    const [anchorPositionInput, setAnchorPositionInput] = useState({
+        x: '',
+        y: '',
+        z: '',
+        coordinateType: 'real' as 'real' | 'pixel' // 座標類型：真實座標或像素座標
+    })
 
     // 地圖點擊處理
     const handleMapClick = (event: React.MouseEvent<HTMLImageElement>) => {
@@ -3251,12 +3439,24 @@ export default function UWBLocationPage() {
                                             <img
                                                 src={floor.mapImage}
                                                 alt={`${floor.name} 地圖`}
-                                                className="w-full h-full object-contain bg-gray-50 anchor-map-image"
+                                                className={`w-full h-full object-contain bg-gray-50 anchor-map-image ${calibratingAnchor ? 'cursor-crosshair' : ''}`}
+                                                onClick={calibratingAnchor ? handleMapClickCalibration : undefined}
                                                 onLoad={(e) => {
                                                     // 圖片加載完成後觸發重新渲染
                                                     setImageLoaded(prev => !prev)
                                                 }}
                                             />
+
+                                            {/* 操作提示 */}
+                                            {calibratingAnchor ? (
+                                                <div className="absolute top-2 left-2 bg-green-600 text-white text-sm px-3 py-1 rounded shadow-sm animate-pulse">
+                                                    點擊地圖設定 {calibratingAnchor.name} 的新位置
+                                                </div>
+                                            ) : (
+                                                <div className="absolute top-2 left-2 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm">
+                                                    雙擊 Anchor 點可快速校正位置
+                                                </div>
+                                            )}
 
                                             {/* 座標原點 */}
                                             {floor.calibration?.originPixel && (() => {
@@ -3306,8 +3506,16 @@ export default function UWBLocationPage() {
                                                         }}
                                                     >
                                                         {/* Anchor 圖標 */}
-                                                        <div className={`w-6 h-6 rounded-full border-2 border-white shadow-lg flex items-center justify-center ${anchor.cloudData?.initiator === 1 ? 'bg-orange-500' : 'bg-blue-500'
-                                                            }`}>
+                                                        <div
+                                                            className={`w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${calibratingAnchor?.id === anchor.id
+                                                                ? 'border-yellow-400 bg-yellow-500 animate-pulse'
+                                                                : anchor.cloudData?.initiator === 1
+                                                                    ? 'border-white bg-orange-500 hover:bg-orange-600'
+                                                                    : 'border-white bg-blue-500 hover:bg-blue-600'
+                                                                }`}
+                                                            onDoubleClick={(e) => startAnchorMapCalibration(anchor, e)}
+                                                            title={calibratingAnchor?.id === anchor.id ? "正在校正中..." : "雙擊校正位置"}
+                                                        >
                                                             <Anchor className="w-3 h-3 text-white" />
                                                         </div>
 
@@ -3466,6 +3674,14 @@ export default function UWBLocationPage() {
                                                                                 anchor.status === 'calibrating' ? '標定中' :
                                                                                     anchor.status === 'unpaired' ? '未配對' : '錯誤'}
                                                                     </Badge>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => startAnchorCalibration(anchor)}
+                                                                        disabled={calibratingAnchor !== null}
+                                                                    >
+                                                                        <Target className="h-4 w-4" />
+                                                                    </Button>
                                                                     <Button
                                                                         size="sm"
                                                                         variant="outline"
@@ -3792,6 +4008,123 @@ export default function UWBLocationPage() {
                     )}
                 </TabsContent>
             </Tabs>
+
+            {/* Anchor 座標校正彈窗 */}
+            {calibratingAnchor && (
+                <div className="fixed top-4 right-4 z-50 w-80">
+                    <Card className="w-full shadow-2xl border-2 border-green-200">
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center">
+                                    <Target className="mr-2 h-5 w-5 text-green-500" />
+                                    校正 {calibratingAnchor.name}
+                                </CardTitle>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={cancelAnchorCalibration}
+                                    className="h-8 w-8 p-0 hover:bg-gray-100"
+                                >
+                                    ✕
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {/* 說明文字 */}
+                            <div className="text-sm bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
+                                <div className="font-medium mb-2 text-green-800 flex items-center">
+                                    🎯 地圖點擊校正模式
+                                    <span className="ml-2 inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                </div>
+                                <div className="mb-3 text-green-700">
+                                    <strong>👆 直接點擊左側地圖</strong> 來設定 <span className="font-medium bg-yellow-100 px-1 rounded">{calibratingAnchor.name}</span> 的新位置
+                                </div>
+                                <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded border-l-2 border-blue-300">
+                                    💡 或者在下方手動輸入精確座標值
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="text-sm font-medium">座標類型</label>
+                                    <Select
+                                        value={anchorPositionInput.coordinateType}
+                                        onValueChange={(value: 'real' | 'pixel') =>
+                                            setAnchorPositionInput(prev => ({ ...prev, coordinateType: value as 'real' | 'pixel' }))
+                                        }
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="real">真實座標 (米)</SelectItem>
+                                            <SelectItem value="pixel">像素座標 (px)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-2">
+                                    <div>
+                                        <label className="text-sm font-medium">X 座標</label>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={anchorPositionInput.x}
+                                            onChange={(e) => setAnchorPositionInput(prev => ({ ...prev, x: e.target.value }))}
+                                            placeholder="X"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium">Y 座標</label>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={anchorPositionInput.y}
+                                            onChange={(e) => setAnchorPositionInput(prev => ({ ...prev, y: e.target.value }))}
+                                            placeholder="Y"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium">Z 座標 (米)</label>
+                                        <Input
+                                            type="number"
+                                            step="0.01"
+                                            value={anchorPositionInput.z}
+                                            onChange={(e) => setAnchorPositionInput(prev => ({ ...prev, z: e.target.value }))}
+                                            placeholder="Z"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
+                                    {anchorPositionInput.coordinateType === 'real' ?
+                                        '💡 輸入真實世界的座標（單位：米）' :
+                                        '💡 輸入圖片上的像素座標，系統會自動轉換為真實座標'
+                                    }
+                                </div>
+                            </div>
+
+                            {/* 按鈕 */}
+                            <div className="flex gap-2 pt-2">
+                                <Button onClick={saveAnchorCalibration} className="flex-1">
+                                    <Save className="h-4 w-4 mr-2" />
+                                    保存手動輸入座標
+                                </Button>
+                                <Button variant="outline" onClick={cancelAnchorCalibration}>
+                                    取消校正
+                                </Button>
+                            </div>
+
+                            {/* 快速操作提示 */}
+                            <div className="text-xs text-center bg-gradient-to-r from-yellow-50 to-orange-50 p-3 rounded border border-yellow-200">
+                                <div className="font-medium text-orange-700 mb-1">⚡ 快速操作</div>
+                                <div className="text-orange-600">
+                                    點擊左側地圖 = 快速設定 | 手動輸入 = 精確座標
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </div >
     )
 }
