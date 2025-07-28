@@ -12,6 +12,9 @@ MQTT_TOPIC = "UWB/GW16B8_Dwlink"  # 發送主題
 MQTT_USERNAME = "testweb1"
 MQTT_PASSWORD = "Aa000000"
 
+# 全域變數用於追蹤序列號
+serial_counter = 1240
+
 def on_connect(client, userdata, flags, rc):
     """MQTT 連接回調函數"""
     if rc == 0:
@@ -30,23 +33,32 @@ def on_disconnect(client, userdata, rc):
 
 def create_anchor_message():
     """創建 Anchor 配置訊息"""
+    global serial_counter
+
+    # 計算坐標值 (序列號/1000)
+    coordinate_value = serial_counter / 1000.0
+
     message = {
         "content": "configChange",
         "gateway id": 4192540344,
         "node": "ANCHOR",
-        "name": "DW4C0B",
-        "id": 19467,
+        "name": "0x8E97",
+        "id": 36503,
         "fw update": 0,
         "led": 1,
         "ble": 1,
         "initiator": 0,
         "position": {
-            "x": 1.1,
-            "y": 1.11,
-            "z": 1.111
+            "x": coordinate_value,
+            "y": coordinate_value,
+            "z": coordinate_value
         },
-        "serial no": 1302
+        "serial no": serial_counter
     }
+
+    # 序列號遞增
+    serial_counter += 1
+
     return message
 
 def send_message(client):
@@ -87,9 +99,9 @@ def send_message(client):
             print(f"    Y: {position['y']}")
             print(f"    Z: {position['z']}")
 
-            # 輸出原始 JSON
-            print(f"\n發送的 JSON:")
-            print(json.dumps(message, indent=2, ensure_ascii=False))
+            # 輸出原始 JSON（簡化顯示）
+            print(f"\n發送的 JSON (簡化):")
+            print(f"  序列號: {message['serial no']}, 坐標: ({position['x']}, {position['y']}, {position['z']})")
             print(f"{'='*60}\n")
 
         else:
@@ -100,11 +112,15 @@ def send_message(client):
 
 def main():
     """主程式"""
-    print("UWB 雲端 MQTT 訊息發送程式")
+    global serial_counter
+
+    print("UWB 雲端 MQTT 自動循環發送程式")
     print(f"雲端 MQTT Broker: {MQTT_BROKER}:{MQTT_PORT}")
     print(f"用戶名: {MQTT_USERNAME}")
     print(f"發送主題: {MQTT_TOPIC}")
     print("使用 SSL/TLS 加密連接")
+    print(f"序列號起始值: {serial_counter}")
+    print("每1秒發送一次訊息，XYZ坐標 = 序列號/1000")
     print("按 Ctrl+C 退出程式\n")
 
     # 創建 MQTT 客戶端
@@ -133,15 +149,16 @@ def main():
         # 等待連接建立
         time.sleep(2)
 
+        print("開始自動發送訊息...")
+
+        # 自動循環發送
         while True:
             try:
                 # 發送訊息
                 send_message(client)
 
-                # 等待用戶輸入決定是否繼續發送
-                user_input = input("按 Enter 繼續發送，輸入 'q' 退出: ")
-                if user_input.lower() == 'q':
-                    break
+                # 等待1秒
+                time.sleep(1)
 
             except KeyboardInterrupt:
                 print(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 程式被用戶中斷")
@@ -155,6 +172,7 @@ def main():
     finally:
         client.disconnect()
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 程式結束")
+        print(f"最後發送的序列號: {serial_counter - 1}")
 
 if __name__ == "__main__":
     main()
