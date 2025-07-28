@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 // @ts-ignore
 import mqtt from "mqtt"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -21,6 +21,7 @@ import {
     Activity,
     AlertCircle,
     CheckCircle2,
+    Download,
     Anchor,
     Tag,
     Radio,
@@ -429,24 +430,492 @@ type DiscoveredCloudAnchor = {
 }
 
 export default function UWBLocationPage() {
-    // 狀態管理
-    const [homes, setHomes] = useState<Home[]>(MOCK_HOMES)
-    const [floors, setFloors] = useState<Floor[]>(MOCK_FLOORS)
-    const [gateways, setGateways] = useState<Gateway[]>(MOCK_GATEWAYS)
-    const [anchors, setAnchors] = useState<AnchorDevice[]>(MOCK_ANCHORS)
-    const [tags, setTags] = useState<TagDevice[]>(MOCK_TAGS)
-    const [selectedHome, setSelectedHome] = useState<string>(MOCK_HOMES[0]?.id || "")
-    const [activeTab, setActiveTab] = useState("overview")
+    // 從 localStorage 加載數據的輔助函數（含智能恢復）
+    const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
+        try {
+            const stored = localStorage.getItem(`uwb_${key}`)
+            if (!stored) {
+                console.log(`📭 ${key}: 無存儲數據，使用默認值`)
+                return defaultValue
+            }
+
+            console.log(`📦 ${key}: 開始解析存儲數據`)
+            const data = JSON.parse(stored)
+
+            // 修復 Date 對象序列化問題
+            const restored = restoreDateObjects(data, key)
+            console.log(`✅ ${key}: 數據加載完成`)
+            return restored
+        } catch (error) {
+            console.warn(`❌ 無法從 localStorage 加載 ${key}:`, error)
+
+            // 🔄 智能恢復：嘗試從完整備份恢復
+            try {
+                const backup = localStorage.getItem('uwb_full_backup')
+                if (backup) {
+                    const backupData = JSON.parse(backup)
+                    if (backupData[key]) {
+                        console.log(`🔄 從完整備份恢復 ${key}`)
+                        return restoreDateObjects(backupData[key], key)
+                    }
+                }
+            } catch (backupError) {
+                console.warn(`❌ 備份恢復也失敗:`, backupError)
+            }
+
+            return defaultValue
+        }
+    }
+
+    // 恢復 Date 對象的輔助函數
+    const restoreDateObjects = (data: any, key: string): any => {
+        if (!data) return data
+
+        // console.log(`🔄 正在恢復 ${key} 的 Date 對象...`) // 簡化日誌
+
+        try {
+            if (key === 'homes' && Array.isArray(data)) {
+                return data.map((home: any) => ({
+                    ...home,
+                    createdAt: new Date(home.createdAt)
+                }))
+            }
+
+            if (key === 'floors' && Array.isArray(data)) {
+                return data.map((floor: any) => ({
+                    ...floor,
+                    createdAt: new Date(floor.createdAt)
+                }))
+            }
+
+            if (key === 'gateways' && Array.isArray(data)) {
+                return data.map((gateway: any) => ({
+                    ...gateway,
+                    lastSeen: gateway.lastSeen ? new Date(gateway.lastSeen) : undefined,
+                    createdAt: new Date(gateway.createdAt),
+                    cloudData: gateway.cloudData ? {
+                        ...gateway.cloudData,
+                        receivedAt: new Date(gateway.cloudData.receivedAt)
+                    } : undefined
+                }))
+            }
+
+            if (key === 'anchors' && Array.isArray(data)) {
+                // console.log(`- 處理 ${data.length} 個錨點`) // 簡化日誌
+                return data.map((anchor: any, index: number) => {
+                    try {
+                        const result = {
+                            ...anchor,
+                            lastSeen: anchor.lastSeen ? new Date(anchor.lastSeen) : new Date(),
+                            createdAt: new Date(anchor.createdAt),
+                            cloudData: anchor.cloudData ? {
+                                ...anchor.cloudData,
+                                receivedAt: new Date(anchor.cloudData.receivedAt)
+                            } : undefined
+                        }
+                        // console.log(`  ✅ 錨點 ${index + 1}: Date 對象已恢復`) // 簡化日誌
+                        return result
+                    } catch (error) {
+                        console.warn(`  ❌ 錨點 ${index + 1} Date 轉換失敗:`, error)
+                        return {
+                            ...anchor,
+                            lastSeen: new Date(),
+                            createdAt: new Date(),
+                            cloudData: anchor.cloudData ? {
+                                ...anchor.cloudData,
+                                receivedAt: new Date()
+                            } : undefined
+                        }
+                    }
+                })
+            }
+
+            if (key === 'tags' && Array.isArray(data)) {
+                return data.map((tag: any) => ({
+                    ...tag,
+                    createdAt: new Date(tag.createdAt),
+                    lastPosition: tag.lastPosition ? {
+                        ...tag.lastPosition,
+                        timestamp: new Date(tag.lastPosition.timestamp)
+                    } : undefined
+                }))
+            }
+
+            if (key === 'cloudGatewayData' && Array.isArray(data)) {
+                return data.map((item: any) => ({
+                    ...item,
+                    receivedAt: new Date(item.receivedAt)
+                }))
+            }
+
+            if (key === 'discoveredGateways' && Array.isArray(data)) {
+                // console.log(`- 處理 ${data.length} 個發現的閘道器`) // 簡化日誌
+                return data.map((gateway: any, index: number) => {
+                    try {
+                        const result = {
+                            ...gateway,
+                            lastSeen: gateway.lastSeen ? new Date(gateway.lastSeen) : new Date()
+                        }
+                        // console.log(`  ✅ 閘道器 ${index + 1}: lastSeen 已轉換為 Date`) // 簡化日誌
+                        return result
+                    } catch (error) {
+                        console.warn(`  ❌ 閘道器 ${index + 1} Date 轉換失敗:`, error)
+                        return {
+                            ...gateway,
+                            lastSeen: new Date() // 使用當前時間作為備用
+                        }
+                    }
+                })
+            }
+
+            return data
+        } catch (error) {
+            console.warn(`恢復 ${key} 的 Date 對象時發生錯誤:`, error)
+            return data
+        }
+    }
+
+    // 保存到 localStorage 的輔助函數
+    const saveToStorage = <T,>(key: string, data: T) => {
+        try {
+            localStorage.setItem(`uwb_${key}`, JSON.stringify(data))
+            console.log(`✅ 已保存 ${key} 到 localStorage`)
+        } catch (error) {
+            console.warn(`無法保存 ${key} 到 localStorage:`, error)
+        }
+    }
+
+    // 手動強制保存
+    const forceSave = () => {
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current)
+        }
+        batchSave()
+        console.log('🔄 手動觸發強制保存')
+    }
+
+    // 📡 獲取並遞增全域 serial_no (防止亂跳)
+    const getNextSerialNo = (): number => {
+        const currentSerial = globalSerialNo
+
+        // 確保 serial_no 在合理範圍內
+        let validSerial = currentSerial
+        if (currentSerial < 1306 || currentSerial > 9999) {
+            console.warn(`⚠️ Serial No 異常: ${currentSerial}，重置為 1306`)
+            validSerial = 1306
+            setGlobalSerialNo(1306)
+            return 1306
+        }
+
+        const nextSerial = validSerial >= 9999 ? 1306 : validSerial + 1
+
+        console.log(`📡 Serial No: ${validSerial} → ${nextSerial} ${nextSerial === 1306 ? '(重置)' : ''}`)
+        setGlobalSerialNo(nextSerial)
+
+        return validSerial
+    }
+
+    // 清除所有存儲數據的函數
+    const clearAllStorage = () => {
+        const keys = ['homes', 'floors', 'gateways', 'anchors', 'tags', 'selectedHome', 'activeTab', 'cloudGatewayData', 'discoveredGateways', 'version', 'lastSave', 'globalSerialNo']
+        keys.forEach(key => {
+            localStorage.removeItem(`uwb_${key}`)
+        })
+        // 也清除完整備份
+        localStorage.removeItem('uwb_full_backup')
+        console.log('🗑️ 已清除所有 localStorage 數據和備份')
+
+        // 重新加載頁面以重置狀態
+        window.location.reload()
+    }
+
+    // 調試：檢查當前存儲數據
+    const debugStorage = () => {
+        console.log('🔍 當前 localStorage 數據:')
+        const keys = ['homes', 'floors', 'gateways', 'anchors', 'tags', 'selectedHome', 'activeTab', 'cloudGatewayData', 'discoveredGateways', 'globalSerialNo']
+        keys.forEach(key => {
+            const data = localStorage.getItem(`uwb_${key}`)
+            if (data) {
+                try {
+                    const parsed = JSON.parse(data)
+                    console.log(`- ${key}:`, Array.isArray(parsed) ? `${parsed.length} 個項目` : parsed)
+                } catch {
+                    console.log(`- ${key}:`, data)
+                }
+            } else {
+                console.log(`- ${key}: 無數據`)
+            }
+        })
+        console.log(`📡 當前 Serial No: ${globalSerialNo} (下次將使用: ${globalSerialNo >= 9999 ? 1306 : globalSerialNo + 1})`)
+    }
+
+    // 導出數據到 JSON 文件
+    const exportData = () => {
+        const data = {
+            homes,
+            floors,
+            gateways,
+            anchors,
+            tags,
+            selectedHome,
+            cloudGatewayData,
+            discoveredGateways,
+            exportDate: new Date().toISOString()
+        }
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `uwb-data-${new Date().toISOString().split('T')[0]}.json`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
+        console.log('📤 數據已導出')
+    }
+
+    // 導入數據從 JSON 文件
+    const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        if (!file) return
+
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target?.result as string)
+
+                // 驗證數據結構
+                if (data.homes && data.floors && data.gateways && data.anchors && data.tags) {
+                    setHomes(data.homes)
+                    setFloors(data.floors)
+                    setGateways(data.gateways)
+                    setAnchors(data.anchors)
+                    setTags(data.tags)
+                    if (data.selectedHome) setSelectedHome(data.selectedHome)
+                    if (data.cloudGatewayData) setCloudGatewayData(data.cloudGatewayData)
+                    if (data.discoveredGateways) setDiscoveredGateways(data.discoveredGateways)
+
+                    console.log('📥 數據已導入')
+                    alert('✅ 數據導入成功！')
+                } else {
+                    alert('❌ 無效的數據格式')
+                }
+            } catch (error) {
+                console.error('導入數據失敗:', error)
+                alert('❌ 導入數據失敗')
+            }
+        }
+        reader.readAsText(file)
+
+        // 清除文件選擇
+        event.target.value = ''
+    }
+
+    // 加載狀態
+    const [isLoading, setIsLoading] = useState(true)
+    const [loadError, setLoadError] = useState<string | null>(null)
+
+    // 狀態管理 - 從 localStorage 初始化
+    const [homes, setHomes] = useState<Home[]>([])
+    const [floors, setFloors] = useState<Floor[]>([])
+    const [gateways, setGateways] = useState<Gateway[]>([])
+    const [anchors, setAnchors] = useState<AnchorDevice[]>([])
+    const [tags, setTags] = useState<TagDevice[]>([])
+
+    // 初始化數據加載
+    useEffect(() => {
+        const initializeData = async () => {
+            try {
+                setIsLoading(true)
+                setLoadError(null)
+
+                console.log('🔄 開始加載本地存儲數據...')
+
+                // 異步加載數據以避免阻塞 UI
+                const [
+                    loadedHomes,
+                    loadedFloors,
+                    loadedGateways,
+                    loadedAnchors,
+                    loadedTags
+                ] = await Promise.all([
+                    Promise.resolve(loadFromStorage('homes', MOCK_HOMES)),
+                    Promise.resolve(loadFromStorage('floors', MOCK_FLOORS)),
+                    Promise.resolve(loadFromStorage('gateways', MOCK_GATEWAYS)),
+                    Promise.resolve(loadFromStorage('anchors', MOCK_ANCHORS)),
+                    Promise.resolve(loadFromStorage('tags', MOCK_TAGS))
+                ])
+
+                setHomes(loadedHomes)
+                setFloors(loadedFloors)
+                setGateways(loadedGateways)
+                setAnchors(loadedAnchors)
+                setTags(loadedTags)
+
+                // 設置 selectedHome - 優先使用存儲的值，否則使用第一個場域
+                const storedSelectedHome = loadFromStorage('selectedHome', '')
+                const finalSelectedHome = storedSelectedHome && loadedHomes.find(h => h.id === storedSelectedHome)
+                    ? storedSelectedHome
+                    : loadedHomes[0]?.id || ""
+                setSelectedHome(finalSelectedHome)
+
+                console.log('✅ 數據加載完成')
+                console.log(`- 場域: ${loadedHomes.length} 個`)
+                console.log(`- 樓層: ${loadedFloors.length} 個`)
+                console.log(`- 閘道器: ${loadedGateways.length} 個`)
+                console.log(`- 錨點: ${loadedAnchors.length} 個`)
+                console.log(`- 標籤: ${loadedTags.length} 個`)
+                console.log(`- 選中場域: ${finalSelectedHome}`)
+
+                setIsLoading(false)
+            } catch (error) {
+                console.error('❌ 數據加載失敗:', error)
+                setLoadError(error instanceof Error ? error.message : '未知錯誤')
+
+                // 加載失敗時使用預設數據
+                console.log('🔄 使用預設數據')
+                setHomes(MOCK_HOMES)
+                setFloors(MOCK_FLOORS)
+                setGateways(MOCK_GATEWAYS)
+                setAnchors(MOCK_ANCHORS)
+                setTags(MOCK_TAGS)
+                setSelectedHome(MOCK_HOMES[0]?.id || "")
+
+                setIsLoading(false)
+            }
+        }
+
+        initializeData()
+    }, [])
+    const [selectedHome, setSelectedHome] = useState<string>("")
+    const [activeTab, setActiveTab] = useState(() => loadFromStorage('activeTab', "overview"))
+
+    // 🚀 智能自動持久化系統 - 狀態聲明
+    const [lastSaveTime, setLastSaveTime] = useState<Date>(new Date())
+    const [pendingSave, setPendingSave] = useState<boolean>(false)
+    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+    // 📡 全域 serial_no 管理 (1306-9999 循環)
+    const [globalSerialNo, setGlobalSerialNo] = useState<number>(() => loadFromStorage('globalSerialNo', 1306))
 
     // 雲端 MQTT 相關狀態
     const [cloudConnected, setCloudConnected] = useState(false)
     const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
     const [cloudError, setCloudError] = useState<string>("")
     const [cloudReconnectAttempts, setCloudReconnectAttempts] = useState(0)
-    const [cloudGatewayData, setCloudGatewayData] = useState<CloudGatewayData[]>([])
-    const [discoveredGateways, setDiscoveredGateways] = useState<DiscoveredGateway[]>([])
+    const [cloudGatewayData, setCloudGatewayData] = useState<CloudGatewayData[]>(() => loadFromStorage('cloudGatewayData', []))
+    const [discoveredGateways, setDiscoveredGateways] = useState<DiscoveredGateway[]>(() => loadFromStorage('discoveredGateways', []))
     const [selectedDiscoveredGateway, setSelectedDiscoveredGateway] = useState<number | null>(null)
     const cloudClientRef = useRef<mqtt.MqttClient | null>(null)
+
+    // 🚀 智能批量保存函數 - 避免頻繁寫入
+    const batchSave = useCallback(() => {
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current)
+        }
+
+        setPendingSave(true)
+        saveTimeoutRef.current = setTimeout(() => {
+            try {
+                // 批量保存所有數據
+                const dataToSave = {
+                    homes,
+                    floors,
+                    gateways,
+                    anchors,
+                    tags,
+                    selectedHome,
+                    activeTab,
+                    cloudGatewayData,
+                    discoveredGateways,
+                    globalSerialNo,
+                    version: Date.now(), // 添加版本號
+                    lastSave: new Date().toISOString()
+                }
+
+                // 保存到 localStorage
+                Object.entries(dataToSave).forEach(([key, value]) => {
+                    if (key === 'selectedHome' && !value) return // 跳過空值
+                    if (key === 'version' || key === 'lastSave') return // 跳過元數據
+                    saveToStorage(key, value)
+                })
+
+                // 額外保存完整備份和元數據
+                saveToStorage('version', dataToSave.version)
+                saveToStorage('lastSave', dataToSave.lastSave)
+                localStorage.setItem('uwb_full_backup', JSON.stringify(dataToSave))
+
+                setLastSaveTime(new Date())
+                setPendingSave(false)
+                console.log(`💾 自動保存完成 ${new Date().toLocaleTimeString()} - ${Object.keys(dataToSave).filter(k => !['version', 'lastSave'].includes(k)).length} 個數據類型`)
+            } catch (error) {
+                console.error('❌ 自動保存失敗:', error)
+                setPendingSave(false)
+            }
+        }, 500) // 500ms延遲，避免頻繁保存
+    }, [homes, floors, gateways, anchors, tags, selectedHome, activeTab, cloudGatewayData, discoveredGateways])
+
+    // 監聽所有數據變化，觸發批量保存
+    useEffect(() => {
+        if (homes.length > 0 || floors.length > 0 || gateways.length > 0 || anchors.length > 0 || tags.length > 0) {
+            batchSave()
+        }
+    }, [homes, floors, gateways, anchors, tags, batchSave])
+
+    useEffect(() => {
+        if (selectedHome || activeTab !== 'overview') {
+            batchSave()
+        }
+    }, [selectedHome, activeTab, batchSave])
+
+    useEffect(() => {
+        if (cloudGatewayData.length > 0 || discoveredGateways.length > 0) {
+            batchSave()
+        }
+    }, [cloudGatewayData, discoveredGateways, batchSave])
+
+    // 自動保存 globalSerialNo
+    useEffect(() => {
+        saveToStorage('globalSerialNo', globalSerialNo)
+    }, [globalSerialNo])
+
+    // 清理定時器
+    useEffect(() => {
+        return () => {
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current)
+            }
+        }
+    }, [])
+
+    // 🎹 開發者快捷鍵 (Ctrl+Shift+D 調試, Ctrl+Shift+S 強制保存, Ctrl+Shift+R 重置)
+    useEffect(() => {
+        const handleKeydown = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.shiftKey) {
+                switch (e.key) {
+                    case 'D':
+                        e.preventDefault()
+                        debugStorage()
+                        break
+                    case 'S':
+                        e.preventDefault()
+                        forceSave()
+                        break
+                    case 'R':
+                        e.preventDefault()
+                        if (confirm('確定要重置所有數據嗎？此操作不可撤銷！')) {
+                            clearAllStorage()
+                        }
+                        break
+                }
+            }
+        }
+
+        window.addEventListener('keydown', handleKeydown)
+        return () => window.removeEventListener('keydown', handleKeydown)
+    }, [])
 
     // Anchor 雲端 MQTT 相關狀態
     const [anchorCloudConnected, setAnchorCloudConnected] = useState(false)
@@ -1564,7 +2033,7 @@ export default function UWBLocationPage() {
             console.log(`- 原始 downlink 值: "${downlinkValue}"`)
             console.log(`- 最終主題: "${downlinkTopic}"`)
 
-            // 構建配置訊息
+            // 構建配置訊息 (使用表單中的 serial_no)
             const configMessage = {
                 content: "configChange",
                 gateway_id: gateway.cloudData.gateway_id,
@@ -1580,7 +2049,7 @@ export default function UWBLocationPage() {
                     y: position.y,
                     z: position.z
                 },
-                serial_no: 1302
+                serial_no: anchorConfigForm.serial_no
             }
 
             console.log(`🚀 準備發送 Anchor 配置到雲端:`)
@@ -1590,6 +2059,7 @@ export default function UWBLocationPage() {
             console.log(`- Anchor ID: ${configMessage.id} (來源: ${anchor.cloudData?.id ? '雲端' : 'MAC轉換'})`)
             console.log(`- MAC 地址: ${anchor.macAddress}`)
             console.log(`- 位置: (${position.x}, ${position.y}, ${position.z})`)
+            console.log(`- Serial No: ${anchorConfigForm.serial_no}`)
             console.log(`- 配置參數:`, anchorConfigForm)
 
             // 使用雲端 MQTT 客戶端發送
@@ -1603,6 +2073,11 @@ export default function UWBLocationPage() {
                     } else {
                         console.log('✅ Anchor 配置已成功發送到雲端')
                         alert(`✅ 已將 ${anchor.name} 的新座標發送到雲端硬體`)
+
+                        // 發送成功後，更新全域 serial_no 為下一個值
+                        const nextSerial = anchorConfigForm.serial_no >= 9999 ? 1306 : anchorConfigForm.serial_no + 1
+                        setGlobalSerialNo(nextSerial)
+                        console.log(`📡 Serial No 已更新: ${anchorConfigForm.serial_no} → ${nextSerial}`)
 
                         // 記錄發送的完整訊息
                         console.log('📤 發送的完整訊息:')
@@ -1628,11 +2103,13 @@ export default function UWBLocationPage() {
 
     // 開啟配置發送對話框
     const openConfigDialog = (anchor: AnchorDevice, newPosition: { x: number, y: number, z: number }) => {
+        const nextSerial = getNextSerialNo() // 獲取下一個 serial_no
         setAnchorConfigForm({
             fw_update: anchor.cloudData?.fw_update || 0,
             led: anchor.cloudData?.led || 1,
             ble: anchor.cloudData?.ble || 1,
-            initiator: anchor.cloudData?.initiator || 0
+            initiator: anchor.cloudData?.initiator || 0,
+            serial_no: nextSerial // 使用獲取的 serial_no
         })
 
         // 先關閉校正彈窗，再開啟配置發送對話框
@@ -1660,7 +2137,8 @@ export default function UWBLocationPage() {
             fw_update: 0,
             led: 1,
             ble: 1,
-            initiator: 0
+            initiator: 0,
+            serial_no: 1306
         })
     }
 
@@ -1718,7 +2196,8 @@ export default function UWBLocationPage() {
         fw_update: 0,
         led: 1,
         ble: 1,
-        initiator: 0
+        initiator: 0,
+        serial_no: 1306 // 用戶可修改的 serial_no
     })
 
     // 地圖點擊處理
@@ -1841,6 +2320,59 @@ export default function UWBLocationPage() {
         }
     }
 
+    // 加載狀態顯示
+    if (isLoading) {
+        return (
+            <div className="container mx-auto p-6">
+                <div className="flex items-center justify-center min-h-screen">
+                    <Card className="w-full max-w-md">
+                        <CardContent className="pt-6">
+                            <div className="flex flex-col items-center space-y-4">
+                                <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                                <div className="text-center">
+                                    <h3 className="text-lg font-medium">正在加載數據...</h3>
+                                    <p className="text-sm text-muted-foreground mt-2">
+                                        正在從本地存儲恢復您的數據
+                                    </p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        )
+    }
+
+    // 錯誤狀態顯示
+    if (loadError) {
+        return (
+            <div className="container mx-auto p-6">
+                <div className="flex items-center justify-center min-h-screen">
+                    <Card className="w-full max-w-md border-red-200">
+                        <CardContent className="pt-6">
+                            <div className="flex flex-col items-center space-y-4">
+                                <AlertCircle className="h-8 w-8 text-red-500" />
+                                <div className="text-center">
+                                    <h3 className="text-lg font-medium text-red-800">數據加載失敗</h3>
+                                    <p className="text-sm text-red-600 mt-2">
+                                        {loadError}
+                                    </p>
+                                    <Button
+                                        onClick={() => window.location.reload()}
+                                        className="mt-4"
+                                        size="sm"
+                                    >
+                                        重新加載
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className="space-y-6">
             {/* 標題區域 */}
@@ -1888,76 +2420,107 @@ export default function UWBLocationPage() {
 
                 {/* 系統總覽 */}
                 <TabsContent value="overview" className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
                         <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Home className="h-8 w-8 text-blue-500" />
+                            <CardContent className="pt-8 pb-6">
+                                <div className="flex flex-col items-center text-center space-y-3">
+                                    <Home className="h-12 w-12 text-blue-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">場域數量</p>
-                                        <p className="text-2xl font-bold">{homes.length}</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">場域數量</p>
+                                        <p className="text-3xl font-bold text-blue-600">{homes.length}</p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Layers3 className="h-8 w-8 text-green-500" />
+                            <CardContent className="pt-8 pb-6">
+                                <div className="flex flex-col items-center text-center space-y-3">
+                                    <Layers3 className="h-12 w-12 text-green-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">樓層數量</p>
-                                        <p className="text-2xl font-bold">{currentFloors.length}</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">樓層數量</p>
+                                        <p className="text-3xl font-bold text-green-600">{currentFloors.length}</p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Wifi className="h-8 w-8 text-purple-500" />
+                            <CardContent className="pt-8 pb-6">
+                                <div className="flex flex-col items-center text-center space-y-3">
+                                    <Wifi className="h-12 w-12 text-purple-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">閘道器數量</p>
-                                        <p className="text-2xl font-bold">{currentGateways.length}</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">閘道器數量</p>
+                                        <p className="text-3xl font-bold text-purple-600">{currentGateways.length}</p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Anchor className="h-8 w-8 text-indigo-500" />
+                            <CardContent className="pt-8 pb-6">
+                                <div className="flex flex-col items-center text-center space-y-3">
+                                    <Anchor className="h-12 w-12 text-indigo-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">錨點數量</p>
-                                        <p className="text-2xl font-bold">{currentAnchors.length}</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">錨點數量</p>
+                                        <p className="text-3xl font-bold text-indigo-600">{currentAnchors.length}</p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Tag className="h-8 w-8 text-teal-500" />
+                            <CardContent className="pt-8 pb-6">
+                                <div className="flex flex-col items-center text-center space-y-3">
+                                    <Tag className="h-12 w-12 text-teal-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">標籤數量</p>
-                                        <p className="text-2xl font-bold">{tags.length}</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">標籤數量</p>
+                                        <p className="text-3xl font-bold text-teal-600">{tags.length}</p>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
                         <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Activity className="h-8 w-8 text-orange-500" />
+                            <CardContent className="pt-8 pb-6">
+                                <div className="flex flex-col items-center text-center space-y-3">
+                                    <Activity className="h-12 w-12 text-orange-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground">活躍標籤</p>
-                                        <p className="text-2xl font-bold text-green-600">
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">活躍標籤</p>
+                                        <p className="text-3xl font-bold text-orange-600">
                                             {tags.filter(t => t.status === 'active').length}
                                         </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card>
+                            <CardContent className="pt-8 pb-6">
+                                <div className="flex flex-col items-center text-center space-y-3">
+                                    <Save className="h-12 w-12 text-blue-500" />
+                                    <div>
+                                        <p className="text-sm font-medium text-muted-foreground mb-2">數據狀態</p>
+                                        <div className="flex justify-center mb-2">
+                                            {pendingSave ? (
+                                                <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-sm px-3 py-1">
+                                                    保存中...
+                                                </Badge>
+                                            ) : (
+                                                <Badge className="bg-green-100 text-green-700 border-green-200 text-sm px-3 py-1">
+                                                    已同步
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            {lastSaveTime.toLocaleTimeString('zh-TW')}
+                                        </p>
+                                        {process.env.NODE_ENV === 'development' && (
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                Ctrl+Shift+D 調試
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                             </CardContent>
@@ -3008,7 +3571,7 @@ export default function UWBLocationPage() {
                                                             </div>
                                                             <div className="text-xs text-muted-foreground">
                                                                 AP: {gateway.connected_ap} | 電壓: {gateway.battery_voltage}V |
-                                                                最後更新: {gateway.lastSeen.toLocaleTimeString('zh-TW')}
+                                                                最後更新: {gateway.lastSeen instanceof Date ? gateway.lastSeen.toLocaleTimeString('zh-TW') : '未知'}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -3457,7 +4020,7 @@ export default function UWBLocationPage() {
                                                             </div>
                                                             <div className="text-xs text-muted-foreground">
                                                                 位置: ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)}) |
-                                                                最後更新: {anchor.lastSeen.toLocaleTimeString('zh-TW')}
+                                                                最後更新: {anchor.lastSeen instanceof Date ? anchor.lastSeen.toLocaleTimeString('zh-TW') : '未知'}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -4394,6 +4957,26 @@ export default function UWBLocationPage() {
                                                 <SelectItem value="1">主錨點</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-sm font-medium">Serial No</label>
+                                        <Input
+                                            type="number"
+                                            min="1306"
+                                            max="9999"
+                                            value={anchorConfigForm.serial_no}
+                                            onChange={(e) => {
+                                                const value = parseInt(e.target.value) || 1306
+                                                const clampedValue = Math.min(Math.max(value, 1306), 9999)
+                                                setAnchorConfigForm(prev => ({ ...prev, serial_no: clampedValue }))
+                                            }}
+                                            className="mt-1"
+                                            placeholder="1306-9999"
+                                        />
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            範圍: 1306-9999，每次發送後會自動遞增
+                                        </p>
                                     </div>
                                 </div>
                             </div>
