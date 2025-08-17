@@ -10,11 +10,11 @@ const MAP_IMG = mapImage
 const MAP_WIDTH = 800
 const MAP_HEIGHT = 1600
 // MQTT WebSocket broker - 改為 HiveMQ 雲端
-const MQTT_URL = "wss://067ec32ef1344d3bb20c4e53abdde99a.s1.eu.hivemq.cloud:8884/mqtt"
-const MQTT_TOPICS = ["UWB/GW16B8_Loca", "UWB/GWCF18_Loca"]  // 同時訂閱兩個 Topic
+const MQTT_URL = `${import.meta.env.VITE_MQTT_PROTOCOL}://${import.meta.env.VITE_MQTT_BROKER}:${import.meta.env.VITE_MQTT_PORT}/mqtt`
+const MQTT_TOPICS = [`UWB/GW${import.meta.env.VITE_GATEWAY_ID}_Loca`]  // 使用環境變數的Gateway ID
 const MQTT_OPTIONS = {
-  username: 'testweb1',
-  password: 'Aa000000'
+  username: import.meta.env.VITE_MQTT_USERNAME,
+  password: import.meta.env.VITE_MQTT_PASSWORD
 }
 
 // MQTT位置數據x,y範圍 - 放寬範圍以適應不同的數據
@@ -56,7 +56,7 @@ export default function LocationPage() {
       try {
         const rawMessage = new TextDecoder().decode(payload)
         const msg = JSON.parse(rawMessage)
-        
+
         if (msg.content === "location" && msg.id && msg.position) {
           // 處理 id 可能是 number 的情況
           const deviceId = String(msg.id)

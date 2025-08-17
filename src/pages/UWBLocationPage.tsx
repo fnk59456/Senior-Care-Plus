@@ -44,11 +44,11 @@ import {
 } from "lucide-react"
 
 // 雲端 MQTT 設置
-const CLOUD_MQTT_URL = "wss://067ec32ef1344d3bb20c4e53abdde99a.s1.eu.hivemq.cloud:8884/mqtt"
+const CLOUD_MQTT_URL = `${import.meta.env.VITE_MQTT_PROTOCOL}://${import.meta.env.VITE_MQTT_BROKER}:${import.meta.env.VITE_MQTT_PORT}/mqtt`
 const CLOUD_MQTT_TOPIC = "UWB/UWB_Gateway"
 const CLOUD_MQTT_OPTIONS = {
-    username: 'testweb1',
-    password: 'Aa000000'
+    username: import.meta.env.VITE_MQTT_USERNAME,
+    password: import.meta.env.VITE_MQTT_PASSWORD
 }
 
 // 數據類型定義

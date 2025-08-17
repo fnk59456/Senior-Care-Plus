@@ -20,9 +20,8 @@ import StaffManagementPage from './pages/StaffManagementPage'
 import UWBLocationPage from './pages/UWBLocationPage'
 import './index.css'
 
-// 根據部署與開發環境動態設定 basename
-const isProd = import.meta.env.PROD
-const basename = isProd ? '/Senior-Care-Plus' : '/'
+// Firebase Hosting使用根路徑
+const basename = '/'
 
 function App() {
   return (
