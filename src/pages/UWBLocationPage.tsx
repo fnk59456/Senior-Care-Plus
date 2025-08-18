@@ -761,6 +761,15 @@ export default function UWBLocationPage() {
                     : loadedHomes[0]?.id || ""
                 setSelectedHome(finalSelectedHome)
 
+                // 初始化錨點配對的預設選擇
+                setSelectedHomeForAnchors(finalSelectedHome)
+                if (finalSelectedHome) {
+                    const firstFloor = loadedFloors.find(f => f.homeId === finalSelectedHome)
+                    if (firstFloor) {
+                        setSelectedFloorForAnchors(firstFloor.id)
+                    }
+                }
+
                 console.log('✅ 數據加載完成')
                 console.log(`- 場域: ${loadedHomes.length} 個`)
                 console.log(`- 樓層: ${loadedFloors.length} 個`)
@@ -924,6 +933,8 @@ export default function UWBLocationPage() {
     const [cloudAnchorData, setCloudAnchorData] = useState<CloudAnchorData[]>([])
     const [discoveredCloudAnchors, setDiscoveredCloudAnchors] = useState<DiscoveredCloudAnchor[]>([])
     const [selectedGatewayForAnchors, setSelectedGatewayForAnchors] = useState<string>("")
+    const [selectedHomeForAnchors, setSelectedHomeForAnchors] = useState<string>("")
+    const [selectedFloorForAnchors, setSelectedFloorForAnchors] = useState<string>("")
     const [currentAnchorTopic, setCurrentAnchorTopic] = useState<string>("")
     const anchorCloudClientRef = useRef<mqtt.MqttClient | null>(null)
 
@@ -1442,6 +1453,19 @@ export default function UWBLocationPage() {
             anchorClient.end()
         }
     }, [selectedGatewayForAnchors]) // 只在選擇的 Gateway 改變時重新連接，避免 cloudGatewayData 觸發循環
+
+    // 監聽養老院和樓層變化，自動更新錨點配對的選擇
+    useEffect(() => {
+        if (selectedHomeForAnchors && selectedFloorForAnchors) {
+            // 檢查選中的樓層是否仍然屬於選中的養老院
+            const floor = floors.find(f => f.id === selectedFloorForAnchors)
+            if (floor && floor.homeId !== selectedHomeForAnchors) {
+                // 如果樓層不屬於選中的養老院，重置樓層選擇
+                setSelectedFloorForAnchors("")
+                setSelectedGatewayForAnchors("")
+            }
+        }
+    }, [selectedHomeForAnchors, selectedFloorForAnchors, floors])
 
     // 處理表單提交
     const handleHomeSubmit = () => {
@@ -3822,45 +3846,90 @@ export default function UWBLocationPage() {
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-semibold">錨點配對與管理</h2>
                         <div className="flex items-center gap-4">
-                            <Select value={selectedGatewayForAnchors} onValueChange={setSelectedGatewayForAnchors}>
-                                <SelectTrigger className="w-[200px]">
-                                    <SelectValue placeholder="選擇雲端閘道器" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {/* 顯示雲端發現的閘道器 */}
-                                    {discoveredGateways.filter(gw => gw.isOnline).map(gateway => (
-                                        <SelectItem key={`discovered-${gateway.gateway_id}`} value={gateway.gateway_id.toString()}>
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                                {gateway.name} (ID: {gateway.gateway_id})
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                    {/* 顯示已加入系統的閘道器 */}
-                                    {currentGateways.filter(gw => gw.status === 'online').map(gateway => {
-                                        // 提取 gateway ID（如果 MAC 地址包含 GW: 前綴）
-                                        const gatewayIdFromMac = gateway.macAddress.startsWith('GW:')
-                                            ? parseInt(gateway.macAddress.replace('GW:', ''), 16)
-                                            : null
-
-                                        // 檢查是否已經在雲端發現列表中
-                                        const isAlreadyInDiscovered = gatewayIdFromMac &&
-                                            discoveredGateways.some(dg => dg.gateway_id === gatewayIdFromMac)
-
-                                        // 如果已經在雲端發現列表中，就不重複顯示
-                                        if (isAlreadyInDiscovered) return null
-
-                                        return (
-                                            <SelectItem key={`system-${gateway.id}`} value={gatewayIdFromMac?.toString() || gateway.id}>
-                                                <div className="flex items-center gap-2">
-                                                    <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                                                    {gateway.name} {gateway.cloudData ? '(雲端數據)' : '(本地)'}
-                                                </div>
+                            {/* 三層巢狀選擇：養老院 -> 樓層 -> Gateway */}
+                            <div className="flex items-center gap-2">
+                                {/* 養老院選擇 */}
+                                <Select 
+                                    value={selectedHomeForAnchors} 
+                                    onValueChange={(value) => {
+                                        setSelectedHomeForAnchors(value)
+                                        setSelectedFloorForAnchors("")
+                                        setSelectedGatewayForAnchors("")
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="選擇養老院" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {homes.map(home => (
+                                            <SelectItem key={home.id} value={home.id}>
+                                                {home.name}
                                             </SelectItem>
-                                        )
-                                    })}
-                                </SelectContent>
-                            </Select>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* 樓層選擇 */}
+                                <Select 
+                                    value={selectedFloorForAnchors} 
+                                    onValueChange={(value) => {
+                                        setSelectedFloorForAnchors(value)
+                                        setSelectedGatewayForAnchors("")
+                                    }}
+                                    disabled={!selectedHomeForAnchors}
+                                >
+                                    <SelectTrigger className="w-[150px]">
+                                        <SelectValue placeholder="選擇樓層" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {floors
+                                            .filter(floor => floor.homeId === selectedHomeForAnchors)
+                                            .map(floor => (
+                                                <SelectItem key={floor.id} value={floor.id}>
+                                                    {floor.name}
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Gateway 選擇 */}
+                                <Select 
+                                    value={selectedGatewayForAnchors} 
+                                    onValueChange={setSelectedGatewayForAnchors}
+                                    disabled={!selectedFloorForAnchors}
+                                >
+                                    <SelectTrigger className="w-[200px]">
+                                        <SelectValue placeholder="選擇閘道器" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {/* 顯示該樓層下的系統閘道器 */}
+                                        {currentGateways
+                                            .filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online')
+                                            .map(gateway => {
+                                                // 提取 gateway ID（如果 MAC 地址包含 GW: 前綴）
+                                                const gatewayIdFromMac = gateway.macAddress.startsWith('GW:')
+                                                    ? parseInt(gateway.macAddress.replace('GW:', ''), 16)
+                                                    : null
+
+                                                return (
+                                                    <SelectItem key={`system-${gateway.id}`} value={gatewayIdFromMac?.toString() || gateway.id}>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                                                            {gateway.name} {gateway.cloudData ? '(雲端數據)' : '(本地)'}
+                                                        </div>
+                                                    </SelectItem>
+                                                )
+                                            })}
+                                        
+                                        {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
+                                        {currentGateways.filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online').length === 0 && (
+                                            <div className="px-2 py-1.5 text-sm text-gray-500">
+                                                該樓層暫無可用的閘道器
+                                            </div>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                             <Button
                                 variant="outline"
                                 onClick={() => {
