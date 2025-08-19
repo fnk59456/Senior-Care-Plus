@@ -124,7 +124,7 @@ interface TagDevice {
     id: string
     name: string
     macAddress: string
-    type: 'person' | 'asset' | 'equipment'
+    type: 'person'
     status: 'active' | 'inactive' | 'low_battery' | 'lost'
     assignedTo?: string // 分配給誰
     batteryLevel?: number
@@ -359,7 +359,7 @@ const MOCK_TAGS: TagDevice[] = [
         id: "tag_3",
         name: "輪椅設備-01",
         macAddress: "AA:11:BB:22:CC:03",
-        type: "equipment",
+        type: "person",
         status: "inactive",
         batteryLevel: 23,
         lastPosition: {
@@ -375,7 +375,7 @@ const MOCK_TAGS: TagDevice[] = [
         id: "tag_4",
         name: "護理推車-A",
         macAddress: "AA:11:BB:22:CC:04",
-        type: "asset",
+        type: "person",
         status: "low_battery",
         batteryLevel: 12,
         lastPosition: {
@@ -770,6 +770,15 @@ export default function UWBLocationPage() {
                     }
                 }
 
+                // 初始化標籤管理的預設選擇
+                setSelectedHomeForTags(finalSelectedHome)
+                if (finalSelectedHome) {
+                    const firstFloor = loadedFloors.find(f => f.homeId === finalSelectedHome)
+                    if (firstFloor) {
+                        setSelectedFloorForTags(firstFloor.id)
+                    }
+                }
+
                 console.log('✅ 數據加載完成')
                 console.log(`- 場域: ${loadedHomes.length} 個`)
                 console.log(`- 樓層: ${loadedFloors.length} 個`)
@@ -947,6 +956,19 @@ export default function UWBLocationPage() {
     const [showTagForm, setShowTagForm] = useState(false)
     const [editingTag, setEditingTag] = useState<TagDevice | null>(null)
 
+    // Tag 雲端 MQTT 相關狀態
+    const [tagCloudConnected, setTagCloudConnected] = useState(false)
+    const [tagCloudConnectionStatus, setTagCloudConnectionStatus] = useState<string>("未連線")
+    const [tagCloudError, setTagCloudError] = useState<string>("")
+    const [cloudTagData, setCloudTagData] = useState<any[]>([])
+    const [discoveredCloudTags, setDiscoveredCloudTags] = useState<any[]>([])
+    const [currentTagTopic, setCurrentTagTopic] = useState<string>("")
+    const [selectedHomeForTags, setSelectedHomeForTags] = useState<string>("")
+    const [selectedFloorForTags, setSelectedFloorForTags] = useState<string>("")
+    const [selectedGatewayForTags, setSelectedGatewayForTags] = useState<string>("")
+
+    const tagCloudClientRef = useRef<mqtt.MqttClient | null>(null)
+
     // 地圖相關狀態
     const [showMapCalibration, setShowMapCalibration] = useState(false)
     const [calibratingFloor, setCalibratingFloor] = useState<Floor | null>(null)
@@ -976,7 +998,7 @@ export default function UWBLocationPage() {
     const [tagForm, setTagForm] = useState({
         name: "",
         macAddress: "",
-        type: "person" as TagDevice['type'],
+        type: "person" as const,
         assignedTo: ""
     })
 
@@ -1466,6 +1488,447 @@ export default function UWBLocationPage() {
             }
         }
     }, [selectedHomeForAnchors, selectedFloorForAnchors, floors])
+
+    // Tag 雲端 MQTT 連接 - 根據選擇的 Gateway 動態訂閱
+    useEffect(() => {
+        if (!selectedGatewayForTags) {
+            // 如果沒有選擇 Gateway，清理連接
+            if (tagCloudClientRef.current) {
+                tagCloudClientRef.current.end()
+                tagCloudClientRef.current = null
+            }
+            setTagCloudConnected(false)
+            setTagCloudConnectionStatus("未選擇閘道器")
+            setCurrentTagTopic("")
+            setCloudTagData([])
+            setDiscoveredCloudTags([])
+            return
+        }
+
+        // 獲取 Gateway 配置的函數
+        const getGatewayConfig = () => {
+            // 先檢查雲端發現的閘道器
+            let selectedGatewayData = cloudGatewayData.find(gw => gw.gateway_id.toString() === selectedGatewayForTags)
+            if (selectedGatewayData && selectedGatewayData.pub_topic.message && selectedGatewayData.pub_topic.location) {
+                return {
+                    messageTopic: selectedGatewayData.pub_topic.message,
+                    locationTopic: selectedGatewayData.pub_topic.location,
+                    source: "雲端發現"
+                }
+            }
+
+            // 再檢查系統閘道器
+            const systemGateway = currentGateways.find(gw => {
+                const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
+                    ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
+                    : null
+                return gatewayIdFromMac === selectedGatewayForTags || gw.id === selectedGatewayForTags
+            })
+
+            if (systemGateway && systemGateway.cloudData && systemGateway.cloudData.pub_topic.message && systemGateway.cloudData.pub_topic.location) {
+                return {
+                    messageTopic: systemGateway.cloudData.pub_topic.message,
+                    locationTopic: systemGateway.cloudData.pub_topic.location,
+                    source: "系統閘道器(雲端數據)"
+                }
+            } else if (systemGateway) {
+                const gatewayName = systemGateway.name.replace(/\s+/g, '')
+                return {
+                    messageTopic: `UWB/${gatewayName}_Message`,
+                    locationTopic: `UWB/${gatewayName}_Loca`,
+                    source: "系統閘道器(構建)"
+                }
+            }
+
+            return null
+        }
+
+        const gatewayConfig = getGatewayConfig()
+        if (!gatewayConfig) {
+            setTagCloudConnectionStatus("無法找到閘道器配置 - 請確保已選擇有效的閘道器")
+            console.log("❌ 無法找到 Gateway 配置")
+            console.log("- 選擇的 Gateway ID:", selectedGatewayForTags)
+            console.log("- 雲端 Gateway 數量:", cloudGatewayData.length)
+            console.log("- 系統 Gateway 數量:", currentGateways.length)
+            return
+        }
+
+        const messageTopic = gatewayConfig.messageTopic
+        const locationTopic = gatewayConfig.locationTopic
+        console.log(`${gatewayConfig.source}的閘道器，使用 message topic:`, messageTopic)
+        console.log(`${gatewayConfig.source}的閘道器，使用 location topic:`, locationTopic)
+
+        // 檢查是否已經連接到相同的主題，避免重複連接
+        if (tagCloudClientRef.current &&
+            currentTagTopic === `${messageTopic}+${locationTopic}` &&
+            (tagCloudConnected || tagCloudConnectionStatus === "連接中...")) {
+            console.log("⚠️ 已連接到相同主題或正在連接中，跳過重複連接")
+            console.log("- 當前狀態:", tagCloudConnectionStatus)
+            console.log("- 連接狀態:", tagCloudConnected)
+            return
+        }
+
+        // 如果有現有連接，先清理
+        if (tagCloudClientRef.current) {
+            console.log("清理現有 Tag MQTT 連接")
+            tagCloudClientRef.current.end()
+            tagCloudClientRef.current = null
+        }
+
+        setCurrentTagTopic(`${messageTopic}+${locationTopic}`)
+        setTagCloudConnectionStatus("連接中...")
+        setTagCloudError("")
+
+        console.log("🚀 開始連接 Tag MQTT")
+        console.log("- MQTT URL:", CLOUD_MQTT_URL)
+        console.log("- MQTT 用戶名:", CLOUD_MQTT_OPTIONS.username)
+        console.log("- 訂閱主題:", messageTopic, "和", locationTopic)
+        console.log("- Client ID 前綴: uwb-tag-client-")
+        console.log("- 觸發原因: selectedGatewayForTags 變化或數據更新")
+
+        const tagClient = mqtt.connect(CLOUD_MQTT_URL, {
+            ...CLOUD_MQTT_OPTIONS,
+            reconnectPeriod: 3000,     // 縮短重連間隔
+            connectTimeout: 30000,     // 增加連接超時時間
+            keepalive: 30,             // 縮短心跳間隔
+            clean: true,
+            resubscribe: true,         // 重連時自動重新訂閱
+            clientId: `uwb-tag-client-${Math.random().toString(16).slice(2, 8)}`
+        })
+
+        console.log("Tag MQTT Client 已創建，Client ID:", tagClient.options.clientId)
+        tagCloudClientRef.current = tagClient
+
+        tagClient.on("connect", () => {
+            console.log("✅ Tag 雲端 MQTT 已連接成功！")
+            console.log("- Client ID:", tagClient.options.clientId)
+            console.log("- 準備訂閱主題:", messageTopic, "和", locationTopic)
+            setTagCloudConnected(true)
+            setTagCloudConnectionStatus("已連線")
+            setTagCloudError("")
+        })
+
+        tagClient.on("reconnect", () => {
+            console.log("Tag 雲端 MQTT 重新連接中...")
+            setTagCloudConnected(false)
+            setTagCloudConnectionStatus("重新連接中...")
+        })
+
+        tagClient.on("close", () => {
+            console.log("Tag 雲端 MQTT 連接關閉")
+            setTagCloudConnected(false)
+            setTagCloudConnectionStatus("連接已關閉")
+        })
+
+        tagClient.on("error", (error) => {
+            console.error("❌ Tag 雲端 MQTT 連接錯誤:", error)
+            console.error("- 錯誤類型:", error.name)
+            console.error("- 錯誤消息:", error.message)
+            console.error("- 可能原因: HiveMQ 連接限制或網絡問題")
+
+            setTagCloudConnected(false)
+            setTagCloudError(`${error.message} (可能是雲端服務限制)`)
+            setTagCloudConnectionStatus("連接錯誤 - 雲端服務問題")
+        })
+
+        tagClient.on("offline", () => {
+            console.log("Tag 雲端 MQTT 離線")
+            setTagCloudConnected(false)
+            setTagCloudConnectionStatus("離線")
+        })
+
+        // 訂閱兩個主題
+        tagClient.subscribe(messageTopic, (err) => {
+            if (err) {
+                console.error("❌ Tag message 主題訂閱失敗:", err)
+                setTagCloudError(`message 主題訂閱失敗: ${err.message}`)
+            } else {
+                console.log("✅ 已成功訂閱 message 主題:", messageTopic)
+            }
+        })
+
+        tagClient.subscribe(locationTopic, (err) => {
+            if (err) {
+                console.error("❌ Tag location 主題訂閱失敗:", err)
+                setTagCloudError(`location 主題訂閱失敗: ${err.message}`)
+            } else {
+                console.log("✅ 已成功訂閱 location 主題:", locationTopic)
+            }
+        })
+
+        // 檢查兩個主題是否都訂閱成功
+        setTimeout(() => {
+            if (!tagCloudError.includes("訂閱失敗")) {
+                setTagCloudConnectionStatus("已連線並訂閱")
+                console.log("✅ 兩個主題都已訂閱成功")
+            }
+        }, 1000)
+
+        tagClient.on("message", (topic: string, payload: Uint8Array) => {
+            console.log("📨 收到 Tag MQTT 消息")
+            console.log("- 接收主題:", topic)
+            console.log("- 預期主題:", messageTopic, "或", locationTopic)
+
+            if (topic !== messageTopic && topic !== locationTopic) {
+                console.log("⚠️ 主題不匹配，忽略消息")
+                return
+            }
+
+            try {
+                const rawMessage = new TextDecoder().decode(payload)
+                console.log("📄 原始消息內容:", rawMessage)
+                const msg = JSON.parse(rawMessage)
+                console.log("📋 解析後的 JSON:", msg)
+
+                // 處理 message 主題數據 (content: "info", node: "TAG")
+                if (topic === messageTopic && msg.content === "info" && msg.node === "TAG") {
+                    console.log("處理 Tag message 數據...")
+
+                    const tagData = {
+                        content: msg.content,
+                        gateway_id: msg["gateway id"] || 0,
+                        node: msg.node || "",
+                        id: msg.id || 0,
+                        id_hex: msg["id(Hex)"] || "",
+                        fw_ver: msg["fw ver"] || 0,
+                        battery_level: msg["battery level"] || 0,
+                        battery_voltage: msg["battery voltage"] || 0,
+                        led_on_time: msg["led on time(1ms)"] || 0,
+                        led_off_time: msg["led off time(1ms)"] || 0,
+                        bat_detect_time: msg["bat detect time(1s)"] || 0,
+                        five_v_plugged: msg["5V plugged"] || "",
+                        uwb_tx_power_changed: msg["uwb tx power changed"] || "",
+                        uwb_tx_power: msg["uwb tx power"] || {},
+                        serial_no: msg["serial no"] || 0,
+                        receivedAt: new Date(),
+                        topic: "message"
+                    }
+
+                    console.log("解析的 Tag message 數據:", tagData)
+
+                    // 更新原始數據列表
+                    setCloudTagData(prev => {
+                        const newData = [tagData, ...prev].slice(0, 50)
+                        return newData
+                    })
+
+                    // 檢查並更新發現的 Tag 列表
+                    if (tagData.id) {
+                        setDiscoveredCloudTags(prev => {
+                            const existingTag = prev.find(t => t.id === tagData.id)
+
+                            if (existingTag) {
+                                // 更新現有 Tag
+                                const updatedTags = prev.map(t =>
+                                    t.id === tagData.id
+                                        ? {
+                                            ...t,
+                                            battery_level: tagData.battery_level,
+                                            battery_voltage: tagData.battery_voltage,
+                                            lastSeen: new Date(),
+                                            recordCount: t.recordCount + 1,
+                                            isOnline: true
+                                        }
+                                        : t
+                                )
+                                console.log("更新現有 Tag，總數:", updatedTags.length)
+                                return updatedTags
+                            } else {
+                                // 添加新 Tag
+                                const newTag = {
+                                    id: tagData.id,
+                                    id_hex: tagData.id_hex,
+                                    gateway_id: tagData.gateway_id,
+                                    fw_ver: tagData.fw_ver,
+                                    battery_level: tagData.battery_level,
+                                    battery_voltage: tagData.battery_voltage,
+                                    lastSeen: new Date(),
+                                    recordCount: 1,
+                                    isOnline: true,
+                                    topic: "message"
+                                }
+                                const updatedTags = [...prev, newTag]
+                                console.log("添加新 Tag:", newTag)
+                                console.log("更新後總 Tag 數:", updatedTags.length)
+                                return updatedTags
+                            }
+                        })
+
+                        // 自動加入系統功能
+                        const tagId = tagData.id.toString()
+                        
+                        setTags(prev => {
+                            const existingLocalTag = prev.find(t => t.id === tagId)
+                            
+                            if (existingLocalTag) {
+                                // 更新現有本地標籤信息
+                                console.log("✅ 自動更新本地標籤信息:", tagId)
+                                return prev.map(t => 
+                                    t.id === tagId ? {
+                                        ...t,
+                                        status: tagData.battery_level > 20 ? 'active' : 'low_battery',
+                                        batteryLevel: tagData.battery_level,
+                                        lastPosition: t.lastPosition ? {
+                                            ...t.lastPosition,
+                                            timestamp: new Date()
+                                        } : undefined
+                                    } : t
+                                )
+                            } else {
+                                // 自動創建新標籤並加入系統
+                                const newLocalTag: TagDevice = {
+                                    id: tagId,
+                                    name: `ID_${tagData.id}`,
+                                    macAddress: tagData.id_hex || `GW:${tagData.gateway_id}_${tagData.id}`,
+                                    type: 'person',
+                                    status: tagData.battery_level > 20 ? 'active' : 'low_battery',
+                                    batteryLevel: tagData.battery_level,
+                                    lastPosition: undefined,
+                                    createdAt: new Date()
+                                }
+                                
+                                console.log("✅ 自動加入新標籤到系統:", newLocalTag)
+                                return [...prev, newLocalTag]
+                            }
+                        })
+                    }
+                }
+                // 處理 location 主題數據 (content: "location", node: "TAG")
+                else if (topic === locationTopic && msg.content === "location" && msg.node === "TAG") {
+                    console.log("處理 Tag location 數據...")
+
+                    const tagData = {
+                        content: msg.content,
+                        gateway_id: msg["gateway id"] || 0,
+                        node: msg.node || "",
+                        id: msg.id || 0,
+                        position: msg.position || { x: 0, y: 0, z: 0, quality: 0 },
+                        time: msg.time || "",
+                        serial_no: msg["serial no"] || 0,
+                        receivedAt: new Date(),
+                        topic: "location"
+                    }
+
+                    console.log("解析的 Tag location 數據:", tagData)
+
+                    // 更新原始數據列表
+                    setCloudTagData(prev => {
+                        const newData = [tagData, ...prev].slice(0, 50)
+                        return newData
+                    })
+
+                    // 檢查並更新發現的 Tag 列表
+                    if (tagData.id) {
+                        setDiscoveredCloudTags(prev => {
+                            const existingTag = prev.find(t => t.id === tagData.id)
+
+                            if (existingTag) {
+                                // 更新現有 Tag
+                                const updatedTags = prev.map(t =>
+                                    t.id === tagData.id
+                                        ? {
+                                            ...t,
+                                            position: tagData.position,
+                                            time: tagData.time,
+                                            lastSeen: new Date(),
+                                            recordCount: t.recordCount + 1,
+                                            isOnline: true
+                                        }
+                                        : t
+                                )
+                                console.log("更新現有 Tag，總數:", updatedTags.length)
+                                return updatedTags
+                            } else {
+                                // 添加新 Tag
+                                const newTag = {
+                                    id: tagData.id,
+                                    gateway_id: tagData.gateway_id,
+                                    position: tagData.position,
+                                    time: tagData.time,
+                                    lastSeen: new Date(),
+                                    recordCount: 1,
+                                    isOnline: true,
+                                    topic: "location"
+                                }
+                                const updatedTags = [...prev, newTag]
+                                console.log("添加新 Tag:", newTag)
+                                console.log("更新後總 Tag 數:", updatedTags.length)
+                                return updatedTags
+                            }
+                        })
+
+                        // 自動加入系統功能
+                        const tagId = tagData.id.toString()
+                        
+                        setTags(prev => {
+                            const existingLocalTag = prev.find(t => t.id === tagId)
+                            
+                            if (existingLocalTag) {
+                                // 更新現有本地標籤的位置信息
+                                console.log("✅ 自動更新本地標籤位置信息:", tagId)
+                                return prev.map(t => 
+                                    t.id === tagId ? {
+                                        ...t,
+                                        lastPosition: {
+                                            x: tagData.position.x,
+                                            y: tagData.position.y,
+                                            z: tagData.position.z,
+                                            floorId: selectedFloorForTags,
+                                            timestamp: tagData.time ? new Date(tagData.time) : new Date()
+                                        }
+                                    } : t
+                                )
+                            } else {
+                                // 自動創建新標籤並加入系統
+                                const newLocalTag: TagDevice = {
+                                    id: tagId,
+                                    name: `ID_${tagData.id}`,
+                                    macAddress: `0x${tagData.id.toString(16).toUpperCase()}`,
+                                    type: 'person',
+                                    status: 'active',
+                                    batteryLevel: 100, // 默認電量
+                                    lastPosition: {
+                                        x: tagData.position.x,
+                                        y: tagData.position.y,
+                                        z: tagData.position.z,
+                                        floorId: selectedFloorForTags,
+                                        timestamp: tagData.time ? new Date(tagData.time) : new Date()
+                                    },
+                                    createdAt: new Date()
+                                }
+                                
+                                console.log("✅ 自動加入新標籤到系統:", newLocalTag)
+                                return [...prev, newLocalTag]
+                            }
+                        })
+                    }
+                } else {
+                    console.log("⚠️ 非 Tag 相關數據，內容:", msg.content, "節點:", msg.node, "主題:", topic)
+                }
+
+            } catch (error) {
+                console.error('Tag 雲端 MQTT 訊息解析錯誤:', error)
+            }
+        })
+
+        return () => {
+            console.log("清理 Tag 雲端 MQTT 連接")
+            tagClient.end()
+        }
+    }, [selectedGatewayForTags]) // 只在選擇的 Gateway 改變時重新連接
+
+    // 監聽養老院和樓層變化，自動更新標籤管理的選擇
+    useEffect(() => {
+        if (selectedHomeForTags && selectedFloorForTags) {
+            // 檢查選中的樓層是否仍然屬於選中的養老院
+            const floor = floors.find(f => f.id === selectedFloorForTags)
+            if (floor && floor.homeId !== selectedHomeForTags) {
+                // 如果樓層不屬於選中的養老院，重置樓層選擇
+                setSelectedFloorForTags("")
+                setSelectedGatewayForTags("")
+            }
+        }
+    }, [selectedHomeForTags, selectedFloorForTags, floors])
 
     // 處理表單提交
     const handleHomeSubmit = () => {
@@ -3915,7 +4378,7 @@ export default function UWBLocationPage() {
                                                     <SelectItem key={`system-${gateway.id}`} value={gatewayIdFromMac?.toString() || gateway.id}>
                                                         <div className="flex items-center gap-2">
                                                             <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                                                            {gateway.name} {gateway.cloudData ? '(雲端數據)' : '(本地)'}
+                                                            {gateway.name} {gateway.cloudData ? '' : '(本地)'}
                                                         </div>
                                                     </SelectItem>
                                                 )
@@ -4560,14 +5023,131 @@ export default function UWBLocationPage() {
                 <TabsContent value="tags" className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-semibold">標籤設備管理</h2>
-                        <Button onClick={() => setShowTagForm(true)}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            新增標籤
-                        </Button>
+                        <div className="flex items-center gap-4">
+                            {/* 三層巢狀選擇：養老院 -> 樓層 -> Gateway */}
+                            <div className="flex items-center gap-2">
+                                {/* 養老院選擇 */}
+                                <Select 
+                                    value={selectedHomeForTags} 
+                                    onValueChange={(value) => {
+                                        setSelectedHomeForTags(value)
+                                        setSelectedFloorForTags("")
+                                        setSelectedGatewayForTags("")
+                                    }}
+                                >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder="選擇養老院" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {homes.map(home => (
+                                            <SelectItem key={home.id} value={home.id}>
+                                                {home.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* 樓層選擇 */}
+                                <Select 
+                                    value={selectedFloorForTags} 
+                                    onValueChange={(value) => {
+                                        setSelectedFloorForTags(value)
+                                        setSelectedGatewayForTags("")
+                                    }}
+                                    disabled={!selectedHomeForTags}
+                                >
+                                    <SelectTrigger className="w-[150px]">
+                                        <SelectValue placeholder="選擇樓層" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {floors
+                                            .filter(floor => floor.homeId === selectedHomeForTags)
+                                            .map(floor => (
+                                                <SelectItem key={floor.id} value={floor.id}>
+                                                    {floor.name}
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Gateway 選擇 */}
+                                <Select 
+                                    value={selectedGatewayForTags} 
+                                    onValueChange={setSelectedGatewayForTags}
+                                    disabled={!selectedFloorForTags}
+                                >
+                                    <SelectTrigger className="w-[200px]">
+                                        <SelectValue placeholder="選擇閘道器" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {/* 顯示該樓層下的系統閘道器 */}
+                                        {currentGateways
+                                            .filter(gw => gw.floorId === selectedFloorForTags && gw.status === 'online')
+                                            .map(gateway => {
+                                                // 提取 gateway ID（如果 MAC 地址包含 GW: 前綴）
+                                                const gatewayIdFromMac = gateway.macAddress.startsWith('GW:')
+                                                    ? parseInt(gateway.macAddress.replace('GW:', ''), 16)
+                                                    : null
+
+                                                return (
+                                                    <SelectItem key={`system-${gateway.id}`} value={gatewayIdFromMac?.toString() || gateway.id}>
+                                                        <div className="flex items-center gap-2">
+                                                            <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                                                            {gateway.name} {gateway.cloudData ? '' : '(本地)'}
+                                                        </div>
+                                                    </SelectItem>
+                                                )
+                                            })}
+                                        
+                                        {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
+                                        {currentGateways.filter(gw => gw.floorId === selectedFloorForTags && gw.status === 'online').length === 0 && (
+                                            <div className="px-2 py-1.5 text-sm text-gray-500">
+                                                該樓層暫無可用的閘道器
+                                            </div>
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    console.log("🔄 手動重連 Tag MQTT...")
+                                    console.log("- 當前選擇的 Gateway:", selectedGatewayForTags)
+
+                                    // 強制清理現有連接
+                                    if (tagCloudClientRef.current) {
+                                        console.log("- 清理現有連接")
+                                        tagCloudClientRef.current.end()
+                                        tagCloudClientRef.current = null
+                                    }
+
+                                    // 重置狀態
+                                    setTagCloudConnected(false)
+                                    setTagCloudConnectionStatus("手動重連中...")
+                                    setTagCloudError("")
+
+                                    // 觸發重新連接（通過重新設置選擇的 Gateway）
+                                    const currentGateway = selectedGatewayForTags
+                                    setSelectedGatewayForTags("")
+                                    setTimeout(() => {
+                                        console.log("- 恢復 Gateway 選擇，觸發重連")
+                                        setSelectedGatewayForTags(currentGateway)
+                                    }, 100)
+                                }}
+                                disabled={!selectedGatewayForTags}
+                            >
+                                <RefreshIcon className="h-4 w-4 mr-2" />
+                                重連標籤
+                            </Button>
+                            <Button onClick={() => setShowTagForm(true)}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                新增標籤
+                            </Button>
+                        </div>
                     </div>
 
                     {/* 標籤統計 */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <Card>
                             <CardContent className="pt-6">
                                 <div className="flex items-center gap-3">
@@ -4575,28 +5155,6 @@ export default function UWBLocationPage() {
                                     <div>
                                         <p className="text-sm text-muted-foreground">人員標籤</p>
                                         <p className="text-xl font-bold">{tags.filter(t => t.type === 'person').length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Settings className="h-6 w-6 text-blue-500" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">設備標籤</p>
-                                        <p className="text-xl font-bold">{tags.filter(t => t.type === 'equipment').length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <MapPin className="h-6 w-6 text-purple-500" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">資產標籤</p>
-                                        <p className="text-xl font-bold">{tags.filter(t => t.type === 'asset').length}</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -4612,18 +5170,223 @@ export default function UWBLocationPage() {
                                 </div>
                             </CardContent>
                         </Card>
+                        <Card>
+                            <CardContent className="pt-6">
+                                <div className="flex items-center gap-3">
+                                    <CloudIcon className="h-6 w-6 text-blue-500" />
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">雲端標籤</p>
+                                        <p className="text-xl font-bold text-blue-600">{discoveredCloudTags.length}</p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
+
+                    {/* 雲端標籤發現狀態 */}
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg flex items-center">
+                                    <Tag className="mr-3 h-5 w-5 text-teal-500" />
+                                    雲端標籤發現
+                                </CardTitle>
+                                <div className="text-sm">
+                                    {tagCloudConnected ? (
+                                        <span className="text-green-600 flex items-center">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                            連線正常
+                                        </span>
+                                    ) : (
+                                        <span className="text-red-500 flex items-center">
+                                            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                                            {tagCloudConnectionStatus}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-4">
+                                <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
+                                    <div className="font-semibold">標籤 MQTT 狀態</div>
+                                    <div className="flex items-center justify-between">
+                                        <span>選擇的閘道器:</span>
+                                        <span className="font-medium">
+                                            {selectedGatewayForTags ? (() => {
+                                                // 先檢查雲端發現的閘道器
+                                                const discoveredGateway = discoveredGateways.find(gw => gw.gateway_id.toString() === selectedGatewayForTags)
+                                                if (discoveredGateway) {
+                                                    return `${discoveredGateway.name} (雲端)`
+                                                }
+
+                                                // 再檢查系統閘道器
+                                                const systemGateway = currentGateways.find(gw => {
+                                                    const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
+                                                        ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
+                                                        : null
+                                                    return gatewayIdFromMac === selectedGatewayForTags || gw.id === selectedGatewayForTags
+                                                })
+                                                if (systemGateway) {
+                                                    const hasCloudData = systemGateway.cloudData ? " (雲端數據)" : " (本地)"
+                                                    return `${systemGateway.name}${hasCloudData}`
+                                                }
+
+                                                return selectedGatewayForTags
+                                            })() : "未選擇"}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span>監聽主題:</span>
+                                        <span className="text-xs font-mono text-muted-foreground">
+                                            {currentTagTopic || "無"}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                        <span>連線狀態:</span>
+                                        <span className={tagCloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
+                                            {tagCloudConnectionStatus}
+                                        </span>
+                                    </div>
+                                    {tagCloudError && (
+                                        <div className="text-xs text-red-500">
+                                            錯誤: {tagCloudError}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                    <div className="bg-teal-50 p-3 rounded-lg">
+                                        <div className="font-medium text-teal-800">發現的標籤</div>
+                                        <div className="text-2xl font-bold text-teal-600">{discoveredCloudTags.length}</div>
+                                    </div>
+                                    <div className="bg-green-50 p-3 rounded-lg">
+                                        <div className="font-medium text-green-800">在線標籤</div>
+                                        <div className="text-2xl font-bold text-green-600">
+                                            {discoveredCloudTags.filter(t => t.isOnline).length}
+                                        </div>
+                                    </div>
+                                    <div className="bg-purple-50 p-3 rounded-lg">
+                                        <div className="font-medium text-purple-800">MQTT消息</div>
+                                        <div className="text-2xl font-bold text-purple-600">{cloudTagData.length}</div>
+                                    </div>
+                                </div>
+
+                                {/* 發現的標籤列表 */}
+                                {discoveredCloudTags.length > 0 ? (
+                                    <div className="space-y-3">
+                                        <div className="font-medium">發現的雲端標籤：</div>
+                                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                                            {discoveredCloudTags.map(tag => (
+                                                <div key={tag.id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`p-2 rounded-full ${tag.isOnline
+                                                            ? 'bg-green-100 text-green-600'
+                                                            : 'bg-gray-100 text-gray-600'
+                                                            }`}>
+                                                            <Tag className="h-4 w-4" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-medium flex items-center gap-2">
+                                                                ID: {tag.id}
+                                                                {tag.id_hex && (
+                                                                    <span className="text-xs text-muted-foreground font-mono">
+                                                                        ({tag.id_hex})
+                                                                    </span>
+                                                                )}
+                                                                <Badge
+                                                                    variant="secondary"
+                                                                    className={tag.isOnline
+                                                                        ? "bg-green-100 text-green-700 border-green-200"
+                                                                        : "bg-gray-100 text-gray-700 border-gray-200"
+                                                                    }
+                                                                >
+                                                                    {tag.isOnline ? '在線' : '離線'}
+                                                                </Badge>
+                                                            </div>
+                                                            <div className="text-sm text-muted-foreground">
+                                                                閘道器: {tag.gateway_id} | 韌體: {tag.fw_ver || '未知'}
+                                                            </div>
+                                                            <div className="text-xs text-muted-foreground">
+                                                                {tag.battery_level !== undefined && (
+                                                                    <>電池: {tag.battery_level}% | </>
+                                                                )}
+                                                                {tag.position && (
+                                                                    <>位置: ({tag.position.x.toFixed(2)}, {tag.position.y.toFixed(2)}, {tag.position.z.toFixed(2)}) | </>
+                                                                )}
+                                                                {tag.time && (
+                                                                    <>時間: {tag.time} | </>
+                                                                )}
+                                                                最後更新: {tag.lastSeen instanceof Date ? tag.lastSeen.toLocaleTimeString('zh-TW') : '未知'}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        已自動加入系統
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-muted-foreground">
+                                        <Tag className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                                        <p className="font-medium">
+                                            {selectedGatewayForTags ? "尚未發現任何標籤" : "請先選擇閘道器"}
+                                        </p>
+                                        {selectedGatewayForTags && (
+                                            <div className="text-xs space-y-1 mt-2">
+                                                <p>請確認：</p>
+                                                <p>1. 閘道器的 message 和 location 主題正確</p>
+                                                <p>2. 模擬器發送 content: "info"/"location", node: "TAG" 格式的數據</p>
+                                                <p>3. 數據包含 id、battery level、position、time 等字段</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* 原始數據檢視器 - 用於調試 */}
+                                <div className="mt-6">
+                                    <details className="group">
+                                        <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
+                                            🔍 查看原始 Tag MQTT 數據 (調試用)
+                                        </summary>
+                                        <div className="mt-2 space-y-2 text-xs">
+                                            <div className="text-muted-foreground">
+                                                點擊下方數據可展開查看完整內容
+                                            </div>
+                                            <div className="max-h-60 overflow-y-auto space-y-2">
+                                                {cloudTagData.slice(0, 5).map((data, index) => (
+                                                    <details key={index} className="border rounded p-2 bg-slate-50">
+                                                        <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
+                                                            [{index + 1}] {data.content} - ID: {data.id} - {data.topic} - {data.receivedAt.toLocaleString('zh-TW')}
+                                                        </summary>
+                                                        <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
+                                                            {JSON.stringify(data, null, 2)}
+                                                        </pre>
+                                                    </details>
+                                                ))}
+                                            </div>
+                                            <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                                                <div className="font-semibold mb-1">標籤發現條件：</div>
+                                                <div>• message 主題: content: "info", node: "TAG"</div>
+                                                <div>• location 主題: content: "location", node: "TAG"</div>
+                                                <div>• 必須有 id 字段</div>
+                                                <div>• message 包含 battery level 信息</div>
+                                                <div>• location 包含 position 和 time 信息</div>
+                                            </div>
+                                        </div>
+                                    </details>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     {/* 標籤列表 */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {tags.map(tag => {
                             const getTypeIcon = (type: TagDevice['type']) => {
-                                switch (type) {
-                                    case 'person': return <Tag className="h-5 w-5 text-green-500" />
-                                    case 'equipment': return <Settings className="h-5 w-5 text-blue-500" />
-                                    case 'asset': return <MapPin className="h-5 w-5 text-purple-500" />
-                                    default: return <Tag className="h-5 w-5" />
-                                }
+                                return <Tag className="h-5 w-5 text-green-500" />
                             }
 
                             const getStatusColor = (status: TagDevice['status']) => {
@@ -4660,6 +5423,13 @@ export default function UWBLocationPage() {
                                                 >
                                                     {getStatusText(tag.status)}
                                                 </Badge>
+                                                {/* 顯示標籤來源 */}
+                                                {discoveredCloudTags.some(cloudTag => cloudTag.id.toString() === tag.id) && (
+                                                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                                        <CloudIcon className="h-3 w-3 mr-1" />
+                                                        雲端
+                                                    </Badge>
+                                                )}
                                                 <div className="flex gap-1">
                                                     <Button
                                                         size="sm"
@@ -4696,10 +5466,7 @@ export default function UWBLocationPage() {
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm text-muted-foreground">類型</span>
-                                                <span className="text-sm">
-                                                    {tag.type === 'person' ? '人員' :
-                                                        tag.type === 'equipment' ? '設備' : '資產'}
-                                                </span>
+                                                <span className="text-sm">人員</span>
                                             </div>
                                             {tag.assignedTo && (
                                                 <div className="flex items-center justify-between">
