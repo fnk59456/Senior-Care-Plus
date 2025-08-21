@@ -122,6 +122,7 @@ interface AnchorDevice {
 
 interface TagDevice {
     id: string
+    gatewayId: string // 新增：关联的网关ID
     name: string
     macAddress: string
     type: 'person'
@@ -136,6 +137,8 @@ interface TagDevice {
         timestamp: Date
     }
     createdAt: Date
+    // 新增：關聯的雲端 Gateway ID，參考錨點配對的實現
+    cloudGatewayId?: number
 }
 
 // 雲端 Gateway 數據類型 (更新為正確的字段名稱)
@@ -323,6 +326,7 @@ const MOCK_ANCHORS: AnchorDevice[] = [
 const MOCK_TAGS: TagDevice[] = [
     {
         id: "tag_1",
+        gatewayId: "gw_1", // 关联到第一个网关
         name: "長者-張三",
         macAddress: "AA:11:BB:22:CC:01",
         type: "person",
@@ -333,13 +337,14 @@ const MOCK_TAGS: TagDevice[] = [
             x: 12.5,
             y: 8.3,
             z: 1.2,
-            floorId: "floor_1",
+            floorId: "floor_1", // 對應 gw_1 的 floorId
             timestamp: new Date(Date.now() - 30000) // 30秒前
         },
         createdAt: new Date("2024-01-22")
     },
     {
         id: "tag_2",
+        gatewayId: "gw_2", // 关联到第二个网关
         name: "長者-李四",
         macAddress: "AA:11:BB:22:CC:02",
         type: "person",
@@ -357,6 +362,7 @@ const MOCK_TAGS: TagDevice[] = [
     },
     {
         id: "tag_3",
+        gatewayId: "gw_1", // 关联到第一个网关
         name: "輪椅設備-01",
         macAddress: "AA:11:BB:22:CC:03",
         type: "person",
@@ -373,6 +379,7 @@ const MOCK_TAGS: TagDevice[] = [
     },
     {
         id: "tag_4",
+        gatewayId: "gw_2", // 关联到第二个网关
         name: "護理推車-A",
         macAddress: "AA:11:BB:22:CC:04",
         type: "person",
@@ -776,6 +783,9 @@ export default function UWBLocationPage() {
                     const firstFloor = loadedFloors.find(f => f.homeId === finalSelectedHome)
                     if (firstFloor) {
                         setSelectedFloorForTags(firstFloor.id)
+                        
+                        // 移除自動選擇 Gateway 的邏輯，讓用戶手動選擇
+                        // 這樣標籤設備管理頁面就不會在載入時自動連線 MQTT
                     }
                 }
 
@@ -969,6 +979,9 @@ export default function UWBLocationPage() {
 
     const tagCloudClientRef = useRef<mqtt.MqttClient | null>(null)
 
+    // 移除自動選擇邏輯，讓用戶必須手動選擇 Gateway
+    // 這樣可以確保 MQTT 連線真正依賴用戶的選擇
+
     // 地圖相關狀態
     const [showMapCalibration, setShowMapCalibration] = useState(false)
     const [calibratingFloor, setCalibratingFloor] = useState<Floor | null>(null)
@@ -1020,6 +1033,12 @@ export default function UWBLocationPage() {
 
     // 雲端 MQTT 連接
     useEffect(() => {
+        // 檢查是否已經有連線，避免重複連線
+        if (cloudClientRef.current && cloudConnected) {
+            console.log("⚠️ 雲端 MQTT 已連線，跳過重複連線")
+            return
+        }
+
         setCloudConnectionStatus("連接中...")
         setCloudError("")
 
@@ -1205,9 +1224,11 @@ export default function UWBLocationPage() {
 
         return () => {
             console.log("清理雲端 Gateway MQTT 連接")
-            cloudClient.end()
+            if (cloudClientRef.current) {
+                cloudClientRef.current.end()
+            }
         }
-    }, [])
+    }, []) // 空依賴數組，只在組件掛載時執行一次
 
     // Anchor 雲端 MQTT 連接 - 根據選擇的 Gateway 動態訂閱
     useEffect(() => {
@@ -1775,19 +1796,38 @@ export default function UWBLocationPage() {
                                     } : t
                                 )
                             } else {
-                                // 自動創建新標籤並加入系統
+                                // 自動創建新標籤並加入系統 - 參考錨點配對的實現方式
+                                // 找到對應的本地 Gateway
+                                const relatedGateway = currentGateways.find(gw => {
+                                    // 檢查是否有雲端數據且 gateway_id 匹配
+                                    if (gw.cloudData && gw.cloudData.gateway_id === tagData.gateway_id) {
+                                        return true
+                                    }
+                                    // 檢查 MAC 地址是否匹配 (如果 MAC 格式為 GW:xxxxx)
+                                    if (gw.macAddress.startsWith('GW:')) {
+                                        const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
+                                        return gatewayIdFromMac === tagData.gateway_id
+                                    }
+                                    return false
+                                })
+
                                 const newLocalTag: TagDevice = {
                                     id: tagId,
+                                    gatewayId: relatedGateway?.id || selectedGatewayForTags || "default", // 優先使用關聯的本地 Gateway
                                     name: `ID_${tagData.id}`,
-                                    macAddress: tagData.id_hex || `GW:${tagData.gateway_id}_${tagData.id}`,
+                                    macAddress: tagData.id_hex || `0x${tagData.id.toString(16).toUpperCase()}`,
                                     type: 'person',
                                     status: tagData.battery_level > 20 ? 'active' : 'low_battery',
                                     batteryLevel: tagData.battery_level,
                                     lastPosition: undefined,
-                                    createdAt: new Date()
+                                    createdAt: new Date(),
+                                    // 新增：保存雲端 Gateway ID 信息，參考錨點配對的實現
+                                    cloudGatewayId: tagData.gateway_id
                                 }
                                 
                                 console.log("✅ 自動加入新標籤到系統:", newLocalTag)
+                                console.log("- 關聯的本地 Gateway:", relatedGateway?.name || "未找到")
+                                console.log("- 雲端 Gateway ID:", tagData.gateway_id)
                                 return [...prev, newLocalTag]
                             }
                         })
@@ -1879,9 +1919,24 @@ export default function UWBLocationPage() {
                                     } : t
                                 )
                             } else {
-                                // 自動創建新標籤並加入系統
+                                // 自動創建新標籤並加入系統 - 參考錨點配對的實現方式
+                                // 找到對應的本地 Gateway
+                                const relatedGateway = currentGateways.find(gw => {
+                                    // 檢查是否有雲端數據且 gateway_id 匹配
+                                    if (gw.cloudData && gw.cloudData.gateway_id === tagData.gateway_id) {
+                                        return true
+                                    }
+                                    // 檢查 MAC 地址是否匹配 (如果 MAC 格式為 GW:xxxxx)
+                                    if (gw.macAddress.startsWith('GW:')) {
+                                        const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
+                                        return gatewayIdFromMac === tagData.gateway_id
+                                    }
+                                    return false
+                                })
+
                                 const newLocalTag: TagDevice = {
                                     id: tagId,
+                                    gatewayId: relatedGateway?.id || selectedGatewayForTags || "default", // 優先使用關聯的本地 Gateway
                                     name: `ID_${tagData.id}`,
                                     macAddress: `0x${tagData.id.toString(16).toUpperCase()}`,
                                     type: 'person',
@@ -1894,10 +1949,14 @@ export default function UWBLocationPage() {
                                         floorId: selectedFloorForTags,
                                         timestamp: tagData.time ? new Date(tagData.time) : new Date()
                                     },
-                                    createdAt: new Date()
+                                    createdAt: new Date(),
+                                    // 新增：保存雲端 Gateway ID 信息，參考錨點配對的實現
+                                    cloudGatewayId: tagData.gateway_id
                                 }
                                 
                                 console.log("✅ 自動加入新標籤到系統:", newLocalTag)
+                                console.log("- 關聯的本地 Gateway:", relatedGateway?.name || "未找到")
+                                console.log("- 雲端 Gateway ID:", tagData.gateway_id)
                                 return [...prev, newLocalTag]
                             }
                         })
@@ -2281,6 +2340,7 @@ export default function UWBLocationPage() {
         } else {
             const newTag: TagDevice = {
                 id: `tag_${Date.now()}`,
+                gatewayId: selectedGatewayForTags || "default", // 使用当前选择的网关
                 ...tagForm,
                 status: 'inactive',
                 batteryLevel: 100,
@@ -4798,47 +4858,45 @@ export default function UWBLocationPage() {
                         )
                     })()}
 
-                    {/* 本地錨點管理（保留原有功能） */}
+                    {/* 本地錨點管理（已加入的錨點） */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center">
                                 <Radio className="mr-3 h-5 w-5 text-gray-500" />
-                                本地錨點管理 (模擬)
+                                本地錨點管理 (已加入的錨點)
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                <div className="flex items-center gap-4">
-                                    <Select value={selectedGateway} onValueChange={setSelectedGateway}>
-                                        <SelectTrigger className="w-[200px]">
-                                            <SelectValue placeholder="選擇本地閘道器" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {onlineGateways.map(gateway => (
-                                                <SelectItem key={gateway.id} value={gateway.id}>
-                                                    {gateway.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Button
-                                        onClick={startAnchorPairing}
-                                        disabled={!selectedGateway || pairingInProgress}
-                                        variant="outline"
-                                    >
-                                        {pairingInProgress ? (
-                                            <>
-                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                配對中...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Radio className="h-4 w-4 mr-2" />
-                                                開始模擬配對
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
+                                {selectedGatewayForAnchors ? (
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-sm text-muted-foreground">
+                                            當前選擇的閘道器: <span className="font-medium">{selectedGatewayForAnchors}</span>
+                                        </div>
+                                        <Button
+                                            onClick={startAnchorPairing}
+                                            disabled={pairingInProgress}
+                                            variant="outline"
+                                        >
+                                            {pairingInProgress ? (
+                                                <>
+                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                    配對中...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Radio className="h-4 w-4 mr-2" />
+                                                    開始模擬配對
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4 text-muted-foreground">
+                                        <AlertCircle className="mx-auto h-6 w-6 mb-2 opacity-50" />
+                                        <p className="text-sm">請先在上方選擇閘道器以管理錨點</p>
+                                    </div>
+                                )}
 
                                 {onlineGateways.length === 0 ? (
                                     <div className="text-center py-4 text-muted-foreground">
@@ -4890,127 +4948,144 @@ export default function UWBLocationPage() {
 
                                         {/* 已配對錨點列表 */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {currentAnchors.map(anchor => {
-                                                const gateway = gateways.find(g => g.id === anchor.gatewayId)
+                                            {(() => {
+                                                // 根据选择的网关过滤锚点
+                                                const filteredAnchors = currentAnchors.filter(anchor => 
+                                                    anchor.gatewayId === selectedGatewayForAnchors || 
+                                                    anchor.cloudGatewayId?.toString() === selectedGatewayForAnchors
+                                                )
+                                                
+                                                if (filteredAnchors.length === 0) {
+                                                    return (
+                                                        <div className="col-span-2 text-center py-8 text-muted-foreground">
+                                                            <Anchor className="mx-auto h-12 w-12 mb-3 opacity-30" />
+                                                            <p className="text-sm">該閘道器下暫無已配對的錨點</p>
+                                                        </div>
+                                                    )
+                                                }
+                                                
+                                                return filteredAnchors.map(anchor => {
+                                                    const gateway = gateways.find(g => g.id === anchor.gatewayId)
 
-                                                return (
-                                                    <Card key={anchor.id}>
-                                                        <CardHeader className="pb-3">
-                                                            <div className="flex items-center justify-between">
-                                                                <CardTitle className="flex items-center">
-                                                                    <Anchor className="mr-2 h-5 w-5 text-indigo-500" />
-                                                                    {anchor.name}
-                                                                </CardTitle>
-                                                                <div className="flex items-center gap-2">
-                                                                    <Badge
-                                                                        variant={
-                                                                            anchor.status === 'active' ? 'default' :
-                                                                                anchor.status === 'error' ? 'destructive' : 'secondary'
-                                                                        }
-                                                                        className={
-                                                                            anchor.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                                                anchor.status === 'calibrating' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : ''
-                                                                        }
-                                                                    >
-                                                                        {anchor.status === 'active' ? '運行中' :
-                                                                            anchor.status === 'paired' ? '已配對' :
-                                                                                anchor.status === 'calibrating' ? '標定中' :
-                                                                                    anchor.status === 'unpaired' ? '未配對' : '錯誤'}
-                                                                    </Badge>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline"
-                                                                        onClick={() => startAnchorCalibration(anchor)}
-                                                                        disabled={calibratingAnchor !== null}
-                                                                        title="校正座標"
-                                                                    >
-                                                                        <Target className="h-4 w-4" />
-                                                                    </Button>
-                                                                    {anchor.position && (
+                                                    return (
+                                                        <Card key={anchor.id}>
+                                                            <CardHeader className="pb-3">
+                                                                <div className="flex items-center justify-between">
+                                                                    <CardTitle className="flex items-center">
+                                                                        <Anchor className="mr-2 h-5 w-5 text-indigo-500" />
+                                                                        {anchor.name}
+                                                                    </CardTitle>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <Badge
+                                                                            variant={
+                                                                                anchor.status === 'active' ? 'default' :
+                                                                                    anchor.status === 'error' ? 'destructive' : 'secondary'
+                                                                            }
+                                                                            className={
+                                                                                anchor.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                                                    anchor.status === 'calibrating' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : ''
+                                                                            }
+                                                                        >
+                                                                            {anchor.status === 'active' ? '運行中' :
+                                                                                anchor.status === 'paired' ? '已配對' :
+                                                                                    anchor.status === 'calibrating' ? '標定中' :
+                                                                                        anchor.status === 'unpaired' ? '未配對' : '錯誤'}
+                                                                        </Badge>
                                                                         <Button
                                                                             size="sm"
                                                                             variant="outline"
-                                                                            onClick={() => openConfigDialog(anchor, anchor.position!)}
-                                                                            disabled={sendingConfig}
-                                                                            title="發送配置到雲端"
+                                                                            onClick={() => startAnchorCalibration(anchor)}
+                                                                            disabled={calibratingAnchor !== null}
+                                                                            title="校正座標"
                                                                         >
-                                                                            <Upload className="h-4 w-4" />
+                                                                            <Target className="h-4 w-4" />
                                                                         </Button>
+                                                                        {anchor.position && (
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={() => openConfigDialog(anchor, anchor.position!)}
+                                                                                disabled={sendingConfig}
+                                                                                title="發送配置到雲端"
+                                                                            >
+                                                                                <Upload className="h-4 w-4" />
+                                                                            </Button>
+                                                                        )}
+                                                                        <Button
+                                                                            size="sm"
+                                                                            variant="outline"
+                                                                            onClick={() => deleteAnchor(anchor.id)}
+                                                                            title="刪除錨點"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            </CardHeader>
+                                                            <CardContent>
+                                                                <div className="space-y-2">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="text-sm text-muted-foreground">所屬閘道器</span>
+                                                                        <span className="font-medium">{gateway?.name}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center justify-between">
+                                                                        <span className="text-sm text-muted-foreground">MAC 地址</span>
+                                                                        <span className="font-mono text-sm">{anchor.macAddress}</span>
+                                                                    </div>
+                                                                    {anchor.cloudData && (
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="text-sm text-muted-foreground">雲端 ID</span>
+                                                                            <span className="text-sm">{anchor.cloudData.id}</span>
+                                                                        </div>
                                                                     )}
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="outline"
-                                                                        onClick={() => deleteAnchor(anchor.id)}
-                                                                        title="刪除錨點"
-                                                                    >
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        </CardHeader>
-                                                        <CardContent>
-                                                            <div className="space-y-2">
-                                                                <div className="flex items-center justify-between">
-                                                                    <span className="text-sm text-muted-foreground">所屬閘道器</span>
-                                                                    <span className="font-medium">{gateway?.name}</span>
-                                                                </div>
-                                                                <div className="flex items-center justify-between">
-                                                                    <span className="text-sm text-muted-foreground">MAC 地址</span>
-                                                                    <span className="font-mono text-sm">{anchor.macAddress}</span>
-                                                                </div>
-                                                                {anchor.cloudData && (
+                                                                    {anchor.position && (
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="text-sm text-muted-foreground">位置座標</span>
+                                                                            <span className="text-sm">
+                                                                                ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)})
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                    {anchor.cloudData && (
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="text-sm text-muted-foreground">功能狀態</span>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className="text-xs">LED: {anchor.cloudData.led ? '開' : '關'}</span>
+                                                                                <span className="text-xs">BLE: {anchor.cloudData.ble ? '開' : '關'}</span>
+                                                                                {anchor.cloudData.initiator === 1 && (
+                                                                                    <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
+                                                                                        主錨點
+                                                                                    </Badge>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
                                                                     <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">雲端 ID</span>
-                                                                        <span className="text-sm">{anchor.cloudData.id}</span>
-                                                                    </div>
-                                                                )}
-                                                                {anchor.position && (
-                                                                    <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">位置座標</span>
-                                                                        <span className="text-sm">
-                                                                            ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)})
-                                                                        </span>
-                                                                    </div>
-                                                                )}
-                                                                {anchor.cloudData && (
-                                                                    <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">功能狀態</span>
+                                                                        <span className="text-sm text-muted-foreground">信號強度</span>
                                                                         <div className="flex items-center gap-2">
-                                                                            <span className="text-xs">LED: {anchor.cloudData.led ? '開' : '關'}</span>
-                                                                            <span className="text-xs">BLE: {anchor.cloudData.ble ? '開' : '關'}</span>
-                                                                            {anchor.cloudData.initiator === 1 && (
-                                                                                <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
-                                                                                    主錨點
-                                                                                </Badge>
-                                                                            )}
+                                                                            <Signal className="h-4 w-4" />
+                                                                            <span className="text-sm">{anchor.signalStrength || 0}%</span>
                                                                         </div>
                                                                     </div>
-                                                                )}
-                                                                <div className="flex items-center justify-between">
-                                                                    <span className="text-sm text-muted-foreground">信號強度</span>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Signal className="h-4 w-4" />
-                                                                        <span className="text-sm">{anchor.signalStrength || 0}%</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex items-center justify-between">
-                                                                    <span className="text-sm text-muted-foreground">電池電量</span>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Battery className="h-4 w-4" />
-                                                                        <span className="text-sm">{anchor.batteryLevel || 0}%</span>
-                                                                    </div>
-                                                                </div>
-                                                                {anchor.lastSeen && (
                                                                     <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">最後連線</span>
-                                                                        <span className="text-sm">{anchor.lastSeen.toLocaleString('zh-TW')}</span>
+                                                                        <span className="text-sm text-muted-foreground">電池電量</span>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Battery className="h-4 w-4" />
+                                                                            <span className="text-sm">{anchor.batteryLevel || 0}%</span>
+                                                                        </div>
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        </CardContent>
-                                                    </Card>
-                                                )
-                                            })}
+                                                                    {anchor.lastSeen && (
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="text-sm text-muted-foreground">最後連線</span>
+                                                                            <span className="text-sm">{anchor.lastSeen.toLocaleString('zh-TW')}</span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </CardContent>
+                                                        </Card>
+                                                    )
+                                                })
+                                            })()}
                                         </div>
                                     </>
                                 )}
@@ -5384,29 +5459,72 @@ export default function UWBLocationPage() {
 
                     {/* 標籤列表 */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {tags.map(tag => {
-                            const getTypeIcon = (type: TagDevice['type']) => {
-                                return <Tag className="h-5 w-5 text-green-500" />
+                        {(() => {
+                            // 根据选择的网关过滤标签，参考锚点配对的过滤逻辑
+                            console.log("🔍 標籤過濾調試:")
+                            console.log("- 選擇的閘道器:", selectedGatewayForTags, "類型:", typeof selectedGatewayForTags)
+                            console.log("- 總標籤數量:", tags.length)
+                            console.log("- 所有標籤:", tags.map(t => ({ 
+                                id: t.id, 
+                                name: t.name,
+                                gatewayId: t.gatewayId, 
+                                gatewayIdType: typeof t.gatewayId,
+                                cloudGatewayId: t.cloudGatewayId,
+                                cloudGatewayIdType: typeof t.cloudGatewayId
+                            })))
+                            
+                            const filteredTags = tags.filter(tag => {
+                                const match1 = tag.gatewayId === selectedGatewayForTags
+                                const match2 = tag.cloudGatewayId?.toString() === selectedGatewayForTags
+                                const match3 = tag.cloudGatewayId === parseInt(selectedGatewayForTags)
+                                
+                                console.log(`標籤 ${tag.id}: gatewayId="${tag.gatewayId}" vs selected="${selectedGatewayForTags}" => match1:${match1}, match2:${match2}, match3:${match3}`)
+                                
+                                return match1 || match2 || match3
+                            })
+                            
+                            console.log("🔍 過濾結果:")
+                            console.log("- 過濾後的標籤數量:", filteredTags.length)
+                            console.log("- 過濾後的標籤:", filteredTags.map(t => ({ id: t.id, name: t.name })))
+                            
+                            if (filteredTags.length === 0) {
+                                console.log("⚠️ 沒有標籤匹配，顯示空狀態")
+                                return (
+                                    <div className="col-span-2 text-center py-8 text-muted-foreground">
+                                        <Tag className="mx-auto h-12 w-12 mb-3 opacity-30" />
+                                        <p className="text-sm">該閘道器下暫無標籤設備</p>
+                                    </div>
+                                )
                             }
-
-                            const getStatusColor = (status: TagDevice['status']) => {
-                                switch (status) {
-                                    case 'active': return 'bg-green-100 text-green-700 border-green-200'
-                                    case 'low_battery': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                                    case 'lost': return 'bg-red-100 text-red-700 border-red-200'
-                                    default: return ''
+                            
+                            console.log("🎨 開始渲染標籤列表...")
+                            console.log("- 即將渲染的標籤數量:", filteredTags.length)
+                            
+                            return filteredTags.map(tag => {
+                                console.log(`🎨 渲染標籤: ${tag.id} - ${tag.name}`)
+                                
+                                const getTypeIcon = (type: TagDevice['type']) => {
+                                    return <Tag className="h-5 w-5 text-green-500" />
                                 }
-                            }
 
-                            const getStatusText = (status: TagDevice['status']) => {
-                                switch (status) {
-                                    case 'active': return '運行中'
-                                    case 'inactive': return '未激活'
-                                    case 'low_battery': return '電量不足'
-                                    case 'lost': return '失聯'
-                                    default: return status
+                                const getStatusColor = (status: TagDevice['status']) => {
+                                    switch (status) {
+                                        case 'active': return 'bg-green-100 text-green-700 border-green-200'
+                                        case 'low_battery': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                                        case 'lost': return 'bg-red-100 text-red-700 border-red-200'
+                                        default: return ''
+                                    }
                                 }
-                            }
+
+                                const getStatusText = (status: TagDevice['status']) => {
+                                    switch (status) {
+                                        case 'active': return '運行中'
+                                        case 'inactive': return '未激活'
+                                        case 'low_battery': return '電量不足'
+                                        case 'lost': return '失聯'
+                                        default: return status
+                                    }
+                                }
 
                             return (
                                 <Card key={tag.id}>
@@ -5501,7 +5619,8 @@ export default function UWBLocationPage() {
                                     </CardContent>
                                 </Card>
                             )
-                        })}
+                        })
+                    })()}
                     </div>
 
                     {/* 新增/編輯標籤表單 */}
