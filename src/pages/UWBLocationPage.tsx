@@ -783,7 +783,7 @@ export default function UWBLocationPage() {
                     const firstFloor = loadedFloors.find(f => f.homeId === finalSelectedHome)
                     if (firstFloor) {
                         setSelectedFloorForTags(firstFloor.id)
-                        
+
                         // 移除自動選擇 Gateway 的邏輯，讓用戶手動選擇
                         // 這樣標籤設備管理頁面就不會在載入時自動連線 MQTT
                     }
@@ -1777,14 +1777,14 @@ export default function UWBLocationPage() {
 
                         // 自動加入系統功能
                         const tagId = tagData.id.toString()
-                        
+
                         setTags(prev => {
                             const existingLocalTag = prev.find(t => t.id === tagId)
-                            
+
                             if (existingLocalTag) {
                                 // 更新現有本地標籤信息
                                 console.log("✅ 自動更新本地標籤信息:", tagId)
-                                return prev.map(t => 
+                                return prev.map(t =>
                                     t.id === tagId ? {
                                         ...t,
                                         status: tagData.battery_level > 20 ? 'active' : 'low_battery',
@@ -1824,7 +1824,7 @@ export default function UWBLocationPage() {
                                     // 新增：保存雲端 Gateway ID 信息，參考錨點配對的實現
                                     cloudGatewayId: tagData.gateway_id
                                 }
-                                
+
                                 console.log("✅ 自動加入新標籤到系統:", newLocalTag)
                                 console.log("- 關聯的本地 Gateway:", relatedGateway?.name || "未找到")
                                 console.log("- 雲端 Gateway ID:", tagData.gateway_id)
@@ -1899,16 +1899,18 @@ export default function UWBLocationPage() {
 
                         // 自動加入系統功能
                         const tagId = tagData.id.toString()
-                        
+
                         setTags(prev => {
                             const existingLocalTag = prev.find(t => t.id === tagId)
-                            
+
                             if (existingLocalTag) {
-                                // 更新現有本地標籤的位置信息
+                                // 更新現有本地標籤的位置信息和閘道器關聯
                                 console.log("✅ 自動更新本地標籤位置信息:", tagId)
-                                return prev.map(t => 
+                                return prev.map(t =>
                                     t.id === tagId ? {
                                         ...t,
+                                        gatewayId: selectedGatewayForTags || t.gatewayId, // 更新閘道器關聯
+                                        cloudGatewayId: tagData.gateway_id, // 更新雲端閘道器ID
                                         lastPosition: {
                                             x: tagData.position.x,
                                             y: tagData.position.y,
@@ -1936,7 +1938,7 @@ export default function UWBLocationPage() {
 
                                 const newLocalTag: TagDevice = {
                                     id: tagId,
-                                    gatewayId: relatedGateway?.id || selectedGatewayForTags || "default", // 優先使用關聯的本地 Gateway
+                                    gatewayId: selectedGatewayForTags || "default", // 直接使用當前選擇的閘道器
                                     name: `ID_${tagData.id}`,
                                     macAddress: `0x${tagData.id.toString(16).toUpperCase()}`,
                                     type: 'person',
@@ -1953,7 +1955,7 @@ export default function UWBLocationPage() {
                                     // 新增：保存雲端 Gateway ID 信息，參考錨點配對的實現
                                     cloudGatewayId: tagData.gateway_id
                                 }
-                                
+
                                 console.log("✅ 自動加入新標籤到系統:", newLocalTag)
                                 console.log("- 關聯的本地 Gateway:", relatedGateway?.name || "未找到")
                                 console.log("- 雲端 Gateway ID:", tagData.gateway_id)
@@ -4372,8 +4374,8 @@ export default function UWBLocationPage() {
                             {/* 三層巢狀選擇：養老院 -> 樓層 -> Gateway */}
                             <div className="flex items-center gap-2">
                                 {/* 養老院選擇 */}
-                                <Select 
-                                    value={selectedHomeForAnchors} 
+                                <Select
+                                    value={selectedHomeForAnchors}
                                     onValueChange={(value) => {
                                         setSelectedHomeForAnchors(value)
                                         setSelectedFloorForAnchors("")
@@ -4393,8 +4395,8 @@ export default function UWBLocationPage() {
                                 </Select>
 
                                 {/* 樓層選擇 */}
-                                <Select 
-                                    value={selectedFloorForAnchors} 
+                                <Select
+                                    value={selectedFloorForAnchors}
                                     onValueChange={(value) => {
                                         setSelectedFloorForAnchors(value)
                                         setSelectedGatewayForAnchors("")
@@ -4416,8 +4418,8 @@ export default function UWBLocationPage() {
                                 </Select>
 
                                 {/* Gateway 選擇 */}
-                                <Select 
-                                    value={selectedGatewayForAnchors} 
+                                <Select
+                                    value={selectedGatewayForAnchors}
                                     onValueChange={setSelectedGatewayForAnchors}
                                     disabled={!selectedFloorForAnchors}
                                 >
@@ -4443,7 +4445,7 @@ export default function UWBLocationPage() {
                                                     </SelectItem>
                                                 )
                                             })}
-                                        
+
                                         {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
                                         {currentGateways.filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online').length === 0 && (
                                             <div className="px-2 py-1.5 text-sm text-gray-500">
@@ -4950,11 +4952,11 @@ export default function UWBLocationPage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {(() => {
                                                 // 根据选择的网关过滤锚点
-                                                const filteredAnchors = currentAnchors.filter(anchor => 
-                                                    anchor.gatewayId === selectedGatewayForAnchors || 
+                                                const filteredAnchors = currentAnchors.filter(anchor =>
+                                                    anchor.gatewayId === selectedGatewayForAnchors ||
                                                     anchor.cloudGatewayId?.toString() === selectedGatewayForAnchors
                                                 )
-                                                
+
                                                 if (filteredAnchors.length === 0) {
                                                     return (
                                                         <div className="col-span-2 text-center py-8 text-muted-foreground">
@@ -4963,7 +4965,7 @@ export default function UWBLocationPage() {
                                                         </div>
                                                     )
                                                 }
-                                                
+
                                                 return filteredAnchors.map(anchor => {
                                                     const gateway = gateways.find(g => g.id === anchor.gatewayId)
 
@@ -5102,8 +5104,8 @@ export default function UWBLocationPage() {
                             {/* 三層巢狀選擇：養老院 -> 樓層 -> Gateway */}
                             <div className="flex items-center gap-2">
                                 {/* 養老院選擇 */}
-                                <Select 
-                                    value={selectedHomeForTags} 
+                                <Select
+                                    value={selectedHomeForTags}
                                     onValueChange={(value) => {
                                         setSelectedHomeForTags(value)
                                         setSelectedFloorForTags("")
@@ -5123,8 +5125,8 @@ export default function UWBLocationPage() {
                                 </Select>
 
                                 {/* 樓層選擇 */}
-                                <Select 
-                                    value={selectedFloorForTags} 
+                                <Select
+                                    value={selectedFloorForTags}
                                     onValueChange={(value) => {
                                         setSelectedFloorForTags(value)
                                         setSelectedGatewayForTags("")
@@ -5146,8 +5148,8 @@ export default function UWBLocationPage() {
                                 </Select>
 
                                 {/* Gateway 選擇 */}
-                                <Select 
-                                    value={selectedGatewayForTags} 
+                                <Select
+                                    value={selectedGatewayForTags}
                                     onValueChange={setSelectedGatewayForTags}
                                     disabled={!selectedFloorForTags}
                                 >
@@ -5173,7 +5175,7 @@ export default function UWBLocationPage() {
                                                     </SelectItem>
                                                 )
                                             })}
-                                        
+
                                         {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
                                         {currentGateways.filter(gw => gw.floorId === selectedFloorForTags && gw.status === 'online').length === 0 && (
                                             <div className="px-2 py-1.5 text-sm text-gray-500">
@@ -5464,29 +5466,32 @@ export default function UWBLocationPage() {
                             console.log("🔍 標籤過濾調試:")
                             console.log("- 選擇的閘道器:", selectedGatewayForTags, "類型:", typeof selectedGatewayForTags)
                             console.log("- 總標籤數量:", tags.length)
-                            console.log("- 所有標籤:", tags.map(t => ({ 
-                                id: t.id, 
+                            console.log("- 所有標籤:", tags.map(t => ({
+                                id: t.id,
                                 name: t.name,
-                                gatewayId: t.gatewayId, 
+                                gatewayId: t.gatewayId,
                                 gatewayIdType: typeof t.gatewayId,
                                 cloudGatewayId: t.cloudGatewayId,
                                 cloudGatewayIdType: typeof t.cloudGatewayId
                             })))
-                            
+
                             const filteredTags = tags.filter(tag => {
+                                // 確保 selectedGatewayForTags 是字符串類型進行比較
+                                const selectedGatewayStr = selectedGatewayForTags?.toString()
+
                                 const match1 = tag.gatewayId === selectedGatewayForTags
-                                const match2 = tag.cloudGatewayId?.toString() === selectedGatewayForTags
-                                const match3 = tag.cloudGatewayId === parseInt(selectedGatewayForTags)
-                                
+                                const match2 = tag.cloudGatewayId?.toString() === selectedGatewayStr
+                                const match3 = tag.cloudGatewayId === parseInt(selectedGatewayStr || "0")
+
                                 console.log(`標籤 ${tag.id}: gatewayId="${tag.gatewayId}" vs selected="${selectedGatewayForTags}" => match1:${match1}, match2:${match2}, match3:${match3}`)
-                                
+
                                 return match1 || match2 || match3
                             })
-                            
+
                             console.log("🔍 過濾結果:")
                             console.log("- 過濾後的標籤數量:", filteredTags.length)
                             console.log("- 過濾後的標籤:", filteredTags.map(t => ({ id: t.id, name: t.name })))
-                            
+
                             if (filteredTags.length === 0) {
                                 console.log("⚠️ 沒有標籤匹配，顯示空狀態")
                                 return (
@@ -5496,13 +5501,13 @@ export default function UWBLocationPage() {
                                     </div>
                                 )
                             }
-                            
+
                             console.log("🎨 開始渲染標籤列表...")
                             console.log("- 即將渲染的標籤數量:", filteredTags.length)
-                            
+
                             return filteredTags.map(tag => {
                                 console.log(`🎨 渲染標籤: ${tag.id} - ${tag.name}`)
-                                
+
                                 const getTypeIcon = (type: TagDevice['type']) => {
                                     return <Tag className="h-5 w-5 text-green-500" />
                                 }
@@ -5526,101 +5531,101 @@ export default function UWBLocationPage() {
                                     }
                                 }
 
-                            return (
-                                <Card key={tag.id}>
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-center justify-between">
-                                            <CardTitle className="flex items-center">
-                                                {getTypeIcon(tag.type)}
-                                                <span className="ml-2">{tag.name}</span>
-                                            </CardTitle>
-                                            <div className="flex items-center gap-2">
-                                                <Badge
-                                                    variant="secondary"
-                                                    className={getStatusColor(tag.status)}
-                                                >
-                                                    {getStatusText(tag.status)}
-                                                </Badge>
-                                                {/* 顯示標籤來源 */}
-                                                {discoveredCloudTags.some(cloudTag => cloudTag.id.toString() === tag.id) && (
-                                                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                                        <CloudIcon className="h-3 w-3 mr-1" />
-                                                        雲端
-                                                    </Badge>
-                                                )}
-                                                <div className="flex gap-1">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            setEditingTag(tag)
-                                                            setTagForm({
-                                                                name: tag.name,
-                                                                macAddress: tag.macAddress,
-                                                                type: tag.type,
-                                                                assignedTo: tag.assignedTo || ""
-                                                            })
-                                                            setShowTagForm(true)
-                                                        }}
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => deleteTag(tag.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className="space-y-2">
+                                return (
+                                    <Card key={tag.id}>
+                                        <CardHeader className="pb-3">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">MAC 地址</span>
-                                                <span className="font-mono text-sm">{tag.macAddress}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">類型</span>
-                                                <span className="text-sm">人員</span>
-                                            </div>
-                                            {tag.assignedTo && (
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">分配給</span>
-                                                    <span className="text-sm">{tag.assignedTo}</span>
-                                                </div>
-                                            )}
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">電池電量</span>
+                                                <CardTitle className="flex items-center">
+                                                    {getTypeIcon(tag.type)}
+                                                    <span className="ml-2">{tag.name}</span>
+                                                </CardTitle>
                                                 <div className="flex items-center gap-2">
-                                                    <Battery className="h-4 w-4" />
-                                                    <span className="text-sm">{tag.batteryLevel || 0}%</span>
+                                                    <Badge
+                                                        variant="secondary"
+                                                        className={getStatusColor(tag.status)}
+                                                    >
+                                                        {getStatusText(tag.status)}
+                                                    </Badge>
+                                                    {/* 顯示標籤來源 */}
+                                                    {discoveredCloudTags.some(cloudTag => cloudTag.id.toString() === tag.id) && (
+                                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                                            <CloudIcon className="h-3 w-3 mr-1" />
+                                                            雲端
+                                                        </Badge>
+                                                    )}
+                                                    <div className="flex gap-1">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                setEditingTag(tag)
+                                                                setTagForm({
+                                                                    name: tag.name,
+                                                                    macAddress: tag.macAddress,
+                                                                    type: tag.type,
+                                                                    assignedTo: tag.assignedTo || ""
+                                                                })
+                                                                setShowTagForm(true)
+                                                            }}
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => deleteTag(tag.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            {tag.lastPosition && (
-                                                <div className="space-y-1">
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-muted-foreground">MAC 地址</span>
+                                                    <span className="font-mono text-sm">{tag.macAddress}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-muted-foreground">類型</span>
+                                                    <span className="text-sm">人員</span>
+                                                </div>
+                                                {tag.assignedTo && (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">最後位置</span>
-                                                        <span className="text-sm">
-                                                            ({tag.lastPosition.x.toFixed(1)}, {tag.lastPosition.y.toFixed(1)})
-                                                        </span>
+                                                        <span className="text-sm text-muted-foreground">分配給</span>
+                                                        <span className="text-sm">{tag.assignedTo}</span>
                                                     </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">更新時間</span>
-                                                        <span className="text-sm">
-                                                            {tag.lastPosition.timestamp.toLocaleString('zh-TW')}
-                                                        </span>
+                                                )}
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm text-muted-foreground">電池電量</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <Battery className="h-4 w-4" />
+                                                        <span className="text-sm">{tag.batteryLevel || 0}%</span>
                                                     </div>
                                                 </div>
-                                            )}
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )
-                        })
-                    })()}
+                                                {tag.lastPosition && (
+                                                    <div className="space-y-1">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">最後位置</span>
+                                                            <span className="text-sm">
+                                                                ({tag.lastPosition.x.toFixed(1)}, {tag.lastPosition.y.toFixed(1)})
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">更新時間</span>
+                                                            <span className="text-sm">
+                                                                {tag.lastPosition.timestamp.toLocaleString('zh-TW')}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )
+                            })
+                        })()}
                     </div>
 
                     {/* 新增/編輯標籤表單 */}
