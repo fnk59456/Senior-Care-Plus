@@ -145,7 +145,7 @@ export default function LocationPage() {
       rejectUnauthorized: false    // 不拒絕未授權連接
     })
 
-gi    clientRef.current = client
+    clientRef.current = client
 
     client.on("connect", () => {
       console.log("✅ 室內定位MQTT已連接")
