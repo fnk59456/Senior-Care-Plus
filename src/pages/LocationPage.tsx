@@ -48,6 +48,7 @@ export default function LocationPage() {
   const [mqttError, setMqttError] = useState("")
 
   const clientRef = useRef<mqtt.MqttClient | null>(null)
+  const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // MQTT連接配置 - 使用useMemo避免重新創建
   const MQTT_URL = `${import.meta.env.VITE_MQTT_PROTOCOL}://${import.meta.env.VITE_MQTT_BROKER}:${import.meta.env.VITE_MQTT_PORT}/mqtt`
@@ -111,10 +112,16 @@ export default function LocationPage() {
 
   // MQTT連接管理
   useEffect(() => {
+    // 清理之前的超時
+    if (connectionTimeoutRef.current) {
+      clearTimeout(connectionTimeoutRef.current)
+    }
+
     if (!selectedGateway) {
       // 清理連接
       if (clientRef.current) {
-        clientRef.current.end()
+        console.log("清理MQTT連接 - 未選擇閘道器")
+        clientRef.current.end(true) // 強制斷開
         clientRef.current = null
       }
       setConnected(false)
@@ -129,108 +136,125 @@ export default function LocationPage() {
       return
     }
 
-    setConnectionStatus("連接中...")
-    setMqttError("")
+    // 防抖：延遲500ms再建立連接，避免頻繁切換
+    connectionTimeoutRef.current = setTimeout(() => {
+      // 如果已有連接，先清理
+      if (clientRef.current) {
+        console.log("清理舊的MQTT連接 - 準備重新連接")
+        clientRef.current.end(true) // 強制斷開
+        clientRef.current = null
+      }
 
-    // 建立MQTT連接
-    const client = mqtt.connect(MQTT_URL, {
-      ...MQTT_OPTIONS,
-      reconnectPeriod: 1000,        // 減少重連間隔
-      connectTimeout: 30000,        // 增加連接超時
-      keepalive: 30,               // 減少keepalive間隔
-      clean: false,                // 改為false，保持會話
-      clientId: `location-client-${Math.random().toString(16).slice(2, 8)}`,
-      reschedulePings: true,       // 重新安排ping
-      queueQoSZero: false,         // 不隊列QoS 0消息
-      rejectUnauthorized: false    // 不拒絕未授權連接
-    })
-
-    clientRef.current = client
-
-    client.on("connect", () => {
-      console.log("✅ 室內定位MQTT已連接")
-      setConnected(true)
-      setConnectionStatus("已連線")
+      setConnectionStatus("連接中...")
       setMqttError("")
 
-      // 訂閱主題
-      client.subscribe(locationTopic, (err) => {
-        if (err) {
-          console.error("訂閱失敗:", err)
-          setMqttError("訂閱失敗")
-        } else {
-          console.log("已訂閱主題:", locationTopic)
-          setCurrentTopic(locationTopic)
+      // 建立MQTT連接
+      const client = mqtt.connect(MQTT_URL, {
+        ...MQTT_OPTIONS,
+        reconnectPeriod: 1000,        // 減少重連間隔
+        connectTimeout: 30000,        // 增加連接超時
+        keepalive: 30,               // 減少keepalive間隔
+        clean: false,                // 改為false，保持會話
+        clientId: `location-client-${Math.random().toString(16).slice(2, 8)}`,
+        reschedulePings: true,       // 重新安排ping
+        queueQoSZero: false,         // 不隊列QoS 0消息
+        rejectUnauthorized: false    // 不拒絕未授權連接
+      })
+
+      clientRef.current = client
+
+      client.on("connect", () => {
+        console.log("✅ 室內定位MQTT已連接")
+        setConnected(true)
+        setConnectionStatus("已連線")
+        setMqttError("")
+
+        // 訂閱主題
+        client.subscribe(locationTopic, (err) => {
+          if (err) {
+            console.error("訂閱失敗:", err)
+            setMqttError("訂閱失敗")
+          } else {
+            console.log("已訂閱主題:", locationTopic)
+            setCurrentTopic(locationTopic)
+          }
+        })
+      })
+
+      client.on("reconnect", () => {
+        console.log("重新連接中...")
+        setConnected(false)
+        setConnectionStatus("重新連接中...")
+      })
+
+      client.on("close", () => {
+        console.log("連接已關閉")
+        setConnected(false)
+        setConnectionStatus("連接已關閉")
+      })
+
+      client.on("offline", () => {
+        console.log("客戶端離線")
+        setConnected(false)
+        setConnectionStatus("客戶端離線")
+      })
+
+      client.on("packetsend", (packet) => {
+        console.log("發送數據包:", packet.cmd)
+      })
+
+      client.on("packetreceive", (packet) => {
+        console.log("接收數據包:", packet.cmd)
+      })
+
+      client.on("error", (error) => {
+        console.error("MQTT連接錯誤:", error)
+        setConnected(false)
+        setMqttError(error.message || "連接錯誤")
+        setConnectionStatus("連接錯誤")
+      })
+
+      client.on("message", (topic: string, payload: Uint8Array) => {
+        if (topic !== locationTopic) return
+
+        try {
+          const rawMessage = new TextDecoder().decode(payload)
+          const msg = JSON.parse(rawMessage)
+
+          if (msg.content === "location" && msg.id && msg.position) {
+            const deviceId = String(msg.id)
+            setPatients(prev => ({
+              ...prev,
+              [deviceId]: {
+                id: deviceId,
+                name: msg.name || `設備-${deviceId}`,
+                position: {
+                  x: msg.position.x,
+                  y: msg.position.y,
+                  quality: msg.position.quality || 0,
+                  z: msg.position.z,
+                },
+                updatedAt: Date.now(),
+                gatewayId: selectedGateway
+              },
+            }))
+          }
+        } catch (error) {
+          console.error('MQTT 訊息解析錯誤:', error)
         }
       })
-    })
+    }, 500) // 500ms防抖延遲
 
-    client.on("reconnect", () => {
-      console.log("重新連接中...")
-      setConnected(false)
-      setConnectionStatus("重新連接中...")
-    })
-
-    client.on("close", () => {
-      console.log("連接已關閉")
-      setConnected(false)
-      setConnectionStatus("連接已關閉")
-    })
-
-    client.on("offline", () => {
-      console.log("客戶端離線")
-      setConnected(false)
-      setConnectionStatus("客戶端離線")
-    })
-
-    client.on("packetsend", (packet) => {
-      console.log("發送數據包:", packet.cmd)
-    })
-
-    client.on("packetreceive", (packet) => {
-      console.log("接收數據包:", packet.cmd)
-    })
-
-    client.on("error", (error) => {
-      console.error("MQTT連接錯誤:", error)
-      setConnected(false)
-      setMqttError(error.message || "連接錯誤")
-      setConnectionStatus("連接錯誤")
-    })
-
-    client.on("message", (topic: string, payload: Uint8Array) => {
-      if (topic !== locationTopic) return
-
-      try {
-        const rawMessage = new TextDecoder().decode(payload)
-        const msg = JSON.parse(rawMessage)
-
-        if (msg.content === "location" && msg.id && msg.position) {
-          const deviceId = String(msg.id)
-          setPatients(prev => ({
-            ...prev,
-            [deviceId]: {
-              id: deviceId,
-              name: msg.name || `設備-${deviceId}`,
-              position: {
-                x: msg.position.x,
-                y: msg.position.y,
-                quality: msg.position.quality || 0,
-                z: msg.position.z,
-              },
-              updatedAt: Date.now(),
-              gatewayId: selectedGateway
-            },
-          }))
-        }
-      } catch (error) {
-        console.error('MQTT 訊息解析錯誤:', error)
-      }
-    })
-
+    // 清理函數
     return () => {
-      console.log("清理MQTT連接")
-      client.end()
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current)
+      }
+      if (clientRef.current) {
+        console.log("清理MQTT連接 - 組件卸載")
+        clientRef.current.end(true)
+        clientRef.current = null
+      }
     }
   }, [selectedGateway, MQTT_URL, MQTT_OPTIONS])
 
