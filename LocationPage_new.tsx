@@ -151,25 +151,25 @@ export default function LocationPage() {
   // 鼠标滚轮缩放
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault()
-
+    
     const delta = e.deltaY > 0 ? 0.9 : 1.1
     const newScale = Math.max(
       mapTransform.minScale,
       Math.min(mapTransform.maxScale, mapTransform.scale * delta)
     )
-
+    
     if (newScale === mapTransform.scale) return
-
+    
     // 计算鼠标位置相对于地图容器的偏移
     const rect = e.currentTarget.getBoundingClientRect()
     const mouseX = e.clientX - rect.left
     const mouseY = e.clientY - rect.top
-
+    
     // 以鼠标位置为中心进行缩放
     const scaleRatio = newScale / mapTransform.scale
     const newTranslateX = mouseX - (mouseX - mapTransform.translateX) * scaleRatio
     const newTranslateY = mouseY - (mouseY - mapTransform.translateY) * scaleRatio
-
+    
     setMapTransform(prev => ({
       ...prev,
       scale: newScale,
@@ -181,21 +181,21 @@ export default function LocationPage() {
   // 鼠标拖拽事件
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return // 只处理左键
-
+    
     setIsDragging(true)
     setDragStart({ x: e.clientX, y: e.clientY })
     setLastTransform({ translateX: mapTransform.translateX, translateY: mapTransform.translateY })
-
+    
     // 阻止图片拖拽
     e.preventDefault()
   }, [mapTransform])
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging) return
-
+    
     const deltaX = e.clientX - dragStart.x
     const deltaY = e.clientY - dragStart.y
-
+    
     setMapTransform(prev => ({
       ...prev,
       translateX: lastTransform.translateX + deltaX,
@@ -222,10 +222,10 @@ export default function LocationPage() {
     if (e.touches.length === 1 && isDragging) {
       e.preventDefault()
       const touch = e.touches[0]
-
+      
       const deltaX = touch.clientX - dragStart.x
       const deltaY = touch.clientY - dragStart.y
-
+      
       setMapTransform(prev => ({
         ...prev,
         translateX: lastTransform.translateX + deltaX,
@@ -586,39 +586,39 @@ export default function LocationPage() {
                       draggable={false}
                     />
 
-                    {/* 设备标记 - 使用简化的坐标转换，让CSS变换处理缩放和平移 */}
-                    {onlinePatients.map(patient => {
-                      if (!calibration?.isCalibrated) return null
+                                                              {/* 设备标记 - 使用简化的坐标转换，让CSS变换处理缩放和平移 */}
+                      {onlinePatients.map(patient => {
+                        if (!calibration?.isCalibrated) return null
 
-                      // 使用简化的坐标转换函数
-                      const displayCoords = convertRealToDisplayCoords(
-                        patient.position.x,
-                        patient.position.y,
-                        selectedFloorData,
-                        mapImageRef.current as HTMLImageElement
-                      )
+                        // 使用简化的坐标转换函数
+                        const displayCoords = convertRealToDisplayCoords(
+                          patient.position.x,
+                          patient.position.y,
+                          selectedFloorData,
+                          mapImageRef.current as HTMLImageElement
+                        )
 
-                      if (!displayCoords) return null
+                        if (!displayCoords) return null
 
-                      return (
-                        <div
-                          key={patient.id}
-                          className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                          style={{
-                            left: displayCoords.x,
-                            top: displayCoords.y
-                          }}
-                        >
-                          <Avatar className="border-2 border-blue-500 shadow-lg">
-                            <AvatarFallback>{patient.name[0]}</AvatarFallback>
-                          </Avatar>
-                          <div className="text-xs bg-white/80 rounded px-1 mt-1 text-center whitespace-nowrap">
-                            設備-{patient.id}<br />
-                            {patient.position.z !== undefined ? `Z:${patient.position.z.toFixed(2)}` : ''}
+                        return (
+                          <div
+                            key={patient.id}
+                            className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                            style={{
+                              left: displayCoords.x,
+                              top: displayCoords.y
+                            }}
+                          >
+                            <Avatar className="border-2 border-blue-500 shadow-lg">
+                              <AvatarFallback>{patient.name[0]}</AvatarFallback>
+                            </Avatar>
+                            <div className="text-xs bg-white/80 rounded px-1 mt-1 text-center whitespace-nowrap">
+                              設備-{patient.id}<br />
+                              {patient.position.z !== undefined ? `Z:${patient.position.z.toFixed(2)}` : ''}
+                            </div>
                           </div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
 
                     {/* 无人在线提示 */}
                     {onlinePatients.length === 0 && (

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { 
+import {
   Thermometer, Heart, Baby, Phone, Clock, Bed,
   Bell, Menu, Pause, User, CircleDot
 } from "lucide-react"
@@ -22,7 +22,7 @@ const patients = [
   },
   {
     id: 2,
-    name: "李四", 
+    name: "李四",
     age: 70,
     gcs: 13,
     status: "正常",
@@ -91,7 +91,7 @@ export default function HealthPage() {
       {/* 監控標題 */}
       <div className="mb-4">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">監控</h2>
-        
+
         {/* 狀態篩選器 */}
         <div className="flex gap-2 mb-6">
           {filters.map((filter) => (
@@ -99,11 +99,10 @@ export default function HealthPage() {
               key={filter}
               variant={selectedFilter === filter ? "default" : "outline"}
               onClick={() => setSelectedFilter(filter)}
-              className={`rounded-full px-6 py-2 text-sm font-medium ${
-                selectedFilter === filter 
-                  ? "bg-blue-500 text-white hover:bg-blue-600" 
+              className={`rounded-full px-6 py-2 text-sm font-medium ${selectedFilter === filter
+                  ? "bg-blue-500 text-white hover:bg-blue-600"
                   : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-              }`}
+                }`}
             >
               {filter}
             </Button>

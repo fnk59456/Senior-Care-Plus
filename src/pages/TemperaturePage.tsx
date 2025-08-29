@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { Thermometer, TrendingUp, Clock, AlertTriangle } from "lucide-react"
 import { useLocation } from "react-router-dom"
+import { useUWBLocation } from "@/contexts/UWBLocationContext"
 
 // 本地 MQTT 設置
 const MQTT_URL = "ws://localhost:9001"
@@ -16,7 +17,6 @@ const MQTT_TOPIC = "GW17F5_Health"
 
 // 雲端 MQTT 設置
 const CLOUD_MQTT_URL = `${import.meta.env.VITE_MQTT_PROTOCOL}://${import.meta.env.VITE_MQTT_BROKER}:${import.meta.env.VITE_MQTT_PORT}/mqtt`
-const CLOUD_MQTT_TOPIC = `UWB/GW${import.meta.env.VITE_GATEWAY_ID}_Health`
 const CLOUD_MQTT_OPTIONS = {
   username: import.meta.env.VITE_MQTT_USERNAME,
   password: import.meta.env.VITE_MQTT_PASSWORD
@@ -119,6 +119,19 @@ export default function TemperaturePage() {
   const location = useLocation()
   const patientName = location.state?.patientName
 
+  // 使用 UWBLocationContext
+  const {
+    homes,
+    floors,
+    gateways,
+    selectedHome,
+    setSelectedHome,
+    selectedFloor,
+    setSelectedFloor,
+    selectedGateway,
+    setSelectedGateway
+  } = useUWBLocation()
+
   const [selectedUser, setSelectedUser] = useState<string>(() => {
     // 如果從HealthPage傳遞了患者名稱，則使用該患者，否則默認選擇張三
     return patientName ? getUserIdByName(patientName) : "E001"
@@ -150,7 +163,33 @@ export default function TemperaturePage() {
   const [cloudReconnectAttempts, setCloudReconnectAttempts] = useState(0)
 
   // 當前MQTT標籤頁狀態
+  const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [currentMqttTab, setCurrentMqttTab] = useState<string>("local")
+
+  // 動態獲取健康監控MQTT主題
+  const getHealthTopic = () => {
+    if (!selectedGateway) return null
+
+    // 檢查是否有雲端數據
+    const gateway = gateways.find(gw => gw.id === selectedGateway)
+    console.log("🔍 選擇的健康監控閘道器:", gateway)
+
+    if (gateway?.cloudData?.pub_topic?.health) {
+      console.log("✅ 使用雲端健康主題:", gateway.cloudData.pub_topic.health)
+      return gateway.cloudData.pub_topic.health
+    }
+
+    // 如果沒有雲端數據，構建主題名稱
+    if (gateway) {
+      const gatewayName = gateway.name.replace(/\s+/g, '')
+      const constructedTopic = `UWB/GW${gatewayName}_Health`
+      console.log("🔧 構建本地健康主題:", constructedTopic)
+      return constructedTopic
+    }
+
+    console.log("❌ 無法獲取健康監控閘道器主題")
+    return null
+  }
 
   // MQTT連接
   useEffect(() => {
@@ -285,244 +324,286 @@ export default function TemperaturePage() {
 
   // 雲端 MQTT 連接
   useEffect(() => {
-    setCloudConnectionStatus("連接中...")
-    setCloudError("")
-
-    const cloudClient = mqtt.connect(CLOUD_MQTT_URL, {
-      ...CLOUD_MQTT_OPTIONS,
-      reconnectPeriod: 5000,
-      connectTimeout: 15000,
-      keepalive: 60,
-      clean: true,
-      clientId: `web-client-${Math.random().toString(16).slice(2, 8)}`
-    })
-    cloudClientRef.current = cloudClient
-
-    cloudClient.on("connect", () => {
-      console.log("雲端 MQTT 已連接，Client ID:", cloudClient.options.clientId)
-      setCloudConnected(true)
-      setCloudConnectionStatus("已連線")
-      setCloudError("")
-      setCloudReconnectAttempts(0)
-    })
-
-    cloudClient.on("reconnect", () => {
-      console.log("雲端 MQTT 重新連接中...")
-      setCloudConnected(false)
-      setCloudReconnectAttempts(prev => prev + 1)
-      setCloudConnectionStatus(`重新連接中... (第${cloudReconnectAttempts + 1}次嘗試)`)
-    })
-
-    cloudClient.on("close", () => {
-      console.log("雲端 MQTT 連接關閉")
-      setCloudConnected(false)
-      setCloudConnectionStatus("連接已關閉")
-    })
-
-    cloudClient.on("error", (error) => {
-      console.error("雲端 MQTT 連接錯誤:", error)
-      setCloudConnected(false)
-      setCloudError(error.message || "連接錯誤")
-      setCloudConnectionStatus("連接錯誤")
-    })
-
-    cloudClient.on("offline", () => {
-      console.log("雲端 MQTT 離線")
-      setCloudConnected(false)
-      setCloudConnectionStatus("離線")
-    })
-
-    cloudClient.subscribe(CLOUD_MQTT_TOPIC, (err) => {
-      if (err) {
-        console.error("雲端 MQTT 訂閱失敗:", err)
-      } else {
-        console.log("已訂閱雲端主題:", CLOUD_MQTT_TOPIC)
-      }
-    })
-
-    cloudClient.on("message", (topic: string, payload: Uint8Array) => {
-      if (topic !== CLOUD_MQTT_TOPIC) return
-      try {
-        const rawMessage = new TextDecoder().decode(payload)
-        const msg = JSON.parse(rawMessage)
-        console.log("收到雲端 MQTT 消息:", msg)
-
-        // 處理雲端 MQTT 數據
-        const cloudData: CloudMqttData = {
-          content: msg.content || "",
-          gateway_id: msg["gateway id"] || "",
-          MAC: msg.MAC || "",
-          receivedAt: new Date()
-        }
-
-        // 添加詳細的調試信息
-        console.log("==== 雲端MQTT數據解析 ====")
-        console.log("原始數據:", msg)
-        console.log("Content:", msg.content)
-        console.log("MAC:", msg.MAC)
-        console.log("Skin temp:", msg["skin temp"])
-        console.log("所有可能的溫度字段:", {
-          "skin temp": msg["skin temp"],
-          "skin_temp": msg.skin_temp,
-          "temp": msg.temp,
-          "temperature": msg.temperature
-        })
-
-        // 根據 content 判斷數據類型並提取相應字段
-        if (msg.content === "300B") {
-          console.log("處理300B數據...")
-          // 體溫心率數據處理
-          cloudData.SOS = msg.SOS || ""
-          cloudData.hr = msg.hr || ""
-          cloudData.SpO2 = msg.SpO2 || ""
-          cloudData.bp_syst = msg["bp syst"] || ""
-          cloudData.bp_diast = msg["bp diast"] || ""
-          cloudData.skin_temp = msg["skin temp"] || ""
-          cloudData.room_temp = msg["room temp"] || ""
-          cloudData.steps = msg.steps || ""
-          cloudData.light_sleep = msg["light sleep (min)"] || ""
-          cloudData.deep_sleep = msg["deep sleep (min)"] || ""
-          cloudData.wake_time = msg["wake time"] || ""
-          cloudData.move = msg.move || ""
-          cloudData.wear = msg.wear || ""
-          cloudData.battery_level = msg["battery level"] || ""
-          cloudData.serial_no = msg["serial no"] || ""
-
-          // 檢查設備記錄創建條件
-          console.log("檢查設備記錄創建條件:")
-          console.log("- MAC存在:", !!msg.MAC)
-          console.log("- skin temp存在:", !!msg["skin temp"])
-          console.log("- skin temp值:", msg["skin temp"])
-
-          // 放寬條件：只要有MAC就創建設備記錄，溫度可能為0或空
-          if (msg.MAC) {
-            const skinTemp = parseFloat(msg["skin temp"]) || 0
-            const roomTemp = parseFloat(msg["room temp"]) || 0
-            const steps = parseInt(msg.steps) || 0
-            const lightSleep = parseInt(msg["light sleep (min)"]) || 0
-            const deepSleep = parseInt(msg["deep sleep (min)"]) || 0
-            const batteryLevel = parseInt(msg["battery level"]) || 0
-
-            console.log("創建設備記錄:")
-            console.log("- MAC:", msg.MAC)
-            console.log("- 皮膚溫度:", skinTemp)
-            console.log("- 環境溫度:", roomTemp)
-
-            const cloudDeviceRecord: CloudDeviceRecord = {
-              MAC: msg.MAC,
-              deviceName: `設備 ${msg.MAC.slice(-8)}`,
-              skin_temp: skinTemp,
-              room_temp: roomTemp,
-              steps: steps,
-              light_sleep: lightSleep,
-              deep_sleep: deepSleep,
-              battery_level: batteryLevel,
-              time: new Date().toISOString(),
-              datetime: new Date(),
-              isAbnormal: skinTemp > 0 && (skinTemp > NORMAL_TEMP_MAX || skinTemp < NORMAL_TEMP_MIN)
-            }
-
-            console.log("設備記錄:", cloudDeviceRecord)
-
-            // 更新雲端設備記錄
-            setCloudDeviceRecords(prev => {
-              const newRecords = [cloudDeviceRecord, ...prev]
-                .sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
-                .slice(0, 1000)
-              console.log("更新後的設備記錄數量:", newRecords.length)
-              return newRecords
-            })
-
-            // 更新設備列表
-            setCloudDevices(prev => {
-              const existingDevice = prev.find(d => d.MAC === msg.MAC)
-              console.log("現有設備:", existingDevice)
-
-              if (existingDevice) {
-                const updatedDevices = prev.map(d =>
-                  d.MAC === msg.MAC
-                    ? { ...d, lastSeen: new Date(), recordCount: d.recordCount + 1 }
-                    : d
-                )
-                console.log("更新現有設備，總設備數:", updatedDevices.length)
-                return updatedDevices
-              } else {
-                const newDevice: CloudDevice = {
-                  MAC: msg.MAC,
-                  deviceName: `設備 ${msg.MAC.slice(-8)}`,
-                  lastSeen: new Date(),
-                  recordCount: 1
-                }
-                const updatedDevices = [...prev, newDevice]
-                console.log("添加新設備:", newDevice)
-                console.log("更新後總設備數:", updatedDevices.length)
-                return updatedDevices
-              }
-            })
-
-            // 如果還沒有選擇設備，自動選擇第一個
-            setSelectedCloudDevice(prev => {
-              if (!prev) {
-                console.log("自動選擇設備:", msg.MAC)
-                return msg.MAC
-              }
-              return prev
-            })
-          } else {
-            console.log("⚠️ 300B數據缺少MAC字段，無法創建設備記錄")
-          }
-        } else if (msg.content === "diaper DV1") {
-          // 尿布數據處理
-          cloudData.name = msg.name || ""
-          cloudData.fw_ver = msg["fw ver"] || ""
-          cloudData.temp = msg.temp || ""
-          cloudData.humi = msg.humi || ""
-          cloudData.button = msg.button || ""
-          cloudData.msg_idx = msg["msg idx"] || ""
-          cloudData.ack = msg.ack || ""
-          cloudData.battery_level = msg["battery level"] || ""
-          cloudData.serial_no = msg["serial no"] || ""
-        } else {
-          // 其他類型數據，提取所有可能的字段
-          cloudData.SOS = msg.SOS || ""
-          cloudData.hr = msg.hr || ""
-          cloudData.SpO2 = msg.SpO2 || ""
-          cloudData.bp_syst = msg["bp syst"] || ""
-          cloudData.bp_diast = msg["bp diast"] || ""
-          cloudData.skin_temp = msg["skin temp"] || ""
-          cloudData.room_temp = msg["room temp"] || ""
-          cloudData.steps = msg.steps || ""
-          cloudData.light_sleep = msg["light sleep (min)"] || ""
-          cloudData.deep_sleep = msg["deep sleep (min)"] || ""
-          cloudData.wake_time = msg["wake time"] || ""
-          cloudData.move = msg.move || ""
-          cloudData.wear = msg.wear || ""
-          cloudData.battery_level = msg["battery level"] || ""
-          cloudData.serial_no = msg["serial no"] || ""
-          cloudData.name = msg.name || ""
-          cloudData.fw_ver = msg["fw ver"] || ""
-          cloudData.temp = msg.temp || ""
-          cloudData.humi = msg.humi || ""
-          cloudData.button = msg.button || ""
-          cloudData.msg_idx = msg["msg idx"] || ""
-          cloudData.ack = msg.ack || ""
-        }
-
-        setCloudMqttData(prev => {
-          const newData = [cloudData, ...prev].slice(0, 50)
-          return newData
-        })
-
-      } catch (error) {
-        console.error('雲端 MQTT 訊息解析錯誤:', error)
-      }
-    })
-
-    return () => {
-      console.log("清理雲端 MQTT 連接")
-      cloudClient.end()
+    // 清理之前的超時
+    if (connectionTimeoutRef.current) {
+      clearTimeout(connectionTimeoutRef.current)
     }
-  }, [])
+
+    // 如果沒有選擇閘道器，不建立連接
+    if (!selectedGateway) {
+      if (cloudClientRef.current) {
+        console.log("清理雲端MQTT連接 - 未選擇閘道器")
+        cloudClientRef.current.end(true)
+        cloudClientRef.current = null
+      }
+      setCloudConnected(false)
+      setCloudConnectionStatus("未選擇閘道器")
+      return
+    }
+
+    // 防抖：延遲500ms再建立連接，避免頻繁切換
+    connectionTimeoutRef.current = setTimeout(() => {
+      setCloudConnectionStatus("連接中...")
+      setCloudError("")
+
+      // 如果已有連接，先清理
+      if (cloudClientRef.current) {
+        console.log("清理舊的雲端MQTT連接 - 準備重新連接")
+        cloudClientRef.current.end(true)
+        cloudClientRef.current = null
+      }
+
+      const cloudClient = mqtt.connect(CLOUD_MQTT_URL, {
+        ...CLOUD_MQTT_OPTIONS,
+        reconnectPeriod: 5000,
+        connectTimeout: 15000,
+        keepalive: 60,
+        clean: true,
+        clientId: `web-client-${Math.random().toString(16).slice(2, 8)}`
+      })
+      cloudClientRef.current = cloudClient
+
+      cloudClient.on("connect", () => {
+        console.log("雲端 MQTT 已連接，Client ID:", cloudClient.options.clientId)
+        setCloudConnected(true)
+        setCloudConnectionStatus("已連線")
+        setCloudError("")
+        setCloudReconnectAttempts(0)
+      })
+
+      cloudClient.on("reconnect", () => {
+        console.log("雲端 MQTT 重新連接中...")
+        setCloudConnected(false)
+        setCloudReconnectAttempts(prev => prev + 1)
+        setCloudConnectionStatus(`重新連接中... (第${cloudReconnectAttempts + 1}次嘗試)`)
+      })
+
+      cloudClient.on("close", () => {
+        console.log("雲端 MQTT 連接關閉")
+        setCloudConnected(false)
+        setCloudConnectionStatus("連接已關閉")
+      })
+
+      cloudClient.on("error", (error) => {
+        console.error("雲端 MQTT 連接錯誤:", error)
+        setCloudConnected(false)
+        setCloudError(error.message || "連接錯誤")
+        setCloudConnectionStatus("連接錯誤")
+      })
+
+      cloudClient.on("offline", () => {
+        console.log("雲端 MQTT 離線")
+        setCloudConnected(false)
+        setCloudConnectionStatus("離線")
+      })
+
+      // 獲取健康監控主題
+      const healthTopic = getHealthTopic()
+      if (!healthTopic) {
+        console.error("無法獲取健康監控主題，跳過訂閱")
+        return
+      }
+
+      cloudClient.subscribe(healthTopic, (err) => {
+        if (err) {
+          console.error("雲端 MQTT 訂閱失敗:", err)
+        } else {
+          console.log("已訂閱雲端主題:", healthTopic)
+        }
+      })
+
+      cloudClient.on("message", (topic: string, payload: Uint8Array) => {
+        const healthTopic = getHealthTopic()
+        if (!healthTopic || topic !== healthTopic) return
+        try {
+          const rawMessage = new TextDecoder().decode(payload)
+          const msg = JSON.parse(rawMessage)
+          console.log("收到雲端 MQTT 消息:", msg)
+
+          // 處理雲端 MQTT 數據
+          const cloudData: CloudMqttData = {
+            content: msg.content || "",
+            gateway_id: msg["gateway id"] || "",
+            MAC: msg.MAC || "",
+            receivedAt: new Date()
+          }
+
+          // 添加詳細的調試信息
+          console.log("==== 雲端MQTT數據解析 ====")
+          console.log("原始數據:", msg)
+          console.log("Content:", msg.content)
+          console.log("MAC:", msg.MAC)
+          console.log("Skin temp:", msg["skin temp"])
+          console.log("所有可能的溫度字段:", {
+            "skin temp": msg["skin temp"],
+            "skin_temp": msg.skin_temp,
+            "temp": msg.temp,
+            "temperature": msg.temperature
+          })
+
+          // 根據 content 判斷數據類型並提取相應字段
+          if (msg.content === "300B") {
+            console.log("處理300B數據...")
+            // 體溫心率數據處理
+            cloudData.SOS = msg.SOS || ""
+            cloudData.hr = msg.hr || ""
+            cloudData.SpO2 = msg.SpO2 || ""
+            cloudData.bp_syst = msg["bp syst"] || ""
+            cloudData.bp_diast = msg["bp diast"] || ""
+            cloudData.skin_temp = msg["skin temp"] || ""
+            cloudData.room_temp = msg["room temp"] || ""
+            cloudData.steps = msg.steps || ""
+            cloudData.light_sleep = msg["light sleep (min)"] || ""
+            cloudData.deep_sleep = msg["deep sleep (min)"] || ""
+            cloudData.wake_time = msg["wake time"] || ""
+            cloudData.move = msg.move || ""
+            cloudData.wear = msg.wear || ""
+            cloudData.battery_level = msg["battery level"] || ""
+            cloudData.serial_no = msg["serial no"] || ""
+
+            // 檢查設備記錄創建條件
+            console.log("檢查設備記錄創建條件:")
+            console.log("- MAC存在:", !!msg.MAC)
+            console.log("- skin temp存在:", !!msg["skin temp"])
+            console.log("- skin temp值:", msg["skin temp"])
+
+            // 放寬條件：只要有MAC就創建設備記錄，溫度可能為0或空
+            if (msg.MAC) {
+              const skinTemp = parseFloat(msg["skin temp"]) || 0
+              const roomTemp = parseFloat(msg["room temp"]) || 0
+              const steps = parseInt(msg.steps) || 0
+              const lightSleep = parseInt(msg["light sleep (min)"]) || 0
+              const deepSleep = parseInt(msg["deep sleep (min)"]) || 0
+              const batteryLevel = parseInt(msg["battery level"]) || 0
+
+              console.log("創建設備記錄:")
+              console.log("- MAC:", msg.MAC)
+              console.log("- 皮膚溫度:", skinTemp)
+              console.log("- 環境溫度:", roomTemp)
+
+              const cloudDeviceRecord: CloudDeviceRecord = {
+                MAC: msg.MAC,
+                deviceName: `設備 ${msg.MAC.slice(-8)}`,
+                skin_temp: skinTemp,
+                room_temp: roomTemp,
+                steps: steps,
+                light_sleep: lightSleep,
+                deep_sleep: deepSleep,
+                battery_level: batteryLevel,
+                time: new Date().toISOString(),
+                datetime: new Date(),
+                isAbnormal: skinTemp > 0 && (skinTemp > NORMAL_TEMP_MAX || skinTemp < NORMAL_TEMP_MIN)
+              }
+
+              console.log("設備記錄:", cloudDeviceRecord)
+
+              // 更新雲端設備記錄
+              setCloudDeviceRecords(prev => {
+                const newRecords = [cloudDeviceRecord, ...prev]
+                  .sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
+                  .slice(0, 1000)
+                console.log("更新後的設備記錄數量:", newRecords.length)
+                return newRecords
+              })
+
+              // 更新設備列表
+              setCloudDevices(prev => {
+                const existingDevice = prev.find(d => d.MAC === msg.MAC)
+                console.log("現有設備:", existingDevice)
+
+                if (existingDevice) {
+                  const updatedDevices = prev.map(d =>
+                    d.MAC === msg.MAC
+                      ? { ...d, lastSeen: new Date(), recordCount: d.recordCount + 1 }
+                      : d
+                  )
+                  console.log("更新現有設備，總設備數:", updatedDevices.length)
+                  return updatedDevices
+                } else {
+                  const newDevice: CloudDevice = {
+                    MAC: msg.MAC,
+                    deviceName: `設備 ${msg.MAC.slice(-8)}`,
+                    lastSeen: new Date(),
+                    recordCount: 1
+                  }
+                  const updatedDevices = [...prev, newDevice]
+                  console.log("添加新設備:", newDevice)
+                  console.log("更新後總設備數:", updatedDevices.length)
+                  return updatedDevices
+                }
+              })
+
+              // 如果還沒有選擇設備，自動選擇第一個
+              setSelectedCloudDevice(prev => {
+                if (!prev) {
+                  console.log("自動選擇設備:", msg.MAC)
+                  return msg.MAC
+                }
+                return prev
+              })
+            } else {
+              console.log("⚠️ 300B數據缺少MAC字段，無法創建設備記錄")
+            }
+          } else if (msg.content === "diaper DV1") {
+            // 尿布數據處理
+            cloudData.name = msg.name || ""
+            cloudData.fw_ver = msg["fw ver"] || ""
+            cloudData.temp = msg.temp || ""
+            cloudData.humi = msg.humi || ""
+            cloudData.button = msg.button || ""
+            cloudData.msg_idx = msg["msg idx"] || ""
+            cloudData.ack = msg.ack || ""
+            cloudData.battery_level = msg["battery level"] || ""
+            cloudData.serial_no = msg["serial no"] || ""
+          } else {
+            // 其他類型數據，提取所有可能的字段
+            cloudData.SOS = msg.SOS || ""
+            cloudData.hr = msg.Sos || ""
+            cloudData.SpO2 = msg.SpO2 || ""
+            cloudData.bp_syst = msg["bp syst"] || ""
+            cloudData.bp_diast = msg["bp diast"] || ""
+            cloudData.skin_temp = msg["skin temp"] || ""
+            cloudData.room_temp = msg["room temp"] || ""
+            cloudData.steps = msg.steps || ""
+            cloudData.light_sleep = msg["light sleep (min)"] || ""
+            cloudData.deep_sleep = msg["deep sleep (min)"] || ""
+            cloudData.wake_time = msg["wake time"] || ""
+            cloudData.move = msg.move || ""
+            cloudData.wear = msg.wear || ""
+            cloudData.battery_level = msg["battery level"] || ""
+            cloudData.serial_no = msg["serial no"] || ""
+            cloudData.name = msg.name || ""
+            cloudData.fw_ver = msg["fw ver"] || ""
+            cloudData.temp = msg.temp || ""
+            cloudData.humi = msg.humi || ""
+            cloudData.button = msg.button || ""
+            cloudData.msg_idx = msg["msg idx"] || ""
+            cloudData.ack = msg.ack || ""
+          }
+
+          setCloudMqttData(prev => {
+            const newData = [cloudData, ...prev].slice(0, 50)
+            return newData
+          })
+
+        } catch (error) {
+          console.error('雲端 MQTT 訊息解析錯誤:', error)
+        }
+      })
+    }, 500) // 500ms防抖延遲
+
+    // 清理函數
+    return () => {
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current)
+      }
+      if (cloudClientRef.current) {
+        console.log("清理雲端 MQTT 連接")
+        cloudClientRef.current.end(true)
+        cloudClientRef.current = null
+      }
+    }
+  }, [selectedGateway, CLOUD_MQTT_URL, CLOUD_MQTT_OPTIONS])
 
   // 獲取當前用戶的記錄（本地MQTT）
   const currentUserRecords = temperatureRecords.filter(record => record.id === selectedUser)
@@ -871,6 +952,90 @@ export default function TemperaturePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {/* Gateway 選擇 */}
+                <div className="space-y-4">
+                  <div className="font-medium text-gray-900">選擇監控區域：</div>
+
+                  {/* 橫排選擇器 */}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {/* 養老院選擇 */}
+                    <div className="flex-1 space-y-2">
+                      <label className="text-sm font-medium text-gray-700">養老院</label>
+                      <Select value={selectedHome} onValueChange={setSelectedHome}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="選擇養老院" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {homes.map(home => (
+                            <SelectItem key={home.id} value={home.id}>
+                              {home.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 樓層選擇 */}
+                    <div className="flex-1 space-y-2">
+                      <label className="text-sm font-medium text-gray-700">樓層</label>
+                      <Select value={selectedFloor} onValueChange={setSelectedFloor} disabled={!selectedHome}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={selectedHome ? "選擇樓層" : "請先選擇養老院"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {floors
+                            .filter(floor => floor.homeId === selectedHome)
+                            .map(floor => (
+                              <SelectItem key={floor.id} value={floor.id}>
+                                {floor.name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* 閘道器選擇 */}
+                    <div className="flex-1 space-y-2">
+                      <label className="text-sm font-medium text-gray-700">閘道器</label>
+                      <Select value={selectedGateway} onValueChange={setSelectedGateway} disabled={!selectedFloor}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={selectedFloor ? "選擇閘道器" : "請先選擇樓層"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {gateways
+                            .filter(gateway => gateway.floorId === selectedFloor)
+                            .map(gateway => (
+                              <SelectItem key={gateway.id} value={gateway.id}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{gateway.name}</span>
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    {gateway.macAddress}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* 當前選擇的閘道器信息 */}
+                  {selectedGateway && (
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="text-sm space-y-1">
+                        <div className="font-medium text-blue-800">當前選擇的閘道器：</div>
+                        <div className="text-xs text-blue-700">
+                          {gateways.find(gw => gw.id === selectedGateway)?.name}
+                          ({gateways.find(gw => gw.id === selectedGateway)?.macAddress})
+                        </div>
+                        <div className="text-xs text-blue-600">
+                          監聽主題: {getHealthTopic() || "無法獲取主題"}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="bg-blue-50 p-3 rounded-lg">
                     <div className="font-medium text-blue-800">已發現設備</div>
