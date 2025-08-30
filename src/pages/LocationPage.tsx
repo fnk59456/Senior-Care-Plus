@@ -17,7 +17,8 @@ import {
   Loader2,
   RotateCcw,
   ZoomIn,
-  ZoomOut
+  ZoomOut,
+  RefreshCw
 } from "lucide-react"
 
 // 類型定義
@@ -40,7 +41,8 @@ export default function LocationPage() {
     selectedGateway,
     setSelectedHome,
     setSelectedFloor,
-    setSelectedGateway
+    setSelectedGateway,
+    refreshData
   } = useUWBLocation()
 
   // 本地狀態
@@ -503,9 +505,20 @@ export default function LocationPage() {
       {/* 連接狀態 */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <Wifi className="mr-2 h-5 w-5" />
-            MQTT連接狀態
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Wifi className="mr-2 h-5 w-5" />
+              MQTT連接狀態
+            </div>
+            <Button
+              onClick={refreshData}
+              variant="outline"
+              size="sm"
+              title="刷新標定數據"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" />
+              刷新數據
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>

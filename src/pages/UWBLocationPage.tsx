@@ -2029,6 +2029,13 @@ export default function UWBLocationPage() {
                     }
                     : floor
             ))
+
+            // 觸發自定義事件，通知UWBLocationContext數據已更新
+            const storageChangeEvent = new CustomEvent('uwb-storage-change', {
+                detail: { key: 'uwb_floors' }
+            })
+            window.dispatchEvent(storageChangeEvent)
+            console.log('📡 已觸發樓層編輯事件')
         } else {
             const newFloor: Floor = {
                 id: `floor_${Date.now()}`,
@@ -2044,6 +2051,14 @@ export default function UWBLocationPage() {
             }
             setFloors(prev => [...prev, newFloor])
         }
+
+        // 觸發自定義事件，通知UWBLocationContext數據已更新
+        const storageChangeEvent = new CustomEvent('uwb-storage-change', {
+            detail: { key: 'uwb_floors' }
+        })
+        window.dispatchEvent(storageChangeEvent)
+        console.log('📡 已觸發樓層數據更新事件')
+
         resetFloorForm()
     }
 
@@ -2284,6 +2299,13 @@ export default function UWBLocationPage() {
         setFloors(prev => prev.filter(floor => floor.id !== id))
         // 同時刪除該樓層的所有閘道器
         setGateways(prev => prev.filter(gateway => gateway.floorId !== id))
+
+        // 觸發自定義事件，通知UWBLocationContext數據已更新
+        const storageChangeEvent = new CustomEvent('uwb-storage-change', {
+            detail: { key: 'uwb_floors' }
+        })
+        window.dispatchEvent(storageChangeEvent)
+        console.log('📡 已觸發樓層刪除事件')
     }
 
     const deleteGateway = (id: string) => {
@@ -2831,6 +2853,13 @@ export default function UWBLocationPage() {
 
         // 同步更新狀態中的比例值
         setPixelToMeterRatio(calculatedRatio)
+
+        // 觸發自定義事件，通知UWBLocationContext數據已更新
+        const storageChangeEvent = new CustomEvent('uwb-storage-change', {
+            detail: { key: 'uwb_floors' }
+        })
+        window.dispatchEvent(storageChangeEvent)
+        console.log('📡 已觸發標定數據更新事件')
 
         setCalibrationStep('complete')
     }
