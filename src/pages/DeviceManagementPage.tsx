@@ -3,132 +3,135 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { 
-  Search, 
-  RotateCcw, 
-  Watch, 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Search,
+  RotateCcw,
+  Watch,
   User,
   Activity,
   AlertCircle,
-  Settings
+  Settings,
+  Plus,
+  MapPin,
+  Baby,
+  Trash2,
+  X
 } from "lucide-react"
-
-// 設備類型定義
-const DEVICE_TYPES = {
-  SMARTWATCH: { 
-    label: "智能手錶", 
-    icon: Watch, 
-    color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-    prefix: "W"
-  },
-  DIAPER_SENSOR: { 
-    label: "尿布傳感器", 
-    icon: User, 
-    color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
-    prefix: "D"
-  }
-}
-
-// 設備狀態定義
-const DEVICE_STATUS = {
-  ACTIVE: { label: "活動", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300" },
-  INACTIVE: { label: "不活動", color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300" }
-}
-
-// 模擬設備數據
-const MOCK_DEVICES = [
-  {
-    id: "1",
-    name: "健康監測手錶 #1",
-    type: DEVICE_TYPES.SMARTWATCH,
-    status: DEVICE_STATUS.ACTIVE,
-    patient: "王大明",
-    hardwareId: "HWID-W23445",
-    deviceCode: "W001"
-  },
-  {
-    id: "2", 
-    name: "健康監測手錶 #2",
-    type: DEVICE_TYPES.SMARTWATCH,
-    status: DEVICE_STATUS.ACTIVE,
-    patient: "李小華",
-    hardwareId: "HWID-W23446",
-    deviceCode: "W002"
-  },
-  {
-    id: "3",
-    name: "智能尿布傳感器 #1", 
-    type: DEVICE_TYPES.DIAPER_SENSOR,
-    status: DEVICE_STATUS.ACTIVE,
-    patient: "王大明",
-    hardwareId: "HWID-D23001",
-    deviceCode: "D001"
-  },
-  {
-    id: "4",
-    name: "智能尿布傳感器 #2",
-    type: DEVICE_TYPES.DIAPER_SENSOR,
-    status: DEVICE_STATUS.INACTIVE,
-    patient: "張美麗",
-    hardwareId: "HWID-D23002", 
-    deviceCode: "D002"
-  },
-  {
-    id: "5",
-    name: "健康監測手錶 #3",
-    type: DEVICE_TYPES.SMARTWATCH,
-    status: DEVICE_STATUS.INACTIVE,
-    patient: "林志明",
-    hardwareId: "HWID-W23447",
-    deviceCode: "W003"
-  },
-  {
-    id: "6",
-    name: "智能尿布傳感器 #3",
-    type: DEVICE_TYPES.DIAPER_SENSOR,
-    status: DEVICE_STATUS.ACTIVE,
-    patient: "陳小玲",
-    hardwareId: "HWID-D23003",
-    deviceCode: "D003"
-  }
-]
-
-interface Device {
-  id: string
-  name: string
-  type: typeof DEVICE_TYPES[keyof typeof DEVICE_TYPES]
-  status: typeof DEVICE_STATUS[keyof typeof DEVICE_STATUS]
-  patient: string
-  hardwareId: string
-  deviceCode: string
-}
+import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
+import { DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG, DeviceUIDGenerator } from "@/types/device-types"
 
 export default function DeviceManagementPage() {
-  const [devices, setDevices] = useState<Device[]>(MOCK_DEVICES)
+  const {
+    devices,
+    addDevice,
+    updateDevice,
+    removeDevice,
+    getDeviceTypeSummary,
+    getDeviceStatusSummary
+  } = useDeviceManagement()
+
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedFilter, setSelectedFilter] = useState("all")
+  const [selectedFilter, setSelectedFilter] = useState<DeviceType | "all">("all")
+  const [showAddModal, setShowAddModal] = useState(false)
   const [showReplaceModal, setShowReplaceModal] = useState(false)
-  const [selectedDevice, setSelectedDevice] = useState<Device | null>(null)
+  const [selectedDevice, setSelectedDevice] = useState<any>(null)
   const [newHardwareId, setNewHardwareId] = useState("")
+
+  // 新增設備的狀態
+  const [newDevice, setNewDevice] = useState({
+    deviceType: DeviceType.SMARTWATCH_300B,
+    name: "",
+    hardwareId: "",
+    mac: "",
+    deviceId: "",
+    gatewayId: ""
+  })
 
   // 篩選設備
   const filteredDevices = devices.filter(device => {
-    const matchesSearch = 
+    const matchesSearch =
       device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       device.hardwareId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      device.patient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      device.deviceCode.toLowerCase().includes(searchTerm.toLowerCase())
-    
-    const matchesFilter = 
-      selectedFilter === "all" ||
-      (selectedFilter === "smartwatch" && device.type === DEVICE_TYPES.SMARTWATCH) ||
-      (selectedFilter === "diaper" && device.type === DEVICE_TYPES.DIAPER_SENSOR)
-    
+      device.deviceUid.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesFilter =
+      selectedFilter === "all" || device.deviceType === selectedFilter
+
     return matchesSearch && matchesFilter
   })
 
+  // 獲取設備圖標
+  const getDeviceIcon = (deviceType: DeviceType) => {
+    switch (deviceType) {
+      case DeviceType.SMARTWATCH_300B: return Watch
+      case DeviceType.DIAPER_SENSOR: return Baby
+      case DeviceType.PEDOMETER: return Activity
+      case DeviceType.UWB_TAG: return MapPin
+      default: return Settings
+    }
+  }
+
+  // 獲取設備狀態徽章
+  const getDeviceStatusBadge = (status: DeviceStatus) => {
+    const colors = {
+      [DeviceStatus.ACTIVE]: 'bg-green-100 text-green-800',
+      [DeviceStatus.INACTIVE]: 'bg-yellow-100 text-yellow-800',
+      [DeviceStatus.OFFLINE]: 'bg-gray-100 text-gray-800',
+      [DeviceStatus.ERROR]: 'bg-red-100 text-red-800'
+    }
+
+    const labels = {
+      [DeviceStatus.ACTIVE]: '活躍',
+      [DeviceStatus.INACTIVE]: '待機',
+      [DeviceStatus.OFFLINE]: '離線',
+      [DeviceStatus.ERROR]: '異常'
+    }
+
+    return {
+      className: colors[status],
+      label: labels[status]
+    }
+  }
+
+  // 處理新增設備
+  const handleAddDevice = () => {
+    let deviceUid: string
+
+    // 根據設備類型生成UID
+    if (newDevice.deviceType === DeviceType.SMARTWATCH_300B) {
+      deviceUid = DeviceUIDGenerator.generate300B(newDevice.mac)
+    } else if (newDevice.deviceType === DeviceType.DIAPER_SENSOR) {
+      deviceUid = DeviceUIDGenerator.generateDiaper(newDevice.mac)
+    } else if (newDevice.deviceType === DeviceType.PEDOMETER) {
+      deviceUid = DeviceUIDGenerator.generatePedo(newDevice.deviceId)
+    } else {
+      deviceUid = DeviceUIDGenerator.generateTag(newDevice.deviceId)
+    }
+
+    const deviceData = {
+      deviceUid: deviceUid as any,
+      deviceType: newDevice.deviceType,
+      name: newDevice.name,
+      hardwareId: newDevice.hardwareId,
+      status: DeviceStatus.ACTIVE,
+      gatewayId: newDevice.gatewayId || undefined
+    }
+
+    addDevice(deviceData)
+    setShowAddModal(false)
+    setNewDevice({
+      deviceType: DeviceType.SMARTWATCH_300B,
+      name: "",
+      hardwareId: "",
+      mac: "",
+      deviceId: "",
+      gatewayId: ""
+    })
+  }
+
   // 處理替換設備
-  const handleReplaceDevice = (device: Device) => {
+  const handleReplaceDevice = (device: any) => {
     setSelectedDevice(device)
     setNewHardwareId(device.hardwareId)
     setShowReplaceModal(true)
@@ -137,22 +140,25 @@ export default function DeviceManagementPage() {
   // 確認替換設備
   const confirmReplaceDevice = () => {
     if (selectedDevice && newHardwareId.trim()) {
-      setDevices(prev => prev.map(device => 
-        device.id === selectedDevice.id 
-          ? { ...device, hardwareId: newHardwareId.trim() }
-          : device
-      ))
+      updateDevice(selectedDevice.id, { hardwareId: newHardwareId.trim() })
       setShowReplaceModal(false)
       setSelectedDevice(null)
       setNewHardwareId("")
     }
   }
 
+  // 處理移除設備
+  const handleRemoveDevice = (deviceId: string) => {
+    if (confirm('確定要移除這個設備嗎？')) {
+      removeDevice(deviceId)
+    }
+  }
+
   // 統計數據
+  const deviceTypeSummary = getDeviceTypeSummary()
+  const deviceStatusSummary = getDeviceStatusSummary()
   const totalDevices = devices.length
-  const activeDevices = devices.filter(d => d.status === DEVICE_STATUS.ACTIVE).length
-  const smartwatchCount = devices.filter(d => d.type === DEVICE_TYPES.SMARTWATCH).length
-  const diaperSensorCount = devices.filter(d => d.type === DEVICE_TYPES.DIAPER_SENSOR).length
+  const activeDevices = deviceStatusSummary[DeviceStatus.ACTIVE]
 
   return (
     <div className="space-y-6">
@@ -160,7 +166,7 @@ export default function DeviceManagementPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold">設備管理</h1>
         <p className="text-muted-foreground">
-          管理智能手錶與尿布傳感器等照護設備
+          管理所有類型的照護設備，支援300B手錶、尿布傳感器、運動傳感器、定位標籤
         </p>
       </div>
 
@@ -170,7 +176,7 @@ export default function DeviceManagementPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="搜尋設備名稱、編號或患者名稱..."
+              placeholder="搜尋設備名稱、硬體編號或設備UID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -190,25 +196,49 @@ export default function DeviceManagementPage() {
           全部
         </Button>
         <Button
-          variant={selectedFilter === "smartwatch" ? "default" : "outline"}
-          onClick={() => setSelectedFilter("smartwatch")}
+          variant={selectedFilter === DeviceType.SMARTWATCH_300B ? "default" : "outline"}
+          onClick={() => setSelectedFilter(DeviceType.SMARTWATCH_300B)}
           className="gap-2"
         >
           <Watch className="h-4 w-4" />
-          智能手錶
+          300B手錶
         </Button>
         <Button
-          variant={selectedFilter === "diaper" ? "default" : "outline"}
-          onClick={() => setSelectedFilter("diaper")}
+          variant={selectedFilter === DeviceType.DIAPER_SENSOR ? "default" : "outline"}
+          onClick={() => setSelectedFilter(DeviceType.DIAPER_SENSOR)}
           className="gap-2"
         >
-          <User className="h-4 w-4" />
+          <Baby className="h-4 w-4" />
           尿布傳感器
+        </Button>
+        <Button
+          variant={selectedFilter === DeviceType.PEDOMETER ? "default" : "outline"}
+          onClick={() => setSelectedFilter(DeviceType.PEDOMETER)}
+          className="gap-2"
+        >
+          <Activity className="h-4 w-4" />
+          運動傳感器
+        </Button>
+        <Button
+          variant={selectedFilter === DeviceType.UWB_TAG ? "default" : "outline"}
+          onClick={() => setSelectedFilter(DeviceType.UWB_TAG)}
+          className="gap-2"
+        >
+          <MapPin className="h-4 w-4" />
+          定位標籤
+        </Button>
+      </div>
+
+      {/* 新增設備按鈕 */}
+      <div className="flex justify-end">
+        <Button onClick={() => setShowAddModal(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          新增設備
         </Button>
       </div>
 
       {/* 統計資訊 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
@@ -221,23 +251,31 @@ export default function DeviceManagementPage() {
           <CardContent className="pt-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">{activeDevices}</p>
-              <p className="text-sm text-muted-foreground">活動設備</p>
+              <p className="text-sm text-muted-foreground">活躍設備</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">{smartwatchCount}</p>
-              <p className="text-sm text-muted-foreground">智能手錶</p>
+              <p className="text-2xl font-bold text-blue-600">{deviceTypeSummary[DeviceType.SMARTWATCH_300B]}</p>
+              <p className="text-sm text-muted-foreground">300B手錶</p>
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">{diaperSensorCount}</p>
+              <p className="text-2xl font-bold text-purple-600">{deviceTypeSummary[DeviceType.DIAPER_SENSOR]}</p>
               <p className="text-sm text-muted-foreground">尿布傳感器</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold text-orange-600">{deviceTypeSummary[DeviceType.UWB_TAG] + deviceTypeSummary[DeviceType.PEDOMETER]}</p>
+              <p className="text-sm text-muted-foreground">其他設備</p>
             </div>
           </CardContent>
         </Card>
@@ -261,44 +299,165 @@ export default function DeviceManagementPage() {
                 <p className="text-muted-foreground">沒有找到符合條件的設備</p>
               </div>
             ) : (
-              filteredDevices.map((device) => (
-                <div key={device.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  {/* 設備圖標 */}
-                  <div className={`rounded-full p-3 ${device.type.color}`}>
-                    <device.type.icon className="h-6 w-6" />
-                  </div>
-                  
-                  {/* 設備資訊 */}
-                                     <div className="flex-1">
-                     <div className="flex items-center gap-2 mb-1">
-                       <h3 className="text-base font-semibold">{device.name}</h3>
-                       <Badge className={device.status.color}>
-                         {device.status.label}
-                       </Badge>
-                     </div>
-                    <p className="text-sm text-muted-foreground mb-1">
-                      {device.deviceCode} | 當前硬體編號: {device.hardwareId}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      患者: {device.patient}
-                    </p>
-                  </div>
+              filteredDevices.map((device) => {
+                const DeviceIcon = getDeviceIcon(device.deviceType)
+                const statusInfo = getDeviceStatusBadge(device.status)
 
-                  {/* 替換按鈕 */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleReplaceDevice(device)}
-                    className="gap-2"
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))
+                return (
+                  <div key={device.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                    {/* 設備圖標 */}
+                    <div className={`rounded-full p-3 ${DEVICE_TYPE_CONFIG[device.deviceType].color}`}>
+                      <DeviceIcon className="h-6 w-6" />
+                    </div>
+
+                    {/* 設備資訊 */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-base font-semibold">{device.name}</h3>
+                        <Badge className={statusInfo.className}>
+                          {statusInfo.label}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-1">
+                        {device.deviceUid} | 硬體編號: {device.hardwareId}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        類型: {DEVICE_TYPE_CONFIG[device.deviceType].label}
+                        {device.gatewayId && ` | 網關: ${device.gatewayId}`}
+                      </p>
+                    </div>
+
+                    {/* 操作按鈕 */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleReplaceDevice(device)}
+                        className="gap-2"
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                        替換
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRemoveDevice(device.id)}
+                        className="gap-2 text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        移除
+                      </Button>
+                    </div>
+                  </div>
+                )
+              })
             )}
           </div>
         </CardContent>
       </Card>
+
+      {/* 新增設備彈出視窗 */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>新增設備</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setShowAddModal(false)}>
+                <X className="h-5 w-5" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">設備類型</label>
+                <Select
+                  value={newDevice.deviceType}
+                  onValueChange={(value: DeviceType) => setNewDevice({ ...newDevice, deviceType: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={DeviceType.SMARTWATCH_300B}>300B 健康監測手錶</SelectItem>
+                    <SelectItem value={DeviceType.DIAPER_SENSOR}>智能尿布傳感器</SelectItem>
+                    <SelectItem value={DeviceType.PEDOMETER}>運動傳感器</SelectItem>
+                    <SelectItem value={DeviceType.UWB_TAG}>UWB定位標籤</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">設備名稱</label>
+                <Input
+                  placeholder="輸入設備名稱"
+                  value={newDevice.name}
+                  onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">硬體編號</label>
+                <Input
+                  placeholder="輸入硬體編號"
+                  value={newDevice.hardwareId}
+                  onChange={(e) => setNewDevice({ ...newDevice, hardwareId: e.target.value })}
+                />
+              </div>
+
+              {/* 根據設備類型顯示不同的識別欄位 */}
+              {(newDevice.deviceType === DeviceType.SMARTWATCH_300B || newDevice.deviceType === DeviceType.DIAPER_SENSOR) && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">MAC 地址</label>
+                  <Input
+                    placeholder="輸入MAC地址 (如: E0:0E:08:36:93:F8)"
+                    value={newDevice.mac}
+                    onChange={(e) => setNewDevice({ ...newDevice, mac: e.target.value })}
+                  />
+                </div>
+              )}
+
+              {(newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG) && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">設備ID</label>
+                  <Input
+                    placeholder="輸入設備ID (如: 5345)"
+                    value={newDevice.deviceId}
+                    onChange={(e) => setNewDevice({ ...newDevice, deviceId: e.target.value })}
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">網關ID (選填)</label>
+                <Input
+                  placeholder="輸入網關ID"
+                  value={newDevice.gatewayId}
+                  onChange={(e) => setNewDevice({ ...newDevice, gatewayId: e.target.value })}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1"
+                >
+                  取消
+                </Button>
+                <Button
+                  onClick={handleAddDevice}
+                  className="flex-1"
+                  disabled={!newDevice.name || !newDevice.hardwareId ||
+                    ((newDevice.deviceType === DeviceType.SMARTWATCH_300B || newDevice.deviceType === DeviceType.DIAPER_SENSOR) && !newDevice.mac) ||
+                    ((newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG) && !newDevice.deviceId)
+                  }
+                >
+                  新增設備
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* 替換設備彈出視窗 */}
       {showReplaceModal && selectedDevice && (
@@ -314,7 +473,7 @@ export default function DeviceManagementPage() {
                   當前硬體編號: {selectedDevice.hardwareId}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  使用者: {selectedDevice.patient}
+                  設備UID: {selectedDevice.deviceUid}
                 </p>
               </div>
 
@@ -330,8 +489,8 @@ export default function DeviceManagementPage() {
               </div>
 
               <div className="flex gap-3 pt-4">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setShowReplaceModal(false)
                     setSelectedDevice(null)
@@ -341,7 +500,7 @@ export default function DeviceManagementPage() {
                 >
                   取消
                 </Button>
-                <Button 
+                <Button
                   onClick={confirmReplaceDevice}
                   className="flex-1"
                   disabled={!newHardwareId.trim() || newHardwareId === selectedDevice.hardwareId}
@@ -355,4 +514,4 @@ export default function DeviceManagementPage() {
       )}
     </div>
   )
-} 
+}
