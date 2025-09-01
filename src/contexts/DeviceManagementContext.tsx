@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import {
     Device,
     Resident,
@@ -44,6 +44,12 @@ interface DeviceManagementContextType {
     // 統計信息
     getDeviceStatusSummary: () => Record<DeviceStatus, number>
     getDeviceTypeSummary: () => Record<DeviceType, number>
+
+    // 持久化管理
+    forceSave: () => void
+    clearAllData: () => void
+    exportAllData: () => void
+    importData: (data: any) => void
 }
 
 const DeviceManagementContext = createContext<DeviceManagementContextType | undefined>(undefined)
@@ -252,11 +258,89 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
         }
     }
 
+    // 📦 從 localStorage 加載綁定數據的輔助函數
+    const loadBindingsFromStorage = (): DeviceBinding[] => {
+        try {
+            const stored = localStorage.getItem('device_mgmt_context_bindings')
+            if (!stored) {
+                console.log('📭 無存儲的綁定數據，使用默認數據')
+                return MOCK_BINDINGS
+            }
+
+            console.log('📦 開始解析存儲的綁定數據')
+            const data = JSON.parse(stored)
+            console.log('✅ 綁定數據加載完成')
+            return data
+        } catch (error) {
+            console.warn('❌ 無法從 localStorage 加載綁定數據:', error)
+            return MOCK_BINDINGS
+        }
+    }
+
+    // 💾 保存到 localStorage 的輔助函數
+    const saveToStorage = <T,>(key: string, data: T) => {
+        try {
+            localStorage.setItem(`device_mgmt_context_${key}`, JSON.stringify(data))
+            console.log(`✅ 已保存 ${key} 到 localStorage`)
+        } catch (error) {
+            console.warn(`無法保存 ${key} 到 localStorage:`, error)
+        }
+    }
+
+    // 持久化相關狀態
+    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
     // 數據狀態 - 從 localStorage 加載數據
     const [devices, setDevices] = useState<Device[]>(() => loadDevicesFromStorage())
     const [residents, setResidents] = useState<Resident[]>(() => loadResidentsFromStorage())
-    const [bindings, setBindings] = useState<DeviceBinding[]>(MOCK_BINDINGS)
+    const [bindings, setBindings] = useState<DeviceBinding[]>(() => loadBindingsFromStorage())
     const [deviceData, setDeviceData] = useState<DeviceData[]>([])
+
+    // 🚀 智能批量保存函數 - 避免頻繁寫入
+    const batchSave = useCallback(() => {
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current)
+        }
+
+        saveTimeoutRef.current = setTimeout(() => {
+            try {
+                // 批量保存所有數據
+                saveToStorage('devices', devices)
+                saveToStorage('residents', residents)
+                saveToStorage('bindings', bindings)
+                saveToStorage('deviceData', deviceData)
+
+                // 保存完整備份
+                const fullBackup = {
+                    devices,
+                    residents,
+                    bindings,
+                    deviceData,
+                    version: Date.now(),
+                    lastSave: new Date().toISOString()
+                }
+                localStorage.setItem('device_mgmt_context_full_backup', JSON.stringify(fullBackup))
+
+                console.log(`💾 設備管理 Context 自動保存完成 ${new Date().toLocaleTimeString()}`)
+            } catch (error) {
+                console.error('❌ 設備管理 Context 自動保存失敗:', error)
+            }
+        }, 500) // 500ms延遲，避免頻繁保存
+    }, [devices, residents, bindings, deviceData])
+
+    // 監聽所有數據變化，觸發批量保存
+    useEffect(() => {
+        batchSave()
+    }, [devices, residents, bindings, deviceData, batchSave])
+
+    // 清理定時器
+    useEffect(() => {
+        return () => {
+            if (saveTimeoutRef.current) {
+                clearTimeout(saveTimeoutRef.current)
+            }
+        }
+    }, [])
 
     // 設備管理
     const addDevice = (deviceData: Omit<Device, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -408,6 +492,71 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
         return summary
     }
 
+    // 持久化管理
+    const forceSave = () => {
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current)
+        }
+        batchSave()
+        console.log('🔄 手動觸發強制保存')
+    }
+
+    const clearAllData = () => {
+        const keys = ['devices', 'residents', 'bindings', 'deviceData', 'full_backup']
+        keys.forEach(key => {
+            localStorage.removeItem(`device_mgmt_context_${key}`)
+        })
+        console.log('🗑️ 已清除所有設備管理 Context localStorage 數據')
+
+        // 重置為默認數據
+        setDevices(MOCK_DEVICES)
+        setResidents(MOCK_RESIDENTS)
+        setBindings(MOCK_BINDINGS)
+        setDeviceData([])
+    }
+
+    const exportAllData = () => {
+        const data = {
+            devices,
+            residents,
+            bindings,
+            deviceData,
+            exportDate: new Date().toISOString()
+        }
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `device-management-context-data-${new Date().toISOString().split('T')[0]}.json`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
+        console.log('📤 設備管理 Context 數據已導出')
+    }
+
+    const importData = (data: any) => {
+        try {
+            if (data.devices && Array.isArray(data.devices)) {
+                setDevices(data.devices)
+            }
+            if (data.residents && Array.isArray(data.residents)) {
+                setResidents(data.residents)
+            }
+            if (data.bindings && Array.isArray(data.bindings)) {
+                setBindings(data.bindings)
+            }
+            if (data.deviceData && Array.isArray(data.deviceData)) {
+                setDeviceData(data.deviceData)
+            }
+            console.log('📥 設備管理 Context 數據已導入')
+        } catch (error) {
+            console.error('❌ 導入數據失敗:', error)
+        }
+    }
+
     const value: DeviceManagementContextType = {
         devices,
         residents,
@@ -429,7 +578,11 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
         addDeviceData,
         getLatestDataForDevice,
         getDeviceStatusSummary,
-        getDeviceTypeSummary
+        getDeviceTypeSummary,
+        forceSave,
+        clearAllData,
+        exportAllData,
+        importData
     }
 
     return (
