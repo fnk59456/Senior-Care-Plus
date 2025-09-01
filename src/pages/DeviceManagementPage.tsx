@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect, useCallback, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,7 +8,6 @@ import {
   Search,
   RotateCcw,
   Watch,
-  User,
   Activity,
   AlertCircle,
   Settings,
@@ -16,7 +15,11 @@ import {
   MapPin,
   Baby,
   Trash2,
-  X
+  X,
+  Database,
+  Save,
+  Download,
+  Upload
 } from "lucide-react"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG, DeviceUIDGenerator } from "@/types/device-types"
@@ -47,6 +50,256 @@ export default function DeviceManagementPage() {
     deviceId: "",
     gatewayId: ""
   })
+
+  // 🚀 持久化系統狀態
+  const [lastSaveTime, setLastSaveTime] = useState<Date>(new Date())
+  const [pendingSave, setPendingSave] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  // 📦 從 localStorage 加載數據的輔助函數
+  const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
+    try {
+      const stored = localStorage.getItem(`device_mgmt_${key}`)
+      if (!stored) {
+        console.log(`📭 ${key}: 無存儲數據，使用默認值`)
+        return defaultValue
+      }
+
+      console.log(`📦 ${key}: 開始解析存儲數據`)
+      const data = JSON.parse(stored)
+      console.log(`✅ ${key}: 數據加載完成`)
+      return data
+    } catch (error) {
+      console.warn(`❌ 無法從 localStorage 加載 ${key}:`, error)
+      return defaultValue
+    }
+  }
+
+  // 💾 保存到 localStorage 的輔助函數
+  const saveToStorage = <T,>(key: string, data: T) => {
+    try {
+      localStorage.setItem(`device_mgmt_${key}`, JSON.stringify(data))
+      console.log(`✅ 已保存 ${key} 到 localStorage`)
+    } catch (error) {
+      console.warn(`無法保存 ${key} 到 localStorage:`, error)
+    }
+  }
+
+  // 🚀 智能批量保存函數 - 避免頻繁寫入
+  const batchSave = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+
+    setPendingSave(true)
+    saveTimeoutRef.current = setTimeout(() => {
+      try {
+        // 批量保存所有數據
+        const dataToSave = {
+          searchTerm,
+          selectedFilter,
+          newDevice,
+          version: Date.now(),
+          lastSave: new Date().toISOString()
+        }
+
+        // 保存到 localStorage
+        Object.entries(dataToSave).forEach(([key, value]) => {
+          if (key === 'version' || key === 'lastSave') return // 跳過元數據
+          saveToStorage(key, value)
+        })
+
+        // 額外保存完整備份和元數據
+        saveToStorage('version', dataToSave.version)
+        saveToStorage('lastSave', dataToSave.lastSave)
+        localStorage.setItem('device_mgmt_full_backup', JSON.stringify(dataToSave))
+
+        setLastSaveTime(new Date())
+        setPendingSave(false)
+        console.log(`💾 設備管理自動保存完成 ${new Date().toLocaleTimeString()}`)
+      } catch (error) {
+        console.error('❌ 設備管理自動保存失敗:', error)
+        setPendingSave(false)
+      }
+    }, 500) // 500ms延遲，避免頻繁保存
+  }, [searchTerm, selectedFilter, newDevice])
+
+  // 手動強制保存
+  const forceSave = () => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+    batchSave()
+    console.log('🔄 手動觸發強制保存')
+  }
+
+  // 清除所有存儲數據的函數
+  const clearAllStorage = () => {
+    const keys = ['searchTerm', 'selectedFilter', 'newDevice', 'version', 'lastSave']
+    keys.forEach(key => {
+      localStorage.removeItem(`device_mgmt_${key}`)
+    })
+    // 也清除完整備份
+    localStorage.removeItem('device_mgmt_full_backup')
+    console.log('🗑️ 已清除所有設備管理 localStorage 數據和備份')
+
+    // 重新加載頁面以重置狀態
+    window.location.reload()
+  }
+
+  // 調試：檢查當前存儲數據
+  const debugStorage = () => {
+    console.log('🔍 當前設備管理 localStorage 數據:')
+    const keys = ['searchTerm', 'selectedFilter', 'newDevice', 'version', 'lastSave']
+    keys.forEach(key => {
+      const data = localStorage.getItem(`device_mgmt_${key}`)
+      if (data) {
+        try {
+          const parsed = JSON.parse(data)
+          console.log(`- ${key}:`, parsed)
+        } catch {
+          console.log(`- ${key}:`, data)
+        }
+      } else {
+        console.log(`- ${key}: 無數據`)
+      }
+    })
+  }
+
+  // 導出數據到 JSON 文件
+  const exportData = () => {
+    const data = {
+      devices,
+      searchTerm,
+      selectedFilter,
+      newDevice,
+      exportDate: new Date().toISOString()
+    }
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `device-management-data-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+
+    console.log('📤 設備管理數據已導出')
+  }
+
+  // 導入數據從 JSON 文件
+  const importData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string)
+
+        // 驗證數據結構
+        if (data.devices && Array.isArray(data.devices)) {
+          // 注意：這裡需要通過 Context 來更新設備數據
+          // 因為 devices 是從 Context 管理的
+          console.log('📥 設備數據已導入，但需要通過系統管理更新')
+          alert('✅ 數據導入成功！注意：設備數據需要通過系統管理更新')
+        } else {
+          alert('❌ 無效的數據格式')
+        }
+      } catch (error) {
+        console.error('導入數據失敗:', error)
+        alert('❌ 導入數據失敗')
+      }
+    }
+    reader.readAsText(file)
+
+    // 清除文件選擇
+    event.target.value = ''
+  }
+
+  // 初始化數據加載
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        setIsLoading(true)
+        setLoadError(null)
+
+        console.log('🔄 開始加載設備管理本地存儲數據...')
+
+        // 加載用戶設定
+        const loadedSearchTerm = loadFromStorage('searchTerm', '')
+        const loadedSelectedFilter = loadFromStorage('selectedFilter', 'all')
+        const loadedNewDevice = loadFromStorage('newDevice', {
+          deviceType: DeviceType.SMARTWATCH_300B,
+          name: "",
+          hardwareId: "",
+          mac: "",
+          deviceId: "",
+          gatewayId: ""
+        })
+
+        setSearchTerm(loadedSearchTerm)
+        setSelectedFilter(loadedSelectedFilter)
+        setNewDevice(loadedNewDevice)
+
+        console.log('✅ 設備管理數據加載完成')
+        setIsLoading(false)
+      } catch (error) {
+        console.error('❌ 設備管理數據加載失敗:', error)
+        setLoadError(error instanceof Error ? error.message : '未知錯誤')
+        setIsLoading(false)
+      }
+    }
+
+    initializeData()
+  }, [])
+
+  // 監聽所有數據變化，觸發批量保存
+  useEffect(() => {
+    if (!isLoading) {
+      batchSave()
+    }
+  }, [searchTerm, selectedFilter, newDevice, batchSave, isLoading])
+
+  // 清理定時器
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // 🎹 開發者快捷鍵 (Ctrl+Shift+D 調試, Ctrl+Shift+S 強制保存, Ctrl+Shift+R 重置)
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey) {
+        switch (e.key) {
+          case 'D':
+            e.preventDefault()
+            debugStorage()
+            break
+          case 'S':
+            e.preventDefault()
+            forceSave()
+            break
+          case 'R':
+            e.preventDefault()
+            if (confirm('確定要重置所有設備管理設定嗎？此操作不可撤銷！')) {
+              clearAllStorage()
+            }
+            break
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeydown)
+    return () => window.removeEventListener('keydown', handleKeydown)
+  }, [])
 
   // 篩選設備
   const filteredDevices = devices.filter(device => {
@@ -119,6 +372,25 @@ export default function DeviceManagementPage() {
     }
 
     addDevice(deviceData)
+    
+    // 🚀 手動觸發設備數據保存
+    setTimeout(() => {
+      const currentDevices = devices
+      const devicesToSave = [...currentDevices, {
+        ...deviceData,
+        id: `D${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }]
+      
+      try {
+        localStorage.setItem('device_mgmt_context_devices', JSON.stringify(devicesToSave))
+        console.log('💾 設備數據已手動保存到 localStorage')
+      } catch (error) {
+        console.error('❌ 設備數據保存失敗:', error)
+      }
+    }, 100)
+    
     setShowAddModal(false)
     setNewDevice({
       deviceType: DeviceType.SMARTWATCH_300B,
@@ -168,6 +440,81 @@ export default function DeviceManagementPage() {
         <p className="text-muted-foreground">
           管理所有類型的照護設備，支援300B手錶、尿布傳感器、運動傳感器、定位標籤
         </p>
+        
+        {/* 🚀 持久化狀態顯示 */}
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            <span>持久化狀態:</span>
+            {pendingSave ? (
+              <Badge variant="outline" className="text-yellow-600">
+                <Save className="h-3 w-3 mr-1 animate-pulse" />
+                保存中...
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="text-green-600">
+                <Save className="h-3 w-3 mr-1" />
+                已保存
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span>最後保存:</span>
+            <span className="font-mono">
+              {lastSaveTime.toLocaleTimeString()}
+            </span>
+          </div>
+          {loadError && (
+            <div className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-4 w-4" />
+              <span>加載錯誤: {loadError}</span>
+            </div>
+          )}
+        </div>
+
+        {/* 🛠️ 持久化操作按鈕 */}
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={forceSave}
+            disabled={pendingSave}
+            className="gap-2"
+          >
+            <Save className="h-4 w-4" />
+            強制保存
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportData}
+            className="gap-2"
+          >
+            <Download className="h-4 w-4" />
+            導出設定
+          </Button>
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept=".json"
+              onChange={importData}
+              className="hidden"
+            />
+            <Button variant="outline" size="sm" className="gap-2">
+              <Upload className="h-4 w-4" />
+              導入設定
+            </Button>
+          </label>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={debugStorage}
+            className="gap-2"
+          >
+            <Database className="h-4 w-4" />
+            調試存儲
+          </Button>
+        </div>
       </div>
 
       {/* 搜尋框 */}

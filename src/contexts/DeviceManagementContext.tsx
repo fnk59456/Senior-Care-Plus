@@ -214,8 +214,47 @@ const MOCK_BINDINGS: DeviceBinding[] = [
 ]
 
 export function DeviceManagementProvider({ children }: { children: React.ReactNode }) {
-    const [devices, setDevices] = useState<Device[]>(MOCK_DEVICES)
-    const [residents, setResidents] = useState<Resident[]>(MOCK_RESIDENTS)
+    // 📦 從 localStorage 加載設備數據的輔助函數
+    const loadDevicesFromStorage = (): Device[] => {
+        try {
+            const stored = localStorage.getItem('device_mgmt_context_devices')
+            if (!stored) {
+                console.log('📭 無存儲的設備數據，使用默認數據')
+                return MOCK_DEVICES
+            }
+
+            console.log('📦 開始解析存儲的設備數據')
+            const data = JSON.parse(stored)
+            console.log('✅ 設備數據加載完成')
+            return data
+        } catch (error) {
+            console.warn('❌ 無法從 localStorage 加載設備數據:', error)
+            return MOCK_DEVICES
+        }
+    }
+
+    // 📦 從 localStorage 加載院友數據的輔助函數
+    const loadResidentsFromStorage = (): Resident[] => {
+        try {
+            const stored = localStorage.getItem('device_mgmt_context_residents')
+            if (!stored) {
+                console.log('📭 無存儲的院友數據，使用默認數據')
+                return MOCK_RESIDENTS
+            }
+
+            console.log('📦 開始解析存儲的院友數據')
+            const data = JSON.parse(stored)
+            console.log('✅ 院友數據加載完成')
+            return data
+        } catch (error) {
+            console.warn('❌ 無法從 localStorage 加載院友數據:', error)
+            return MOCK_RESIDENTS
+        }
+    }
+
+    // 數據狀態 - 從 localStorage 加載數據
+    const [devices, setDevices] = useState<Device[]>(() => loadDevicesFromStorage())
+    const [residents, setResidents] = useState<Resident[]>(() => loadResidentsFromStorage())
     const [bindings, setBindings] = useState<DeviceBinding[]>(MOCK_BINDINGS)
     const [deviceData, setDeviceData] = useState<DeviceData[]>([])
 

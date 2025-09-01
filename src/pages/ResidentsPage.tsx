@@ -101,6 +101,23 @@ export default function ResidentsPage() {
   const handleAddResident = () => {
     if (newResident.name && newResident.room && newResident.age > 0) {
       addResident(newResident)
+      
+      // 🚀 手動觸發院友數據保存
+      setTimeout(() => {
+        const currentResidents = residents
+        const residentsToSave = [...currentResidents, {
+          ...newResident,
+          id: `R${Date.now()}`
+        }]
+        
+        try {
+          localStorage.setItem('device_mgmt_context_residents', JSON.stringify(residentsToSave))
+          console.log('💾 院友數據已手動保存到 localStorage')
+        } catch (error) {
+          console.error('❌ 院友數據保存失敗:', error)
+        }
+      }, 100)
+      
       setShowAddResident(false)
       setNewResident({
         name: '',
