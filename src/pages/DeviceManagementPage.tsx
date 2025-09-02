@@ -670,7 +670,7 @@ export default function DeviceManagementPage() {
                       </p>
                       <p className="text-sm text-muted-foreground">
                         類型: {DEVICE_TYPE_CONFIG[device.deviceType].label}
-                        {device.gatewayId && ` | 網關: ${device.gatewayId}`}
+                        {device.gatewayId && ` | 閘道器: ${device.gatewayId}`}
                       </p>
                     </div>
 
@@ -774,9 +774,9 @@ export default function DeviceManagementPage() {
               )}
 
               <div>
-                <label className="text-sm font-medium mb-2 block">網關ID (選填)</label>
+                <label className="text-sm font-medium mb-2 block">閘道器ID (選填)</label>
                 <Input
-                  placeholder="輸入網關ID"
+                  placeholder="輸入閘道器ID"
                   value={newDevice.gatewayId}
                   onChange={(e) => setNewDevice({ ...newDevice, gatewayId: e.target.value })}
                 />

@@ -4,9 +4,12 @@ import mqtt from "mqtt"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
+import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
+import { DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from "@/types/device-types"
 import {
   MapPin,
   Wifi,
@@ -18,7 +21,17 @@ import {
   RotateCcw,
   ZoomIn,
   ZoomOut,
-  RefreshCw
+  RefreshCw,
+  Search,
+  Users,
+  Heart,
+  AlertTriangle,
+  Watch,
+  Baby,
+  Activity,
+  User,
+  Filter,
+  Database
 } from "lucide-react"
 
 // 類型定義
@@ -28,6 +41,12 @@ interface Patient {
   position: { x: number; y: number; quality?: number; z?: number }
   updatedAt: number
   gatewayId: string
+  deviceId?: string
+  deviceType?: DeviceType
+  residentId?: string
+  residentName?: string
+  residentStatus?: 'good' | 'attention' | 'critical'
+  residentRoom?: string
 }
 
 export default function LocationPage() {
@@ -45,12 +64,25 @@ export default function LocationPage() {
     refreshData
   } = useUWBLocation()
 
+  // 從設備管理Context獲取數據
+  const {
+    devices,
+    residents,
+    getResidentForDevice,
+    getDevicesForResident
+  } = useDeviceManagement()
+
   // 本地狀態
   const [patients, setPatients] = useState<Record<string, Patient>>({})
   const [connected, setConnected] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState("未連線")
   const [currentTopic, setCurrentTopic] = useState("")
   const [mqttError, setMqttError] = useState("")
+
+  // 新增過濾和搜索狀態
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<'all' | 'good' | 'attention' | 'critical'>('all')
+  const [deviceTypeFilter, setDeviceTypeFilter] = useState<DeviceType | 'all'>('all')
 
   // 地图缩放功能状态
   const [mapTransform, setMapTransform] = useState({
@@ -122,6 +154,62 @@ export default function LocationPage() {
     const displayY = (pixelY / imgElement.naturalHeight) * imgElement.height
 
     return { x: displayX, y: displayY }
+  }
+
+  // 獲取設備圖標
+  const getDeviceIcon = (deviceType: DeviceType) => {
+    switch (deviceType) {
+      case DeviceType.SMARTWATCH_300B: return Watch
+      case DeviceType.DIAPER_SENSOR: return Baby
+      case DeviceType.PEDOMETER: return Activity
+      case DeviceType.UWB_TAG: return MapPin
+      default: return MapPin
+    }
+  }
+
+  // 獲取院友狀態信息
+  const getStatusInfo = (status: string) => {
+    switch (status) {
+      case 'good':
+        return {
+          badge: (
+            <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+              <Heart className="w-3 h-3 mr-1 fill-current" />
+              良好
+            </Badge>
+          ),
+          icon: '💚',
+          bgColor: 'bg-green-100'
+        }
+      case 'attention':
+        return {
+          badge: (
+            <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
+              <AlertTriangle className="w-3 h-3 mr-1" />
+              需注意
+            </Badge>
+          ),
+          icon: '⚠️',
+          bgColor: 'bg-orange-100'
+        }
+      case 'critical':
+        return {
+          badge: (
+            <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
+              <AlertCircle className="w-3 h-3 mr-1" />
+              危急
+            </Badge>
+          ),
+          icon: '🚨',
+          bgColor: 'bg-red-100'
+        }
+      default:
+        return {
+          badge: <Badge>未知</Badge>,
+          icon: '❓',
+          bgColor: 'bg-gray-100'
+        }
+    }
   }
 
   // 地图缩放控制函数
@@ -358,11 +446,36 @@ export default function LocationPage() {
 
           if (msg.content === "location" && msg.id && msg.position) {
             const deviceId = String(msg.id)
+            
+            // 查找對應的設備和院友信息
+            const device = devices.find(d => {
+              // 解析設備UID，提取實際ID
+              if (d.deviceUid.startsWith('TAG:')) {
+                const tagId = d.deviceUid.split(':')[1]
+                return tagId === deviceId || d.hardwareId === deviceId
+              }
+              return d.deviceUid === deviceId || d.hardwareId === deviceId
+            })
+            
+            console.log('🔍 查找設備:', {
+              mqttDeviceId: deviceId,
+              foundDevice: device,
+              allDevices: devices.map(d => ({ id: d.id, deviceUid: d.deviceUid, hardwareId: d.hardwareId, residentId: d.residentId }))
+            })
+            
+            const resident = device ? getResidentForDevice(device.id) : undefined
+            
+            console.log('🔍 查找院友:', {
+              deviceId: device?.id,
+              foundResident: resident,
+              allResidents: residents.map(r => ({ id: r.id, name: r.name, room: r.room }))
+            })
+            
             setPatients(prev => ({
               ...prev,
               [deviceId]: {
                 id: deviceId,
-                name: msg.name || `設備-${deviceId}`,
+                name: resident ? resident.name : `設備-${deviceId}`,
                 position: {
                   x: msg.position.x,
                   y: msg.position.y,
@@ -370,7 +483,13 @@ export default function LocationPage() {
                   z: msg.position.z,
                 },
                 updatedAt: Date.now(),
-                gatewayId: selectedGateway
+                gatewayId: selectedGateway,
+                deviceId: device?.id,
+                deviceType: device?.deviceType,
+                residentId: resident?.id,
+                residentName: resident?.name,
+                residentStatus: resident?.status,
+                residentRoom: resident?.room
               },
             }))
           }
@@ -391,12 +510,25 @@ export default function LocationPage() {
         clientRef.current = null
       }
     }
-  }, [selectedGateway, MQTT_URL, MQTT_OPTIONS])
+  }, [selectedGateway, MQTT_URL, MQTT_OPTIONS, devices, getResidentForDevice])
 
   // 過期判斷（5秒未更新視為離線）
   const now = Date.now()
   const patientList = Object.values(patients)
   const onlinePatients = patientList.filter(p => now - p.updatedAt < 5000)
+
+  // 過濾患者列表
+  const filteredPatients = onlinePatients.filter(patient => {
+    const matchesSearch = 
+      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.residentRoom && patient.residentRoom.toLowerCase().includes(searchTerm.toLowerCase()))
+    
+    const matchesStatus = statusFilter === 'all' || patient.residentStatus === statusFilter
+    
+    const matchesDeviceType = deviceTypeFilter === 'all' || patient.deviceType === deviceTypeFilter
+    
+    return matchesSearch && matchesStatus && matchesDeviceType
+  })
 
   // 獲取當前選擇的樓層數據
   const selectedFloorData = floors.find(f => f.id === selectedFloor)
@@ -551,13 +683,106 @@ export default function LocationPage() {
         </CardContent>
       </Card>
 
+
+
+      {/* 搜索和過濾 */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Search className="mr-2 h-5 w-5" />
+            搜索和過濾
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* 搜索框 */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="搜索院友姓名或房間號..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* 院友狀態過濾 */}
+            <div className="flex gap-2">
+              <Button
+                variant={statusFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('all')}
+                className="whitespace-nowrap"
+              >
+                全部狀態
+              </Button>
+              <Button
+                variant={statusFilter === 'good' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('good')}
+                className="whitespace-nowrap"
+              >
+                <Heart className="w-4 h-4 mr-1" />
+                良好
+              </Button>
+              <Button
+                variant={statusFilter === 'attention' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('attention')}
+                className="whitespace-nowrap"
+              >
+                <AlertTriangle className="w-4 h-4 mr-1" />
+                需注意
+              </Button>
+              <Button
+                variant={statusFilter === 'critical' ? 'default' : 'outline'}
+                onClick={() => setStatusFilter('critical')}
+                className="whitespace-nowrap"
+              >
+                <AlertCircle className="w-4 h-4 mr-1" />
+                危急
+              </Button>
+            </div>
+
+            {/* 設備類型過濾 */}
+            <div className="flex gap-2">
+              <Button
+                variant={deviceTypeFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setDeviceTypeFilter('all')}
+                className="whitespace-nowrap"
+              >
+                全部設備
+              </Button>
+              <Button
+                variant={deviceTypeFilter === DeviceType.SMARTWATCH_300B ? 'default' : 'outline'}
+                onClick={() => setDeviceTypeFilter(DeviceType.SMARTWATCH_300B)}
+                className="whitespace-nowrap"
+              >
+                <Watch className="w-4 h-4 mr-1" />
+                手錶
+              </Button>
+              <Button
+                variant={deviceTypeFilter === DeviceType.UWB_TAG ? 'default' : 'outline'}
+                onClick={() => setDeviceTypeFilter(DeviceType.UWB_TAG)}
+                className="whitespace-nowrap"
+              >
+                <MapPin className="w-4 h-4 mr-1" />
+                定位標籤
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* 地圖顯示 */}
       {selectedFloorData && mapImage ? (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <MapPin className="mr-2 h-5 w-5" />
-              {selectedFloorData.name} - 即時位置地圖
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <MapPin className="mr-2 h-5 w-5" />
+                {selectedFloorData.name} - 即時位置地圖
+              </div>
+              <div className="text-sm text-muted-foreground">
+                顯示 {filteredPatients.length} 個設備
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -600,7 +825,7 @@ export default function LocationPage() {
                     />
 
                     {/* 设备标记 - 使用简化的坐标转换，让CSS变换处理缩放和平移 */}
-                    {onlinePatients.map(patient => {
+                    {filteredPatients.map(patient => {
                       if (!calibration?.isCalibrated) return null
 
                       // 使用简化的坐标转换函数
@@ -613,6 +838,9 @@ export default function LocationPage() {
 
                       if (!displayCoords) return null
 
+                      const DeviceIcon = patient.deviceType ? getDeviceIcon(patient.deviceType) : MapPin
+                      const statusInfo = patient.residentStatus ? getStatusInfo(patient.residentStatus) : null
+
                       return (
                         <div
                           key={patient.id}
@@ -622,21 +850,49 @@ export default function LocationPage() {
                             top: displayCoords.y
                           }}
                         >
-                          <Avatar className="border-2 border-blue-500 shadow-lg">
-                            <AvatarFallback>{patient.name[0]}</AvatarFallback>
-                          </Avatar>
-                          <div className="text-xs bg-white/80 rounded px-1 mt-1 text-center whitespace-nowrap">
-                            設備-{patient.id}<br />
-                            {patient.position.z !== undefined ? `Z:${patient.position.z.toFixed(2)}` : ''}
+                          {/* 設備圖標 */}
+                          <div className="relative">
+                            <Avatar className="border-2 border-blue-500 shadow-lg">
+                              <AvatarFallback className="text-xs">
+                                {patient.residentName ? patient.residentName[0] : '設'}
+                              </AvatarFallback>
+                            </Avatar>
+                            
+                            {/* 設備類型圖標 */}
+                            <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-md">
+                              <DeviceIcon className="h-3 w-3 text-blue-600" />
+                            </div>
+                          </div>
+
+                          {/* 信息標籤 */}
+                          <div className="text-xs bg-white/90 rounded px-2 py-1 mt-1 text-center whitespace-nowrap shadow-md min-w-[80px]">
+                            <div className="font-medium">
+                              {patient.residentName || `設備-${patient.id}`}
+                            </div>
+                            {patient.residentRoom && (
+                              <div className="text-gray-600 text-[10px]">
+                                房間: {patient.residentRoom}
+                              </div>
+                            )}
+                            {patient.position.z !== undefined && (
+                              <div className="text-gray-600 text-[10px]">
+                                Z: {patient.position.z.toFixed(2)}
+                              </div>
+                            )}
+                            {statusInfo && (
+                              <div className="mt-1">
+                                {statusInfo.badge}
+                              </div>
+                            )}
                           </div>
                         </div>
                       )
                     })}
 
                     {/* 无人在线提示 */}
-                    {onlinePatients.length === 0 && (
+                    {filteredPatients.length === 0 && (
                       <div className="absolute inset-0 flex items-center justify-center text-lg text-muted-foreground bg-white/70 pointer-events-none">
-                        {connected ? "尚無即時位置資料" : "請先選擇閘道器並建立連接"}
+                        {connected ? "尚無符合條件的設備" : "請先選擇閘道器並建立連接"}
                       </div>
                     )}
                   </div>
@@ -701,6 +957,7 @@ export default function LocationPage() {
                   <div>縮放: {(mapTransform.scale * 100).toFixed(0)}%</div>
                   <div>平移: ({mapTransform.translateX.toFixed(0)}, {mapTransform.translateY.toFixed(0)})</div>
                   <div>在線設備: {onlinePatients.length}</div>
+                  <div>過濾後: {filteredPatients.length}</div>
                 </div>
               </div>
             )}
@@ -716,37 +973,78 @@ export default function LocationPage() {
       )}
 
       {/* 設備列表 */}
-      {onlinePatients.length > 0 && (
+      {filteredPatients.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <Signal className="mr-2 h-5 w-5" />
-              在線設備 ({onlinePatients.length})
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Signal className="mr-2 h-5 w-5" />
+                在線設備 ({filteredPatients.length})
+              </div>
+              <div className="text-sm text-muted-foreground">
+                總計 {onlinePatients.length} 個設備
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {onlinePatients.map(patient => (
-                <div key={patient.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>{patient.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="font-medium">{patient.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      位置: ({patient.position.x.toFixed(2)}, {patient.position.y.toFixed(2)})
-                      {patient.position.z !== undefined && `, Z: ${patient.position.z.toFixed(2)}`}
+              {filteredPatients.map(patient => {
+                const DeviceIcon = patient.deviceType ? getDeviceIcon(patient.deviceType) : MapPin
+                const statusInfo = patient.residentStatus ? getStatusInfo(patient.residentStatus) : null
+
+                return (
+                  <div key={patient.id} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                    {/* 設備圖標 */}
+                    <div className="relative">
+                      <Avatar className="h-10 w-10">
+                        <AvatarFallback className="text-sm">
+                          {patient.residentName ? patient.residentName[0] : '設'}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      {/* 設備類型圖標 */}
+                      <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-sm">
+                        <DeviceIcon className="h-3 w-3 text-blue-600" />
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground">
-                      更新: {new Date(patient.updatedAt).toLocaleTimeString()}
+
+                    {/* 設備資訊 */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-base font-semibold">
+                          {patient.residentName || `設備-${patient.id}`}
+                        </h3>
+                        {statusInfo && statusInfo.badge}
+                      </div>
+                      
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        {patient.residentRoom && (
+                          <div>房間: {patient.residentRoom}</div>
+                        )}
+                        <div>
+                          位置: ({patient.position.x.toFixed(2)}, {patient.position.y.toFixed(2)})
+                          {patient.position.z !== undefined && `, Z: ${patient.position.z.toFixed(2)}`}
+                        </div>
+                        {patient.deviceType && (
+                          <div className="flex items-center gap-1">
+                            <DeviceIcon className="h-3 w-3" />
+                            <span>{DEVICE_TYPE_CONFIG[patient.deviceType].label}</span>
+                          </div>
+                        )}
+                        <div className="text-xs text-muted-foreground">
+                          更新: {new Date(patient.updatedAt).toLocaleTimeString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 狀態指示 */}
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span className="text-xs text-green-600">在線</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-xs text-green-600">在線</span>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </CardContent>
         </Card>
