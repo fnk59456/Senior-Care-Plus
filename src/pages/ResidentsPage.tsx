@@ -403,9 +403,13 @@ export default function ResidentsPage() {
   // 更新病患資訊
   const handleUpdateResident = () => {
     if (selectedResident) {
+      console.log('🔄 開始更新院友:', selectedResident.id, newResident)
       updateResident(selectedResident.id, newResident)
       setSelectedResident({ ...selectedResident, ...newResident })
       setIsEditingResident(false)
+      console.log('✅ 院友更新完成')
+    } else {
+      console.warn('❌ 沒有選中的院友可以更新')
     }
   }
 
@@ -424,6 +428,8 @@ export default function ResidentsPage() {
     setSelectedResident(resident)
     setSelectedDevice(device || null)
     setShowDeviceBinding(true)
+    // 確保不會進入編輯模式
+    setIsEditingResident(false)
   }
 
   const handleUnbindDevice = (deviceId: string, residentId: string) => {
@@ -754,6 +760,7 @@ export default function ResidentsPage() {
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation()
+                          console.log('🔄 點擊編輯按鈕，院友:', resident)
                           setIsEditingResident(true)
                           setNewResident({
                             name: resident.name,
@@ -764,6 +771,14 @@ export default function ResidentsPage() {
                             emergencyContact: { ...resident.emergencyContact },
                             careNotes: resident.careNotes,
                             avatar: resident.avatar || ''
+                          })
+                          setSelectedResident(resident)
+                          console.log('✅ 編輯狀態已設置，newResident:', {
+                            name: resident.name,
+                            age: resident.age,
+                            gender: resident.gender,
+                            room: resident.room,
+                            status: resident.status
                           })
                         }}
                       >
@@ -1302,6 +1317,7 @@ export default function ResidentsPage() {
         onClose={() => {
           setShowDeviceBinding(false)
           setSelectedDevice(null)
+          setSelectedResident(null)
         }}
         device={selectedDevice || undefined}
         resident={selectedResident || undefined}
