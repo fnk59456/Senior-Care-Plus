@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 // @ts-ignore
 import mqtt from "mqtt"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -7,9 +7,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
-import { Heart, TrendingUp, Clock, AlertTriangle } from "lucide-react"
+import { Heart, TrendingUp, Clock, AlertTriangle, MapPin, Baby, Activity, Watch, Settings } from "lucide-react"
 import { useLocation } from "react-router-dom"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
+import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
+import { DeviceType } from "@/types/device-types"
 
 // 本地 MQTT 設置
 const MQTT_URL = "ws://localhost:9001"
@@ -76,6 +78,12 @@ type CloudDeviceRecord = {
   time: string
   datetime: Date
   isAbnormal: boolean
+  // 病患相關資訊
+  residentId?: string
+  residentName?: string
+  residentRoom?: string
+  residentStatus?: string
+  deviceType?: DeviceType
 }
 
 // 雲端設備類型
@@ -84,6 +92,12 @@ type CloudDevice = {
   deviceName: string
   lastSeen: Date
   recordCount: number
+  // 病患相關資訊
+  residentId?: string
+  residentName?: string
+  residentRoom?: string
+  residentStatus?: string
+  deviceType?: DeviceType
 }
 
 // 雲端 MQTT 數據類型
@@ -136,6 +150,65 @@ export default function HeartRatePage() {
     selectedGateway,
     setSelectedGateway
   } = useUWBLocation()
+
+  // 使用 DeviceManagementContext
+  const { devices, residents, getResidentForDevice } = useDeviceManagement()
+
+  // 根據MAC地址獲取病患資訊
+  const getResidentInfoByMAC = (mac: string) => {
+    // 查找設備：先嘗試hardwareId，再嘗試deviceUid
+    const device = devices.find(d => 
+      d.hardwareId === mac || 
+      d.deviceUid === mac ||
+      d.deviceUid === `300B:${mac}` ||
+      d.deviceUid === `SMARTWATCH_300B:${mac}`
+    )
+    
+    if (device) {
+      const resident = getResidentForDevice(device.id)
+      if (resident) {
+        return {
+          residentId: resident.id,
+          residentName: resident.name,
+          residentRoom: resident.room,
+          residentStatus: resident.status,
+          deviceType: device.deviceType
+        }
+      }
+    }
+    
+    return null
+  }
+
+  // 根據設備類型獲取圖標
+  const getDeviceTypeIcon = (deviceType?: DeviceType) => {
+    switch (deviceType) {
+      case DeviceType.SMARTWATCH_300B:
+        return <Watch className="h-4 w-4" />
+      case DeviceType.DIAPER_SENSOR:
+        return <Baby className="h-4 w-4" />
+      case DeviceType.PEDOMETER:
+        return <Activity className="h-4 w-4" />
+      case DeviceType.UWB_TAG:
+        return <MapPin className="h-4 w-4" />
+      default:
+        return <Settings className="h-4 w-4" />
+    }
+  }
+
+  // 根據狀態獲取資訊
+  const getStatusInfo = (status?: string) => {
+    switch (status) {
+      case 'active':
+        return { badge: '正常', icon: '🟢', bgColor: 'bg-green-50' }
+      case 'inactive':
+        return { badge: '離線', icon: '🔴', bgColor: 'bg-red-50' }
+      case 'warning':
+        return { badge: '警告', icon: '🟡', bgColor: 'bg-yellow-50' }
+      default:
+        return { badge: '未知', icon: '⚪', bgColor: 'bg-gray-50' }
+    }
+  }
 
   const [selectedUser, setSelectedUser] = useState<string>(() => {
     // 如果從HealthPage傳遞了患者名稱，則使用該患者，否則默認選擇張三
@@ -481,15 +554,19 @@ export default function HeartRatePage() {
               const deepSleep = parseInt(msg["deep sleep (min)"]) || 0
               const batteryLevel = parseInt(msg["battery level"]) || 0
 
+              // 獲取病患資訊
+              const residentInfo = getResidentInfoByMAC(msg.MAC)
+
               console.log("創建心率設備記錄:")
               console.log("- MAC:", msg.MAC)
               console.log("- 心率:", hr, "BPM")
               console.log("- 血氧:", SpO2, "%")
               console.log("- 血壓:", bp_syst, "/", bp_diast, "mmHg")
+              console.log("- 病患資訊:", residentInfo)
 
               const cloudDeviceRecord: CloudDeviceRecord = {
                 MAC: msg.MAC,
-                deviceName: `設備 ${msg.MAC.slice(-8)}`,
+                deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${msg.MAC.slice(-8)}`,
                 hr: hr,
                 SpO2: SpO2,
                 bp_syst: bp_syst,
@@ -502,7 +579,9 @@ export default function HeartRatePage() {
                 battery_level: batteryLevel,
                 time: new Date().toISOString(),
                 datetime: new Date(),
-                isAbnormal: hr > 0 && (hr > NORMAL_HEART_RATE_MAX || hr < NORMAL_HEART_RATE_MIN)
+                isAbnormal: hr > 0 && (hr > NORMAL_HEART_RATE_MAX || hr < NORMAL_HEART_RATE_MIN),
+                // 添加病患資訊
+                ...residentInfo
               }
 
               console.log("心率設備記錄:", cloudDeviceRecord)
@@ -524,7 +603,13 @@ export default function HeartRatePage() {
                 if (existingDevice) {
                   const updatedDevices = prev.map(d =>
                     d.MAC === msg.MAC
-                      ? { ...d, lastSeen: new Date(), recordCount: d.recordCount + 1 }
+                      ? { 
+                          ...d, 
+                          lastSeen: new Date(), 
+                          recordCount: d.recordCount + 1,
+                          // 更新病患資訊
+                          ...residentInfo
+                        }
                       : d
                   )
                   console.log("更新現有心率設備，總設備數:", updatedDevices.length)
@@ -532,9 +617,11 @@ export default function HeartRatePage() {
                 } else {
                   const newDevice: CloudDevice = {
                     MAC: msg.MAC,
-                    deviceName: `設備 ${msg.MAC.slice(-8)}`,
+                    deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${msg.MAC.slice(-8)}`,
                     lastSeen: new Date(),
-                    recordCount: 1
+                    recordCount: 1,
+                    // 添加病患資訊
+                    ...residentInfo
                   }
                   const updatedDevices = [...prev, newDevice]
                   console.log("添加新心率設備:", newDevice)
@@ -613,7 +700,7 @@ export default function HeartRatePage() {
         cloudClientRef.current = null
       }
     }
-  }, [selectedGateway, CLOUD_MQTT_URL, CLOUD_MQTT_OPTIONS])
+  }, [selectedGateway, CLOUD_MQTT_URL, CLOUD_MQTT_OPTIONS, devices, residents, getResidentForDevice])
 
   // 獲取當前用戶的記錄（本地MQTT）
   const currentUserRecords = heartRateRecords.filter(record => record.id === selectedUser)
@@ -1069,16 +1156,32 @@ export default function HeartRatePage() {
                         <SelectValue placeholder="選擇雲端設備進行詳細監控" />
                       </SelectTrigger>
                       <SelectContent>
-                        {cloudDevices.map(device => (
-                          <SelectItem key={device.MAC} value={device.MAC}>
-                            <div className="flex items-center justify-between w-full">
-                              <span>{device.deviceName}</span>
-                              <span className="text-xs text-muted-foreground ml-2">
-                                ({device.MAC.slice(-8)}) - {device.recordCount} 筆記錄
-                              </span>
-                            </div>
-                          </SelectItem>
-                        ))}
+                        {cloudDevices.map(device => {
+                          const statusInfo = getStatusInfo(device.residentStatus)
+                          return (
+                            <SelectItem key={device.MAC} value={device.MAC}>
+                              <div className="flex items-center justify-between w-full">
+                                <div className="flex items-center gap-2">
+                                  {getDeviceTypeIcon(device.deviceType)}
+                                  <span>{device.residentName || device.deviceName}</span>
+                                  {device.residentRoom && (
+                                    <span className="text-xs text-muted-foreground">
+                                      ({device.residentRoom})
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2 py-1 rounded-full text-xs ${statusInfo.bgColor}`}>
+                                    {statusInfo.badge}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {device.recordCount} 筆記錄
+                                  </span>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          )
+                        })}
                       </SelectContent>
                     </Select>
                   </div>
@@ -1110,10 +1213,22 @@ export default function HeartRatePage() {
                           </div>
                           {data.MAC && (
                             <div className="text-muted-foreground mt-1">
-                              設備: <span className="font-mono">{data.MAC}</span>
-                              {data.hr && ` | 心率: ${data.hr} BPM`}
-                              {data.SpO2 && ` | 血氧: ${data.SpO2}%`}
-                              {data.bp_syst && data.bp_diast && ` | 血壓: ${data.bp_syst}/${data.bp_diast}`}
+                              {(() => {
+                                const residentInfo = getResidentInfoByMAC(data.MAC)
+                                return (
+                                  <>
+                                    設備: <span className="font-mono">{data.MAC}</span>
+                                    {residentInfo?.residentName && (
+                                      <span className="text-blue-600 font-medium">
+                                        {' '}→ {residentInfo.residentName} ({residentInfo.residentRoom})
+                                      </span>
+                                    )}
+                                    {data.hr && ` | 心率: ${data.hr} BPM`}
+                                    {data.SpO2 && ` | 血氧: ${data.SpO2}%`}
+                                    {data.bp_syst && data.bp_diast && ` | 血壓: ${data.bp_syst}/${data.bp_diast}`}
+                                  </>
+                                )
+                              })()}
                             </div>
                           )}
                           {data.content === "diaper DV1" && (
@@ -1197,7 +1312,12 @@ export default function HeartRatePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Heart className="mr-2 h-5 w-5" />
-                  設備生命體征數據 - {cloudDevices.find(d => d.MAC === selectedCloudDevice)?.deviceName}
+                  設備生命體征數據 - {(() => {
+                    const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
+                    return device?.residentName 
+                      ? `${device.residentName} (${device.residentRoom})`
+                      : device?.deviceName || "未知設備"
+                  })()}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1223,8 +1343,14 @@ export default function HeartRatePage() {
                               )}
                             </div>
                             <div>
-                              <div className="font-medium">
-                                {record.datetime.toLocaleString('zh-TW')}
+                              <div className="font-medium flex items-center gap-2">
+                                {getDeviceTypeIcon(record.deviceType)}
+                                {record.residentName ? `${record.residentName} (${record.residentRoom})` : record.deviceName}
+                                {record.residentStatus && (
+                                  <span className={`px-2 py-1 rounded-full text-xs ${getStatusInfo(record.residentStatus).bgColor}`}>
+                                    {getStatusInfo(record.residentStatus).badge}
+                                  </span>
+                                )}
                               </div>
                               <div className="text-sm text-muted-foreground space-y-1">
                                 <div>
@@ -1287,7 +1413,12 @@ export default function HeartRatePage() {
                   心率趨勢圖
                   {currentMqttTab === "cloud" && selectedCloudDevice && (
                     <span className="ml-2 text-sm font-normal text-pink-600">
-                      - {cloudDevices.find(d => d.MAC === selectedCloudDevice)?.deviceName || "雲端設備"}
+                      - {(() => {
+                        const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
+                        return device?.residentName 
+                          ? `${device.residentName} (${device.residentRoom})`
+                          : device?.deviceName || "雲端設備"
+                      })()}
                     </span>
                   )}
                   {currentMqttTab === "local" && (
@@ -1317,7 +1448,7 @@ export default function HeartRatePage() {
                       />
                       <Tooltip
                         labelFormatter={(value) => `時間: ${value}`}
-                        formatter={(value, name) => [`${value} BPM`, '心率']}
+                        formatter={(value) => [`${value} BPM`, '心率']}
                       />
                       <ReferenceLine y={TARGET_HEART_RATE} stroke="#ec4899" strokeDasharray="5 5" label="目標心率: 75 BPM" />
                       <ReferenceLine y={NORMAL_HEART_RATE_MAX} stroke="#ef4444" strokeDasharray="5 5" label="高心率警戒線" />
@@ -1360,7 +1491,12 @@ export default function HeartRatePage() {
                 心率記錄
                 {currentMqttTab === "cloud" && selectedCloudDevice && (
                   <span className="ml-2 text-sm font-normal text-pink-600">
-                    - {cloudDevices.find(d => d.MAC === selectedCloudDevice)?.deviceName || "雲端設備"}
+                    - {(() => {
+                      const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
+                      return device?.residentName 
+                        ? `${device.residentName} (${device.residentRoom})`
+                        : device?.deviceName || "雲端設備"
+                    })()}
                   </span>
                 )}
                 {currentMqttTab === "local" && (
