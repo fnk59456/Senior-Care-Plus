@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import {
   Thermometer, Heart, Baby, Phone, Clock,
   Bell, Menu, Pause, User, CircleDot, Activity, MapPin,
-  Watch, Wifi, WifiOff, Battery, Database, Save, Download, Upload
+  Watch, Wifi, WifiOff, Database, Save, Download, Upload
 } from "lucide-react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
@@ -463,26 +463,26 @@ export default function HealthPage() {
       </div>
 
       {/* 患者卡片列表 */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {filteredPatients.map((patient) => {
           const patientStatus = calculatePatientStatus(patient.id)
           const statusColor = getStatusColor(patientStatus)
           const devices = getDevicesForResident(patient.id)
 
           return (
-            <Card key={patient.id} className="bg-white shadow-sm border-0 rounded-2xl overflow-hidden">
-              <CardContent className="p-6">
+            <Card key={patient.id} className="bg-white shadow-sm border-0 rounded-xl overflow-hidden h-[32rem] flex flex-col">
+              <CardContent className="p-4 flex flex-col h-full">
                 {/* 患者基本信息 */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-16 w-16 bg-gray-200">
-                      <AvatarFallback className="text-gray-600 text-lg font-medium">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-12 w-12 bg-gray-200">
+                      <AvatarFallback className="text-gray-600 text-sm font-medium">
                         {patient.avatar || patient.name.slice(0, 2)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-1">{patient.name}</h3>
-                      <p className="text-gray-600">年齡: {patient.age} • 房間: {patient.room}</p>
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">{patient.name}</h3>
+                      <p className="text-sm text-gray-600">年齡: {patient.age} • 房間: {patient.room}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge className="text-xs">
                           {patientStatus}
@@ -493,53 +493,49 @@ export default function HealthPage() {
                       </div>
                     </div>
                   </div>
-                  <div className={`w-4 h-4 rounded-full ${statusColor}`}></div>
+                  <div className={`w-3 h-3 rounded-full ${statusColor}`}></div>
                 </div>
 
                 {/* 設備狀態快覽 */}
-                {devices.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {devices.slice(0, 4).map((device) => {
-                      const DeviceIcon = getDeviceIcon(device.deviceType)
-                      return (
-                        <div key={device.id} className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-lg text-xs">
-                          <DeviceIcon className="h-3 w-3" />
-                          <span className="truncate max-w-20">{device.name}</span>
-                          {device.status === DeviceStatus.ACTIVE ? (
-                            <Wifi className="h-3 w-3 text-green-500" />
-                          ) : (
-                            <WifiOff className="h-3 w-3 text-gray-400" />
-                          )}
-                          {device.batteryLevel && (
-                            <div className="flex items-center">
-                              <Battery className={`h-3 w-3 ${device.batteryLevel > 20 ? 'text-green-500' : 'text-red-500'}`} />
-                              <span className="text-xs ml-1">{device.batteryLevel}%</span>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                    {devices.length > 4 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{devices.length - 4} 更多
-                      </Badge>
-                    )}
-                  </div>
-                )}
+                <div className="h-20 mb-4 flex-shrink-0">
+                  {devices.length > 0 && (
+                    <div className="flex flex-wrap gap-2 h-full overflow-hidden">
+                      {devices.slice(0, 6).map((device) => {
+                        const DeviceIcon = getDeviceIcon(device.deviceType)
+                        return (
+                          <div key={device.id} className="flex items-center gap-1 bg-gray-100 px-3 py-2 rounded-md text-xs h-8">
+                            <DeviceIcon className="h-4 w-4" />
+                            <span className="truncate max-w-20">{device.name}</span>
+                            {device.status === DeviceStatus.ACTIVE ? (
+                              <Wifi className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <WifiOff className="h-4 w-4 text-gray-400" />
+                            )}
+                          </div>
+                        )
+                      })}
+                      {devices.length > 6 && (
+                        <Badge variant="outline" className="text-xs h-8 px-2">
+                          +{devices.length - 6}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* 監控功能圖標網格 */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-3 flex-1">
                   {monitoringIcons.map((item, index) => {
                     const IconComponent = item.icon
                     return (
                       <Button
                         key={index}
                         variant="ghost"
-                        className="h-16 w-full bg-gray-100 hover:bg-gray-200 rounded-xl p-4 flex flex-col items-center justify-center transition-colors gap-1"
+                        className="h-full w-full bg-gray-100 hover:bg-gray-200 rounded-lg p-3 flex flex-col items-center justify-center transition-colors gap-2"
                         onClick={() => handleIconClick(item.route, patient.id)}
                       >
-                        <IconComponent className={`h-5 w-5 ${item.color}`} />
-                        <span className="text-xs text-gray-600">{item.label}</span>
+                        <IconComponent className={`h-7 w-7 ${item.color}`} />
+                        <span className="text-sm font-medium text-gray-700">{item.label}</span>
                       </Button>
                     )
                   })}
