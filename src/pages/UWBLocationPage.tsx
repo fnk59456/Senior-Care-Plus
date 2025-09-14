@@ -39,6 +39,7 @@ import {
     RotateCcw,
     Image,
     Ruler,
+    X,
     Loader2 as CloudIcon,
     RefreshCw as RefreshIcon
 } from "lucide-react"
@@ -998,6 +999,10 @@ export default function UWBLocationPage() {
     const [showFloorForm, setShowFloorForm] = useState(false)
     const [showGatewayForm, setShowGatewayForm] = useState(false)
     const [editingItem, setEditingItem] = useState<any>(null)
+
+    // 彈窗狀態
+    const [showHomeModal, setShowHomeModal] = useState(false)
+    const [showFloorModal, setShowFloorModal] = useState(false)
 
     // 表單數據
     const [homeForm, setHomeForm] = useState({ name: "", description: "", address: "" })
@@ -2096,12 +2101,14 @@ export default function UWBLocationPage() {
     const resetHomeForm = () => {
         setHomeForm({ name: "", description: "", address: "" })
         setShowHomeForm(false)
+        setShowHomeModal(false)
         setEditingItem(null)
     }
 
     const resetFloorForm = () => {
         setFloorForm({ name: "", level: 1, realWidth: 0, realHeight: 0 })
         setShowFloorForm(false)
+        setShowFloorModal(false)
         setEditingItem(null)
     }
 
@@ -3217,7 +3224,7 @@ export default function UWBLocationPage() {
                 <TabsContent value="homes" className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-semibold">場域管理</h2>
-                        <Button onClick={() => setShowHomeForm(true)}>
+                        <Button onClick={() => setShowHomeModal(true)}>
                             <Plus className="h-4 w-4 mr-2" />
                             新增場域
                         </Button>
@@ -3281,55 +3288,13 @@ export default function UWBLocationPage() {
                         ))}
                     </div>
 
-                    {/* 新增/編輯場域表單 */}
-                    {showHomeForm && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{editingItem ? "編輯場域" : "新增場域"}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <label className="text-sm font-medium">場域名稱</label>
-                                    <Input
-                                        value={homeForm.name}
-                                        onChange={(e) => setHomeForm(prev => ({ ...prev, name: e.target.value }))}
-                                        placeholder="請輸入場域名稱"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium">場域描述</label>
-                                    <Textarea
-                                        value={homeForm.description}
-                                        onChange={(e) => setHomeForm(prev => ({ ...prev, description: e.target.value }))}
-                                        placeholder="請輸入場域描述"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium">場域地址</label>
-                                    <Input
-                                        value={homeForm.address}
-                                        onChange={(e) => setHomeForm(prev => ({ ...prev, address: e.target.value }))}
-                                        placeholder="請輸入場域地址"
-                                    />
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button onClick={handleHomeSubmit}>
-                                        {editingItem ? "更新" : "新增"}
-                                    </Button>
-                                    <Button variant="outline" onClick={resetHomeForm}>
-                                        取消
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
                 </TabsContent>
 
                 {/* 樓層管理 */}
                 <TabsContent value="floors" className="space-y-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-semibold">樓層管理</h2>
-                        <Button onClick={() => setShowFloorForm(true)} disabled={!selectedHome}>
+                        <Button onClick={() => setShowFloorModal(true)} disabled={!selectedHome}>
                             <Plus className="h-4 w-4 mr-2" />
                             新增樓層
                         </Button>
@@ -3497,64 +3462,6 @@ export default function UWBLocationPage() {
                         </div>
                     )}
 
-                    {/* 新增/編輯樓層表單 */}
-                    {showFloorForm && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{editingItem ? "編輯樓層" : "新增樓層"}</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm font-medium">樓層名稱</label>
-                                        <Input
-                                            value={floorForm.name}
-                                            onChange={(e) => setFloorForm(prev => ({ ...prev, name: e.target.value }))}
-                                            placeholder="請輸入樓層名稱"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium">樓層編號</label>
-                                        <Input
-                                            type="number"
-                                            value={floorForm.level}
-                                            onChange={(e) => setFloorForm(prev => ({ ...prev, level: parseInt(e.target.value) }))}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm font-medium">實際寬度 (米)</label>
-                                        <Input
-                                            type="number"
-                                            step="0.1"
-                                            value={floorForm.realWidth}
-                                            onChange={(e) => setFloorForm(prev => ({ ...prev, realWidth: parseFloat(e.target.value) }))}
-                                            placeholder="0.0"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium">實際高度 (米)</label>
-                                        <Input
-                                            type="number"
-                                            step="0.1"
-                                            value={floorForm.realHeight}
-                                            onChange={(e) => setFloorForm(prev => ({ ...prev, realHeight: parseFloat(e.target.value) }))}
-                                            placeholder="0.0"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button onClick={handleFloorSubmit}>
-                                        {editingItem ? "更新" : "新增"}
-                                    </Button>
-                                    <Button variant="outline" onClick={resetFloorForm}>
-                                        取消
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
 
                     {/* 地圖標定模態框 */}
                     {showMapCalibration && calibratingFloor && (
@@ -6038,6 +5945,134 @@ export default function UWBLocationPage() {
                                 </Button>
                                 <Button variant="outline" onClick={closeConfigDialog} disabled={sendingConfig}>
                                     取消
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* 新增場域彈窗 */}
+            {showHomeModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <Card className="w-full max-w-md">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>新增場域</CardTitle>
+                            <Button variant="ghost" size="sm" onClick={() => setShowHomeModal(false)}>
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">場域名稱</label>
+                                <Input
+                                    value={homeForm.name}
+                                    onChange={(e) => setHomeForm(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder="請輸入場域名稱"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">場域描述</label>
+                                <Textarea
+                                    value={homeForm.description}
+                                    onChange={(e) => setHomeForm(prev => ({ ...prev, description: e.target.value }))}
+                                    placeholder="請輸入場域描述"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">場域地址</label>
+                                <Input
+                                    value={homeForm.address}
+                                    onChange={(e) => setHomeForm(prev => ({ ...prev, address: e.target.value }))}
+                                    placeholder="請輸入場域地址"
+                                />
+                            </div>
+                            <div className="flex gap-3 pt-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setShowHomeModal(false)}
+                                    className="flex-1"
+                                >
+                                    取消
+                                </Button>
+                                <Button
+                                    onClick={handleHomeSubmit}
+                                    className="flex-1"
+                                    disabled={!homeForm.name || !homeForm.description || !homeForm.address}
+                                >
+                                    新增場域
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* 新增樓層彈窗 */}
+            {showFloorModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <Card className="w-full max-w-md">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>新增樓層</CardTitle>
+                            <Button variant="ghost" size="sm" onClick={() => setShowFloorModal(false)}>
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">樓層名稱</label>
+                                    <Input
+                                        value={floorForm.name}
+                                        onChange={(e) => setFloorForm(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder="請輸入樓層名稱"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">樓層編號</label>
+                                    <Input
+                                        type="number"
+                                        value={floorForm.level}
+                                        onChange={(e) => setFloorForm(prev => ({ ...prev, level: parseInt(e.target.value) }))}
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">實際寬度 (米)</label>
+                                    <Input
+                                        type="number"
+                                        step="0.1"
+                                        value={floorForm.realWidth}
+                                        onChange={(e) => setFloorForm(prev => ({ ...prev, realWidth: parseFloat(e.target.value) }))}
+                                        placeholder="0.0"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">實際高度 (米)</label>
+                                    <Input
+                                        type="number"
+                                        step="0.1"
+                                        value={floorForm.realHeight}
+                                        onChange={(e) => setFloorForm(prev => ({ ...prev, realHeight: parseFloat(e.target.value) }))}
+                                        placeholder="0.0"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-3 pt-4">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setShowFloorModal(false)}
+                                    className="flex-1"
+                                >
+                                    取消
+                                </Button>
+                                <Button
+                                    onClick={handleFloorSubmit}
+                                    className="flex-1"
+                                    disabled={!floorForm.name || !selectedHome}
+                                >
+                                    新增樓層
                                 </Button>
                             </div>
                         </CardContent>

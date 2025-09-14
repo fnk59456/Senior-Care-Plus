@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import {
   AlertTriangle,
   User,
@@ -19,7 +20,8 @@ import {
   Baby,
   Activity,
   Watch,
-  Settings
+  Settings,
+  TrendingUp
 } from "lucide-react"
 // @ts-ignore
 import mqtt from "mqtt"
@@ -139,6 +141,14 @@ interface DiaperRecord {
   humidity: number
 }
 
+// 濕度趨勢圖數據點類型
+type HumidityChartDataPoint = {
+  time: string
+  hour: string
+  humidity: number
+  isAbnormal: boolean
+}
+
 interface Patient {
   id: string
   name: string
@@ -167,7 +177,7 @@ type CloudDiaperRecord = {
   time: string
   datetime: Date
   isAbnormal: boolean // humi > 75 時為 true
-  
+
   // 新增病患相關資訊
   residentId?: string
   residentName?: string
@@ -186,7 +196,7 @@ type CloudDiaperDevice = {
   currentHumidity: number
   currentTemperature: number
   currentBatteryLevel: number
-  
+
   // 新增病患相關資訊
   residentId?: string
   residentName?: string
@@ -660,7 +670,7 @@ export default function DiaperMonitoringPage() {
                 time: new Date().toISOString(),
                 datetime: new Date(),
                 isAbnormal: humi > 65, // 關鍵邏輯：濕度 > 75 時需要更換
-                
+
                 // 添加病患資訊
                 ...residentInfo
               }
@@ -792,6 +802,40 @@ export default function DiaperMonitoringPage() {
     ? (currentCloudDevice ? currentCloudDevice.currentHumidity > 75 : false)
     : currentPatient.currentHumidity > 75
 
+  // 獲取當前雲端設備的濕度記錄，轉換為圖表格式
+  const currentCloudHumidityRecords: HumidityChartDataPoint[] = selectedCloudDevice && cloudDiaperRecords.length > 0
+    ? cloudDiaperRecords
+      .filter(record => record.MAC === selectedCloudDevice)
+      .map(record => ({
+        time: record.time,
+        hour: record.datetime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+        humidity: record.humi || 0,
+        isAbnormal: record.humi > 75
+      }))
+    : []
+
+  // 獲取當前患者的濕度記錄（本地MQTT）
+  const currentPatientHumidityRecords: HumidityChartDataPoint[] = currentPatient.records.map(record => ({
+    time: record.timestamp,
+    hour: new Date(record.timestamp).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+    humidity: record.humidity,
+    isAbnormal: record.humidity > 75
+  }))
+
+  // 根據當前MQTT標籤頁選擇數據源
+  const currentHumidityRecords = currentMqttTab === "cloud" ? currentCloudHumidityRecords : currentPatientHumidityRecords
+
+  // 準備濕度趨勢圖數據
+  const humidityChartData: HumidityChartDataPoint[] = currentHumidityRecords
+    .slice(0, 144) // 24小時 * 6個點/小時 = 144個數據點
+    .reverse()
+    .map(record => ({
+      time: record.time,
+      hour: record.hour,
+      humidity: record.humidity,
+      isAbnormal: record.humidity > 75
+    }))
+
 
 
   // 處理記錄尿布更換
@@ -830,6 +874,25 @@ export default function DiaperMonitoringPage() {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
     const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
     return `${diffHours} 小時 ${diffMinutes} 分鐘前`
+  }
+
+  // 獲取選中日期的字符串
+  const getDateString = () => {
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    switch (selectedTab) {
+      case "today":
+        return today.toLocaleDateString('zh-TW')
+      case "week":
+        const weekStart = new Date(today.getTime() - (today.getDay() * 24 * 60 * 60 * 1000))
+        return `${weekStart.toLocaleDateString('zh-TW')} - ${today.toLocaleDateString('zh-TW')}`
+      case "month":
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+        return `${monthStart.toLocaleDateString('zh-TW')} - ${today.toLocaleDateString('zh-TW')}`
+      default:
+        return today.toLocaleDateString('zh-TW')
+    }
   }
 
   return (
@@ -1087,7 +1150,7 @@ export default function DiaperMonitoringPage() {
                         {cloudDiaperDevices.map(device => {
                           const DeviceIcon = getDeviceTypeIcon(device.deviceType)
                           const statusInfo = getStatusInfo(device.residentStatus)
-                          
+
                           return (
                             <SelectItem key={device.MAC} value={device.MAC}>
                               <div className="flex items-center justify-between w-full">
@@ -1135,7 +1198,7 @@ export default function DiaperMonitoringPage() {
                     <div className="max-h-40 overflow-y-auto space-y-1">
                       {cloudMqttData.slice(0, 8).map((data, index) => {
                         const residentInfo = getResidentInfoByMAC(data.MAC)
-                        
+
                         return (
                           <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
                             <div className="flex items-center justify-between">
@@ -1257,7 +1320,7 @@ export default function DiaperMonitoringPage() {
                       .map((record, index) => {
                         const DeviceIcon = getDeviceTypeIcon(record.deviceType)
                         const statusInfo = getStatusInfo(record.residentStatus)
-                        
+
                         return (
                           <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
                             <div className="flex items-center gap-3">
@@ -1336,8 +1399,8 @@ export default function DiaperMonitoringPage() {
                           <div>
                             <span className="text-muted-foreground">病患資訊:</span>
                             <div>
-                              {currentCloudDevice.residentName ? 
-                                `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` : 
+                              {currentCloudDevice.residentName ?
+                                `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` :
                                 '未綁定病患'
                               }
                             </div>
@@ -1376,6 +1439,85 @@ export default function DiaperMonitoringPage() {
         </TabsList>
 
         <TabsContent value={selectedTab} className="mt-6 space-y-6">
+          {/* 濕度趨勢圖 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center">
+                  <TrendingUp className="mr-2 h-5 w-5" />
+                  濕度趨勢圖
+                  {currentMqttTab === "cloud" && selectedCloudDevice && (
+                    <span className="ml-2 text-sm font-normal text-blue-600">
+                      - {(() => {
+                        const device = cloudDiaperDevices.find(d => d.MAC === selectedCloudDevice)
+                        return device?.residentName
+                          ? `${device.residentName} (${device.residentRoom})`
+                          : device?.deviceName || "雲端設備"
+                      })()}
+                    </span>
+                  )}
+                  {currentMqttTab === "local" && (
+                    <span className="ml-2 text-sm font-normal text-green-600">
+                      - {currentPatient.name || "本地患者"}
+                    </span>
+                  )}
+                </span>
+                <span className="text-sm text-muted-foreground">{getDateString()}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {humidityChartData.length > 0 ? (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={humidityChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="hour"
+                        tick={{ fontSize: 12 }}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis
+                        domain={[0, 100]}
+                        tick={{ fontSize: 12 }}
+                        label={{ value: '濕度 (%)', angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip
+                        labelFormatter={(value) => `時間: ${value}`}
+                        formatter={(value) => [`${value}%`, '濕度']}
+                      />
+                      <ReferenceLine y={75} stroke="#ef4444" strokeDasharray="5 5" label="更換警戒線: 75%" />
+                      <ReferenceLine y={50} stroke="#f59e0b" strokeDasharray="5 5" label="注意線: 50%" />
+                      <ReferenceLine y={25} stroke="#10b981" strokeDasharray="5 5" label="正常線: 25%" />
+                      <Line
+                        type="monotone"
+                        dataKey="humidity"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-80 flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <Droplets className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                    <p>暫無{getDateString()}的濕度數據</p>
+                    {currentMqttTab === "cloud" ? (
+                      <div className="text-sm space-y-1">
+                        <p>請確認雲端MQTT模擬器已啟動</p>
+                        <p>並選擇有效的雲端設備</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm">請確認本地MQTT模擬器已啟動</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* 當前尿布狀態 */}
           {needsChange && (
             <Card className="border-red-200 bg-red-50 dark:bg-red-900/20">
@@ -1419,27 +1561,27 @@ export default function DiaperMonitoringPage() {
                             }
                           </span>
                         </div>
-                                            <div className="text-sm text-muted-foreground space-y-1">
-                      <p>
-                        設備: {currentMqttTab === "cloud"
-                          ? (currentCloudDevice ? 
-                              (currentCloudDevice.residentName ? 
-                                `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` : 
-                                currentCloudDevice.deviceName
-                              ) : "未選擇設備")
-                          : currentPatient.name
-                        }
-                      </p>
-                      {currentMqttTab === "cloud" && currentCloudDevice && (
-                        <p>MAC: {currentCloudDevice.MAC}</p>
-                      )}
-                      <p>
-                        上次更換時間: {currentMqttTab === "local" && currentPatient.records.length > 0 ?
-                          `${currentPatient.records[0].timestamp} (${getTimeDifference(currentPatient.lastUpdate)})` :
-                          '無記錄'
-                        }
-                      </p>
-                    </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p>
+                            設備: {currentMqttTab === "cloud"
+                              ? (currentCloudDevice ?
+                                (currentCloudDevice.residentName ?
+                                  `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` :
+                                  currentCloudDevice.deviceName
+                                ) : "未選擇設備")
+                              : currentPatient.name
+                            }
+                          </p>
+                          {currentMqttTab === "cloud" && currentCloudDevice && (
+                            <p>MAC: {currentCloudDevice.MAC}</p>
+                          )}
+                          <p>
+                            上次更換時間: {currentMqttTab === "local" && currentPatient.records.length > 0 ?
+                              `${currentPatient.records[0].timestamp} (${getTimeDifference(currentPatient.lastUpdate)})` :
+                              '無記錄'
+                            }
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
