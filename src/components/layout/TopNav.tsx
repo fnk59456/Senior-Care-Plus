@@ -4,6 +4,8 @@ import { Bell, Moon, Sun, Menu, Search, User, ShieldAlert, MessageSquare, LogOut
 import { useTheme } from 'next-themes'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
+import { useTranslation } from 'react-i18next'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useState } from 'react'
 
 export function TopNav() {
+  const { t } = useTranslation()
   const { setTheme, theme } = useTheme()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -43,22 +46,24 @@ export function TopNav() {
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
               <span className="text-primary-foreground font-bold">護</span>
             </div>
-            <span className="hidden font-bold text-lg md:inline-block">長者照護系統</span>
+            <span className="hidden font-bold text-lg md:inline-block">{t('common:app.title')}</span>
           </a>
         </div>
 
         <div className="flex-1 mx-4 max-w-md hidden md:flex">
           <div className="relative w-full">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input 
-              type="search" 
-              placeholder="搜尋院友、任務或設備..." 
-              className="w-full pl-9 bg-muted/50 border-muted focus-visible:bg-background hover:bg-muted/80 transition-colors" 
+            <Input
+              type="search"
+              placeholder={t('common:placeholders.search')}
+              className="w-full pl-9 bg-muted/50 border-muted focus-visible:bg-background hover:bg-muted/80 transition-colors"
             />
           </div>
         </div>
 
         <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+
           <Button variant="ghost" size="icon" className="text-primary hover:text-primary/80 hover:bg-primary/10">
             <ShieldAlert className="h-5 w-5" />
           </Button>
@@ -82,16 +87,15 @@ export function TopNav() {
               <DropdownMenuSeparator />
               <div className="py-2 max-h-[300px] overflow-y-auto">
                 {[
-                  {title: "王老先生需要協助", time: "5分鐘前", type: "urgent"},
-                  {title: "李大媽血壓異常", time: "10分鐘前", type: "warning"},
-                  {title: "今日藥物提醒完成度90%", time: "30分鐘前", type: "info"}
+                  { title: "王老先生需要協助", time: "5分鐘前", type: "urgent" },
+                  { title: "李大媽血壓異常", time: "10分鐘前", type: "warning" },
+                  { title: "今日藥物提醒完成度90%", time: "30分鐘前", type: "info" }
                 ].map((item, i) => (
                   <div key={i} className="px-4 py-2.5 hover:bg-muted cursor-pointer flex items-center gap-3">
-                    <div className={`h-2 w-2 rounded-full ${
-                      item.type === 'urgent' ? 'bg-red-500' : 
-                      item.type === 'warning' ? 'bg-amber-500' : 
-                      'bg-blue-500'
-                    }`} />
+                    <div className={`h-2 w-2 rounded-full ${item.type === 'urgent' ? 'bg-red-500' :
+                      item.type === 'warning' ? 'bg-amber-500' :
+                        'bg-blue-500'
+                      }`} />
                     <div className="flex-1">
                       <p className="text-sm font-medium">{item.title}</p>
                       <p className="text-xs text-muted-foreground">{item.time}</p>

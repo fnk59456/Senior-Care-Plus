@@ -3,6 +3,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import { useEmergencyCall } from '@/contexts/EmergencyCallContext'
+import { useTranslation } from 'react-i18next'
 import {
   Home,
   HeartPulse,
@@ -19,96 +20,99 @@ import {
   Phone,
 } from 'lucide-react'
 
-const navigation = [
+// 導航項目配置 - 使用函數來獲取翻譯
+const getNavigationItems = (t: any) => [
   {
-    name: '首頁',
+    name: t('navigation:sidebar.items.home.name'),
     href: '/',
     icon: Home,
     color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300',
-    description: '返回系統首頁',
+    description: t('navigation:sidebar.items.home.description'),
   },
   {
-    name: '緊急呼叫',
+    name: t('navigation:sidebar.items.emergency.name'),
     href: '/emergency-call',
     icon: Phone,
     color: 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-300',
-    description: '快速發送緊急求助信號',
+    description: t('navigation:sidebar.items.emergency.description'),
   },
   {
-    name: '健康監控',
+    name: t('navigation:sidebar.items.health.name'),
     href: '/health',
     icon: HeartPulse,
     color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-300',
-    description: '即時監測生命體徵',
+    description: t('navigation:sidebar.items.health.description'),
   },
   {
-    name: '定時提醒',
+    name: t('navigation:sidebar.items.reminders.name'),
     href: '/reminders',
     icon: CalendarClock,
     color: 'bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300',
-    description: '服藥與照顧提醒',
+    description: t('navigation:sidebar.items.reminders.description'),
   },
   {
-    name: '室內定位',
+    name: t('navigation:sidebar.items.location.name'),
     href: '/location',
     icon: Map,
     color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300',
-    description: '位置追蹤與安全區域',
+    description: t('navigation:sidebar.items.location.description'),
   },
   {
-    name: '院友管理',
+    name: t('navigation:sidebar.items.residents.name'),
     href: '/residents',
     icon: Users,
     color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300',
-    description: '管理院友資料與記錄',
+    description: t('navigation:sidebar.items.residents.description'),
   },
   {
-    name: '員工管理',
+    name: t('navigation:sidebar.items.staff.name'),
     href: '/staff',
     icon: UserCog,
     color: 'bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-300',
-    description: '護理人員和職員管理',
+    description: t('navigation:sidebar.items.staff.description'),
   },
   {
-    name: '設備管理',
+    name: t('navigation:sidebar.items.devices.name'),
     href: '/devices',
     icon: MonitorSmartphone,
     color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-300',
-    description: '照護設備管理與維護',
+    description: t('navigation:sidebar.items.devices.description'),
   },
   {
-    name: '養老院管理',
+    name: t('navigation:sidebar.items.uwbLocation.name'),
     href: '/uwb-location',
     icon: Building2,
     color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/40 dark:text-cyan-300',
-    description: 'UWB定位系統場域管理',
+    description: t('navigation:sidebar.items.uwbLocation.description'),
   },
   {
-    name: '更多功能',
+    name: t('navigation:sidebar.items.more.name'),
     href: '/more',
     icon: Lightbulb,
     color: 'bg-amber-100 text-amber-600 dark:bg-amber-800/40 dark:text-amber-300',
-    description: '探索智慧照護功能',
+    description: t('navigation:sidebar.items.more.description'),
   },
   {
-    name: '設置',
+    name: t('navigation:sidebar.items.settings.name'),
     href: '/settings',
     icon: Settings,
     color: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',
-    description: '系統設置與偏好設定',
+    description: t('navigation:sidebar.items.settings.description'),
   },
   {
-    name: '幫助中心',
+    name: t('navigation:sidebar.items.help.name'),
     href: '/help',
     icon: HelpCircle,
     color: 'bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-300',
-    description: '使用指南與支援',
+    description: t('navigation:sidebar.items.help.description'),
   },
 ]
 
 export function Sidebar() {
   const location = useLocation()
   const pathname = location.pathname
+  const { t } = useTranslation()
+  const navigation = getNavigationItems(t)
 
   return (
     <div className="hidden border-r bg-background/80 backdrop-blur-sm md:block w-64 shadow-sm">
@@ -117,23 +121,23 @@ export function Sidebar() {
           <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center mr-2">
             <span className="text-primary-foreground font-bold">護</span>
           </div>
-          <span className="font-bold text-lg">長者照護系統</span>
+          <span className="font-bold text-lg">{t('navigation:sidebar.title')}</span>
         </div>
 
         <div className="flex-1 overflow-auto py-4 px-3">
           <div className="space-y-1">
-            <SidebarSection title="主要功能" items={navigation.slice(0, 5)} pathname={pathname} />
-            <SidebarSection title="管理功能" items={navigation.slice(5, 9)} pathname={pathname} />
-            <SidebarSection title="系統" items={navigation.slice(9)} pathname={pathname} />
+            <SidebarSection title={t('navigation:sidebar.sections.main')} items={navigation.slice(0, 5)} pathname={pathname} />
+            <SidebarSection title={t('navigation:sidebar.sections.management')} items={navigation.slice(5, 9)} pathname={pathname} />
+            <SidebarSection title={t('navigation:sidebar.sections.system')} items={navigation.slice(9)} pathname={pathname} />
           </div>
         </div>
 
         <div className="border-t px-3 py-4">
           <div className="flex items-center justify-between">
-            <div className="text-sm font-medium text-muted-foreground">© 2024 長者照護系統</div>
+            <div className="text-sm font-medium text-muted-foreground">{t('navigation:footer.copyright')}</div>
             <div className="flex items-center space-x-2">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-xs text-primary">專業版</span>
+              <span className="text-xs text-primary">{t('navigation:footer.version')}</span>
             </div>
           </div>
         </div>
@@ -148,7 +152,7 @@ function SidebarSection({
   pathname,
 }: {
   title: string
-  items: typeof navigation
+  items: any[]
   pathname: string
 }) {
   const { hasActiveCall } = useEmergencyCall()
@@ -157,7 +161,7 @@ function SidebarSection({
     <div className="px-3 pb-3 border-b">
       <h2 className="mb-2 text-lg font-semibold tracking-tight">{title}</h2>
       <nav className="grid items-start text-sm font-medium gap-2">
-        {items.map((item) => {
+        {items.map((item: any) => {
           console.log("渲染項目：", item.name, "=>", item.href)
 
           // 檢查是否為緊急呼叫項目

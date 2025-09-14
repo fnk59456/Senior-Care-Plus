@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useTranslation } from 'react-i18next'
 import {
   Search,
   Phone,
@@ -39,6 +40,7 @@ import { Device, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/de
 import { Resident } from '@/types/device-types'
 
 export default function ResidentsPage() {
+  const { t } = useTranslation()
   const {
     residents,
     devices,
@@ -455,10 +457,10 @@ export default function ResidentsPage() {
     }
 
     const labels = {
-      [DeviceStatus.ACTIVE]: '活躍',
-      [DeviceStatus.INACTIVE]: '待機',
-      [DeviceStatus.OFFLINE]: '離線',
-      [DeviceStatus.ERROR]: '異常'
+      [DeviceStatus.ACTIVE]: t('status:device.status.active'),
+      [DeviceStatus.INACTIVE]: t('status:device.status.inactive'),
+      [DeviceStatus.OFFLINE]: t('status:device.status.offline'),
+      [DeviceStatus.ERROR]: t('status:device.status.error')
     }
 
     return (
@@ -475,7 +477,7 @@ export default function ResidentsPage() {
           badge: (
             <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
               <Heart className="w-3 h-3 mr-1 fill-current" />
-              良好
+              {t('status:resident.status.good')}
             </Badge>
           ),
           icon: '💚',
@@ -486,7 +488,7 @@ export default function ResidentsPage() {
           badge: (
             <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
               <AlertTriangle className="w-3 h-3 mr-1" />
-              需注意
+              {t('status:resident.status.attention')}
             </Badge>
           ),
           icon: '⚠️',
@@ -497,7 +499,7 @@ export default function ResidentsPage() {
           badge: (
             <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
               <AlertCircle className="w-3 h-3 mr-1" />
-              危急
+              {t('status:resident.status.critical')}
             </Badge>
           ),
           icon: '🚨',
@@ -505,7 +507,7 @@ export default function ResidentsPage() {
         }
       default:
         return {
-          badge: <Badge>未知</Badge>,
+          badge: <Badge>{t('status:resident.status.unknown', '未知')}</Badge>,
           icon: '❓',
           bgColor: 'bg-gray-100'
         }
@@ -522,17 +524,17 @@ export default function ResidentsPage() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">院友管理</h1>
-            <p className="text-muted-foreground">管理院友資料與設備綁定</p>
+            <h1 className="text-3xl font-bold">{t('pages:residents.title')}</h1>
+            <p className="text-muted-foreground">{t('pages:residents.subtitle')}</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={() => setShowAddResident(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              新增院友
+              {t('pages:residents.actions.addResident')}
             </Button>
             <Button onClick={() => setShowDeviceManagement(!showDeviceManagement)}>
               <Settings className="h-4 w-4 mr-2" />
-              {showDeviceManagement ? '隱藏' : '顯示'}設備管理
+              {showDeviceManagement ? t('pages:residents.actions.hideDeviceManagement') : t('pages:residents.actions.showDeviceManagement')}
             </Button>
           </div>
         </div>
@@ -541,21 +543,21 @@ export default function ResidentsPage() {
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Database className="h-4 w-4" />
-            <span>持久化狀態:</span>
+            <span>{t('status:system.persistence.status')}</span>
             {pendingSave ? (
               <Badge variant="outline" className="text-yellow-600">
                 <Save className="h-3 w-3 mr-1 animate-pulse" />
-                保存中...
+                {t('status:system.persistence.saving')}
               </Badge>
             ) : (
               <Badge variant="outline" className="text-green-600">
                 <Save className="h-3 w-3 mr-1" />
-                已保存
+                {t('status:system.persistence.saved')}
               </Badge>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span>最後保存:</span>
+            <span>{t('status:system.persistence.lastSave')}</span>
             <span className="font-mono">
               {lastSaveTime.toLocaleTimeString()}
             </span>
@@ -563,7 +565,7 @@ export default function ResidentsPage() {
           {loadError && (
             <div className="flex items-center gap-2 text-red-600">
               <AlertCircle className="h-4 w-4" />
-              <span>加載錯誤: {loadError}</span>
+              <span>{t('status:system.persistence.loadError')} {loadError}</span>
             </div>
           )}
         </div>
@@ -578,7 +580,7 @@ export default function ResidentsPage() {
             className="gap-2"
           >
             <Save className="h-4 w-4" />
-            強制保存
+            {t('status:system.actions.forceSave')}
           </Button>
           <Button
             variant="outline"
@@ -587,7 +589,7 @@ export default function ResidentsPage() {
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            導出設定
+            {t('status:system.actions.exportSettings')}
           </Button>
           <label className="cursor-pointer">
             <input
@@ -598,7 +600,7 @@ export default function ResidentsPage() {
             />
             <Button variant="outline" size="sm" className="gap-2">
               <Upload className="h-4 w-4" />
-              導入設定
+              {t('status:system.actions.importSettings')}
             </Button>
           </label>
           <Button
@@ -608,7 +610,7 @@ export default function ResidentsPage() {
             className="gap-2"
           >
             <Database className="h-4 w-4" />
-            調試存儲
+            {t('status:system.actions.debugStorage')}
           </Button>
         </div>
 
@@ -617,31 +619,31 @@ export default function ResidentsPage() {
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-blue-700">{residents.length}</div>
-              <div className="text-sm text-blue-600">總院友</div>
+              <div className="text-sm text-blue-600">{t('pages:residents.stats.totalResidents')}</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-green-50 to-green-100">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-green-700">{deviceStatusSummary[DeviceStatus.ACTIVE]}</div>
-              <div className="text-sm text-green-600">活躍設備</div>
+              <div className="text-sm text-green-600">{t('pages:residents.stats.activeDevices')}</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-yellow-700">{deviceStatusSummary[DeviceStatus.OFFLINE]}</div>
-              <div className="text-sm text-yellow-600">離線設備</div>
+              <div className="text-sm text-yellow-600">{t('pages:residents.stats.offlineDevices')}</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-red-50 to-red-100">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-red-700">{deviceStatusSummary[DeviceStatus.ERROR]}</div>
-              <div className="text-sm text-red-600">異常設備</div>
+              <div className="text-sm text-red-600">{t('pages:residents.stats.errorDevices')}</div>
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-br from-gray-50 to-gray-100">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-gray-700">{unboundDevices.length}</div>
-              <div className="text-sm text-gray-600">未綁定設備</div>
+              <div className="text-sm text-gray-600">{t('pages:residents.stats.unboundDevices')}</div>
             </CardContent>
           </Card>
         </div>
@@ -654,7 +656,7 @@ export default function ResidentsPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="搜索院友姓名、編號或房間號..."
+                placeholder={t('pages:residents.search.placeholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -666,7 +668,7 @@ export default function ResidentsPage() {
                 onClick={() => setStatusFilter('all')}
                 className="whitespace-nowrap"
               >
-                全部
+                {t('pages:residents.filters.all')}
               </Button>
               <Button
                 variant={statusFilter === 'good' ? 'default' : 'outline'}
@@ -674,7 +676,7 @@ export default function ResidentsPage() {
                 className="whitespace-nowrap"
               >
                 <Heart className="w-4 h-4 mr-1" />
-                良好
+                {t('pages:residents.filters.good')}
               </Button>
               <Button
                 variant={statusFilter === 'attention' ? 'default' : 'outline'}
@@ -682,7 +684,7 @@ export default function ResidentsPage() {
                 className="whitespace-nowrap"
               >
                 <AlertTriangle className="w-4 h-4 mr-1" />
-                注意
+                {t('pages:residents.filters.attention')}
               </Button>
               <Button
                 variant={statusFilter === 'critical' ? 'default' : 'outline'}
@@ -690,7 +692,7 @@ export default function ResidentsPage() {
                 className="whitespace-nowrap"
               >
                 <AlertCircle className="w-4 h-4 mr-1" />
-                危急
+                {t('pages:residents.filters.critical')}
               </Button>
             </div>
           </div>
@@ -701,9 +703,9 @@ export default function ResidentsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>院友列表</span>
+            <span>{t('pages:residents.list.title')}</span>
             <span className="text-sm font-normal text-muted-foreground">
-              共 {filteredResidents.length} 位院友
+              {t('pages:residents.list.count', { count: filteredResidents.length })}
             </span>
           </CardTitle>
         </CardHeader>
@@ -732,14 +734,14 @@ export default function ResidentsPage() {
                           <h3 className="font-semibold text-lg">{resident.name}</h3>
                           {statusInfo.badge}
                           <Badge className="text-xs">
-                            {residentDevices.length} 設備
+                            {residentDevices.length} {t('pages:residents.deviceCount')}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          編號: {resident.id}
+                          {t('pages:residents.id')}: {resident.id}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          房間: {resident.room} • {resident.age} 歲
+                          {t('pages:residents.room')}: {resident.room} • {resident.age} {t('pages:residents.ageUnit')}
                         </p>
                       </div>
                     </div>
@@ -753,7 +755,7 @@ export default function ResidentsPage() {
                         }}
                       >
                         <Link className="w-4 h-4 mr-1" />
-                        管理設備
+                        {t('pages:residents.actions.manageDevices')}
                       </Button>
                       <Button
                         variant="outline"
@@ -783,7 +785,7 @@ export default function ResidentsPage() {
                         }}
                       >
                         <Edit className="w-4 h-4 mr-1" />
-                        編輯
+                        {t('pages:residents.actions.edit')}
                       </Button>
                       <Button
                         variant="outline"
@@ -795,7 +797,7 @@ export default function ResidentsPage() {
                         className="text-red-600 hover:text-red-700"
                       >
                         <X className="w-4 h-4 mr-1" />
-                        移除
+                        {t('pages:residents.actions.remove')}
                       </Button>
                       <Info className="w-5 h-5 text-blue-500" />
                     </div>
@@ -804,7 +806,7 @@ export default function ResidentsPage() {
                   {/* 設備列表 */}
                   {residentDevices.length > 0 && (
                     <div className="ml-16 space-y-2">
-                      <h4 className="text-sm font-medium text-gray-700">綁定設備:</h4>
+                      <h4 className="text-sm font-medium text-gray-700">{t('pages:residents.boundDevices')}:</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {residentDevices.map((device) => {
                           const DeviceIcon = getDeviceTypeIcon(device.deviceType)
@@ -906,7 +908,7 @@ export default function ResidentsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>新增院友</CardTitle>
+              <CardTitle>{t('pages:residents.modal.addResident')}</CardTitle>
               <Button variant="ghost" size="sm" onClick={() => setShowAddResident(false)}>
                 <X className="h-5 w-5" />
               </Button>
@@ -914,59 +916,59 @@ export default function ResidentsPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">姓名 *</label>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.name')} *</label>
                   <Input
-                    placeholder="輸入院友姓名"
+                    placeholder={t('pages:residents.modal.placeholders.name')}
                     value={newResident.name}
                     onChange={(e) => setNewResident({ ...newResident, name: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">年齡 *</label>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.age')} *</label>
                   <Input
                     type="number"
-                    placeholder="輸入年齡"
+                    placeholder={t('pages:residents.modal.placeholders.age')}
                     value={newResident.age || ''}
                     onChange={(e) => setNewResident({ ...newResident, age: parseInt(e.target.value) || 0 })}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">性別</label>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.gender')}</label>
                   <Select value={newResident.gender} onValueChange={(value) => setNewResident({ ...newResident, gender: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="男">男</SelectItem>
-                      <SelectItem value="女">女</SelectItem>
+                      <SelectItem value="男">{t('pages:residents.modal.genderOptions.male')}</SelectItem>
+                      <SelectItem value="女">{t('pages:residents.modal.genderOptions.female')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">房間號 *</label>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.room')} *</label>
                   <Input
-                    placeholder="輸入房間號"
+                    placeholder={t('pages:residents.modal.placeholders.room')}
                     value={newResident.room}
                     onChange={(e) => setNewResident({ ...newResident, room: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">狀態</label>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.status')}</label>
                   <Select value={newResident.status} onValueChange={(value: 'good' | 'attention' | 'critical') => setNewResident({ ...newResident, status: value })}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="good">良好</SelectItem>
-                      <SelectItem value="attention">需注意</SelectItem>
-                      <SelectItem value="critical">危急</SelectItem>
+                      <SelectItem value="good">{t('status:resident.status.good')}</SelectItem>
+                      <SelectItem value="attention">{t('status:resident.status.attention')}</SelectItem>
+                      <SelectItem value="critical">{t('status:resident.status.critical')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">頭像</label>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.avatar')}</label>
                   <Input
-                    placeholder="輸入表情符號或文字"
+                    placeholder={t('pages:residents.modal.placeholders.avatar')}
                     value={newResident.avatar}
                     onChange={(e) => setNewResident({ ...newResident, avatar: e.target.value })}
                   />
@@ -974,9 +976,9 @@ export default function ResidentsPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">緊急聯絡人姓名</label>
+                <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.emergencyContactName')}</label>
                 <Input
-                  placeholder="輸入緊急聯絡人姓名"
+                  placeholder={t('pages:residents.modal.placeholders.emergencyContactName')}
                   value={newResident.emergencyContact.name}
                   onChange={(e) => setNewResident({
                     ...newResident,
@@ -987,9 +989,9 @@ export default function ResidentsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium mb-2 block">關係</label>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.relationship')}</label>
                   <Input
-                    placeholder="輸入關係"
+                    placeholder={t('pages:residents.modal.placeholders.relationship')}
                     value={newResident.emergencyContact.relationship}
                     onChange={(e) => setNewResident({
                       ...newResident,
@@ -998,9 +1000,9 @@ export default function ResidentsPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium mb-2 block">電話</label>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.phone')}</label>
                   <Input
-                    placeholder="輸入電話號碼"
+                    placeholder={t('pages:residents.modal.placeholders.phone')}
                     value={newResident.emergencyContact.phone}
                     onChange={(e) => setNewResident({
                       ...newResident,
@@ -1011,9 +1013,9 @@ export default function ResidentsPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-2 block">照護注意事項</label>
+                <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.careNotes')}</label>
                 <Textarea
-                  placeholder="輸入照護注意事項"
+                  placeholder={t('pages:residents.modal.placeholders.careNotes')}
                   value={newResident.careNotes}
                   onChange={(e) => setNewResident({ ...newResident, careNotes: e.target.value })}
                   rows={3}
@@ -1022,14 +1024,14 @@ export default function ResidentsPage() {
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" onClick={() => setShowAddResident(false)} className="flex-1">
-                  取消
+                  {t('common:actions.cancel')}
                 </Button>
                 <Button
                   onClick={handleAddResident}
                   className="flex-1"
                   disabled={!newResident.name || !newResident.room || newResident.age <= 0}
                 >
-                  新增院友
+                  {t('pages:residents.modal.addResident')}
                 </Button>
               </div>
             </CardContent>

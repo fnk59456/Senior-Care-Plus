@@ -1,0 +1,64 @@
+{
+    "sidebar": {
+        "title": "Senior Care Plus",
+        "sections": {
+            "main": "Main Features",
+            "management": "Management",
+            "system": "System"
+        },
+        "items": {
+            "home": {
+                "name": "Home",
+                "description": "Return to system homepage"
+            },
+            "emergency": {
+                "name": "Emergency Call",
+                "description": "Quick emergency assistance signal"
+            },
+            "health": {
+                "name": "Health Monitor",
+                "description": "Real-time vital signs monitoring"
+            },
+            "reminders": {
+                "name": "Reminders",
+                "description": "Medication and care reminders"
+            },
+            "location": {
+                "name": "Indoor Location",
+                "description": "Location tracking and safety zones"
+            },
+            "residents": {
+                "name": "Resident Management",
+                "description": "Manage resident data and records"
+            },
+            "staff": {
+                "name": "Staff Management",
+                "description": "Nursing staff and personnel management"
+            },
+            "devices": {
+                "name": "Device Management",
+                "description": "Care device management and maintenance"
+            },
+            "uwbLocation": {
+                "name": "Facility Management",
+                "description": "UWB positioning system facility management"
+            },
+            "more": {
+                "name": "More Features",
+                "description": "Explore smart care features"
+            },
+            "settings": {
+                "name": "Settings",
+                "description": "System settings and preferences"
+            },
+            "help": {
+                "name": "Help Center",
+                "description": "User guide and support"
+            }
+        }
+    },
+    "footer": {
+        "copyright": "© 2024 Senior Care Plus",
+        "version": "Professional"
+    }
+}

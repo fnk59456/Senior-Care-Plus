@@ -1,0 +1,49 @@
+{
+    "device": {
+        "status": {
+            "active": "Active",
+            "inactive": "Inactive",
+            "offline": "Offline",
+            "error": "Error"
+        },
+        "types": {
+            "smartwatch": "Smart Watch",
+            "diaperSensor": "Diaper Sensor",
+            "pedometer": "Pedometer",
+            "uwbTag": "UWB Tag"
+        }
+    },
+    "resident": {
+        "status": {
+            "good": "Good",
+            "attention": "Attention",
+            "critical": "Critical",
+            "unknown": "Unknown"
+        },
+        "gender": {
+            "male": "Male",
+            "female": "Female"
+        }
+    },
+    "system": {
+        "persistence": {
+            "status": "Persistence Status:",
+            "saving": "Saving...",
+            "saved": "Saved",
+            "lastSave": "Last Save:",
+            "loadError": "Load Error:"
+        },
+        "actions": {
+            "forceSave": "Force Save",
+            "exportSettings": "Export Settings",
+            "importSettings": "Import Settings",
+            "debugStorage": "Debug Storage"
+        }
+    },
+    "alerts": {
+        "emergency": "Emergency",
+        "priority": "Priority",
+        "warning": "Warning",
+        "info": "Info"
+    }
+}

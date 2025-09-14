@@ -1,0 +1,226 @@
+{
+    "home": {
+        "title": "Welcome to Senior Care Plus",
+        "subtitle": "Comprehensive elderly care management to ensure the best care and attention for seniors. Integrates health monitoring, location tracking, and smart reminder features.",
+        "features": {
+            "emergency": {
+                "title": "Emergency Call",
+                "description": "Quick emergency assistance signal to ensure timely help"
+            },
+            "health": {
+                "title": "Health Monitor",
+                "description": "Real-time monitoring of senior health status and alerts"
+            },
+            "reminders": {
+                "title": "Reminders",
+                "description": "Manage medication, hydration, and measurement reminders"
+            },
+            "location": {
+                "title": "Indoor Location",
+                "description": "Track seniors and devices within the facility"
+            },
+            "temperature": {
+                "title": "Temperature Monitor",
+                "description": "Real-time monitoring of temperature changes and alerts"
+            },
+            "heartRate": {
+                "title": "Heart Rate Monitor",
+                "description": "Real-time monitoring of heart rate changes and alerts"
+            },
+            "diaper": {
+                "title": "Diaper Monitor",
+                "description": "Real-time monitoring of diaper moisture status and change records"
+            }
+        },
+        "stats": {
+            "totalResidents": "Total Residents",
+            "todayTasks": "Today's Tasks",
+            "healthAlerts": "Health Alerts",
+            "monthlyReport": "Monthly Report",
+            "completed": "Completed"
+        },
+        "actions": {
+            "startUsing": "Start Using Now",
+            "systemGuide": "System Guide"
+        }
+    },
+    "residents": {
+        "title": "Resident Management",
+        "subtitle": "Manage resident data and device binding",
+        "stats": {
+            "totalResidents": "Total Residents",
+            "activeDevices": "Active Devices",
+            "offlineDevices": "Offline Devices",
+            "errorDevices": "Error Devices",
+            "unboundDevices": "Unbound Devices"
+        },
+        "filters": {
+            "all": "All",
+            "good": "Good",
+            "attention": "Attention",
+            "critical": "Critical"
+        },
+        "search": {
+            "placeholder": "Search by name, ID, or room number..."
+        },
+        "list": {
+            "title": "Resident List",
+            "count": "{{count}} residents total",
+            "noDevices": "No devices bound yet",
+            "boundDevices": "Bound Devices:"
+        },
+        "actions": {
+            "addResident": "Add Resident",
+            "showDeviceManagement": "Show Device Management",
+            "hideDeviceManagement": "Hide Device Management",
+            "manageDevices": "Manage Devices",
+            "edit": "Edit",
+            "remove": "Remove"
+        },
+        "form": {
+            "name": "Name",
+            "age": "Age",
+            "gender": "Gender",
+            "room": "Room Number",
+            "status": "Status",
+            "avatar": "Avatar",
+            "emergencyContact": "Emergency Contact",
+            "relationship": "Relationship",
+            "phone": "Phone",
+            "careNotes": "Care Notes",
+            "male": "Male",
+            "female": "Female",
+            "good": "Good",
+            "attention": "Attention",
+            "critical": "Critical"
+        },
+        "deviceManagement": {
+            "title": "Unbound Devices",
+            "count": "{{count}} devices",
+            "bind": "Bind"
+        },
+        "deviceCount": "Devices",
+        "id": "ID",
+        "room": "Room",
+        "ageUnit": "years old",
+        "boundDevices": "Bound Devices",
+        "modal": {
+            "addResident": "Add Resident",
+            "name": "Name",
+            "age": "Age",
+            "gender": "Gender",
+            "room": "Room Number",
+            "status": "Status",
+            "avatar": "Avatar",
+            "emergencyContactName": "Emergency Contact Name",
+            "relationship": "Relationship",
+            "phone": "Phone",
+            "careNotes": "Care Notes",
+            "placeholders": {
+                "name": "Enter resident name",
+                "age": "Enter age",
+                "room": "Enter room number",
+                "avatar": "Enter emoji or text",
+                "emergencyContactName": "Enter emergency contact name",
+                "relationship": "Enter relationship",
+                "phone": "Enter phone number",
+                "careNotes": "Enter care notes"
+            },
+            "genderOptions": {
+                "male": "Male",
+                "female": "Female"
+            }
+        }
+    },
+    "settings": {
+        "title": "System Settings",
+        "subtitle": "Manage system configuration, personal settings, and security options",
+        "categories": {
+            "personal": {
+                "title": "Personal Settings",
+                "description": "Manage your personal data and account settings"
+            },
+            "notifications": {
+                "title": "Notification Settings",
+                "description": "Configure system notifications and reminder methods"
+            },
+            "security": {
+                "title": "Security Settings",
+                "description": "Password changes and account security settings"
+            },
+            "display": {
+                "title": "Display Settings",
+                "description": "Customize interface appearance and theme"
+            },
+            "data": {
+                "title": "Data Management",
+                "description": "Data backup and export settings"
+            },
+            "language": {
+                "title": "Language & Region",
+                "description": "Set system language and timezone"
+            }
+        },
+        "systemInfo": {
+            "title": "System Information",
+            "version": "System Version",
+            "lastUpdate": "Last Update",
+            "terms": "Terms of Service",
+            "privacy": "Privacy Policy",
+            "view": "View"
+        },
+        "actions": {
+            "enterSettings": "Enter Settings"
+        }
+    },
+    "placeholder": {
+        "title": "{{title}}",
+        "description": "This page is under development"
+    },
+    "temperature": {
+        "title": "Temperature Monitor",
+        "subtitle": "Real-time monitoring of temperature changes and alerts",
+        "currentTemp": "Current Temperature",
+        "averageTemp": "Average Temperature",
+        "maxTemp": "Max Temperature",
+        "minTemp": "Min Temperature",
+        "normalRange": "Normal Range",
+        "abnormalTemp": "Abnormal Temperature",
+        "lastUpdate": "Last Update",
+        "noData": "No temperature data available",
+        "selectPatient": "Select Patient",
+        "realTime": "Real-time Monitor",
+        "history": "History Records",
+        "alerts": "Abnormal Alerts",
+        "connectionStatus": {
+            "title": "Connection Status Monitoring",
+            "localMqtt": "Local MQTT",
+            "cloudMqtt": "Cloud MQTT",
+            "error": "Error",
+            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
+        }
+    },
+    "heartRate": {
+        "title": "Heart Rate Monitor",
+        "subtitle": "Real-time monitoring of heart rate changes and alerts",
+        "currentRate": "Current Heart Rate",
+        "averageRate": "Average Heart Rate",
+        "maxRate": "Max Heart Rate",
+        "minRate": "Min Heart Rate",
+        "normalRange": "Normal Range",
+        "abnormalRate": "Abnormal Heart Rate",
+        "lastUpdate": "Last Update",
+        "noData": "No heart rate data available",
+        "selectPatient": "Select Patient",
+        "realTime": "Real-time Monitor",
+        "history": "History Records",
+        "alerts": "Abnormal Alerts",
+        "connectionStatus": {
+            "title": "Connection Status Monitoring",
+            "localMqtt": "Local MQTT",
+            "cloudMqtt": "Cloud MQTT",
+            "error": "Error",
+            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
+        }
+    }
+}

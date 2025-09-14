@@ -1,59 +1,64 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { 
-  Settings, Bell, UserCog, Lock, Monitor, 
-  Database, Globe, HelpCircle 
+import {
+  Settings, Bell, UserCog, Lock, Monitor,
+  Database, Globe, HelpCircle
 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
-const settingCategories = [
+// 設置分類配置 - 使用函數來獲取翻譯
+const getSettingCategories = (t: any) => [
   {
-    title: "個人設置",
-    description: "管理您的個人資料和賬戶設置",
+    title: t('pages:settings.categories.personal.title'),
+    description: t('pages:settings.categories.personal.description'),
     icon: <UserCog className="h-6 w-6 text-blue-500" />,
     color: "bg-blue-50 dark:bg-blue-900/20"
   },
   {
-    title: "通知設定",
-    description: "設定系統通知和提醒方式",
+    title: t('pages:settings.categories.notifications.title'),
+    description: t('pages:settings.categories.notifications.description'),
     icon: <Bell className="h-6 w-6 text-amber-500" />,
     color: "bg-amber-50 dark:bg-amber-900/20"
   },
   {
-    title: "安全設置",
-    description: "密碼變更和賬戶安全設定",
+    title: t('pages:settings.categories.security.title'),
+    description: t('pages:settings.categories.security.description'),
     icon: <Lock className="h-6 w-6 text-red-500" />,
     color: "bg-red-50 dark:bg-red-900/20"
   },
   {
-    title: "顯示設置",
-    description: "自定義界面外觀和主題",
+    title: t('pages:settings.categories.display.title'),
+    description: t('pages:settings.categories.display.description'),
     icon: <Monitor className="h-6 w-6 text-purple-500" />,
     color: "bg-purple-50 dark:bg-purple-900/20"
   },
   {
-    title: "數據管理",
-    description: "資料備份和導出設置",
+    title: t('pages:settings.categories.data.title'),
+    description: t('pages:settings.categories.data.description'),
     icon: <Database className="h-6 w-6 text-green-500" />,
     color: "bg-green-50 dark:bg-green-900/20"
   },
   {
-    title: "語言和地區",
-    description: "設定系統語言和時區",
+    title: t('pages:settings.categories.language.title'),
+    description: t('pages:settings.categories.language.description'),
     icon: <Globe className="h-6 w-6 text-indigo-500" />,
     color: "bg-indigo-50 dark:bg-indigo-900/20"
   }
 ]
 
 export default function SettingsPage() {
+  const { t } = useTranslation()
+  const settingCategories = getSettingCategories(t)
+
   return (
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold flex items-center gap-2">
           <Settings className="h-7 w-7" />
-          系統設置
+          {t('pages:settings.title')}
         </h1>
         <p className="text-muted-foreground mt-1">
-          管理系統配置、個人設置和安全選項
+          {t('pages:settings.subtitle')}
         </p>
       </div>
 
@@ -70,7 +75,7 @@ export default function SettingsPage() {
               <CardDescription>{category.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full">進入設置</Button>
+              <Button variant="outline" className="w-full">{t('pages:settings.actions.enterSettings')}</Button>
             </CardContent>
           </Card>
         ))}
@@ -80,26 +85,26 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <HelpCircle className="h-5 w-5 text-blue-500" />
-            系統資訊
+            {t('pages:settings.systemInfo.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">系統版本</span>
-              <span className="font-medium">1.0.0</span>
+              <span className="text-muted-foreground">{t('pages:settings.systemInfo.version')}</span>
+              <span className="font-medium">{t('common:app.version')}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">上次更新</span>
-              <span className="font-medium">2023/05/10</span>
+              <span className="text-muted-foreground">{t('pages:settings.systemInfo.lastUpdate')}</span>
+              <span className="font-medium">{t('common:app.lastUpdate')}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">服務條款</span>
-              <Button variant="link" className="p-0 h-auto">查看</Button>
+              <span className="text-muted-foreground">{t('pages:settings.systemInfo.terms')}</span>
+              <Button variant="link" className="p-0 h-auto">{t('pages:settings.systemInfo.view')}</Button>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">隱私政策</span>
-              <Button variant="link" className="p-0 h-auto">查看</Button>
+              <span className="text-muted-foreground">{t('pages:settings.systemInfo.privacy')}</span>
+              <Button variant="link" className="p-0 h-auto">{t('pages:settings.systemInfo.view')}</Button>
             </div>
           </div>
         </CardContent>

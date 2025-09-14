@@ -1,0 +1,64 @@
+{
+    "sidebar": {
+        "title": "長者照護系統",
+        "sections": {
+            "main": "主要功能",
+            "management": "管理功能",
+            "system": "系統"
+        },
+        "items": {
+            "home": {
+                "name": "首頁",
+                "description": "返回系統首頁"
+            },
+            "emergency": {
+                "name": "緊急呼叫",
+                "description": "快速發送緊急求助信號"
+            },
+            "health": {
+                "name": "健康監控",
+                "description": "即時監測生命體徵"
+            },
+            "reminders": {
+                "name": "定時提醒",
+                "description": "服藥與照顧提醒"
+            },
+            "location": {
+                "name": "室內定位",
+                "description": "位置追蹤與安全區域"
+            },
+            "residents": {
+                "name": "院友管理",
+                "description": "管理院友資料與記錄"
+            },
+            "staff": {
+                "name": "員工管理",
+                "description": "護理人員和職員管理"
+            },
+            "devices": {
+                "name": "設備管理",
+                "description": "照護設備管理與維護"
+            },
+            "uwbLocation": {
+                "name": "養老院管理",
+                "description": "UWB定位系統場域管理"
+            },
+            "more": {
+                "name": "更多功能",
+                "description": "探索智慧照護功能"
+            },
+            "settings": {
+                "name": "設置",
+                "description": "系統設置與偏好設定"
+            },
+            "help": {
+                "name": "幫助中心",
+                "description": "使用指南與支援"
+            }
+        }
+    },
+    "footer": {
+        "copyright": "© 2024 長者照護系統",
+        "version": "專業版"
+    }
+}

@@ -1,0 +1,83 @@
+{
+    "app": {
+        "title": "長者照護系統",
+        "subtitle": "智慧長照解決方案",
+        "version": "1.0.0",
+        "lastUpdate": "2023/05/10"
+    },
+    "actions": {
+        "save": "儲存",
+        "cancel": "取消",
+        "confirm": "確認",
+        "delete": "刪除",
+        "edit": "編輯",
+        "add": "新增",
+        "remove": "移除",
+        "close": "關閉",
+        "back": "返回",
+        "next": "下一步",
+        "previous": "上一步",
+        "submit": "提交",
+        "reset": "重置",
+        "search": "搜索",
+        "filter": "篩選",
+        "export": "導出",
+        "import": "導入",
+        "refresh": "刷新",
+        "loading": "載入中...",
+        "saving": "保存中...",
+        "saved": "已保存"
+    },
+    "status": {
+        "active": "活躍",
+        "inactive": "待機",
+        "offline": "離線",
+        "error": "異常",
+        "good": "良好",
+        "attention": "需注意",
+        "critical": "危急",
+        "unknown": "未知"
+    },
+    "placeholders": {
+        "search": "搜尋院友、任務或設備...",
+        "select": "請選擇...",
+        "input": "請輸入...",
+        "noData": "暫無數據",
+        "loading": "載入中...",
+        "error": "發生錯誤",
+        "details": "詳情"
+    },
+    "messages": {
+        "success": "操作成功",
+        "error": "操作失敗",
+        "confirmDelete": "確定要刪除嗎？此操作無法復原。",
+        "confirmReset": "確定要重置嗎？此操作無法復原。",
+        "dataSaved": "數據已保存",
+        "dataLoaded": "數據已載入",
+        "networkError": "網路連接錯誤",
+        "serverError": "伺服器錯誤"
+    },
+    "time": {
+        "today": "今天",
+        "yesterday": "昨天",
+        "thisWeek": "本週",
+        "thisMonth": "本月",
+        "thisYear": "今年",
+        "lastWeek": "上週",
+        "lastMonth": "上月",
+        "lastYear": "去年"
+    },
+    "units": {
+        "years": "歲",
+        "yearsOld": "歲",
+        "room": "房間",
+        "devices": "設備",
+        "residents": "院友",
+        "staff": "員工",
+        "minutes": "分鐘",
+        "hours": "小時",
+        "days": "天",
+        "weeks": "週",
+        "months": "月"
+    }
+}

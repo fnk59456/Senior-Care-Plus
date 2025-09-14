@@ -6,12 +6,14 @@ import {
   ClipboardCheck, HeartPulse, Sparkles, Heart, Phone
 } from "lucide-react"
 import { Link } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 
-const features = [
+// 功能配置 - 使用函數來獲取翻譯
+const getFeatures = (t: any) => [
   {
-    title: "緊急呼叫",
+    title: t('pages:home.features.emergency.title'),
     icon: <Phone className="h-8 w-8 text-white" />,
-    desc: "快速發送緊急求助信號，確保及時獲得協助",
+    desc: t('pages:home.features.emergency.description'),
     href: "/emergency-call",
     color: "from-red-600 to-red-800",
     bgLight: "bg-red-50",
@@ -19,54 +21,54 @@ const features = [
     priority: true,
   },
   {
-    title: "健康監控",
+    title: t('pages:home.features.health.title'),
     icon: <Activity className="h-8 w-8 text-white" />,
-    desc: "即時監測長者健康狀態與異常警示",
+    desc: t('pages:home.features.health.description'),
     href: "/health",
     color: "from-blue-500 to-blue-700",
     bgLight: "bg-blue-50",
     bgDark: "dark:bg-blue-900/20",
   },
   {
-    title: "定時提醒",
+    title: t('pages:home.features.reminders.title'),
     icon: <CalendarClock className="h-8 w-8 text-white" />,
-    desc: "管理服藥、喝水、測量等定時提醒",
+    desc: t('pages:home.features.reminders.description'),
     href: "/reminders",
     color: "from-green-500 to-green-700",
     bgLight: "bg-green-50",
     bgDark: "dark:bg-green-900/20",
   },
   {
-    title: "室內定位",
+    title: t('pages:home.features.location.title'),
     icon: <MapPin className="h-8 w-8 text-white" />,
-    desc: "追蹤長者與設備在院內的位置",
+    desc: t('pages:home.features.location.description'),
     href: "/location",
     color: "from-indigo-500 to-indigo-700",
     bgLight: "bg-indigo-50",
     bgDark: "dark:bg-indigo-900/20",
   },
   {
-    title: "體溫監測",
+    title: t('pages:home.features.temperature.title'),
     icon: <HeartPulse className="h-8 w-8 text-white" />,
-    desc: "即時監控長者體溫變化與異常警示",
+    desc: t('pages:home.features.temperature.description'),
     href: "/temperature",
     color: "from-red-500 to-red-700",
     bgLight: "bg-red-50",
     bgDark: "dark:bg-red-900/20",
   },
   {
-    title: "心跳監測",
+    title: t('pages:home.features.heartRate.title'),
     icon: <Heart className="h-8 w-8 text-white" />,
-    desc: "即時監控長者心率變化與異常警示",
+    desc: t('pages:home.features.heartRate.description'),
     href: "/heart-rate",
     color: "from-pink-500 to-pink-700",
     bgLight: "bg-pink-50",
     bgDark: "dark:bg-pink-900/20",
   },
   {
-    title: "尿布監測",
+    title: t('pages:home.features.diaper.title'),
     icon: <MonitorSmartphone className="h-8 w-8 text-white" />,
-    desc: "即時監測尿布濕度狀態與更換記錄",
+    desc: t('pages:home.features.diaper.description'),
     href: "/diaper-monitoring",
     color: "from-orange-500 to-orange-700",
     bgLight: "bg-orange-50",
@@ -75,6 +77,9 @@ const features = [
 ]
 
 export default function HomePage() {
+  const { t } = useTranslation()
+  const features = getFeatures(t)
+
   return (
     <div className="space-y-8">
       {/* 歡迎區域 */}
@@ -86,22 +91,22 @@ export default function HomePage() {
           <div className="flex items-center gap-3 mb-4">
             <HeartPulse className="h-8 w-8 text-primary-foreground/90 animate-pulse" />
             <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-              智慧長照解決方案
+              {t('common:app.subtitle')}
             </div>
           </div>
 
           <h1 className="mb-4 text-4xl md:text-5xl font-bold tracking-tight">
-            歡迎使用<span className="gradient-text font-extrabold"> 長者照護系統</span>
+            {t('pages:home.title')}<span className="gradient-text font-extrabold"> {t('common:app.title')}</span>
           </h1>
 
           <p className="mb-6 text-xl opacity-90 leading-relaxed">
-            提供全面的長者照護管理，確保長者得到最佳的照顧和關注。整合健康監測、位置追蹤與智慧提醒功能。
+            {t('pages:home.subtitle')}
           </p>
 
           <div className="flex flex-wrap gap-4">
             <Link to="/health">
               <Button size="lg" className="btn-glow font-semibold px-6 py-6 h-auto">
-                立即開始使用
+                {t('pages:home.actions.startUsing')}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -112,7 +117,7 @@ export default function HomePage() {
                 className="bg-white/10 backdrop-blur-sm border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/20 font-semibold px-6 py-6 h-auto"
               >
                 <Sparkles className="mr-2 h-5 w-5" />
-                系統功能指南
+                {t('pages:home.actions.systemGuide')}
               </Button>
             </Link>
           </div>
@@ -123,7 +128,7 @@ export default function HomePage() {
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
         {[
           {
-            title: "院友總數",
+            title: t('pages:home.stats.totalResidents'),
             value: "72",
             icon: <Users className="h-6 w-6" />,
             change: "+2",
@@ -132,16 +137,16 @@ export default function HomePage() {
             href: "/residents",
           },
           {
-            title: "今日任務",
+            title: t('pages:home.stats.todayTasks'),
             value: "28",
             icon: <ClipboardCheck className="h-6 w-6" />,
-            change: "12 已完成",
+            change: `12 ${t('pages:home.stats.completed')}`,
             color: "text-green-600",
             bgColor: "bg-green-100 dark:bg-green-900/30",
             href: "/reminders",
           },
           {
-            title: "健康警示",
+            title: t('pages:home.stats.healthAlerts'),
             value: "3",
             icon: <Bell className="h-6 w-6" />,
             change: "-1",
@@ -150,8 +155,8 @@ export default function HomePage() {
             href: "/health",
           },
           {
-            title: "本月報表",
-            value: "查看",
+            title: t('pages:home.stats.monthlyReport'),
+            value: t('common:actions.view'),
             icon: <LineChart className="h-6 w-6" />,
             change: "",
             color: "text-purple-600",
@@ -179,23 +184,22 @@ export default function HomePage() {
       {/* 功能卡片區 */}
       <div>
         <h2 className="text-2xl font-bold tracking-tight mb-6 flex items-center">
-          <span className="mr-2">主要功能</span>
+          <span className="mr-2">{t('navigation:sidebar.sections.main')}</span>
           <div className="h-1 flex-1 bg-gradient-to-r from-primary/50 to-transparent rounded-full"></div>
         </h2>
         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((feature) => (
             <Link to={feature.href} key={feature.title} className="group relative block">
               <Card
-                className={`card-float transition-transform hover:scale-[1.01] hover:shadow-lg border-0 overflow-hidden ${
-                  feature.priority 
-                    ? 'ring-2 ring-red-200 dark:ring-red-800 shadow-lg' 
+                className={`card-float transition-transform hover:scale-[1.01] hover:shadow-lg border-0 overflow-hidden ${feature.priority
+                    ? 'ring-2 ring-red-200 dark:ring-red-800 shadow-lg'
                     : ''
-                } ${feature.bgLight} ${feature.bgDark}`}
+                  } ${feature.bgLight} ${feature.bgDark}`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300 ${feature.color} pointer-events-none`} />
                 {feature.priority && (
                   <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    緊急
+                    {t('status:alerts.emergency')}
                   </div>
                 )}
                 <CardHeader>
@@ -210,10 +214,9 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">{feature.desc}</p>
-                  <div className={`mt-4 flex items-center text-sm font-medium ${
-                    feature.priority ? 'text-red-600 dark:text-red-400' : 'text-primary'
-                  }`}>
-                    <span>查看詳情</span>
+                  <div className={`mt-4 flex items-center text-sm font-medium ${feature.priority ? 'text-red-600 dark:text-red-400' : 'text-primary'
+                    }`}>
+                    <span>{t('common:actions.view')} {t('common:placeholders.details', '詳情')}</span>
                     <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-2" />
                   </div>
                 </CardContent>

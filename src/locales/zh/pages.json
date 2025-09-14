@@ -1,0 +1,226 @@
+{
+    "home": {
+        "title": "歡迎使用長者照護系統",
+        "subtitle": "提供全面的長者照護管理，確保長者得到最佳的照顧和關注。整合健康監測、位置追蹤與智慧提醒功能。",
+        "features": {
+            "emergency": {
+                "title": "緊急呼叫",
+                "description": "快速發送緊急求助信號，確保及時獲得協助"
+            },
+            "health": {
+                "title": "健康監控",
+                "description": "即時監測長者健康狀態與異常警示"
+            },
+            "reminders": {
+                "title": "定時提醒",
+                "description": "管理服藥、喝水、測量等定時提醒"
+            },
+            "location": {
+                "title": "室內定位",
+                "description": "追蹤長者與設備在院內的位置"
+            },
+            "temperature": {
+                "title": "體溫監測",
+                "description": "即時監控長者體溫變化與異常警示"
+            },
+            "heartRate": {
+                "title": "心跳監測",
+                "description": "即時監控長者心率變化與異常警示"
+            },
+            "diaper": {
+                "title": "尿布監測",
+                "description": "即時監測尿布濕度狀態與更換記錄"
+            }
+        },
+        "stats": {
+            "totalResidents": "院友總數",
+            "todayTasks": "今日任務",
+            "healthAlerts": "健康警示",
+            "monthlyReport": "本月報表",
+            "completed": "已完成"
+        },
+        "actions": {
+            "startUsing": "立即開始使用",
+            "systemGuide": "系統功能指南"
+        }
+    },
+    "residents": {
+        "title": "院友管理",
+        "subtitle": "管理院友資料與設備綁定",
+        "stats": {
+            "totalResidents": "總院友",
+            "activeDevices": "活躍設備",
+            "offlineDevices": "離線設備",
+            "errorDevices": "異常設備",
+            "unboundDevices": "未綁定設備"
+        },
+        "filters": {
+            "all": "全部",
+            "good": "良好",
+            "attention": "注意",
+            "critical": "危急"
+        },
+        "search": {
+            "placeholder": "搜索院友姓名、編號或房間號..."
+        },
+        "list": {
+            "title": "院友列表",
+            "count": "共 {{count}} 位院友",
+            "noDevices": "尚未綁定任何設備",
+            "boundDevices": "綁定設備:"
+        },
+        "actions": {
+            "addResident": "新增院友",
+            "showDeviceManagement": "顯示設備管理",
+            "hideDeviceManagement": "隱藏設備管理",
+            "manageDevices": "管理設備",
+            "edit": "編輯",
+            "remove": "移除"
+        },
+        "form": {
+            "name": "姓名",
+            "age": "年齡",
+            "gender": "性別",
+            "room": "房間號",
+            "status": "狀態",
+            "avatar": "頭像",
+            "emergencyContact": "緊急聯絡人",
+            "relationship": "關係",
+            "phone": "電話",
+            "careNotes": "照護注意事項",
+            "male": "男",
+            "female": "女",
+            "good": "良好",
+            "attention": "需注意",
+            "critical": "危急"
+        },
+        "deviceManagement": {
+            "title": "未綁定設備",
+            "count": "{{count}} 個設備",
+            "bind": "綁定"
+        },
+        "deviceCount": "設備",
+        "id": "編號",
+        "room": "房間",
+        "ageUnit": "歲",
+        "boundDevices": "綁定設備",
+        "modal": {
+            "addResident": "新增院友",
+            "name": "姓名",
+            "age": "年齡",
+            "gender": "性別",
+            "room": "房間號",
+            "status": "狀態",
+            "avatar": "頭像",
+            "emergencyContactName": "緊急聯絡人姓名",
+            "relationship": "關係",
+            "phone": "電話",
+            "careNotes": "照護注意事項",
+            "placeholders": {
+                "name": "輸入院友姓名",
+                "age": "輸入年齡",
+                "room": "輸入房間號",
+                "avatar": "輸入表情符號或文字",
+                "emergencyContactName": "輸入緊急聯絡人姓名",
+                "relationship": "輸入關係",
+                "phone": "輸入電話號碼",
+                "careNotes": "輸入照護注意事項"
+            },
+            "genderOptions": {
+                "male": "男",
+                "female": "女"
+            }
+        }
+    },
+    "settings": {
+        "title": "系統設置",
+        "subtitle": "管理系統配置、個人設置和安全選項",
+        "categories": {
+            "personal": {
+                "title": "個人設置",
+                "description": "管理您的個人資料和賬戶設置"
+            },
+            "notifications": {
+                "title": "通知設定",
+                "description": "設定系統通知和提醒方式"
+            },
+            "security": {
+                "title": "安全設置",
+                "description": "密碼變更和賬戶安全設定"
+            },
+            "display": {
+                "title": "顯示設置",
+                "description": "自定義界面外觀和主題"
+            },
+            "data": {
+                "title": "數據管理",
+                "description": "資料備份和導出設置"
+            },
+            "language": {
+                "title": "語言和地區",
+                "description": "設定系統語言和時區"
+            }
+        },
+        "systemInfo": {
+            "title": "系統資訊",
+            "version": "系統版本",
+            "lastUpdate": "上次更新",
+            "terms": "服務條款",
+            "privacy": "隱私政策",
+            "view": "查看"
+        },
+        "actions": {
+            "enterSettings": "進入設置"
+        }
+    },
+    "placeholder": {
+        "title": "{{title}}",
+        "description": "此頁面正在開發中"
+    },
+    "temperature": {
+        "title": "體溫監測",
+        "subtitle": "即時監控長者體溫變化與異常警示",
+        "currentTemp": "當前體溫",
+        "averageTemp": "平均體溫",
+        "maxTemp": "最高體溫",
+        "minTemp": "最低體溫",
+        "normalRange": "正常範圍",
+        "abnormalTemp": "異常體溫",
+        "lastUpdate": "最後更新",
+        "noData": "暫無體溫數據",
+        "selectPatient": "選擇病患",
+        "realTime": "即時監測",
+        "history": "歷史記錄",
+        "alerts": "異常警示",
+        "connectionStatus": {
+            "title": "連線狀態監控",
+            "localMqtt": "本地 MQTT",
+            "cloudMqtt": "雲端 MQTT",
+            "error": "錯誤",
+            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
+        }
+    },
+    "heartRate": {
+        "title": "心跳監測",
+        "subtitle": "即時監控長者心率變化與異常警示",
+        "currentRate": "當前心率",
+        "averageRate": "平均心率",
+        "maxRate": "最高心率",
+        "minRate": "最低心率",
+        "normalRange": "正常範圍",
+        "abnormalRate": "異常心率",
+        "lastUpdate": "最後更新",
+        "noData": "暫無心率數據",
+        "selectPatient": "選擇病患",
+        "realTime": "即時監測",
+        "history": "歷史記錄",
+        "alerts": "異常警示",
+        "connectionStatus": {
+            "title": "連線狀態監控",
+            "localMqtt": "本地 MQTT",
+            "cloudMqtt": "雲端 MQTT",
+            "error": "錯誤",
+            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
+        }
+    }
+}

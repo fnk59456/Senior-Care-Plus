@@ -12,6 +12,7 @@ import { useLocation } from "react-router-dom"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { DeviceType } from "@/types/device-types"
+import { useTranslation } from "react-i18next"
 
 // 本地 MQTT 設置
 const MQTT_URL = "ws://localhost:9001"
@@ -135,6 +136,7 @@ type CloudMqttData = {
 }
 
 export default function HeartRatePage() {
+  const { t } = useTranslation()
   const location = useLocation()
   const patientName = location.state?.patientName
 
@@ -157,13 +159,13 @@ export default function HeartRatePage() {
   // 根據MAC地址獲取病患資訊
   const getResidentInfoByMAC = (mac: string) => {
     // 查找設備：先嘗試hardwareId，再嘗試deviceUid
-    const device = devices.find(d => 
-      d.hardwareId === mac || 
+    const device = devices.find(d =>
+      d.hardwareId === mac ||
       d.deviceUid === mac ||
       d.deviceUid === `300B:${mac}` ||
       d.deviceUid === `SMARTWATCH_300B:${mac}`
     )
-    
+
     if (device) {
       const resident = getResidentForDevice(device.id)
       if (resident) {
@@ -176,7 +178,7 @@ export default function HeartRatePage() {
         }
       }
     }
-    
+
     return null
   }
 
@@ -603,13 +605,13 @@ export default function HeartRatePage() {
                 if (existingDevice) {
                   const updatedDevices = prev.map(d =>
                     d.MAC === msg.MAC
-                      ? { 
-                          ...d, 
-                          lastSeen: new Date(), 
-                          recordCount: d.recordCount + 1,
-                          // 更新病患資訊
-                          ...residentInfo
-                        }
+                      ? {
+                        ...d,
+                        lastSeen: new Date(),
+                        recordCount: d.recordCount + 1,
+                        // 更新病患資訊
+                        ...residentInfo
+                      }
                       : d
                   )
                   console.log("更新現有心率設備，總設備數:", updatedDevices.length)
@@ -908,7 +910,7 @@ export default function HeartRatePage() {
       <div>
         <h1 className="text-3xl font-bold mb-4 flex items-center">
           <Heart className="mr-3 h-8 w-8 text-pink-500" />
-          心跳監測
+          {t('pages:heartRate.title')}
         </h1>
         {patientName && (
           <div className="mb-3 p-3 bg-pink-50 border border-pink-200 rounded-lg">
@@ -918,37 +920,37 @@ export default function HeartRatePage() {
           </div>
         )}
         <p className="text-muted-foreground mb-4">
-          即時監控長者心率變化，及時發現異常情況
+          {t('pages:heartRate.subtitle')}
         </p>
         <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
-          <div className="font-semibold">連線狀態監控</div>
+          <div className="font-semibold">{t('pages:heartRate.connectionStatus.title')}</div>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span>本地 MQTT ({MQTT_URL}):</span>
+              <span>{t('pages:heartRate.connectionStatus.localMqtt')} ({MQTT_URL}):</span>
               <span className={connected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                 {localConnectionStatus}
               </span>
             </div>
             {localError && (
               <div className="text-xs text-red-500 ml-4">
-                錯誤: {localError}
+                {t('pages:heartRate.connectionStatus.error')}: {localError}
               </div>
             )}
             <div className="flex items-center justify-between">
-              <span>雲端 MQTT ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
+              <span>{t('pages:heartRate.connectionStatus.cloudMqtt')} ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
               <span className={cloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                 {cloudConnectionStatus}
               </span>
             </div>
             {cloudError && (
               <div className="text-xs text-red-500 ml-4">
-                錯誤: {cloudError}
+                {t('pages:heartRate.connectionStatus.error')}: {cloudError}
               </div>
             )}
           </div>
           <div className="flex items-center justify-between mt-3">
             <div className="text-xs text-gray-500">
-              提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務
+              {t('pages:heartRate.connectionStatus.hint')}
             </div>
             <div className="flex gap-2">
               <Button
@@ -1314,7 +1316,7 @@ export default function HeartRatePage() {
                   <Heart className="mr-2 h-5 w-5" />
                   設備生命體征數據 - {(() => {
                     const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
-                    return device?.residentName 
+                    return device?.residentName
                       ? `${device.residentName} (${device.residentRoom})`
                       : device?.deviceName || "未知設備"
                   })()}
@@ -1415,7 +1417,7 @@ export default function HeartRatePage() {
                     <span className="ml-2 text-sm font-normal text-pink-600">
                       - {(() => {
                         const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
-                        return device?.residentName 
+                        return device?.residentName
                           ? `${device.residentName} (${device.residentRoom})`
                           : device?.deviceName || "雲端設備"
                       })()}
@@ -1493,7 +1495,7 @@ export default function HeartRatePage() {
                   <span className="ml-2 text-sm font-normal text-pink-600">
                     - {(() => {
                       const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
-                      return device?.residentName 
+                      return device?.residentName
                         ? `${device.residentName} (${device.residentRoom})`
                         : device?.deviceName || "雲端設備"
                     })()}

@@ -4,7 +4,9 @@ import { ThemeProvider } from './components/providers/ThemeProvider'
 import { EmergencyCallProvider } from './contexts/EmergencyCallContext'
 import { UWBLocationProvider } from './contexts/UWBLocationContext'
 import { DeviceManagementProvider } from './contexts/DeviceManagementContext'
+import { LanguageProvider } from './contexts/LanguageContext'
 import { MainLayout } from './components/layout/MainLayout'
+import { useTranslation } from 'react-i18next'
 import HomePage from './pages/HomePage'
 import HealthPage from './pages/HealthPage'
 import NewHealthPage from './pages/NewHealthPage'
@@ -20,6 +22,7 @@ import DeviceManagementPage from './pages/DeviceManagementPage'
 import EmergencyCallPage from './pages/EmergencyCallPage'
 import StaffManagementPage from './pages/StaffManagementPage'
 import UWBLocationPage from './pages/UWBLocationPage'
+import TestI18nPage from './pages/TestI18nPage'
 import './index.css'
 
 // Firebase Hosting使用根路徑
@@ -28,45 +31,49 @@ const basename = '/'
 function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <DeviceManagementProvider>
-        <EmergencyCallProvider>
-          <UWBLocationProvider>
-            <Router basename={basename}>
-              <MainLayout>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/health" element={<HealthPage />} />
-                  <Route path="/health2" element={<NewHealthPage />} />
-                  <Route path="/location" element={<LocationPage />} />
-                  <Route path="/temperature" element={<TemperaturePage />} />
-                  <Route path="/heart-rate" element={<HeartRatePage />} />
-                  <Route path="/reminders" element={<RemindersPage />} />
-                  <Route path="/residents" element={<ResidentsPage />} />
-                  <Route path="/residents/:id" element={<ResidentDetailPage />} />
-                  <Route path="/diaper-monitoring" element={<DiaperMonitoringPage />} />
-                  <Route path="/devices" element={<DeviceManagementPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="/staff" element={<StaffManagementPage />} />
-                  <Route path="/uwb-location" element={<UWBLocationPage />} />
-                  <Route path="/more" element={<Placeholder title="更多功能頁面" />} />
-                  <Route path="/help" element={<Placeholder title="幫助中心" />} />
-                  <Route path="/emergency-call" element={<EmergencyCallPage />} />
-                  <Route path="*" element={<Placeholder title="404 - 頁面不存在" />} />
-                </Routes>
-              </MainLayout>
-            </Router>
-          </UWBLocationProvider>
-        </EmergencyCallProvider>
-      </DeviceManagementProvider>
+      <LanguageProvider>
+        <DeviceManagementProvider>
+          <EmergencyCallProvider>
+            <UWBLocationProvider>
+              <Router basename={basename}>
+                <MainLayout>
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/health" element={<HealthPage />} />
+                    <Route path="/health2" element={<NewHealthPage />} />
+                    <Route path="/location" element={<LocationPage />} />
+                    <Route path="/temperature" element={<TemperaturePage />} />
+                    <Route path="/heart-rate" element={<HeartRatePage />} />
+                    <Route path="/reminders" element={<RemindersPage />} />
+                    <Route path="/residents" element={<ResidentsPage />} />
+                    <Route path="/residents/:id" element={<ResidentDetailPage />} />
+                    <Route path="/diaper-monitoring" element={<DiaperMonitoringPage />} />
+                    <Route path="/devices" element={<DeviceManagementPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/staff" element={<StaffManagementPage />} />
+                    <Route path="/uwb-location" element={<UWBLocationPage />} />
+                    <Route path="/test-i18n" element={<TestI18nPage />} />
+                    <Route path="/more" element={<Placeholder title="更多功能頁面" />} />
+                    <Route path="/help" element={<Placeholder title="幫助中心" />} />
+                    <Route path="/emergency-call" element={<EmergencyCallPage />} />
+                    <Route path="*" element={<Placeholder title="404 - 頁面不存在" />} />
+                  </Routes>
+                </MainLayout>
+              </Router>
+            </UWBLocationProvider>
+          </EmergencyCallProvider>
+        </DeviceManagementProvider>
+      </LanguageProvider>
     </ThemeProvider>
   )
 }
 
 function Placeholder({ title }: { title: string }) {
+  const { t } = useTranslation()
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold">{title}</h1>
-      <p>此頁面正在開發中</p>
+      <h1 className="text-2xl font-bold">{t('pages:placeholder.title', { title })}</h1>
+      <p>{t('pages:placeholder.description')}</p>
     </div>
   )
 }

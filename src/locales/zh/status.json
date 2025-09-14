@@ -1,0 +1,49 @@
+{
+    "device": {
+        "status": {
+            "active": "活躍",
+            "inactive": "待機",
+            "offline": "離線",
+            "error": "異常"
+        },
+        "types": {
+            "smartwatch": "智慧手錶",
+            "diaperSensor": "尿布感應器",
+            "pedometer": "計步器",
+            "uwbTag": "UWB標籤"
+        }
+    },
+    "resident": {
+        "status": {
+            "good": "良好",
+            "attention": "需注意",
+            "critical": "危急",
+            "unknown": "未知"
+        },
+        "gender": {
+            "male": "男",
+            "female": "女"
+        }
+    },
+    "system": {
+        "persistence": {
+            "status": "持久化狀態:",
+            "saving": "保存中...",
+            "saved": "已保存",
+            "lastSave": "最後保存:",
+            "loadError": "加載錯誤:"
+        },
+        "actions": {
+            "forceSave": "強制保存",
+            "exportSettings": "導出設定",
+            "importSettings": "導入設定",
+            "debugStorage": "調試存儲"
+        }
+    },
+    "alerts": {
+        "emergency": "緊急",
+        "priority": "優先",
+        "warning": "警告",
+        "info": "資訊"
+    }
+}

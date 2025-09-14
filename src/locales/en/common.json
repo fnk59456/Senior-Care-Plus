@@ -1,0 +1,83 @@
+{
+    "app": {
+        "title": "Senior Care Plus",
+        "subtitle": "Smart Elderly Care Solution",
+        "version": "1.0.0",
+        "lastUpdate": "2023/05/10"
+    },
+    "actions": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "delete": "Delete",
+        "edit": "Edit",
+        "add": "Add",
+        "remove": "Remove",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "previous": "Previous",
+        "submit": "Submit",
+        "reset": "Reset",
+        "search": "Search",
+        "filter": "Filter",
+        "export": "Export",
+        "import": "Import",
+        "refresh": "Refresh",
+        "loading": "Loading...",
+        "saving": "Saving...",
+        "saved": "Saved"
+    },
+    "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "offline": "Offline",
+        "error": "Error",
+        "good": "Good",
+        "attention": "Attention",
+        "critical": "Critical",
+        "unknown": "Unknown"
+    },
+    "placeholders": {
+        "search": "Search residents, tasks or devices...",
+        "select": "Please select...",
+        "input": "Please enter...",
+        "noData": "No data available",
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "details": "Details"
+    },
+    "messages": {
+        "success": "Operation successful",
+        "error": "Operation failed",
+        "confirmDelete": "Are you sure you want to delete? This action cannot be undone.",
+        "confirmReset": "Are you sure you want to reset? This action cannot be undone.",
+        "dataSaved": "Data saved",
+        "dataLoaded": "Data loaded",
+        "networkError": "Network connection error",
+        "serverError": "Server error"
+    },
+    "time": {
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "thisWeek": "This Week",
+        "thisMonth": "This Month",
+        "thisYear": "This Year",
+        "lastWeek": "Last Week",
+        "lastMonth": "Last Month",
+        "lastYear": "Last Year"
+    },
+    "units": {
+        "years": "years",
+        "yearsOld": "years old",
+        "room": "Room",
+        "devices": "devices",
+        "residents": "residents",
+        "staff": "staff",
+        "minutes": "minutes",
+        "hours": "hours",
+        "days": "days",
+        "weeks": "weeks",
+        "months": "months"
+    }
+}
