@@ -173,6 +173,139 @@
             "removeResident": "Are you sure you want to remove this resident? This action cannot be undone."
         }
     },
+    "deviceManagement": {
+        "title": "Device Management",
+        "subtitle": "Manage all types of care devices, supporting 300B watches, diaper sensors, motion sensors, and positioning tags",
+        "searchPlaceholder": "Search device name, hardware ID, or device UID...",
+        "filters": {
+            "all": "All",
+            "smartwatch300B": "300B Watch",
+            "diaperSensor": "Diaper Sensor",
+            "pedometer": "Motion Sensor",
+            "uwbTag": "Positioning Tag"
+        },
+        "actions": {
+            "addDevice": "Add Device",
+            "forceSave": "Force Save",
+            "exportSettings": "Export Settings",
+            "importSettings": "Import Settings",
+            "debugStorage": "Debug Storage"
+        },
+        "stats": {
+            "totalDevices": "Total Devices",
+            "activeDevices": "Active Devices",
+            "smartwatch300B": "300B Watch",
+            "diaperSensor": "Diaper Sensor",
+            "otherDevices": "Other Devices"
+        },
+        "deviceList": {
+            "title": "Device List",
+            "count": "{{count}} devices total",
+            "noDevices": "No devices found matching criteria",
+            "hardwareId": "Hardware ID",
+            "type": "Type",
+            "gateway": "Gateway",
+            "replace": "Replace",
+            "remove": "Remove"
+        },
+        "addModal": {
+            "title": "Add Device",
+            "deviceType": "Device Type",
+            "deviceName": "Device Name",
+            "hardwareId": "Hardware ID",
+            "macAddress": "MAC Address",
+            "deviceId": "Device ID",
+            "gatewayId": "Gateway ID (Optional)",
+            "deviceTypes": {
+                "smartwatch300B": "300B Health Monitoring Watch",
+                "diaperSensor": "Smart Diaper Sensor",
+                "pedometer": "Motion Sensor",
+                "uwbTag": "UWB Positioning Tag"
+            },
+            "placeholders": {
+                "deviceName": "Enter device name",
+                "hardwareId": "Enter hardware ID",
+                "macAddress": "Enter MAC address (e.g.: E0:0E:08:36:93:F8)",
+                "deviceId": "Enter device ID (e.g.: 5345)",
+                "gatewayId": "Enter gateway ID"
+            }
+        },
+        "replaceModal": {
+            "title": "Replace Device",
+            "currentHardwareId": "Current Hardware ID",
+            "deviceUid": "Device UID",
+            "newHardwareId": "New Hardware ID",
+            "confirmReplace": "Confirm Replace",
+            "placeholders": {
+                "newHardwareId": "Enter new hardware ID"
+            }
+        },
+        "alerts": {
+            "importSuccess": "✅ Data import successful! Note: Device data needs to be updated through system management",
+            "invalidFormat": "❌ Invalid data format",
+            "importFailed": "❌ Data import failed"
+        },
+        "confirms": {
+            "resetSettings": "Are you sure you want to reset all device management settings? This action cannot be undone!",
+            "removeDevice": "Are you sure you want to remove this device?"
+        }
+    },
+    "health": {
+        "systemTitle": "Elderly Care System",
+        "monitoringTitle": "Patient Monitoring",
+        "actions": {
+            "forceSave": "Force Save",
+            "exportSettings": "Export Settings",
+            "importSettings": "Import Settings",
+            "debugStorage": "Debug Storage"
+        },
+        "stats": {
+            "totalResidents": "Total Residents",
+            "activeDevices": "Active Devices",
+            "offlineDevices": "Offline Devices",
+            "errorDevices": "Error Devices"
+        },
+        "filters": {
+            "全部": "All",
+            "異常": "Error",
+            "正常": "Normal",
+            "需注意": "Attention"
+        },
+        "patientInfo": {
+            "age": "Age",
+            "room": "Room",
+            "devices": "Devices"
+        },
+        "patientStatus": {
+            "normal": "Normal",
+            "error": "Error",
+            "attention": "Attention",
+            "noDevices": "No Devices"
+        },
+        "monitoringIcons": {
+            "temperature": "Temperature",
+            "heartRate": "Heart Rate",
+            "diaper": "Diaper",
+            "activity": "Activity",
+            "location": "Location",
+            "emergency": "Emergency",
+            "reminders": "Reminders",
+            "residents": "Residents",
+            "devices": "Devices"
+        },
+        "emptyState": {
+            "noPatients": "No patients with {{status}} status currently",
+            "goToResidentManagement": "Go to Resident Management to set up devices"
+        },
+        "alerts": {
+            "importSuccess": "✅ Health monitoring settings imported successfully!",
+            "invalidFormat": "❌ Invalid data format",
+            "importFailed": "❌ Data import failed"
+        },
+        "confirms": {
+            "resetSettings": "Are you sure you want to reset all health monitoring settings? This action cannot be undone!"
+        }
+    },
     "settings": {
         "title": "System Settings",
         "subtitle": "Manage system configuration, personal settings, and security options",

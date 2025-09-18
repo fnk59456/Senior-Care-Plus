@@ -9,25 +9,16 @@ import {
 } from "lucide-react"
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
+import { useTranslation } from "react-i18next"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { DeviceType, DeviceStatus } from "@/types/device-types"
 
 // 患者數據現在從 DeviceManagementContext 獲取
 
-// 監控功能圖標配置
-const monitoringIcons = [
-  { icon: Thermometer, color: "text-red-500", route: "/temperature", label: "體溫" },
-  { icon: Heart, color: "text-red-600", route: "/heart-rate", label: "心率" },
-  { icon: Baby, color: "text-purple-500", route: "/diaper-monitoring", label: "尿布" },
-  { icon: Activity, color: "text-green-500", route: "/pedometer", label: "運動" },
-  { icon: MapPin, color: "text-blue-500", route: "/location", label: "定位" },
-  { icon: Phone, color: "text-gray-500", route: "/emergency-call", label: "緊急" },
-  { icon: Clock, color: "text-gray-500", route: "/reminders", label: "提醒" },
-  { icon: Menu, color: "text-gray-500", route: "/residents", label: "院友" },
-  { icon: Pause, color: "text-gray-500", route: "/devices", label: "設備" }
-]
+// 監控功能圖標配置 - 將在組件內動態生成以支援國際化
 
 export default function HealthPage() {
+  const { t } = useTranslation()
   const { residents, getDevicesForResident, getDeviceStatusSummary } = useDeviceManagement()
   const [selectedFilter, setSelectedFilter] = useState("全部")
   const navigate = useNavigate()
@@ -182,13 +173,13 @@ export default function HealthPage() {
         if (data.selectedFilter) {
           setSelectedFilter(data.selectedFilter)
           console.log('📥 健康監控設定已導入')
-          alert('✅ 健康監控設定導入成功！')
+          alert(t('pages:health.alerts.importSuccess'))
         } else {
-          alert('❌ 無效的數據格式')
+          alert(t('pages:health.alerts.invalidFormat'))
         }
       } catch (error) {
         console.error('導入數據失敗:', error)
-        alert('❌ 導入數據失敗')
+        alert(t('pages:health.alerts.importFailed'))
       }
     }
     reader.readAsText(file)
@@ -254,7 +245,7 @@ export default function HealthPage() {
             break
           case 'R':
             e.preventDefault()
-            if (confirm('確定要重置所有健康監控設定嗎？此操作不可撤銷！')) {
+            if (confirm(t('pages:health.confirms.resetSettings'))) {
               clearAllStorage()
             }
             break
@@ -271,24 +262,24 @@ export default function HealthPage() {
   // 計算病患狀態（基於設備狀態）
   const calculatePatientStatus = (residentId: string) => {
     const devices = getDevicesForResident(residentId)
-    if (devices.length === 0) return "無設備"
+    if (devices.length === 0) return t('pages:health.patientStatus.noDevices')
 
     const hasError = devices.some(d => d.status === DeviceStatus.ERROR)
     const hasOffline = devices.some(d => d.status === DeviceStatus.OFFLINE)
     const allActive = devices.every(d => d.status === DeviceStatus.ACTIVE)
 
-    if (hasError) return "異常"
-    if (hasOffline) return "需注意"
-    if (allActive) return "正常"
-    return "需注意"
+    if (hasError) return t('pages:health.patientStatus.error')
+    if (hasOffline) return t('pages:health.patientStatus.attention')
+    if (allActive) return t('pages:health.patientStatus.normal')
+    return t('pages:health.patientStatus.attention')
   }
 
   // 獲取狀態顏色
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "正常": return "bg-green-500"
-      case "異常": return "bg-red-500"
-      case "需注意": return "bg-yellow-500"
+      case t('pages:health.patientStatus.normal'): return "bg-green-500"
+      case t('pages:health.patientStatus.error'): return "bg-red-500"
+      case t('pages:health.patientStatus.attention'): return "bg-yellow-500"
       default: return "bg-gray-500"
     }
   }
@@ -320,6 +311,19 @@ export default function HealthPage() {
   // 統計數據
   const deviceStatusSummary = getDeviceStatusSummary()
 
+  // 監控功能圖標配置 - 動態生成以支援國際化
+  const monitoringIcons = [
+    { icon: Thermometer, color: "text-red-500", route: "/temperature", label: t('pages:health.monitoringIcons.temperature') },
+    { icon: Heart, color: "text-red-600", route: "/heart-rate", label: t('pages:health.monitoringIcons.heartRate') },
+    { icon: Baby, color: "text-purple-500", route: "/diaper-monitoring", label: t('pages:health.monitoringIcons.diaper') },
+    { icon: Activity, color: "text-green-500", route: "/pedometer", label: t('pages:health.monitoringIcons.activity') },
+    { icon: MapPin, color: "text-blue-500", route: "/location", label: t('pages:health.monitoringIcons.location') },
+    { icon: Phone, color: "text-gray-500", route: "/emergency-call", label: t('pages:health.monitoringIcons.emergency') },
+    { icon: Clock, color: "text-gray-500", route: "/reminders", label: t('pages:health.monitoringIcons.reminders') },
+    { icon: Menu, color: "text-gray-500", route: "/residents", label: t('pages:health.monitoringIcons.residents') },
+    { icon: Pause, color: "text-gray-500", route: "/devices", label: t('pages:health.monitoringIcons.devices') }
+  ]
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       {/* 頁面標題 */}
@@ -330,7 +334,7 @@ export default function HealthPage() {
               <User className="h-6 w-6" />
             </AvatarFallback>
           </Avatar>
-          <h1 className="text-xl font-bold text-gray-900">長者照護系統</h1>
+          <h1 className="text-xl font-bold text-gray-900">{t('pages:health.systemTitle')}</h1>
         </div>
         <Button variant="ghost" size="sm">
           <Bell className="h-5 w-5" />
@@ -341,21 +345,21 @@ export default function HealthPage() {
       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
         <div className="flex items-center gap-2">
           <Database className="h-4 w-4" />
-          <span>持久化狀態:</span>
+          <span>{t('status:system.persistence.status')}:</span>
           {pendingSave ? (
             <Badge variant="outline" className="text-yellow-600">
               <Save className="h-3 w-3 mr-1 animate-pulse" />
-              保存中...
+              {t('status:system.persistence.saving')}
             </Badge>
           ) : (
             <Badge variant="outline" className="text-green-600">
               <Save className="h-3 w-3 mr-1" />
-              已保存
+              {t('status:system.persistence.saved')}
             </Badge>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <span>最後保存:</span>
+          <span>{t('status:system.persistence.lastSave')}:</span>
           <span className="font-mono">
             {lastSaveTime.toLocaleTimeString()}
           </span>
@@ -363,7 +367,7 @@ export default function HealthPage() {
         {loadError && (
           <div className="flex items-center gap-2 text-red-600">
             <Bell className="h-4 w-4" />
-            <span>加載錯誤: {loadError}</span>
+            <span>{t('status:system.persistence.loadError')}: {loadError}</span>
           </div>
         )}
       </div>
@@ -378,7 +382,7 @@ export default function HealthPage() {
           className="gap-2"
         >
           <Save className="h-4 w-4" />
-          強制保存
+          {t('pages:health.actions.forceSave')}
         </Button>
         <Button
           variant="outline"
@@ -387,7 +391,7 @@ export default function HealthPage() {
           className="gap-2"
         >
           <Download className="h-4 w-4" />
-          導出設定
+          {t('pages:health.actions.exportSettings')}
         </Button>
         <label className="cursor-pointer">
           <input
@@ -398,7 +402,7 @@ export default function HealthPage() {
           />
           <Button variant="outline" size="sm" className="gap-2">
             <Upload className="h-4 w-4" />
-            導入設定
+            {t('pages:health.actions.importSettings')}
           </Button>
         </label>
         <Button
@@ -408,7 +412,7 @@ export default function HealthPage() {
           className="gap-2"
         >
           <Database className="h-4 w-4" />
-          調試存儲
+          {t('pages:health.actions.debugStorage')}
         </Button>
       </div>
 
@@ -417,32 +421,32 @@ export default function HealthPage() {
         <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-blue-700">{residents.length}</div>
-            <div className="text-sm text-blue-600">總院友數</div>
+            <div className="text-sm text-blue-600">{t('pages:health.stats.totalResidents')}</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-green-50 to-green-100">
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-green-700">{deviceStatusSummary[DeviceStatus.ACTIVE]}</div>
-            <div className="text-sm text-green-600">活躍設備</div>
+            <div className="text-sm text-green-600">{t('pages:health.stats.activeDevices')}</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100">
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-yellow-700">{deviceStatusSummary[DeviceStatus.OFFLINE]}</div>
-            <div className="text-sm text-yellow-600">離線設備</div>
+            <div className="text-sm text-yellow-600">{t('pages:health.stats.offlineDevices')}</div>
           </CardContent>
         </Card>
         <Card className="bg-gradient-to-br from-red-50 to-red-100">
           <CardContent className="p-4 text-center">
             <div className="text-2xl font-bold text-red-700">{deviceStatusSummary[DeviceStatus.ERROR]}</div>
-            <div className="text-sm text-red-600">異常設備</div>
+            <div className="text-sm text-red-600">{t('pages:health.stats.errorDevices')}</div>
           </CardContent>
         </Card>
       </div>
 
       {/* 監控標題 */}
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">病患監控</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('pages:health.monitoringTitle')}</h2>
 
         {/* 狀態篩選器 */}
         <div className="flex gap-2 mb-6">
@@ -456,7 +460,7 @@ export default function HealthPage() {
                 : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }`}
             >
-              {filter}
+              {t(`pages:health.filters.${filter}`)}
             </Button>
           ))}
         </div>
@@ -482,13 +486,13 @@ export default function HealthPage() {
                     </Avatar>
                     <div>
                       <h3 className="text-lg font-bold text-gray-900 mb-1">{patient.name}</h3>
-                      <p className="text-sm text-gray-600">年齡: {patient.age} • 房間: {patient.room}</p>
+                      <p className="text-sm text-gray-600">{t('pages:health.patientInfo.age')}: {patient.age} • {t('pages:health.patientInfo.room')}: {patient.room}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge className="text-xs">
                           {patientStatus}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
-                          {devices.length} 設備
+                          {devices.length} {t('pages:health.patientInfo.devices')}
                         </Badge>
                       </div>
                     </div>
@@ -552,12 +556,12 @@ export default function HealthPage() {
           <div className="text-gray-400 mb-4">
             <CircleDot className="h-12 w-12 mx-auto" />
           </div>
-          <p className="text-gray-500 mb-2">目前沒有{selectedFilter}狀態的患者</p>
+          <p className="text-gray-500 mb-2">{t('pages:health.emptyState.noPatients', { status: t(`pages:health.filters.${selectedFilter}`) })}</p>
           <Button
             variant="outline"
             onClick={() => navigate('/residents')}
           >
-            前往院友管理設定設備
+            {t('pages:health.emptyState.goToResidentManagement')}
           </Button>
         </div>
       )}

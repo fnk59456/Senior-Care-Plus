@@ -198,6 +198,29 @@ export default function TestI18nPage() {
                         <p>重置確認: {t('pages:residents.confirms.resetSettings')}</p>
                         <p>移除確認: {t('pages:residents.confirms.removeResident')}</p>
                     </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">設備管理頁面：</h3>
+                        <p>頁面標題: {t('pages:deviceManagement.title')}</p>
+                        <p>頁面描述: {t('pages:deviceManagement.subtitle')}</p>
+                        <p>搜索框: {t('pages:deviceManagement.searchPlaceholder')}</p>
+                        <p>篩選按鈕: {t('pages:deviceManagement.filters.all')}, {t('pages:deviceManagement.filters.smartwatch300B')}</p>
+                        <p>統計資訊: {t('pages:deviceManagement.stats.totalDevices')}, {t('pages:deviceManagement.stats.activeDevices')}</p>
+                        <p>設備列表: {t('pages:deviceManagement.deviceList.title')}</p>
+                        <p>新增設備: {t('pages:deviceManagement.actions.addDevice')}</p>
+                        <p>替換設備: {t('pages:deviceManagement.replaceModal.title')}</p>
+                    </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">健康監控頁面：</h3>
+                        <p>系統標題: {t('pages:health.systemTitle')}</p>
+                        <p>監控標題: {t('pages:health.monitoringTitle')}</p>
+                        <p>統計資訊: {t('pages:health.stats.totalResidents')}, {t('pages:health.stats.activeDevices')}</p>
+                        <p>篩選器: {t('pages:health.filters.全部')}, {t('pages:health.filters.正常')}, {t('pages:health.filters.異常')}</p>
+                        <p>患者資訊: {t('pages:health.patientInfo.age')}, {t('pages:health.patientInfo.room')}, {t('pages:health.patientInfo.devices')}</p>
+                        <p>監控圖標: {t('pages:health.monitoringIcons.temperature')}, {t('pages:health.monitoringIcons.heartRate')}, {t('pages:health.monitoringIcons.diaper')}</p>
+                        <p>患者狀態: {t('pages:health.patientStatus.normal')}, {t('pages:health.patientStatus.error')}, {t('pages:health.patientStatus.attention')}</p>
+                    </div>
                 </CardContent>
             </Card>
 

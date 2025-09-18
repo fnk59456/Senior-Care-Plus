@@ -173,6 +173,139 @@
             "removeResident": "確定要移除這個院友嗎？此操作無法復原。"
         }
     },
+    "deviceManagement": {
+        "title": "設備管理",
+        "subtitle": "管理所有類型的照護設備，支援300B手錶、尿布傳感器、運動傳感器、定位標籤",
+        "searchPlaceholder": "搜尋設備名稱、硬體編號或設備UID...",
+        "filters": {
+            "all": "全部",
+            "smartwatch300B": "300B手錶",
+            "diaperSensor": "尿布傳感器",
+            "pedometer": "運動傳感器",
+            "uwbTag": "定位標籤"
+        },
+        "actions": {
+            "addDevice": "新增設備",
+            "forceSave": "強制保存",
+            "exportSettings": "導出設定",
+            "importSettings": "導入設定",
+            "debugStorage": "調試存儲"
+        },
+        "stats": {
+            "totalDevices": "總設備數",
+            "activeDevices": "活躍設備",
+            "smartwatch300B": "300B手錶",
+            "diaperSensor": "尿布傳感器",
+            "otherDevices": "其他設備"
+        },
+        "deviceList": {
+            "title": "設備列表",
+            "count": "共 {{count}} 個設備",
+            "noDevices": "沒有找到符合條件的設備",
+            "hardwareId": "硬體編號",
+            "type": "類型",
+            "gateway": "閘道器",
+            "replace": "替換",
+            "remove": "移除"
+        },
+        "addModal": {
+            "title": "新增設備",
+            "deviceType": "設備類型",
+            "deviceName": "設備名稱",
+            "hardwareId": "硬體編號",
+            "macAddress": "MAC 地址",
+            "deviceId": "設備ID",
+            "gatewayId": "閘道器ID (選填)",
+            "deviceTypes": {
+                "smartwatch300B": "300B 健康監測手錶",
+                "diaperSensor": "智能尿布傳感器",
+                "pedometer": "運動傳感器",
+                "uwbTag": "UWB定位標籤"
+            },
+            "placeholders": {
+                "deviceName": "輸入設備名稱",
+                "hardwareId": "輸入硬體編號",
+                "macAddress": "輸入MAC地址 (如: E0:0E:08:36:93:F8)",
+                "deviceId": "輸入設備ID (如: 5345)",
+                "gatewayId": "輸入閘道器ID"
+            }
+        },
+        "replaceModal": {
+            "title": "替換設備",
+            "currentHardwareId": "當前硬體編號",
+            "deviceUid": "設備UID",
+            "newHardwareId": "新硬體編號",
+            "confirmReplace": "確認替換",
+            "placeholders": {
+                "newHardwareId": "輸入新的硬體編號"
+            }
+        },
+        "alerts": {
+            "importSuccess": "✅ 數據導入成功！注意：設備數據需要通過系統管理更新",
+            "invalidFormat": "❌ 無效的數據格式",
+            "importFailed": "❌ 導入數據失敗"
+        },
+        "confirms": {
+            "resetSettings": "確定要重置所有設備管理設定嗎？此操作不可撤銷！",
+            "removeDevice": "確定要移除這個設備嗎？"
+        }
+    },
+    "health": {
+        "systemTitle": "長者照護系統",
+        "monitoringTitle": "病患監控",
+        "actions": {
+            "forceSave": "強制保存",
+            "exportSettings": "導出設定",
+            "importSettings": "導入設定",
+            "debugStorage": "調試存儲"
+        },
+        "stats": {
+            "totalResidents": "總院友數",
+            "activeDevices": "活躍設備",
+            "offlineDevices": "離線設備",
+            "errorDevices": "異常設備"
+        },
+        "filters": {
+            "全部": "全部",
+            "異常": "異常",
+            "正常": "正常",
+            "需注意": "需注意"
+        },
+        "patientInfo": {
+            "age": "年齡",
+            "room": "房間",
+            "devices": "設備"
+        },
+        "patientStatus": {
+            "normal": "正常",
+            "error": "異常",
+            "attention": "需注意",
+            "noDevices": "無設備"
+        },
+        "monitoringIcons": {
+            "temperature": "體溫",
+            "heartRate": "心率",
+            "diaper": "尿布",
+            "activity": "運動",
+            "location": "定位",
+            "emergency": "緊急",
+            "reminders": "提醒",
+            "residents": "院友",
+            "devices": "設備"
+        },
+        "emptyState": {
+            "noPatients": "目前沒有{{status}}狀態的患者",
+            "goToResidentManagement": "前往院友管理設定設備"
+        },
+        "alerts": {
+            "importSuccess": "✅ 健康監控設定導入成功！",
+            "invalidFormat": "❌ 無效的數據格式",
+            "importFailed": "❌ 導入數據失敗"
+        },
+        "confirms": {
+            "resetSettings": "確定要重置所有健康監控設定嗎？此操作不可撤銷！"
+        }
+    },
     "settings": {
         "title": "系統設置",
         "subtitle": "管理系統配置、個人設置和安全選項",
