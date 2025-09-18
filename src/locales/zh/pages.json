@@ -926,5 +926,121 @@
             "editNotes": "編輯備註",
             "updateNotes": "更新備註"
         }
+    },
+    "uwbLocation": {
+        "title": "養老院管理",
+        "subtitle": "UWB定位系統的場域、樓層和閘道器配置管理",
+        "selectHome": "選擇場域",
+        "tabs": {
+            "overview": "系統總覽",
+            "homes": "場域管理",
+            "floors": "樓層管理",
+            "gateways": "閘道器管理",
+            "anchors": "錨點配對",
+            "tags": "標籤管理"
+        },
+        "stats": {
+            "homes": "場域數量",
+            "floors": "樓層數量",
+            "gateways": "閘道器數量",
+            "anchors": "錨點數量",
+            "tags": "標籤數量"
+        },
+        "status": {
+            "online": "在線狀態"
+        },
+        "actions": {
+            "addHome": "新增場域",
+            "addFloor": "新增樓層",
+            "addGateway": "新增閘道器",
+            "addAnchor": "新增錨點",
+            "addTag": "新增標籤"
+        },
+        "forms": {
+            "homeName": "場域名稱",
+            "homeNamePlaceholder": "請輸入場域名稱",
+            "homeDescription": "場域描述",
+            "homeDescriptionPlaceholder": "請輸入場域描述",
+            "homeAddress": "場域地址",
+            "homeAddressPlaceholder": "請輸入場域地址"
+        },
+        "messages": {
+            "selectFieldFirst": "請先選擇一個場域",
+            "addFloorFirst": "請先新增樓層才能配置閘道器",
+            "selectGatewayFirst": "請先選擇閘道器",
+            "noAnchorsFound": "尚未發現任何錨點",
+            "noTagsFound": "尚未發現任何標籤",
+            "noGatewaysFound": "尚未發現任何雲端閘道器"
+        },
+        "currentFieldStatus": "當前場域狀態",
+        "floorInfo": "樓層 {{level}} | {{width}}m × {{height}}m",
+        "mapStatus": {
+            "calibrated": "地圖已標定",
+            "uploaded": "地圖已上傳",
+            "noMap": "無地圖"
+        },
+        "gatewaysOnline": "閘道器在線",
+        "mapCalibrationProgress": "地圖標定進度",
+        "calibrationStatus": {
+            "completed": "已完成標定",
+            "pending": "待標定",
+            "noMap": "未上傳地圖"
+        },
+        "overallProgress": "整體進度",
+        "floorForm": {
+            "name": "樓層名稱",
+            "namePlaceholder": "請輸入樓層名稱",
+            "level": "樓層編號",
+            "realWidth": "實際寬度 (米)",
+            "realHeight": "實際高度 (米)"
+        },
+        "mapCalibration": "地圖標定",
+        "close": "關閉",
+        "calibrationSteps": {
+            "upload": "上傳地圖",
+            "setOrigin": "設定原點",
+            "setScale": "設定比例"
+        },
+        "uploadFloorMap": "上傳樓層地圖",
+        "uploadInstructions": "請上傳 {{floorName}} 的室內地圖。支援 PNG、JPG、SVG 格式。",
+        "selectMapFile": "選擇地圖文件",
+        "dragImageHint": "或拖拽圖片到此區域",
+        "actualSize": "實際大小",
+        "calibratedMap": "已標定地圖",
+        "setCoordinateOrigin": "設定座標原點",
+        "originInstructions": "請點擊地圖上的任意位置設定為座標原點，然後輸入該點的實際座標。通常建議選擇房間或走廊的角落作為參考點。",
+        "clickMapSetOrigin": "點擊地圖設定原點",
+        "originPixelPosition": "原點像素位置",
+        "actualXCoordinate": "實際 X 座標 (米)",
+        "actualYCoordinate": "實際 Y 座標 (米)",
+        "reselectOrigin": "重選原點",
+        "nextStep": "下一步",
+        "setCoordinateScale": "設定座標比例",
+        "scaleInstructions": "請在地圖上點選兩個點，然後輸入這兩點之間的實際距離。系統將自動計算像素與公尺的轉換比例。",
+        "clickTwoPointsSetScale": "點擊兩個點設定比例",
+        "selectedPoints": "選擇的點",
+        "point1": "點1",
+        "point2": "點2",
+        "clickMapSelect": "請點擊地圖選擇",
+        "pixelDistance": "像素距離",
+        "actualDistance": "實際距離 (米)",
+        "enterActualDistance": "輸入兩點之間的實際距離",
+        "calculationResult": "計算結果",
+        "ratio": "比例",
+        "pixelsPerMeter": "像素/公尺",
+        "previousStep": "上一步",
+        "reselectPoints": "重選點",
+        "saveCalibration": "保存標定",
+        "calibrationComplete": "標定完成",
+        "calibrationInfo": "標定資訊",
+        "floor": "樓層",
+        "originActualCoordinates": "原點實際座標",
+        "meters": "米",
+        "calibrationPoint1": "標定點1",
+        "calibrationPoint2": "標定點2",
+        "pixels": "像素",
+        "complete": "完成",
+        "recalibrate": "重新標定",
+        "mapStatusLabel": "地圖狀態"
     }
 }

@@ -926,5 +926,121 @@
             "editNotes": "Edit Notes",
             "updateNotes": "Update Notes"
         }
+    },
+    "uwbLocation": {
+        "title": "Nursing Home Management",
+        "subtitle": "UWB positioning system field, floor and gateway configuration management",
+        "selectHome": "Select Field",
+        "tabs": {
+            "overview": "System Overview",
+            "homes": "Field Management",
+            "floors": "Floor Management",
+            "gateways": "Gateway Management",
+            "anchors": "Anchor Pairing",
+            "tags": "Tag Management"
+        },
+        "stats": {
+            "homes": "Field Count",
+            "floors": "Floor Count",
+            "gateways": "Gateway Count",
+            "anchors": "Anchor Count",
+            "tags": "Tag Count"
+        },
+        "status": {
+            "online": "Online Status"
+        },
+        "actions": {
+            "addHome": "Add Field",
+            "addFloor": "Add Floor",
+            "addGateway": "Add Gateway",
+            "addAnchor": "Add Anchor",
+            "addTag": "Add Tag"
+        },
+        "forms": {
+            "homeName": "Field Name",
+            "homeNamePlaceholder": "Enter field name",
+            "homeDescription": "Field Description",
+            "homeDescriptionPlaceholder": "Enter field description",
+            "homeAddress": "Field Address",
+            "homeAddressPlaceholder": "Enter field address"
+        },
+        "messages": {
+            "selectFieldFirst": "Please select a field first",
+            "addFloorFirst": "Please add a floor first to configure gateways",
+            "selectGatewayFirst": "Please select a gateway first",
+            "noAnchorsFound": "No anchors found",
+            "noTagsFound": "No tags found",
+            "noGatewaysFound": "No cloud gateways found"
+        },
+        "currentFieldStatus": "Current Field Status",
+        "floorInfo": "Floor {{level}} | {{width}}m × {{height}}m",
+        "mapStatus": {
+            "calibrated": "Map Calibrated",
+            "uploaded": "Map Uploaded",
+            "noMap": "No Map"
+        },
+        "gatewaysOnline": "Gateways Online",
+        "mapCalibrationProgress": "Map Calibration Progress",
+        "calibrationStatus": {
+            "completed": "Calibration Completed",
+            "pending": "Pending Calibration",
+            "noMap": "Map Not Uploaded"
+        },
+        "overallProgress": "Overall Progress",
+        "floorForm": {
+            "name": "Floor Name",
+            "namePlaceholder": "Enter floor name",
+            "level": "Floor Number",
+            "realWidth": "Actual Width (meters)",
+            "realHeight": "Actual Height (meters)"
+        },
+        "mapCalibration": "Map Calibration",
+        "close": "Close",
+        "calibrationSteps": {
+            "upload": "Upload Map",
+            "setOrigin": "Set Origin",
+            "setScale": "Set Scale"
+        },
+        "uploadFloorMap": "Upload Floor Map",
+        "uploadInstructions": "Please upload {{floorName}}'s indoor map. Supports PNG, JPG, SVG formats.",
+        "selectMapFile": "Select Map File",
+        "dragImageHint": "or drag and drop images to this area",
+        "actualSize": "Actual Size",
+        "calibratedMap": "Calibrated Map",
+        "setCoordinateOrigin": "Set Coordinate Origin",
+        "originInstructions": "Please click any position on the map to set it as the coordinate origin, then input the actual coordinates of that point. It is usually recommended to choose the corner of a room or corridor as a reference point.",
+        "clickMapSetOrigin": "Click Map to Set Origin",
+        "originPixelPosition": "Origin Pixel Position",
+        "actualXCoordinate": "Actual X Coordinate (meters)",
+        "actualYCoordinate": "Actual Y Coordinate (meters)",
+        "reselectOrigin": "Reselect Origin",
+        "nextStep": "Next Step",
+        "setCoordinateScale": "Set Coordinate Scale",
+        "scaleInstructions": "Please click two points on the map, then enter the actual distance between these two points. The system will automatically calculate the conversion ratio between pixels and meters.",
+        "clickTwoPointsSetScale": "Click Two Points to Set Scale",
+        "selectedPoints": "Selected Points",
+        "point1": "Point 1",
+        "point2": "Point 2",
+        "clickMapSelect": "Please click map to select",
+        "pixelDistance": "Pixel Distance",
+        "actualDistance": "Actual Distance (meters)",
+        "enterActualDistance": "Enter the actual distance between the two points",
+        "calculationResult": "Calculation Result",
+        "ratio": "Ratio",
+        "pixelsPerMeter": "pixels/meter",
+        "previousStep": "Previous Step",
+        "reselectPoints": "Reselect Points",
+        "saveCalibration": "Save Calibration",
+        "calibrationComplete": "Calibration Complete",
+        "calibrationInfo": "Calibration Information",
+        "floor": "Floor",
+        "originActualCoordinates": "Origin Actual Coordinates",
+        "meters": "meters",
+        "calibrationPoint1": "Calibration Point 1",
+        "calibrationPoint2": "Calibration Point 2",
+        "pixels": "pixels",
+        "complete": "Complete",
+        "recalibrate": "Recalibrate",
+        "mapStatusLabel": "Map Status"
     }
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
+import { useTranslation } from 'react-i18next'
 // @ts-ignore
 import mqtt from "mqtt"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -438,6 +439,8 @@ type DiscoveredCloudAnchor = {
 }
 
 export default function UWBLocationPage() {
+    const { t } = useTranslation()
+
     // 從 localStorage 加載數據的輔助函數（含智能恢復）
     const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
         try {
@@ -3008,10 +3011,10 @@ export default function UWBLocationPage() {
                 <div>
                     <h1 className="text-3xl font-bold flex items-center">
                         <Building2 className="mr-3 h-8 w-8 text-cyan-500" />
-                        養老院管理
+                        {t('pages:uwbLocation.title')}
                     </h1>
                     <p className="text-muted-foreground mt-2">
-                        UWB定位系統的場域、樓層和閘道器配置管理
+                        {t('pages:uwbLocation.subtitle')}
                     </p>
                 </div>
 
@@ -3019,7 +3022,7 @@ export default function UWBLocationPage() {
                 <div className="flex items-center gap-4">
                     <Select value={selectedHome} onValueChange={setSelectedHome}>
                         <SelectTrigger className="w-[240px]">
-                            <SelectValue placeholder="選擇場域" />
+                            <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
                         </SelectTrigger>
                         <SelectContent>
                             {homes.map(home => (
@@ -3038,12 +3041,12 @@ export default function UWBLocationPage() {
             {/* 主要內容標籤頁 */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-6">
-                    <TabsTrigger value="overview">系統總覽</TabsTrigger>
-                    <TabsTrigger value="homes">場域管理</TabsTrigger>
-                    <TabsTrigger value="floors">樓層管理</TabsTrigger>
-                    <TabsTrigger value="gateways">閘道器管理</TabsTrigger>
-                    <TabsTrigger value="anchors">錨點配對</TabsTrigger>
-                    <TabsTrigger value="tags">標籤管理</TabsTrigger>
+                    <TabsTrigger value="overview">{t('pages:uwbLocation.tabs.overview')}</TabsTrigger>
+                    <TabsTrigger value="homes">{t('pages:uwbLocation.tabs.homes')}</TabsTrigger>
+                    <TabsTrigger value="floors">{t('pages:uwbLocation.tabs.floors')}</TabsTrigger>
+                    <TabsTrigger value="gateways">{t('pages:uwbLocation.tabs.gateways')}</TabsTrigger>
+                    <TabsTrigger value="anchors">{t('pages:uwbLocation.tabs.anchors')}</TabsTrigger>
+                    <TabsTrigger value="tags">{t('pages:uwbLocation.tabs.tags')}</TabsTrigger>
                 </TabsList>
 
                 {/* 系統總覽 */}
@@ -3055,7 +3058,7 @@ export default function UWBLocationPage() {
                                 <div className="flex flex-col items-center text-center space-y-3">
                                     <Home className="h-12 w-12 text-blue-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">場域數量</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.homes')}</p>
                                         <p className="text-3xl font-bold text-blue-600">{homes.length}</p>
                                     </div>
                                 </div>
@@ -3067,7 +3070,7 @@ export default function UWBLocationPage() {
                                 <div className="flex flex-col items-center text-center space-y-3">
                                     <Layers3 className="h-12 w-12 text-green-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">樓層數量</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.floors')}</p>
                                         <p className="text-3xl font-bold text-green-600">{currentFloors.length}</p>
                                     </div>
                                 </div>
@@ -3079,7 +3082,7 @@ export default function UWBLocationPage() {
                                 <div className="flex flex-col items-center text-center space-y-3">
                                     <Wifi className="h-12 w-12 text-purple-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">閘道器數量</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.gateways')}</p>
                                         <p className="text-3xl font-bold text-purple-600">{currentGateways.length}</p>
                                     </div>
                                 </div>
@@ -3091,7 +3094,7 @@ export default function UWBLocationPage() {
                                 <div className="flex flex-col items-center text-center space-y-3">
                                     <Anchor className="h-12 w-12 text-indigo-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">錨點數量</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.anchors')}</p>
                                         <p className="text-3xl font-bold text-indigo-600">{currentAnchors.length}</p>
                                     </div>
                                 </div>
@@ -3103,7 +3106,7 @@ export default function UWBLocationPage() {
                                 <div className="flex flex-col items-center text-center space-y-3">
                                     <Tag className="h-12 w-12 text-teal-500" />
                                     <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">標籤數量</p>
+                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.tags')}</p>
                                         <p className="text-3xl font-bold text-teal-600">{tags.length}</p>
                                     </div>
                                 </div>
@@ -3160,7 +3163,7 @@ export default function UWBLocationPage() {
                         <>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>當前場域狀態 - {homes.find(h => h.id === selectedHome)?.name}</CardTitle>
+                                    <CardTitle>{t('pages:uwbLocation.currentFieldStatus')} - {homes.find(h => h.id === selectedHome)?.name}</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
@@ -3175,7 +3178,7 @@ export default function UWBLocationPage() {
                                                         <div>
                                                             <div className="font-medium">{floor.name}</div>
                                                             <div className="text-sm text-muted-foreground">
-                                                                樓層 {floor.level} | {floor.dimensions?.realWidth}m × {floor.dimensions?.realHeight}m
+                                                                {t('pages:uwbLocation.floorInfo', { level: floor.level, width: floor.dimensions?.realWidth, height: floor.dimensions?.realHeight })}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -3188,15 +3191,15 @@ export default function UWBLocationPage() {
                                                             }
                                                         >
                                                             {
-                                                                floor.calibration?.isCalibrated ? "地圖已標定" :
-                                                                    floor.mapImage ? "地圖已上傳" : "無地圖"
+                                                                floor.calibration?.isCalibrated ? t('pages:uwbLocation.mapStatus.calibrated') :
+                                                                    floor.mapImage ? t('pages:uwbLocation.mapStatus.uploaded') : t('pages:uwbLocation.mapStatus.noMap')
                                                             }
                                                         </Badge>
                                                         <Badge
                                                             variant="secondary"
                                                             className={onlineCount > 0 ? "bg-green-100 text-green-700 border-green-200" : ""}
                                                         >
-                                                            {onlineCount}/{floorGateways.length} 閘道器在線
+                                                            {onlineCount}/{floorGateways.length} {t('pages:uwbLocation.gatewaysOnline')}
                                                         </Badge>
                                                     </div>
                                                 </div>
@@ -3211,7 +3214,7 @@ export default function UWBLocationPage() {
                                 <CardHeader>
                                     <CardTitle className="flex items-center">
                                         <Map className="mr-2 h-5 w-5 text-cyan-500" />
-                                        地圖標定進度
+                                        {t('pages:uwbLocation.mapCalibrationProgress')}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -3220,26 +3223,26 @@ export default function UWBLocationPage() {
                                             <div className="text-2xl font-bold text-green-600">
                                                 {currentFloors.filter(f => f.calibration?.isCalibrated).length}
                                             </div>
-                                            <div className="text-sm text-green-700">已完成標定</div>
+                                            <div className="text-sm text-green-700">{t('pages:uwbLocation.calibrationStatus.completed')}</div>
                                         </div>
                                         <div className="text-center p-4 bg-yellow-50 rounded-lg">
                                             <div className="text-2xl font-bold text-yellow-600">
                                                 {currentFloors.filter(f => f.mapImage && !f.calibration?.isCalibrated).length}
                                             </div>
-                                            <div className="text-sm text-yellow-700">待標定</div>
+                                            <div className="text-sm text-yellow-700">{t('pages:uwbLocation.calibrationStatus.pending')}</div>
                                         </div>
                                         <div className="text-center p-4 bg-gray-50 rounded-lg">
                                             <div className="text-2xl font-bold text-gray-600">
                                                 {currentFloors.filter(f => !f.mapImage).length}
                                             </div>
-                                            <div className="text-sm text-gray-700">未上傳地圖</div>
+                                            <div className="text-sm text-gray-700">{t('pages:uwbLocation.calibrationStatus.noMap')}</div>
                                         </div>
                                     </div>
 
                                     {/* 標定進度條 */}
                                     <div className="mt-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium">整體進度</span>
+                                            <span className="text-sm font-medium">{t('pages:uwbLocation.overallProgress')}</span>
                                             <span className="text-sm text-muted-foreground">
                                                 {currentFloors.length > 0
                                                     ? Math.round((currentFloors.filter(f => f.calibration?.isCalibrated).length / currentFloors.length) * 100)
@@ -3266,10 +3269,10 @@ export default function UWBLocationPage() {
                 {/* 場域管理 */}
                 <TabsContent value="homes" className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">場域管理</h2>
+                        <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.homes')}</h2>
                         <Button onClick={() => setShowHomeModal(true)}>
                             <Plus className="h-4 w-4 mr-2" />
-                            新增場域
+                            {t('pages:uwbLocation.actions.addHome')}
                         </Button>
                     </div>
 
@@ -3336,10 +3339,10 @@ export default function UWBLocationPage() {
                 {/* 樓層管理 */}
                 <TabsContent value="floors" className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">樓層管理</h2>
+                        <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.floors')}</h2>
                         <Button onClick={() => setShowFloorModal(true)} disabled={!selectedHome}>
                             <Plus className="h-4 w-4 mr-2" />
-                            新增樓層
+                            {t('pages:uwbLocation.actions.addFloor')}
                         </Button>
                     </div>
 
@@ -3347,7 +3350,7 @@ export default function UWBLocationPage() {
                         <Card>
                             <CardContent className="pt-6 text-center">
                                 <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                                <p className="text-muted-foreground">請先選擇一個場域</p>
+                                <p className="text-muted-foreground">{t('pages:uwbLocation.messages.selectFieldFirst')}</p>
                             </CardContent>
                         </Card>
                     ) : (
@@ -3401,19 +3404,19 @@ export default function UWBLocationPage() {
                                         <CardContent>
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">樓層</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.floor')}</span>
                                                     <span className="font-medium">{floor.level}F</span>
                                                 </div>
                                                 {floor.dimensions && (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">實際大小</span>
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.actualSize')}</span>
                                                         <span className="font-medium">
                                                             {floor.dimensions.realWidth}m × {floor.dimensions.realHeight}m
                                                         </span>
                                                     </div>
                                                 )}
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">地圖狀態</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.mapStatusLabel')}</span>
                                                     <Badge
                                                         variant="secondary"
                                                         className={
@@ -3422,17 +3425,17 @@ export default function UWBLocationPage() {
                                                         }
                                                     >
                                                         {
-                                                            floor.calibration?.isCalibrated ? "已標定" :
-                                                                floor.mapImage ? "已上傳" : "未上傳"
+                                                            floor.calibration?.isCalibrated ? t('pages:uwbLocation.mapStatus.calibrated') :
+                                                                floor.mapImage ? t('pages:uwbLocation.mapStatus.uploaded') : t('pages:uwbLocation.mapStatus.noMap')
                                                         }
                                                     </Badge>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">閘道器數量</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.stats.gateways')}</span>
                                                     <Badge variant="outline">{floorGateways.length}</Badge>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">在線狀態</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.status.online')}</span>
                                                     <Badge
                                                         variant="secondary"
                                                         className={floorGateways.some(g => g.status === 'online') ? "bg-green-100 text-green-700 border-green-200" : ""}
@@ -3514,11 +3517,11 @@ export default function UWBLocationPage() {
                                     <div className="flex items-center justify-between mb-6">
                                         <h2 className="text-2xl font-bold flex items-center">
                                             <Map className="mr-3 h-6 w-6" />
-                                            {calibratingFloor.name} - 地圖標定
+                                            {calibratingFloor.name} - {t('pages:uwbLocation.mapCalibration')}
                                         </h2>
                                         <Button variant="outline" onClick={resetMapCalibration}>
                                             <Trash2 className="h-4 w-4 mr-1" />
-                                            關閉
+                                            {t('pages:uwbLocation.close')}
                                         </Button>
                                     </div>
 
@@ -3529,7 +3532,7 @@ export default function UWBLocationPage() {
                                                 }`}>
                                                 {calibrationStep === 'upload' ? '1' : <CheckCircle2 className="h-5 w-5" />}
                                             </div>
-                                            <span className="ml-2">上傳地圖</span>
+                                            <span className="ml-2">{t('pages:uwbLocation.calibrationSteps.upload')}</span>
                                         </div>
                                         <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
                                         <div className={`flex items-center ${calibrationStep === 'setOrigin' ? 'text-blue-600' :
@@ -3541,7 +3544,7 @@ export default function UWBLocationPage() {
                                                 {calibrationStep === 'setOrigin' ? '2' :
                                                     ['setScale', 'complete'].includes(calibrationStep) ? <CheckCircle2 className="h-5 w-5" /> : '2'}
                                             </div>
-                                            <span className="ml-2">設定原點</span>
+                                            <span className="ml-2">{t('pages:uwbLocation.calibrationSteps.setOrigin')}</span>
                                         </div>
                                         <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
                                         <div className={`flex items-center ${calibrationStep === 'setScale' ? 'text-blue-600' :
@@ -3553,7 +3556,7 @@ export default function UWBLocationPage() {
                                                 {calibrationStep === 'setScale' ? '3' :
                                                     calibrationStep === 'complete' ? <CheckCircle2 className="h-5 w-5" /> : '3'}
                                             </div>
-                                            <span className="ml-2">設定比例</span>
+                                            <span className="ml-2">{t('pages:uwbLocation.calibrationSteps.setScale')}</span>
                                         </div>
                                     </div>
 
@@ -3563,13 +3566,13 @@ export default function UWBLocationPage() {
                                             <CardHeader>
                                                 <CardTitle className="flex items-center">
                                                     <Upload className="mr-2 h-5 w-5" />
-                                                    上傳樓層地圖
+                                                    {t('pages:uwbLocation.uploadFloorMap')}
                                                 </CardTitle>
                                             </CardHeader>
                                             <CardContent>
                                                 <div className="space-y-4">
                                                     <p className="text-sm text-muted-foreground">
-                                                        請上傳 {calibratingFloor.name} 的室內地圖。支援 PNG、JPG、SVG 格式。
+                                                        {t('pages:uwbLocation.uploadInstructions', { floorName: calibratingFloor.name })}
                                                     </p>
                                                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                                                         <Image className="h-12 w-12 mx-auto mb-4 text-gray-400" />
@@ -3585,10 +3588,10 @@ export default function UWBLocationPage() {
                                                             className="cursor-pointer inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                                                         >
                                                             <Upload className="h-4 w-4 mr-2" />
-                                                            選擇地圖文件
+                                                            {t('pages:uwbLocation.selectMapFile')}
                                                         </label>
                                                         <p className="text-sm text-muted-foreground mt-2">
-                                                            或拖拽圖片到此區域
+                                                            {t('pages:uwbLocation.dragImageHint')}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -3602,13 +3605,13 @@ export default function UWBLocationPage() {
                                             <CardHeader>
                                                 <CardTitle className="flex items-center">
                                                     <Target className="mr-2 h-5 w-5" />
-                                                    設定座標原點
+                                                    {t('pages:uwbLocation.setCoordinateOrigin')}
                                                 </CardTitle>
                                             </CardHeader>
                                             <CardContent>
                                                 <div className="space-y-4">
                                                     <p className="text-sm text-muted-foreground">
-                                                        請點擊地圖上的任意位置設定為座標原點，然後輸入該點的實際座標。通常建議選擇房間或走廊的角落作為參考點。
+                                                        {t('pages:uwbLocation.originInstructions')}
                                                     </p>
                                                     <div className="relative border-2 border-blue-300 rounded-lg overflow-hidden bg-blue-50">
                                                         <img
@@ -3621,7 +3624,7 @@ export default function UWBLocationPage() {
                                                         />
                                                         {/* 點擊提示 */}
                                                         <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded shadow-sm">
-                                                            點擊地圖設定原點
+                                                            {t('pages:uwbLocation.clickMapSetOrigin')}
                                                         </div>
                                                         {selectedOrigin && imageLoaded && (() => {
                                                             const imgElement = mapImageRef.current
@@ -3650,13 +3653,13 @@ export default function UWBLocationPage() {
                                                             <div className="flex items-center">
                                                                 <Crosshair className="h-5 w-5 text-green-600 mr-2" />
                                                                 <span className="text-sm font-medium">
-                                                                    原點像素位置: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})
+                                                                    {t('pages:uwbLocation.originPixelPosition')}: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})
                                                                 </span>
                                                             </div>
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div>
                                                                     <label className="text-sm font-medium mb-2 block">
-                                                                        實際 X 座標 (米)
+                                                                        {t('pages:uwbLocation.actualXCoordinate')}
                                                                     </label>
                                                                     <Input
                                                                         type="number"
@@ -3671,7 +3674,7 @@ export default function UWBLocationPage() {
                                                                 </div>
                                                                 <div>
                                                                     <label className="text-sm font-medium mb-2 block">
-                                                                        實際 Y 座標 (米)
+                                                                        {t('pages:uwbLocation.actualYCoordinate')}
                                                                     </label>
                                                                     <Input
                                                                         type="number"
@@ -3695,13 +3698,13 @@ export default function UWBLocationPage() {
                                                                     }}
                                                                 >
                                                                     <RotateCcw className="h-4 w-4 mr-1" />
-                                                                    重選原點
+                                                                    {t('pages:uwbLocation.reselectOrigin')}
                                                                 </Button>
                                                                 <Button
                                                                     size="sm"
                                                                     onClick={() => setCalibrationStep('setScale')}
                                                                 >
-                                                                    下一步
+                                                                    {t('pages:uwbLocation.nextStep')}
                                                                 </Button>
                                                             </div>
                                                         </div>
@@ -3717,13 +3720,13 @@ export default function UWBLocationPage() {
                                             <CardHeader>
                                                 <CardTitle className="flex items-center">
                                                     <Ruler className="mr-2 h-5 w-5" />
-                                                    設定座標比例
+                                                    {t('pages:uwbLocation.setCoordinateScale')}
                                                 </CardTitle>
                                             </CardHeader>
                                             <CardContent>
                                                 <div className="space-y-4">
                                                     <p className="text-sm text-muted-foreground">
-                                                        請在地圖上點選兩個點，然後輸入這兩點之間的實際距離。系統將自動計算像素與公尺的轉換比例。
+                                                        {t('pages:uwbLocation.scaleInstructions')}
                                                     </p>
                                                     <div className="relative border-2 border-green-300 rounded-lg overflow-hidden bg-green-50">
                                                         <img
@@ -3736,7 +3739,7 @@ export default function UWBLocationPage() {
                                                         />
                                                         {/* 點擊提示 */}
                                                         <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow-sm">
-                                                            點擊兩個點設定比例
+                                                            {t('pages:uwbLocation.clickTwoPointsSetScale')}
                                                         </div>
                                                         {/* 顯示原點 */}
                                                         {selectedOrigin && (() => {
@@ -3821,23 +3824,23 @@ export default function UWBLocationPage() {
                                                     {/* 點選狀態顯示 */}
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                         <div className="space-y-2">
-                                                            <div className="text-sm font-medium">選擇的點:</div>
+                                                            <div className="text-sm font-medium">{t('pages:uwbLocation.selectedPoints')}:</div>
                                                             <div className="space-y-1 text-xs">
                                                                 <div className={`flex items-center ${scalePoints.point1 ? 'text-blue-600' : 'text-gray-400'}`}>
                                                                     <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                                                                    點1: {scalePoints.point1 ?
+                                                                    {t('pages:uwbLocation.point1')}: {scalePoints.point1 ?
                                                                         `(${scalePoints.point1.x.toFixed(0)}, ${scalePoints.point1.y.toFixed(0)})` :
-                                                                        '請點擊地圖選擇'}
+                                                                        t('pages:uwbLocation.clickMapSelect')}
                                                                 </div>
                                                                 <div className={`flex items-center ${scalePoints.point2 ? 'text-green-600' : 'text-gray-400'}`}>
                                                                     <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                                                                    點2: {scalePoints.point2 ?
+                                                                    {t('pages:uwbLocation.point2')}: {scalePoints.point2 ?
                                                                         `(${scalePoints.point2.x.toFixed(0)}, ${scalePoints.point2.y.toFixed(0)})` :
-                                                                        '請點擊地圖選擇'}
+                                                                        t('pages:uwbLocation.clickMapSelect')}
                                                                 </div>
                                                                 {scalePoints.point1 && scalePoints.point2 && (
                                                                     <div className="text-amber-600 font-medium">
-                                                                        像素距離: {Math.sqrt(
+                                                                        {t('pages:uwbLocation.pixelDistance')}: {Math.sqrt(
                                                                             Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
                                                                             Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
                                                                         ).toFixed(1)} px
@@ -3847,7 +3850,7 @@ export default function UWBLocationPage() {
                                                         </div>
                                                         <div>
                                                             <label className="text-sm font-medium mb-2 block">
-                                                                實際距離 (米)
+                                                                {t('pages:uwbLocation.actualDistance')}
                                                             </label>
                                                             <Input
                                                                 type="number"
@@ -3864,16 +3867,16 @@ export default function UWBLocationPage() {
                                                                 disabled={!scalePoints.point1 || !scalePoints.point2}
                                                             />
                                                             <p className="text-xs text-muted-foreground mt-1">
-                                                                輸入兩點之間的實際距離
+                                                                {t('pages:uwbLocation.enterActualDistance')}
                                                             </p>
                                                             {scalePoints.point1 && scalePoints.point2 && realDistance > 0 && (
                                                                 <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
-                                                                    <div className="font-medium text-blue-800">計算結果:</div>
+                                                                    <div className="font-medium text-blue-800">{t('pages:uwbLocation.calculationResult')}:</div>
                                                                     <div className="text-blue-700">
-                                                                        比例: {(Math.sqrt(
+                                                                        {t('pages:uwbLocation.ratio')}: {(Math.sqrt(
                                                                             Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
                                                                             Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
-                                                                        ) / realDistance).toFixed(2)} 像素/公尺
+                                                                        ) / realDistance).toFixed(2)} {t('pages:uwbLocation.pixelsPerMeter')}
                                                                     </div>
                                                                 </div>
                                                             )}
@@ -3886,21 +3889,21 @@ export default function UWBLocationPage() {
                                                             onClick={() => setCalibrationStep('setOrigin')}
                                                         >
                                                             <RotateCcw className="h-4 w-4 mr-2" />
-                                                            上一步
+                                                            {t('pages:uwbLocation.previousStep')}
                                                         </Button>
                                                         <Button
                                                             variant="outline"
                                                             onClick={() => setScalePoints({ point1: null, point2: null })}
                                                             disabled={!scalePoints.point1 && !scalePoints.point2}
                                                         >
-                                                            重選點
+                                                            {t('pages:uwbLocation.reselectPoints')}
                                                         </Button>
                                                         <Button
                                                             onClick={saveMapCalibration}
                                                             disabled={!scalePoints.point1 || !scalePoints.point2 || realDistance <= 0}
                                                         >
                                                             <Save className="h-4 w-4 mr-2" />
-                                                            保存標定
+                                                            {t('pages:uwbLocation.saveCalibration')}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -3914,37 +3917,37 @@ export default function UWBLocationPage() {
                                             <CardHeader>
                                                 <CardTitle className="flex items-center text-green-600">
                                                     <CheckCircle2 className="mr-2 h-5 w-5" />
-                                                    標定完成
+                                                    {t('pages:uwbLocation.calibrationComplete')}
                                                 </CardTitle>
                                             </CardHeader>
                                             <CardContent>
                                                 <div className="space-y-4">
                                                     <div className="p-4 bg-green-50 rounded-lg">
-                                                        <h3 className="font-medium text-green-800 mb-2">標定資訊</h3>
+                                                        <h3 className="text-lg font-semibold text-green-800 mb-2">{t('pages:uwbLocation.calibrationInfo')}</h3>
                                                         <div className="space-y-1 text-sm text-green-700">
-                                                            <div>樓層: {calibratingFloor.name}</div>
+                                                            <div>{t('pages:uwbLocation.floor')}: {calibratingFloor.name}</div>
                                                             {selectedOrigin && (
-                                                                <div>原點像素位置: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})</div>
+                                                                <div>{t('pages:uwbLocation.originPixelPosition')}: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})</div>
                                                             )}
-                                                            <div>原點實際座標: ({originCoordinates.x}, {originCoordinates.y}) 米</div>
+                                                            <div>{t('pages:uwbLocation.originActualCoordinates')}: ({originCoordinates.x}, {originCoordinates.y}) {t('pages:uwbLocation.meters')}</div>
                                                             {scalePoints.point1 && scalePoints.point2 && (
                                                                 <>
-                                                                    <div>標定點1: ({scalePoints.point1.x.toFixed(0)}, {scalePoints.point1.y.toFixed(0)}) 像素</div>
-                                                                    <div>標定點2: ({scalePoints.point2.x.toFixed(0)}, {scalePoints.point2.y.toFixed(0)}) 像素</div>
-                                                                    <div>實際距離: {realDistance} 米</div>
-                                                                    <div>像素距離: {Math.sqrt(
+                                                                    <div>{t('pages:uwbLocation.calibrationPoint1')}: ({scalePoints.point1.x.toFixed(0)}, {scalePoints.point1.y.toFixed(0)}) {t('pages:uwbLocation.pixels')}</div>
+                                                                    <div>{t('pages:uwbLocation.calibrationPoint2')}: ({scalePoints.point2.x.toFixed(0)}, {scalePoints.point2.y.toFixed(0)}) {t('pages:uwbLocation.pixels')}</div>
+                                                                    <div>{t('pages:uwbLocation.actualDistance')}: {realDistance} {t('pages:uwbLocation.meters')}</div>
+                                                                    <div>{t('pages:uwbLocation.pixelDistance')}: {Math.sqrt(
                                                                         Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
                                                                         Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
-                                                                    ).toFixed(1)} 像素</div>
+                                                                    ).toFixed(1)} {t('pages:uwbLocation.pixels')}</div>
                                                                 </>
                                                             )}
-                                                            <div>比例: {pixelToMeterRatio.toFixed(2)} 像素/公尺</div>
+                                                            <div>{t('pages:uwbLocation.ratio')}: {pixelToMeterRatio.toFixed(2)} {t('pages:uwbLocation.pixelsPerMeter')}</div>
                                                         </div>
                                                     </div>
                                                     <div className="relative border rounded-lg overflow-hidden">
                                                         <img
                                                             src={uploadedImage}
-                                                            alt="已標定地圖"
+                                                            alt={t('pages:uwbLocation.calibratedMap')}
                                                             className="w-full max-h-64 object-contain"
                                                         />
                                                         {selectedOrigin && (
@@ -3959,13 +3962,13 @@ export default function UWBLocationPage() {
                                                     </div>
                                                     <div className="flex gap-2">
                                                         <Button variant="outline" onClick={resetMapCalibration}>
-                                                            完成
+                                                            {t('pages:uwbLocation.complete')}
                                                         </Button>
                                                         <Button
                                                             variant="outline"
                                                             onClick={() => setCalibrationStep('setOrigin')}
                                                         >
-                                                            重新標定
+                                                            {t('pages:uwbLocation.recalibrate')}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -4180,7 +4183,7 @@ export default function UWBLocationPage() {
                         <Card>
                             <CardContent className="pt-6 text-center">
                                 <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                                <p className="text-muted-foreground">請先新增樓層才能配置閘道器</p>
+                                <p className="text-muted-foreground">{t('pages:uwbLocation.messages.addFloorFirst')}</p>
                             </CardContent>
                         </Card>
                     ) : (
@@ -4637,7 +4640,7 @@ export default function UWBLocationPage() {
                                     <div className="text-center py-8 text-muted-foreground">
                                         <Anchor className="mx-auto h-8 w-8 mb-2 opacity-50" />
                                         <p className="font-medium">
-                                            {selectedGatewayForAnchors ? "尚未發現任何錨點" : "請先選擇閘道器"}
+                                            {selectedGatewayForAnchors ? t('pages:uwbLocation.messages.noAnchorsFound') : t('pages:uwbLocation.messages.selectGatewayFirst')}
                                         </p>
                                         {selectedGatewayForAnchors && (
                                             <div className="text-xs space-y-1 mt-2">
@@ -5425,7 +5428,7 @@ export default function UWBLocationPage() {
                                     <div className="text-center py-8 text-muted-foreground">
                                         <Tag className="mx-auto h-8 w-8 mb-2 opacity-50" />
                                         <p className="font-medium">
-                                            {selectedGatewayForTags ? "尚未發現任何標籤" : "請先選擇閘道器"}
+                                            {selectedGatewayForTags ? t('pages:uwbLocation.messages.noTagsFound') : t('pages:uwbLocation.messages.selectGatewayFirst')}
                                         </p>
                                         {selectedGatewayForTags && (
                                             <div className="text-xs space-y-1 mt-2">
@@ -6037,34 +6040,34 @@ export default function UWBLocationPage() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <Card className="w-full max-w-md">
                         <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>新增場域</CardTitle>
+                            <CardTitle>{t('pages:uwbLocation.actions.addHome')}</CardTitle>
                             <Button variant="ghost" size="sm" onClick={() => setShowHomeModal(false)}>
                                 <X className="h-5 w-5" />
                             </Button>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <label className="text-sm font-medium mb-2 block">場域名稱</label>
+                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeName')}</label>
                                 <Input
                                     value={homeForm.name}
                                     onChange={(e) => setHomeForm(prev => ({ ...prev, name: e.target.value }))}
-                                    placeholder="請輸入場域名稱"
+                                    placeholder={t('pages:uwbLocation.forms.homeNamePlaceholder')}
                                 />
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-2 block">場域描述</label>
+                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeDescription')}</label>
                                 <Textarea
                                     value={homeForm.description}
                                     onChange={(e) => setHomeForm(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="請輸入場域描述"
+                                    placeholder={t('pages:uwbLocation.forms.homeDescriptionPlaceholder')}
                                 />
                             </div>
                             <div>
-                                <label className="text-sm font-medium mb-2 block">場域地址</label>
+                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeAddress')}</label>
                                 <Input
                                     value={homeForm.address}
                                     onChange={(e) => setHomeForm(prev => ({ ...prev, address: e.target.value }))}
-                                    placeholder="請輸入場域地址"
+                                    placeholder={t('pages:uwbLocation.forms.homeAddressPlaceholder')}
                                 />
                             </div>
                             <div className="flex gap-3 pt-4">
@@ -6073,14 +6076,14 @@ export default function UWBLocationPage() {
                                     onClick={() => setShowHomeModal(false)}
                                     className="flex-1"
                                 >
-                                    取消
+                                    {t('common:actions.cancel')}
                                 </Button>
                                 <Button
                                     onClick={handleHomeSubmit}
                                     className="flex-1"
                                     disabled={!homeForm.name || !homeForm.description || !homeForm.address}
                                 >
-                                    新增場域
+                                    {t('pages:uwbLocation.actions.addHome')}
                                 </Button>
                             </div>
                         </CardContent>
@@ -6093,7 +6096,7 @@ export default function UWBLocationPage() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <Card className="w-full max-w-md">
                         <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>新增樓層</CardTitle>
+                            <CardTitle>{t('pages:uwbLocation.actions.addFloor')}</CardTitle>
                             <Button variant="ghost" size="sm" onClick={() => setShowFloorModal(false)}>
                                 <X className="h-5 w-5" />
                             </Button>
@@ -6101,15 +6104,15 @@ export default function UWBLocationPage() {
                         <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium mb-2 block">樓層名稱</label>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.name')}</label>
                                     <Input
                                         value={floorForm.name}
                                         onChange={(e) => setFloorForm(prev => ({ ...prev, name: e.target.value }))}
-                                        placeholder="請輸入樓層名稱"
+                                        placeholder={t('pages:uwbLocation.floorForm.namePlaceholder')}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium mb-2 block">樓層編號</label>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.level')}</label>
                                     <Input
                                         type="number"
                                         value={floorForm.level}
@@ -6119,7 +6122,7 @@ export default function UWBLocationPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium mb-2 block">實際寬度 (米)</label>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.realWidth')}</label>
                                     <Input
                                         type="number"
                                         step="0.1"
@@ -6129,7 +6132,7 @@ export default function UWBLocationPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium mb-2 block">實際高度 (米)</label>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.realHeight')}</label>
                                     <Input
                                         type="number"
                                         step="0.1"
@@ -6145,14 +6148,14 @@ export default function UWBLocationPage() {
                                     onClick={() => setShowFloorModal(false)}
                                     className="flex-1"
                                 >
-                                    取消
+                                    {t('common:actions.cancel')}
                                 </Button>
                                 <Button
                                     onClick={handleFloorSubmit}
                                     className="flex-1"
                                     disabled={!floorForm.name || !selectedHome}
                                 >
-                                    新增樓層
+                                    {t('pages:uwbLocation.actions.addFloor')}
                                 </Button>
                             </div>
                         </CardContent>
