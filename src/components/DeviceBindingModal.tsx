@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useDeviceManagement } from '@/contexts/DeviceManagementContext'
 import { Device, Resident, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
+import { useTranslation } from 'react-i18next'
 
 interface DeviceBindingModalProps {
     isOpen: boolean
@@ -34,6 +35,7 @@ export default function DeviceBindingModal({
     device,
     resident
 }: DeviceBindingModalProps) {
+    const { t } = useTranslation()
     const {
         devices,
         residents,
@@ -103,9 +105,9 @@ export default function DeviceBindingModal({
 
         return (
             <Badge className={colors[status]}>
-                {status === DeviceStatus.ACTIVE ? '活躍' :
-                    status === DeviceStatus.INACTIVE ? '待機' :
-                        status === DeviceStatus.OFFLINE ? '離線' : '異常'}
+                {status === DeviceStatus.ACTIVE ? t('status:device.status.active') :
+                    status === DeviceStatus.INACTIVE ? t('status:device.status.inactive') :
+                        status === DeviceStatus.OFFLINE ? t('status:device.status.offline') : t('status:device.status.error')}
             </Badge>
         )
     }
@@ -119,9 +121,9 @@ export default function DeviceBindingModal({
 
         return (
             <Badge className={colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'}>
-                {status === 'good' ? '良好' :
-                    status === 'attention' ? '注意' :
-                        status === 'critical' ? '危急' : '未知'}
+                {status === 'good' ? t('status:resident.status.good') :
+                    status === 'attention' ? t('status:resident.status.attention') :
+                        status === 'critical' ? t('status:resident.status.critical') : t('status:resident.status.unknown')}
             </Badge>
         )
     }
@@ -130,7 +132,7 @@ export default function DeviceBindingModal({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-xl">設備綁定管理</CardTitle>
+                    <CardTitle className="text-xl">{t('pages:residents.deviceBinding.title')}</CardTitle>
                     <Button variant="ghost" size="sm" onClick={onClose}>
                         <X className="h-5 w-5" />
                     </Button>
@@ -142,13 +144,15 @@ export default function DeviceBindingModal({
                         <div className="bg-blue-50 p-4 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
                                 <Link className="h-5 w-5 text-blue-600" />
-                                <h3 className="font-semibold text-blue-800">當前綁定</h3>
+                                <h3 className="font-semibold text-blue-800">{t('pages:residents.deviceBinding.currentBinding')}</h3>
                             </div>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="text-sm text-blue-700">
-                                        設備 <strong>{selectedDevice.name}</strong>
-                                        已綁定至院友 <strong>{currentBinding.name}</strong>
+                                        {t('pages:residents.deviceBinding.deviceBoundToResident', {
+                                            deviceName: selectedDevice.name,
+                                            residentName: currentBinding.name
+                                        })}
                                     </div>
                                 </div>
                                 <Button
@@ -158,7 +162,7 @@ export default function DeviceBindingModal({
                                     className="text-red-600 border-red-200 hover:bg-red-50"
                                 >
                                     <Unlink className="h-4 w-4 mr-1" />
-                                    解除綁定
+                                    {t('pages:residents.deviceBinding.unbind')}
                                 </Button>
                             </div>
                         </div>
@@ -167,13 +171,13 @@ export default function DeviceBindingModal({
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* 設備選擇 */}
                         <div>
-                            <h3 className="text-lg font-semibold mb-3">選擇設備</h3>
+                            <h3 className="text-lg font-semibold mb-3">{t('pages:residents.deviceBinding.selectDevice')}</h3>
 
                             {/* 設備搜索 */}
                             <div className="relative mb-4">
                                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="搜尋設備名稱、硬體編號..."
+                                    placeholder={t('pages:residents.deviceBinding.searchDevicePlaceholder')}
                                     value={searchDevice}
                                     onChange={(e) => setSearchDevice(e.target.value)}
                                     className="pl-10"
@@ -192,8 +196,8 @@ export default function DeviceBindingModal({
                                             key={device.id}
                                             onClick={() => setSelectedDeviceId(device.id)}
                                             className={`p-3 rounded-lg border cursor-pointer transition-colors ${isSelected
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-200 hover:bg-gray-50'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-gray-200 hover:bg-gray-50'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -210,7 +214,7 @@ export default function DeviceBindingModal({
                                                     </p>
                                                     {deviceResident && (
                                                         <p className="text-xs text-blue-600">
-                                                            已綁定: {deviceResident.name}
+                                                            {t('pages:residents.deviceBinding.alreadyBound')}: {deviceResident.name}
                                                         </p>
                                                     )}
                                                 </div>
@@ -228,13 +232,13 @@ export default function DeviceBindingModal({
 
                         {/* 院友選擇 */}
                         <div>
-                            <h3 className="text-lg font-semibold mb-3">選擇院友</h3>
+                            <h3 className="text-lg font-semibold mb-3">{t('pages:residents.deviceBinding.selectResident')}</h3>
 
                             {/* 院友搜索 */}
                             <div className="relative mb-4">
                                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    placeholder="搜尋院友姓名、房間號..."
+                                    placeholder={t('pages:residents.deviceBinding.searchResidentPlaceholder')}
                                     value={searchResident}
                                     onChange={(e) => setSearchResident(e.target.value)}
                                     className="pl-10"
@@ -252,8 +256,8 @@ export default function DeviceBindingModal({
                                             key={resident.id}
                                             onClick={() => setSelectedResidentId(resident.id)}
                                             className={`p-3 rounded-lg border cursor-pointer transition-colors ${isSelected
-                                                    ? 'border-blue-500 bg-blue-50'
-                                                    : 'border-gray-200 hover:bg-gray-50'
+                                                ? 'border-blue-500 bg-blue-50'
+                                                : 'border-gray-200 hover:bg-gray-50'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -266,10 +270,10 @@ export default function DeviceBindingModal({
                                                         {getResidentStatusBadge(resident.status)}
                                                     </div>
                                                     <p className="text-sm text-muted-foreground">
-                                                        {resident.age} 歲 • 房間 {resident.room}
+                                                        {resident.age} {t('pages:residents.ageUnit')} • {t('pages:residents.room')} {resident.room}
                                                     </p>
                                                     <p className="text-xs text-gray-500">
-                                                        {deviceCount} 個設備
+                                                        {deviceCount} {t('pages:residents.deviceCount')}
                                                     </p>
                                                 </div>
                                             </div>
@@ -283,26 +287,26 @@ export default function DeviceBindingModal({
                     {/* 綁定設置 */}
                     {selectedDeviceId && selectedResidentId && (
                         <div className="bg-gray-50 p-4 rounded-lg">
-                            <h4 className="font-semibold mb-3">綁定設置</h4>
+                            <h4 className="font-semibold mb-3">{t('pages:residents.deviceBinding.bindingSettings')}</h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium mb-2 block">綁定類型</label>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:residents.deviceBinding.bindingType')}</label>
                                     <Select value={bindingType} onValueChange={(value: 'primary' | 'secondary') => setBindingType(value)}>
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="primary">主要設備</SelectItem>
-                                            <SelectItem value="secondary">輔助設備</SelectItem>
+                                            <SelectItem value="primary">{t('pages:residents.deviceBinding.primaryDevice')}</SelectItem>
+                                            <SelectItem value="secondary">{t('pages:residents.deviceBinding.secondaryDevice')}</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
 
                                 <div>
-                                    <label className="text-sm font-medium mb-2 block">備註</label>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:residents.deviceBinding.notes')}</label>
                                     <Input
-                                        placeholder="綁定備註（選填）"
+                                        placeholder={t('pages:residents.deviceBinding.notesPlaceholder')}
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
                                     />
@@ -315,7 +319,7 @@ export default function DeviceBindingModal({
                     {selectedResident && residentDevices.length > 0 && (
                         <div className="bg-green-50 p-4 rounded-lg">
                             <h4 className="font-semibold text-green-800 mb-2">
-                                {selectedResident.name} 的設備
+                                {t('pages:residents.deviceBinding.residentDevices', { name: selectedResident.name })}
                             </h4>
                             <div className="flex flex-wrap gap-2">
                                 {residentDevices.map((device) => {
@@ -335,12 +339,12 @@ export default function DeviceBindingModal({
                     {/* 操作按鈕 */}
                     <div className="flex gap-3 pt-4">
                         <Button variant="outline" onClick={onClose} className="flex-1">
-                            取消
+                            {t('common:actions.cancel')}
                         </Button>
                         {selectedDeviceId && selectedResidentId && !currentBinding && (
                             <Button onClick={handleBind} className="flex-1">
                                 <Link className="h-4 w-4 mr-2" />
-                                確認綁定
+                                {t('pages:residents.deviceBinding.confirmBind')}
                             </Button>
                         )}
                     </div>

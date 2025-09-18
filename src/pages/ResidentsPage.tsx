@@ -236,13 +236,13 @@ export default function ResidentsPage() {
         if (data.residents && Array.isArray(data.residents)) {
           // 注意：這裡需要通過 Context 來更新院友數據
           console.log('📥 院友數據已導入，但需要通過系統管理更新')
-          alert('✅ 數據導入成功！注意：院友數據需要通過系統管理更新')
+          alert(t('pages:residents.alerts.importSuccess'))
         } else {
-          alert('❌ 無效的數據格式')
+          alert(t('pages:residents.alerts.invalidFormat'))
         }
       } catch (error) {
         console.error('導入數據失敗:', error)
-        alert('❌ 導入數據失敗')
+        alert(t('pages:residents.alerts.importFailed'))
       }
     }
     reader.readAsText(file)
@@ -327,7 +327,7 @@ export default function ResidentsPage() {
             break
           case 'R':
             e.preventDefault()
-            if (confirm('確定要重置所有院友管理設定嗎？此操作不可撤銷！')) {
+            if (confirm(t('pages:residents.confirms.resetSettings'))) {
               clearAllStorage()
             }
             break
@@ -417,7 +417,7 @@ export default function ResidentsPage() {
 
   // 移除病患
   const handleRemoveResident = (residentId: string) => {
-    if (confirm('確定要移除這個院友嗎？此操作無法復原。')) {
+    if (confirm(t('pages:residents.confirms.removeResident'))) {
       removeResident(residentId)
       if (selectedResident?.id === residentId) {
         setSelectedResident(null)
@@ -865,8 +865,8 @@ export default function ResidentsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>未綁定設備</span>
-              <Badge variant="outline">{unboundDevices.length} 個設備</Badge>
+              <span>{t('pages:residents.unboundDevices')}</span>
+              <Badge variant="outline">{unboundDevices.length} {t('pages:residents.deviceCount')}</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -892,7 +892,7 @@ export default function ResidentsPage() {
                         onClick={() => handleDeviceBinding(residents[0], device)}
                       >
                         <Plus className="h-3 w-3 mr-1" />
-                        綁定
+                        {t('pages:residents.bindDevice')}
                       </Button>
                     </div>
                   </div>
@@ -1049,24 +1049,24 @@ export default function ResidentsPage() {
               </div>
               <CardTitle className="text-xl">{selectedResident.name}</CardTitle>
               <p className="text-muted-foreground">
-                {selectedResident.age} 歲, {selectedResident.gender}, 房間 {selectedResident.room}
+                {selectedResident.age} {t('pages:residents.ageUnit')}, {selectedResident.gender}, {t('pages:residents.room')} {selectedResident.room}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* 編輯院友資訊 */}
               {isEditingResident ? (
                 <div className="space-y-4">
-                  <h4 className="font-semibold text-blue-600">編輯院友資訊</h4>
+                  <h4 className="font-semibold text-blue-600">{t('pages:residents.detailModal.editInfo')}</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium mb-2 block">姓名</label>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.name')}</label>
                       <Input
                         value={newResident.name}
                         onChange={(e) => setNewResident({ ...newResident, name: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">年齡</label>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.age')}</label>
                       <Input
                         type="number"
                         value={newResident.age || ''}
@@ -1074,39 +1074,39 @@ export default function ResidentsPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">性別</label>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.gender')}</label>
                       <Select value={newResident.gender} onValueChange={(value) => setNewResident({ ...newResident, gender: value })}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="男">男</SelectItem>
-                          <SelectItem value="女">女</SelectItem>
+                          <SelectItem value="男">{t('pages:residents.modal.genderOptions.male')}</SelectItem>
+                          <SelectItem value="女">{t('pages:residents.modal.genderOptions.female')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">房間號</label>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.room')}</label>
                       <Input
                         value={newResident.room}
                         onChange={(e) => setNewResident({ ...newResident, room: e.target.value })}
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">狀態</label>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.status')}</label>
                       <Select value={newResident.status} onValueChange={(value: 'good' | 'attention' | 'critical') => setNewResident({ ...newResident, status: value })}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="good">良好</SelectItem>
-                          <SelectItem value="attention">需注意</SelectItem>
-                          <SelectItem value="critical">危急</SelectItem>
+                          <SelectItem value="good">{t('status:resident.status.good')}</SelectItem>
+                          <SelectItem value="attention">{t('status:resident.status.attention')}</SelectItem>
+                          <SelectItem value="critical">{t('status:resident.status.critical')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">頭像</label>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.avatar')}</label>
                       <Input
                         value={newResident.avatar}
                         onChange={(e) => setNewResident({ ...newResident, avatar: e.target.value })}
@@ -1115,7 +1115,7 @@ export default function ResidentsPage() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium mb-2 block">緊急聯絡人姓名</label>
+                    <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.emergencyContactName')}</label>
                     <Input
                       value={newResident.emergencyContact.name}
                       onChange={(e) => setNewResident({
@@ -1127,7 +1127,7 @@ export default function ResidentsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium mb-2 block">關係</label>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.relationship')}</label>
                       <Input
                         value={newResident.emergencyContact.relationship}
                         onChange={(e) => setNewResident({
@@ -1137,7 +1137,7 @@ export default function ResidentsPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">電話</label>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.phone')}</label>
                       <Input
                         value={newResident.emergencyContact.phone}
                         onChange={(e) => setNewResident({
@@ -1150,14 +1150,14 @@ export default function ResidentsPage() {
 
                   <div className="flex gap-2">
                     <Button onClick={handleUpdateResident} size="sm">
-                      儲存
+                      {t('common:actions.save')}
                     </Button>
                     <Button
                       variant="outline"
                       onClick={() => setIsEditingResident(false)}
                       size="sm"
                     >
-                      取消
+                      {t('common:actions.cancel')}
                     </Button>
                   </div>
                 </div>
@@ -1165,7 +1165,7 @@ export default function ResidentsPage() {
                 <>
                   {/* 緊急聯絡人 */}
                   <div>
-                    <h4 className="font-semibold text-blue-600 mb-2">緊急聯絡人</h4>
+                    <h4 className="font-semibold text-blue-600 mb-2">{t('pages:residents.detailModal.emergencyContact')}</h4>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Users className="w-4 h-4" />
@@ -1182,32 +1182,32 @@ export default function ResidentsPage() {
 
                   {/* 照護注意事項 */}
                   <div>
-                    <h4 className="font-semibold text-blue-600 mb-2">照護注意事項</h4>
+                    <h4 className="font-semibold text-blue-600 mb-2">{t('pages:residents.detailModal.careNotes')}</h4>
                     {isEditingNotes ? (
                       <div className="space-y-2">
                         <Textarea
                           value={editedNotes}
                           onChange={(e) => setEditedNotes(e.target.value)}
-                          placeholder="請輸入照護注意事項..."
+                          placeholder={t('pages:residents.detailModal.careNotesPlaceholder')}
                           rows={4}
                         />
                         <div className="flex gap-2">
                           <Button onClick={handleUpdateNotes} size="sm">
-                            儲存
+                            {t('common:actions.save')}
                           </Button>
                           <Button
                             variant="outline"
                             onClick={() => setIsEditingNotes(false)}
                             size="sm"
                           >
-                            取消
+                            {t('common:actions.cancel')}
                           </Button>
                         </div>
                       </div>
                     ) : (
                       <div className="bg-gray-50 p-3 rounded-lg">
                         <p className="text-sm whitespace-pre-wrap">
-                          {selectedResident.careNotes || '暫無照護注意事項'}
+                          {selectedResident.careNotes || t('pages:residents.detailModal.noCareNotes')}
                         </p>
                         <Button
                           variant="ghost"
@@ -1216,7 +1216,7 @@ export default function ResidentsPage() {
                           className="mt-2 p-0 h-auto"
                         >
                           <Edit className="w-4 h-4 mr-1" />
-                          編輯注意事項
+                          {t('pages:residents.detailModal.editCareNotes')}
                         </Button>
                       </div>
                     )}
@@ -1225,7 +1225,7 @@ export default function ResidentsPage() {
                   {/* 綁定設備列表 */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-blue-600">綁定設備</h4>
+                      <h4 className="font-semibold text-blue-600">{t('pages:residents.boundDevices')}</h4>
                       <Button
                         size="sm"
                         variant="outline"
@@ -1235,7 +1235,7 @@ export default function ResidentsPage() {
                         }}
                       >
                         <Plus className="h-4 w-4 mr-1" />
-                        添加設備
+                        {t('pages:residents.detailModal.addDevice')}
                       </Button>
                     </div>
                     {getDevicesForResident(selectedResident.id).length > 0 ? (
@@ -1270,7 +1270,7 @@ export default function ResidentsPage() {
                       </div>
                     ) : (
                       <div className="text-center py-4 text-gray-500 text-sm">
-                        尚未綁定任何設備
+                        {t('pages:residents.detailModal.noDevicesBound')}
                       </div>
                     )}
                   </div>
@@ -1284,7 +1284,7 @@ export default function ResidentsPage() {
                   onClick={() => setSelectedResident(null)}
                   className="flex-1"
                 >
-                  關閉
+                  {t('pages:residents.detailModal.close')}
                 </Button>
                 {!isEditingResident && (
                   <Button
@@ -1304,7 +1304,7 @@ export default function ResidentsPage() {
                     className="flex-1"
                   >
                     <Edit className="h-4 w-4 mr-1" />
-                    編輯資訊
+                    {t('pages:residents.detailModal.editInfo')}
                   </Button>
                 )}
               </div>

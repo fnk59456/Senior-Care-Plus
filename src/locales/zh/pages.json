@@ -130,6 +130,47 @@
                 "male": "男",
                 "female": "女"
             }
+        },
+        "deviceBinding": {
+            "title": "設備綁定管理",
+            "currentBinding": "當前綁定",
+            "deviceBoundToResident": "設備 {{deviceName}} 已綁定至院友 {{residentName}}",
+            "unbind": "解除綁定",
+            "selectDevice": "選擇設備",
+            "searchDevicePlaceholder": "搜尋設備名稱、硬體編號...",
+            "alreadyBound": "已綁定",
+            "selectResident": "選擇院友",
+            "searchResidentPlaceholder": "搜尋院友姓名、房間號...",
+            "bindingSettings": "綁定設置",
+            "bindingType": "綁定類型",
+            "primaryDevice": "主要設備",
+            "secondaryDevice": "輔助設備",
+            "notes": "備註",
+            "notesPlaceholder": "綁定備註（選填）",
+            "residentDevices": "{{name}} 的設備",
+            "confirmBind": "確認綁定"
+        },
+        "detailModal": {
+            "editInfo": "編輯院友資訊",
+            "emergencyContact": "緊急聯絡人",
+            "careNotes": "照護注意事項",
+            "careNotesPlaceholder": "請輸入照護注意事項...",
+            "noCareNotes": "暫無照護注意事項",
+            "editCareNotes": "編輯注意事項",
+            "addDevice": "添加設備",
+            "noDevicesBound": "尚未綁定任何設備",
+            "close": "關閉"
+        },
+        "unboundDevices": "未綁定設備",
+        "bindDevice": "綁定",
+        "alerts": {
+            "importSuccess": "✅ 數據導入成功！注意：院友數據需要通過系統管理更新",
+            "invalidFormat": "❌ 無效的數據格式",
+            "importFailed": "❌ 導入數據失敗"
+        },
+        "confirms": {
+            "resetSettings": "確定要重置所有院友管理設定嗎？此操作不可撤銷！",
+            "removeResident": "確定要移除這個院友嗎？此操作無法復原。"
         }
     },
     "settings": {

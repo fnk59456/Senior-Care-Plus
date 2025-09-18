@@ -162,6 +162,42 @@ export default function TestI18nPage() {
                             翻譯鍵值結構已修復，現在應該顯示正確的中文文字而不是程式碼變數。
                         </p>
                     </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">設備綁定管理彈跳視窗：</h3>
+                        <p>標題: {t('pages:residents.deviceBinding.title')}</p>
+                        <p>選擇設備: {t('pages:residents.deviceBinding.selectDevice')}</p>
+                        <p>選擇院友: {t('pages:residents.deviceBinding.selectResident')}</p>
+                        <p>綁定設置: {t('pages:residents.deviceBinding.bindingSettings')}</p>
+                        <p>確認綁定: {t('pages:residents.deviceBinding.confirmBind')}</p>
+                    </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">院友詳情彈跳視窗：</h3>
+                        <p>編輯資訊: {t('pages:residents.detailModal.editInfo')}</p>
+                        <p>緊急聯絡人: {t('pages:residents.detailModal.emergencyContact')}</p>
+                        <p>照護注意事項: {t('pages:residents.detailModal.careNotes')}</p>
+                        <p>綁定設備: {t('pages:residents.boundDevices')}</p>
+                        <p>添加設備: {t('pages:residents.detailModal.addDevice')}</p>
+                        <p>關閉: {t('pages:residents.detailModal.close')}</p>
+                        <p>儲存: {t('common:actions.save')}</p>
+                    </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">未綁定設備列表：</h3>
+                        <p>未綁定設備: {t('pages:residents.unboundDevices')}</p>
+                        <p>設備數量: {t('pages:residents.deviceCount')}</p>
+                        <p>綁定按鈕: {t('pages:residents.bindDevice')}</p>
+                    </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">對話框和提示：</h3>
+                        <p>導入成功: {t('pages:residents.alerts.importSuccess')}</p>
+                        <p>無效格式: {t('pages:residents.alerts.invalidFormat')}</p>
+                        <p>導入失敗: {t('pages:residents.alerts.importFailed')}</p>
+                        <p>重置確認: {t('pages:residents.confirms.resetSettings')}</p>
+                        <p>移除確認: {t('pages:residents.confirms.removeResident')}</p>
+                    </div>
                 </CardContent>
             </Card>
 

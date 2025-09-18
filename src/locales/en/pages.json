@@ -130,6 +130,47 @@
                 "male": "Male",
                 "female": "Female"
             }
+        },
+        "deviceBinding": {
+            "title": "Device Binding Management",
+            "currentBinding": "Current Binding",
+            "deviceBoundToResident": "Device {{deviceName}} is bound to resident {{residentName}}",
+            "unbind": "Unbind",
+            "selectDevice": "Select Device",
+            "searchDevicePlaceholder": "Search device name, hardware ID...",
+            "alreadyBound": "Already Bound",
+            "selectResident": "Select Resident",
+            "searchResidentPlaceholder": "Search resident name, room number...",
+            "bindingSettings": "Binding Settings",
+            "bindingType": "Binding Type",
+            "primaryDevice": "Primary Device",
+            "secondaryDevice": "Secondary Device",
+            "notes": "Notes",
+            "notesPlaceholder": "Binding notes (optional)",
+            "residentDevices": "{{name}}'s Devices",
+            "confirmBind": "Confirm Bind"
+        },
+        "detailModal": {
+            "editInfo": "Edit Resident Information",
+            "emergencyContact": "Emergency Contact",
+            "careNotes": "Care Notes",
+            "careNotesPlaceholder": "Please enter care notes...",
+            "noCareNotes": "No care notes available",
+            "editCareNotes": "Edit Care Notes",
+            "addDevice": "Add Device",
+            "noDevicesBound": "No devices bound yet",
+            "close": "Close"
+        },
+        "unboundDevices": "Unbound Devices",
+        "bindDevice": "Bind",
+        "alerts": {
+            "importSuccess": "✅ Data import successful! Note: Resident data needs to be updated through system management",
+            "invalidFormat": "❌ Invalid data format",
+            "importFailed": "❌ Data import failed"
+        },
+        "confirms": {
+            "resetSettings": "Are you sure you want to reset all resident management settings? This action cannot be undone!",
+            "removeResident": "Are you sure you want to remove this resident? This action cannot be undone."
         }
     },
     "settings": {
