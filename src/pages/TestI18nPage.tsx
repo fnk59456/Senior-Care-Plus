@@ -221,6 +221,31 @@ export default function TestI18nPage() {
                         <p>監控圖標: {t('pages:health.monitoringIcons.temperature')}, {t('pages:health.monitoringIcons.heartRate')}, {t('pages:health.monitoringIcons.diaper')}</p>
                         <p>患者狀態: {t('pages:health.patientStatus.normal')}, {t('pages:health.patientStatus.error')}, {t('pages:health.patientStatus.attention')}</p>
                     </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">緊急呼叫頁面：</h3>
+                        <p>頁面標題: {t('pages:emergencyCall.title')}</p>
+                        <p>頁面描述: {t('pages:emergencyCall.subtitle')}</p>
+                        <p>患者選擇: {t('pages:emergencyCall.patient')}, {t('pages:emergencyCall.selectPatient')}</p>
+                        <p>位置選擇: {t('pages:emergencyCall.location')}, {t('pages:emergencyCall.selectLocation')}</p>
+                        <p>緊急按鈕: {t('pages:emergencyCall.emergencyButton')}</p>
+                        <p>緊急類型: {t('pages:emergencyCall.types.fall')}, {t('pages:emergencyCall.types.pain')}, {t('pages:emergencyCall.types.toilet')}</p>
+                        <p>呼叫狀態: {t('pages:emergencyCall.status.responding')}, {t('pages:emergencyCall.status.completed')}, {t('pages:emergencyCall.status.cancelled')}</p>
+                        <p>呼叫記錄: {t('pages:emergencyCall.callHistory')}, {t('pages:emergencyCall.emptyState.noRecords')}</p>
+                        <p>對話框: {t('pages:emergencyCall.modals.selectType.title')}, {t('pages:emergencyCall.modals.cancelCall.title')}</p>
+                    </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">定時提醒頁面：</h3>
+                        <p>頁面標題: {t('pages:reminders.title')}</p>
+                        <p>頁面描述: {t('pages:reminders.subtitle')}</p>
+                        <p>操作按鈕: {t('pages:reminders.addReminder')}</p>
+                        <p>今日提醒: {t('pages:reminders.todayReminders')}</p>
+                        <p>提醒類型: {t('pages:reminders.types.medication')}, {t('pages:reminders.types.water')}, {t('pages:reminders.types.physicalTherapy')}</p>
+                        <p>提醒描述: {t('pages:reminders.descriptions.hypertension')}, {t('pages:reminders.descriptions.diabetes')}, {t('pages:reminders.descriptions.hydration')}</p>
+                        <p>完成按鈕: {t('pages:reminders.complete')}</p>
+                        <p>功能卡片: {t('pages:reminders.cards.periodic.title')}, {t('pages:reminders.cards.statistics.title')}, {t('pages:reminders.cards.settings.title')}</p>
+                    </div>
                 </CardContent>
             </Card>
 

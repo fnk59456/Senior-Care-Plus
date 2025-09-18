@@ -306,6 +306,98 @@
             "resetSettings": "確定要重置所有健康監控設定嗎？此操作不可撤銷！"
         }
     },
+    "emergencyCall": {
+        "title": "緊急呼叫",
+        "subtitle": "快速發送緊急求助信號，確保及時獲得協助",
+        "patient": "患者",
+        "location": "位置",
+        "selectPatient": "選擇患者",
+        "selectLocation": "選擇位置",
+        "emergencyButton": "緊急\n呼叫",
+        "callHistory": "呼叫記錄",
+        "refreshStatus": "刷新狀態",
+        "types": {
+            "fall": "跌倒",
+            "pain": "疼痛",
+            "toilet": "如廁協助",
+            "medicine": "藥物協助",
+            "help": "其他協助"
+        },
+        "status": {
+            "responding": "正在響應中...",
+            "caregiverOnWay": "護理人員正趕往現場...",
+            "completed": "已解決",
+            "cancelled": "已取消",
+            "pending": "等待響應"
+        },
+        "info": {
+            "patient": "患者",
+            "location": "位置",
+            "type": "類型",
+            "callTime": "呼叫時間",
+            "waitTime": "等待時間",
+            "responder": "響應人員",
+            "responseTime": "響應時間"
+        },
+        "record": {
+            "callTime": "呼叫時間",
+            "completedTime": "處理時間",
+            "handler": "處理人員",
+            "cancelReason": "取消原因"
+        },
+        "emptyState": {
+            "noRecords": "暫無呼叫記錄",
+            "completedCalls": "完成的緊急呼叫將顯示在這裡"
+        },
+        "modals": {
+            "selectType": {
+                "title": "選擇緊急類型"
+            },
+            "cancelCall": {
+                "title": "取消緊急呼叫",
+                "reasonLabel": "請輸入取消原因",
+                "reasonPlaceholder": "取消原因",
+                "back": "返回",
+                "confirm": "確認取消"
+            }
+        },
+        "timeUnits": {
+            "minutes": "分",
+            "seconds": "秒"
+        }
+    },
+    "reminders": {
+        "title": "定時提醒",
+        "subtitle": "管理長者的服藥、喝水和其他照護提醒",
+        "addReminder": "新增提醒",
+        "todayReminders": "今日提醒",
+        "complete": "完成",
+        "types": {
+            "medication": "服藥提醒",
+            "water": "喝水提醒",
+            "physicalTherapy": "物理治療"
+        },
+        "descriptions": {
+            "hypertension": "高血壓藥物",
+            "diabetes": "糖尿病藥物",
+            "hydration": "確保水分攝取",
+            "rehabilitation": "進行日常復健運動"
+        },
+        "cards": {
+            "periodic": {
+                "title": "週期提醒",
+                "description": "管理每日、每週或自定義週期的提醒事項"
+            },
+            "statistics": {
+                "title": "提醒統計",
+                "description": "查看提醒完成情況和統計數據"
+            },
+            "settings": {
+                "title": "提醒設置",
+                "description": "自定義提醒通知方式和提醒規則"
+            }
+        }
+    },
     "settings": {
         "title": "系統設置",
         "subtitle": "管理系統配置、個人設置和安全選項",

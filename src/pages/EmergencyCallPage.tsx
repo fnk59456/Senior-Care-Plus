@@ -1,29 +1,23 @@
 import React, { useState, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useEmergencyCall } from "@/contexts/EmergencyCallContext"
-import { 
-  AlertTriangle, 
-  Clock, 
-  CheckCircle, 
-  User, 
-  MapPin, 
+import {
+  AlertTriangle,
+  Clock,
+  CheckCircle,
+  User,
+  MapPin,
   RefreshCw,
   X,
   ClipboardCheck
 } from "lucide-react"
 
-// 緊急類型
-const EMERGENCY_TYPES = [
-  { id: "fall", label: "跌倒", color: "bg-red-500" },
-  { id: "pain", label: "疼痛", color: "bg-orange-500" },
-  { id: "toilet", label: "如廁協助", color: "bg-green-500" },
-  { id: "medicine", label: "藥物協助", color: "bg-blue-500" },
-  { id: "help", label: "其他協助", color: "bg-purple-500" }
-]
+// 緊急類型 - 將在組件內動態生成以支援國際化
 
 // 患者列表
 const PATIENTS = [
@@ -68,6 +62,7 @@ type EmergencyCall = {
 type DialogType = "none" | "emergencyType" | "cancelCall"
 
 export default function EmergencyCallPage() {
+  const { t } = useTranslation()
   const [selectedPatient, setSelectedPatient] = useState<string>("")
   const [selectedLocation, setSelectedLocation] = useState<string>("")
   const [activeCall, setActiveCall] = useState<EmergencyCall | null>(null)
@@ -75,19 +70,19 @@ export default function EmergencyCallPage() {
   const [dialogType, setDialogType] = useState<DialogType>("none")
   const [cancelReason, setCancelReason] = useState("")
   const [waitTime, setWaitTime] = useState(0)
-  
+
   const { setCallStatus } = useEmergencyCall()
-  
+
   const responseTimerRef = useRef<NodeJS.Timeout | null>(null)
   const completeTimerRef = useRef<NodeJS.Timeout | null>(null)
   const waitTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   // 格式化時間
   const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('zh-TW', { 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+    return date.toLocaleTimeString('zh-TW', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
     })
   }
 
@@ -103,7 +98,7 @@ export default function EmergencyCallPage() {
     const patient = PATIENTS.find(p => p.id === selectedPatient)
     const location = LOCATIONS.find(l => l.id === selectedLocation)
     const typeInfo = EMERGENCY_TYPES.find(t => t.id === emergencyType)
-    
+
     if (!patient || !location || !typeInfo) return
 
     const newCall: EmergencyCall = {
@@ -144,7 +139,7 @@ export default function EmergencyCallPage() {
 
     // 5-8秒後自動進入響應狀態
     const responseDelay = Math.random() * 3000 + 5000 // 5-8秒
-    
+
     responseTimerRef.current = setTimeout(() => {
       setActiveCall(prev => {
         if (prev && prev.status === "pending") {
@@ -181,7 +176,7 @@ export default function EmergencyCallPage() {
     setCallStatus("none")
     setWaitTime(0)
     setCancelReason("")
-    
+
     // 清除所有計時器
     if (responseTimerRef.current) {
       clearTimeout(responseTimerRef.current)
@@ -212,7 +207,7 @@ export default function EmergencyCallPage() {
         clearTimeout(completeTimerRef.current)
         completeTimerRef.current = null
       }
-      
+
       // 5-8秒後自動完成
       const completeDelay = Math.random() * 3000 + 5000 // 5-8秒
       completeTimerRef.current = setTimeout(() => {
@@ -230,19 +225,28 @@ export default function EmergencyCallPage() {
     }
   }, [])
 
+  // 緊急類型配置 - 動態生成以支援國際化
+  const EMERGENCY_TYPES = [
+    { id: "fall", label: t('pages:emergencyCall.types.fall'), color: "bg-red-500" },
+    { id: "pain", label: t('pages:emergencyCall.types.pain'), color: "bg-orange-500" },
+    { id: "toilet", label: t('pages:emergencyCall.types.toilet'), color: "bg-green-500" },
+    { id: "medicine", label: t('pages:emergencyCall.types.medicine'), color: "bg-blue-500" },
+    { id: "help", label: t('pages:emergencyCall.types.help'), color: "bg-purple-500" }
+  ]
+
   // 格式化等待時間
   const formatWaitTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
-    return `${mins}分${secs}秒`
+    return `${mins}${t('pages:emergencyCall.timeUnits.minutes')}${secs}${t('pages:emergencyCall.timeUnits.seconds')}`
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-4">緊急呼叫</h1>
+        <h1 className="text-3xl font-bold mb-4">{t('pages:emergencyCall.title')}</h1>
         <p className="text-muted-foreground mb-6">
-          快速發送緊急求助信號，確保及時獲得協助
+          {t('pages:emergencyCall.subtitle')}
         </p>
       </div>
 
@@ -252,11 +256,11 @@ export default function EmergencyCallPage() {
           <CardContent className="p-4">
             <div className="flex items-center space-x-2 mb-2">
               <User className="h-4 w-4 text-blue-500" />
-              <span className="font-medium">患者</span>
+              <span className="font-medium">{t('pages:emergencyCall.patient')}</span>
             </div>
             <Select value={selectedPatient} onValueChange={setSelectedPatient}>
               <SelectTrigger>
-                <SelectValue placeholder="選擇患者" />
+                <SelectValue placeholder={t('pages:emergencyCall.selectPatient')} />
               </SelectTrigger>
               <SelectContent>
                 {PATIENTS.map(patient => (
@@ -273,11 +277,11 @@ export default function EmergencyCallPage() {
           <CardContent className="p-4">
             <div className="flex items-center space-x-2 mb-2">
               <MapPin className="h-4 w-4 text-blue-500" />
-              <span className="font-medium">位置</span>
+              <span className="font-medium">{t('pages:emergencyCall.location')}</span>
             </div>
             <Select value={selectedLocation} onValueChange={setSelectedLocation}>
               <SelectTrigger>
-                <SelectValue placeholder="選擇位置" />
+                <SelectValue placeholder={t('pages:emergencyCall.selectLocation')} />
               </SelectTrigger>
               <SelectContent>
                 {LOCATIONS.map(location => (
@@ -299,50 +303,48 @@ export default function EmergencyCallPage() {
             disabled={!selectedPatient || !selectedLocation}
             className="w-48 h-48 rounded-full bg-red-500 hover:bg-red-600 text-white text-2xl font-bold shadow-lg"
           >
-            緊急<br />呼叫
+            {t('pages:emergencyCall.emergencyButton')}
           </Button>
         </div>
       )}
 
       {/* 響應狀態卡片 */}
       {activeCall && (
-        <Card className={`${
-          activeCall.status === "pending" ? "bg-red-50 border-red-200" :
-          activeCall.status === "responding" ? "bg-yellow-50 border-yellow-200" :
-          "bg-green-50 border-green-200"
-        }`}>
+        <Card className={`${activeCall.status === "pending" ? "bg-red-50 border-red-200" :
+            activeCall.status === "responding" ? "bg-yellow-50 border-yellow-200" :
+              "bg-green-50 border-green-200"
+          }`}>
           <CardHeader>
-            <CardTitle className={`text-2xl font-bold ${
-              activeCall.status === "pending" ? "text-red-600" :
-              activeCall.status === "responding" ? "text-yellow-600" :
-              "text-green-600"
-            }`}>
-              {activeCall.status === "pending" && "正在響應中..."}
-              {activeCall.status === "responding" && "正在響應中..."}
+            <CardTitle className={`text-2xl font-bold ${activeCall.status === "pending" ? "text-red-600" :
+                activeCall.status === "responding" ? "text-yellow-600" :
+                  "text-green-600"
+              }`}>
+              {activeCall.status === "pending" && t('pages:emergencyCall.status.responding')}
+              {activeCall.status === "responding" && t('pages:emergencyCall.status.responding')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <span className="text-base text-muted-foreground">患者：</span>
+                <span className="text-base text-muted-foreground">{t('pages:emergencyCall.info.patient')}：</span>
                 <span className="font-semibold text-lg">{activeCall.patientName}</span>
               </div>
               <div>
-                <span className="text-base text-muted-foreground">位置：</span>
+                <span className="text-base text-muted-foreground">{t('pages:emergencyCall.info.location')}：</span>
                 <span className="font-semibold text-lg">{activeCall.location}</span>
               </div>
               <div>
-                <span className="text-base text-muted-foreground">類型：</span>
+                <span className="text-base text-muted-foreground">{t('pages:emergencyCall.info.type')}：</span>
                 <Badge className={`text-sm px-3 py-1 ${EMERGENCY_TYPES.find(t => t.id === activeCall.type)?.color}`}>
                   {activeCall.typeLabel}
                 </Badge>
               </div>
               <div>
-                <span className="text-base text-muted-foreground">呼叫時間：</span>
+                <span className="text-base text-muted-foreground">{t('pages:emergencyCall.info.callTime')}：</span>
                 <span className="font-semibold text-lg">{activeCall.callTime}</span>
               </div>
               <div>
-                <span className="text-base text-muted-foreground">等待時間：</span>
+                <span className="text-base text-muted-foreground">{t('pages:emergencyCall.info.waitTime')}：</span>
                 <span className="font-bold text-lg text-red-600">{formatWaitTime(waitTime)}</span>
               </div>
             </div>
@@ -350,15 +352,15 @@ export default function EmergencyCallPage() {
             {activeCall.status === "responding" && (
               <div className="space-y-3 pt-4 border-t">
                 <div>
-                  <span className="text-base text-muted-foreground">響應人員：</span>
+                  <span className="text-base text-muted-foreground">{t('pages:emergencyCall.info.responder')}：</span>
                   <span className="font-semibold text-lg">{activeCall.caregiver}</span>
                 </div>
                 <div>
-                  <span className="text-base text-muted-foreground">響應時間：</span>
+                  <span className="text-base text-muted-foreground">{t('pages:emergencyCall.info.responseTime')}：</span>
                   <span className="font-semibold text-lg">{activeCall.responseTime}</span>
                 </div>
                 <div className="text-yellow-600 font-semibold text-lg bg-yellow-100 p-3 rounded-lg">
-                  護理人員正趕往現場...
+                  {t('pages:emergencyCall.status.caregiverOnWay')}
                 </div>
               </div>
             )}
@@ -370,7 +372,7 @@ export default function EmergencyCallPage() {
                 className="w-full h-12 text-lg"
               >
                 <RefreshCw className="mr-2 h-5 w-5" />
-                刷新狀態
+                {t('pages:emergencyCall.refreshStatus')}
               </Button>
             )}
           </CardContent>
@@ -379,7 +381,7 @@ export default function EmergencyCallPage() {
 
       {/* 呼叫記錄 */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">呼叫記錄</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('pages:emergencyCall.callHistory')}</h2>
         <div className="space-y-4">
           {callHistory.length === 0 ? (
             <Card className="border-dashed border-2 border-gray-200">
@@ -387,8 +389,8 @@ export default function EmergencyCallPage() {
                 <div className="text-gray-400 mb-2">
                   <ClipboardCheck className="h-12 w-12 mx-auto" />
                 </div>
-                <p className="text-lg text-muted-foreground">暫無呼叫記錄</p>
-                <p className="text-sm text-muted-foreground mt-1">完成的緊急呼叫將顯示在這裡</p>
+                <p className="text-lg text-muted-foreground">{t('pages:emergencyCall.emptyState.noRecords')}</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('pages:emergencyCall.emptyState.completedCalls')}</p>
               </CardContent>
             </Card>
           ) : (
@@ -417,13 +419,12 @@ export default function EmergencyCallPage() {
                           <Badge className={`text-sm px-3 py-1 font-medium ${EMERGENCY_TYPES.find(t => t.id === call.type)?.color}`}>
                             {call.typeLabel}
                           </Badge>
-                          <span className={`text-base font-semibold px-3 py-1 rounded-full ${
-                            call.status === "completed" ? "bg-green-100 text-green-700" : 
-                            call.status === "cancelled" ? "bg-gray-100 text-gray-700" : 
-                            "bg-orange-100 text-orange-700"
-                          }`}>
-                            {call.status === "completed" ? "已解決" : 
-                             call.status === "cancelled" ? "已取消" : "等待響應"}
+                          <span className={`text-base font-semibold px-3 py-1 rounded-full ${call.status === "completed" ? "bg-green-100 text-green-700" :
+                              call.status === "cancelled" ? "bg-gray-100 text-gray-700" :
+                                "bg-orange-100 text-orange-700"
+                            }`}>
+                            {call.status === "completed" ? t('pages:emergencyCall.status.completed') :
+                              call.status === "cancelled" ? t('pages:emergencyCall.status.cancelled') : t('pages:emergencyCall.status.pending')}
                           </span>
                         </div>
                         <div className="flex items-center space-x-4 text-base text-muted-foreground">
@@ -439,32 +440,32 @@ export default function EmergencyCallPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-gray-50 rounded-lg p-4 mt-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-500">呼叫時間:</span>
+                        <span className="text-sm text-gray-500">{t('pages:emergencyCall.record.callTime')}:</span>
                         <span className="font-medium text-base">{call.callTime}</span>
                       </div>
                       {call.completedTime && (
                         <div className="flex items-center space-x-2">
                           <CheckCircle className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-500">處理時間:</span>
+                          <span className="text-sm text-gray-500">{t('pages:emergencyCall.record.completedTime')}:</span>
                           <span className="font-medium text-base">{call.completedTime}</span>
                         </div>
                       )}
                       {call.caregiver && (
                         <div className="flex items-center space-x-2">
                           <User className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-500">處理人員:</span>
+                          <span className="text-sm text-gray-500">{t('pages:emergencyCall.record.handler')}:</span>
                           <span className="font-medium text-base text-blue-600">{call.caregiver}</span>
                         </div>
                       )}
                       {call.cancelReason && (
                         <div className="flex items-center space-x-2">
                           <X className="h-4 w-4 text-gray-500" />
-                          <span className="text-sm text-gray-500">取消原因:</span>
+                          <span className="text-sm text-gray-500">{t('pages:emergencyCall.record.cancelReason')}:</span>
                           <span className="font-medium text-base text-red-600">{call.cancelReason}</span>
                         </div>
                       )}
@@ -482,7 +483,7 @@ export default function EmergencyCallPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <Card className="w-full max-w-md mx-4">
             <CardHeader>
-              <CardTitle className="text-center text-xl">選擇緊急類型</CardTitle>
+              <CardTitle className="text-center text-xl">{t('pages:emergencyCall.modals.selectType.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {EMERGENCY_TYPES.map(type => (
@@ -499,7 +500,7 @@ export default function EmergencyCallPage() {
                 variant="outline"
                 className="w-full h-12 mt-6 text-gray-600 border-gray-300"
               >
-                取消
+                {t('common:actions.cancel')}
               </Button>
             </CardContent>
           </Card>
@@ -511,15 +512,15 @@ export default function EmergencyCallPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <Card className="w-full max-w-md mx-4">
             <CardHeader>
-              <CardTitle>取消緊急呼叫</CardTitle>
+              <CardTitle>{t('pages:emergencyCall.modals.cancelCall.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium">請輸入取消原因：</label>
+                <label className="text-sm font-medium">{t('pages:emergencyCall.modals.cancelCall.reasonLabel')}：</label>
                 <Input
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  placeholder="取消原因"
+                  placeholder={t('pages:emergencyCall.modals.cancelCall.reasonPlaceholder')}
                   className="mt-1"
                 />
               </div>
@@ -529,14 +530,14 @@ export default function EmergencyCallPage() {
                   variant="outline"
                   className="flex-1"
                 >
-                  返回
+                  {t('pages:emergencyCall.modals.cancelCall.back')}
                 </Button>
                 <Button
                   onClick={cancelCall}
                   disabled={!cancelReason.trim()}
                   className="flex-1 bg-red-500 hover:bg-red-600"
                 >
-                  確認取消
+                  {t('pages:emergencyCall.modals.cancelCall.confirm')}
                 </Button>
               </div>
             </CardContent>
@@ -545,4 +546,4 @@ export default function EmergencyCallPage() {
       )}
     </div>
   )
-} 
+}

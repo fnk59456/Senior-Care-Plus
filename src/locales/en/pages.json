@@ -306,6 +306,98 @@
             "resetSettings": "Are you sure you want to reset all health monitoring settings? This action cannot be undone!"
         }
     },
+    "emergencyCall": {
+        "title": "Emergency Call",
+        "subtitle": "Quickly send emergency assistance signals to ensure timely help",
+        "patient": "Patient",
+        "location": "Location",
+        "selectPatient": "Select Patient",
+        "selectLocation": "Select Location",
+        "emergencyButton": "Emergency\nCall",
+        "callHistory": "Call History",
+        "refreshStatus": "Refresh Status",
+        "types": {
+            "fall": "Fall",
+            "pain": "Pain",
+            "toilet": "Toilet Assistance",
+            "medicine": "Medicine Assistance",
+            "help": "Other Assistance"
+        },
+        "status": {
+            "responding": "Responding...",
+            "caregiverOnWay": "Caregiver is on the way...",
+            "completed": "Resolved",
+            "cancelled": "Cancelled",
+            "pending": "Waiting for Response"
+        },
+        "info": {
+            "patient": "Patient",
+            "location": "Location",
+            "type": "Type",
+            "callTime": "Call Time",
+            "waitTime": "Wait Time",
+            "responder": "Responder",
+            "responseTime": "Response Time"
+        },
+        "record": {
+            "callTime": "Call Time",
+            "completedTime": "Completed Time",
+            "handler": "Handler",
+            "cancelReason": "Cancel Reason"
+        },
+        "emptyState": {
+            "noRecords": "No call records",
+            "completedCalls": "Completed emergency calls will be displayed here"
+        },
+        "modals": {
+            "selectType": {
+                "title": "Select Emergency Type"
+            },
+            "cancelCall": {
+                "title": "Cancel Emergency Call",
+                "reasonLabel": "Please enter cancel reason",
+                "reasonPlaceholder": "Cancel reason",
+                "back": "Back",
+                "confirm": "Confirm Cancel"
+            }
+        },
+        "timeUnits": {
+            "minutes": "min",
+            "seconds": "sec"
+        }
+    },
+    "reminders": {
+        "title": "Timed Reminders",
+        "subtitle": "Manage medication, hydration, and other care reminders for the elderly",
+        "addReminder": "Add Reminder",
+        "todayReminders": "Today's Reminders",
+        "complete": "Complete",
+        "types": {
+            "medication": "Medication Reminder",
+            "water": "Water Reminder",
+            "physicalTherapy": "Physical Therapy"
+        },
+        "descriptions": {
+            "hypertension": "Hypertension medication",
+            "diabetes": "Diabetes medication",
+            "hydration": "Ensure adequate hydration",
+            "rehabilitation": "Daily rehabilitation exercises"
+        },
+        "cards": {
+            "periodic": {
+                "title": "Periodic Reminders",
+                "description": "Manage daily, weekly, or custom periodic reminder tasks"
+            },
+            "statistics": {
+                "title": "Reminder Statistics",
+                "description": "View reminder completion status and statistical data"
+            },
+            "settings": {
+                "title": "Reminder Settings",
+                "description": "Customize reminder notification methods and reminder rules"
+            }
+        }
+    },
     "settings": {
         "title": "System Settings",
         "subtitle": "Manage system configuration, personal settings, and security options",
