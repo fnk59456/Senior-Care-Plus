@@ -951,11 +951,13 @@ export default function UWBLocationPage() {
     const [anchorCloudConnectionStatus, setAnchorCloudConnectionStatus] = useState<string>("未連線")
     const [anchorCloudError, setAnchorCloudError] = useState<string>("")
     const [cloudAnchorData, setCloudAnchorData] = useState<CloudAnchorData[]>([])
+    const [cloudAckData, setCloudAckData] = useState<any[]>([]) // 新增：存儲 Ack 數據
     const [discoveredCloudAnchors, setDiscoveredCloudAnchors] = useState<DiscoveredCloudAnchor[]>([])
     const [selectedGatewayForAnchors, setSelectedGatewayForAnchors] = useState<string>("")
     const [selectedHomeForAnchors, setSelectedHomeForAnchors] = useState<string>("")
     const [selectedFloorForAnchors, setSelectedFloorForAnchors] = useState<string>("")
     const [currentAnchorTopic, setCurrentAnchorTopic] = useState<string>("")
+    const [currentAckTopic, setCurrentAckTopic] = useState<string>("") // 新增：當前 Ack 主題
     const anchorCloudClientRef = useRef<mqtt.MqttClient | null>(null)
 
     // Anchor配對相關狀態
@@ -1246,7 +1248,9 @@ export default function UWBLocationPage() {
             setAnchorCloudConnected(false)
             setAnchorCloudConnectionStatus("未選擇閘道器")
             setCurrentAnchorTopic("")
+            setCurrentAckTopic("")
             setCloudAnchorData([])
+            setCloudAckData([])
             setDiscoveredCloudAnchors([])
             return
         }
@@ -1257,7 +1261,8 @@ export default function UWBLocationPage() {
             let selectedGatewayData = cloudGatewayData.find(gw => gw.gateway_id.toString() === selectedGatewayForAnchors)
             if (selectedGatewayData && selectedGatewayData.pub_topic.anchor_config) {
                 return {
-                    topic: selectedGatewayData.pub_topic.anchor_config,
+                    anchorTopic: selectedGatewayData.pub_topic.anchor_config,
+                    ackTopic: selectedGatewayData.pub_topic.ack_from_node, // 新增：Ack 主題
                     source: "雲端發現"
                 }
             }
@@ -1272,13 +1277,15 @@ export default function UWBLocationPage() {
 
             if (systemGateway && systemGateway.cloudData && systemGateway.cloudData.pub_topic.anchor_config) {
                 return {
-                    topic: systemGateway.cloudData.pub_topic.anchor_config,
+                    anchorTopic: systemGateway.cloudData.pub_topic.anchor_config,
+                    ackTopic: systemGateway.cloudData.pub_topic.ack_from_node, // 新增：Ack 主題
                     source: "系統閘道器(雲端數據)"
                 }
             } else if (systemGateway) {
                 const gatewayName = systemGateway.name.replace(/\s+/g, '')
                 return {
-                    topic: `UWB/${gatewayName}_AncConf`,
+                    anchorTopic: `UWB/${gatewayName}_AncConf`,
+                    ackTopic: `UWB/${gatewayName}_Ack`, // 新增：構建的 Ack 主題
                     source: "系統閘道器(構建)"
                 }
             }
@@ -1296,14 +1303,17 @@ export default function UWBLocationPage() {
             return
         }
 
-        const anchorTopic = gatewayConfig.topic
+        const anchorTopic = gatewayConfig.anchorTopic
+        const ackTopic = gatewayConfig.ackTopic
         console.log(`${gatewayConfig.source}的閘道器，使用 anchor topic:`, anchorTopic)
+        console.log(`${gatewayConfig.source}的閘道器，使用 ack topic:`, ackTopic)
 
         // 檢查是否已經連接到相同的主題，避免重複連接
         if (anchorCloudClientRef.current &&
             currentAnchorTopic === anchorTopic &&
+            currentAckTopic === ackTopic &&
             (anchorCloudConnected || anchorCloudConnectionStatus === "連接中...")) {
-            console.log("⚠️ 已連接到相同主題或正在連接中，跳過重複連接:", anchorTopic)
+            console.log("⚠️ 已連接到相同主題或正在連接中，跳過重複連接:", anchorTopic, ackTopic)
             console.log("- 當前狀態:", anchorCloudConnectionStatus)
             console.log("- 連接狀態:", anchorCloudConnected)
             return
@@ -1317,13 +1327,14 @@ export default function UWBLocationPage() {
         }
 
         setCurrentAnchorTopic(anchorTopic)
+        setCurrentAckTopic(ackTopic)
         setAnchorCloudConnectionStatus("連接中...")
         setAnchorCloudError("")
 
         console.log("🚀 開始連接 Anchor MQTT")
         console.log("- MQTT URL:", CLOUD_MQTT_URL)
         console.log("- MQTT 用戶名:", CLOUD_MQTT_OPTIONS.username)
-        console.log("- 訂閱主題:", anchorTopic)
+        console.log("- 訂閱主題:", anchorTopic, ackTopic)
         console.log("- Client ID 前綴: uwb-anchor-client-")
         console.log("- 觸發原因: selectedGatewayForAnchors 變化或數據更新")
 
@@ -1378,6 +1389,7 @@ export default function UWBLocationPage() {
             setAnchorCloudConnectionStatus("離線")
         })
 
+        // 訂閱 Anchor 配置主題
         anchorClient.subscribe(anchorTopic, (err) => {
             if (err) {
                 console.error("❌ Anchor 雲端 MQTT 訂閱失敗:", err)
@@ -1387,7 +1399,20 @@ export default function UWBLocationPage() {
                 setAnchorCloudConnectionStatus("訂閱失敗")
             } else {
                 console.log("✅ 已成功訂閱 Anchor 主題:", anchorTopic)
-                console.log("- 等待接收 Anchor 數據...")
+            }
+        })
+
+        // 訂閱 Ack 主題
+        anchorClient.subscribe(ackTopic, (err) => {
+            if (err) {
+                console.error("❌ Ack 雲端 MQTT 訂閱失敗:", err)
+                console.error("- 訂閱主題:", ackTopic)
+                console.error("- 錯誤詳情:", err)
+                setAnchorCloudError(`Ack 訂閱失敗: ${err.message}`)
+                setAnchorCloudConnectionStatus("Ack 訂閱失敗")
+            } else {
+                console.log("✅ 已成功訂閱 Ack 主題:", ackTopic)
+                console.log("- 等待接收 Anchor 和 Ack 數據...")
                 setAnchorCloudConnectionStatus("已連線並訂閱")
             }
         })
@@ -1395,10 +1420,10 @@ export default function UWBLocationPage() {
         anchorClient.on("message", (topic: string, payload: Uint8Array) => {
             console.log("📨 收到 MQTT 消息")
             console.log("- 接收主題:", topic)
-            console.log("- 預期主題:", anchorTopic)
-            console.log("- 主題匹配:", topic === anchorTopic)
+            console.log("- 預期主題:", anchorTopic, ackTopic)
+            console.log("- 主題匹配:", topic === anchorTopic || topic === ackTopic)
 
-            if (topic !== anchorTopic) {
+            if (topic !== anchorTopic && topic !== ackTopic) {
                 console.log("⚠️ 主題不匹配，忽略消息")
                 return
             }
@@ -1410,7 +1435,7 @@ export default function UWBLocationPage() {
                 console.log("📋 解析後的 JSON:", msg)
 
                 // 處理 Anchor Config 數據
-                if (msg.content === "config" && msg.node === "ANCHOR") {
+                if (topic === anchorTopic && msg.content === "config" && msg.node === "ANCHOR") {
                     console.log("處理 Anchor Config 數據...")
 
                     const anchorData: CloudAnchorData = {
@@ -1487,8 +1512,26 @@ export default function UWBLocationPage() {
                             }
                         })
                     }
+                }
+                // 處理 Ack 數據
+                else if (topic === ackTopic) {
+                    console.log("處理 Ack 數據...")
+
+                    const ackData = {
+                        ...msg,
+                        receivedAt: new Date(),
+                        topic: topic
+                    }
+
+                    console.log("解析的 Ack 數據:", ackData)
+
+                    // 更新 Ack 原始數據列表
+                    setCloudAckData(prev => {
+                        const newData = [ackData, ...prev].slice(0, 50)
+                        return newData
+                    })
                 } else {
-                    console.log("⚠️ 非 Anchor Config 數據，內容:", msg.content, "節點:", msg.node)
+                    console.log("⚠️ 非預期數據，主題:", topic, "內容:", msg.content, "節點:", msg.node)
                 }
 
             } catch (error) {
@@ -4408,6 +4451,7 @@ export default function UWBLocationPage() {
                                     setAnchorCloudConnected(false)
                                     setAnchorCloudConnectionStatus("手動重連中...")
                                     setAnchorCloudError("")
+                                    setCloudAckData([])
 
                                     // 觸發重新連接（通過重新設置選擇的 Gateway）
                                     const currentGateway = selectedGatewayForAnchors
@@ -4479,9 +4523,10 @@ export default function UWBLocationPage() {
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span>監聽主題:</span>
-                                        <span className="text-xs font-mono text-muted-foreground">
-                                            {currentAnchorTopic || "無"}
-                                        </span>
+                                        <div className="text-xs font-mono text-muted-foreground text-right">
+                                            <div>Anchor: {currentAnchorTopic || "無"}</div>
+                                            <div>Ack: {currentAckTopic || "無"}</div>
+                                        </div>
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <span>連線狀態:</span>
@@ -4510,6 +4555,10 @@ export default function UWBLocationPage() {
                                     <div className="bg-purple-50 p-3 rounded-lg">
                                         <div className="font-medium text-purple-800">MQTT消息</div>
                                         <div className="text-2xl font-bold text-purple-600">{cloudAnchorData.length}</div>
+                                    </div>
+                                    <div className="bg-blue-50 p-3 rounded-lg">
+                                        <div className="font-medium text-blue-800">Ack消息</div>
+                                        <div className="text-2xl font-bold text-blue-600">{cloudAckData.length}</div>
                                     </div>
                                 </div>
 
@@ -4602,7 +4651,8 @@ export default function UWBLocationPage() {
                                 )}
 
                                 {/* 原始數據檢視器 - 用於調試 */}
-                                <div className="mt-6">
+                                <div className="mt-6 space-y-4">
+                                    {/* Anchor 數據 */}
                                     <details className="group">
                                         <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
                                             🔍 查看原始 Anchor MQTT 數據 (調試用)
@@ -4629,6 +4679,36 @@ export default function UWBLocationPage() {
                                                 <div>• 必須有 node: "ANCHOR"</div>
                                                 <div>• 必須有 id 和 name 字段</div>
                                                 <div>• initiator: 1 表示主錨點</div>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    {/* Ack 數據 */}
+                                    <details className="group">
+                                        <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
+                                            🔍 查看原始 Anchor MQTT 數據 (調試用) - Ack 數據
+                                        </summary>
+                                        <div className="mt-2 space-y-2 text-xs">
+                                            <div className="text-muted-foreground">
+                                                點擊下方數據可展開查看完整內容
+                                            </div>
+                                            <div className="max-h-60 overflow-y-auto space-y-2">
+                                                {cloudAckData.slice(0, 5).map((data, index) => (
+                                                    <details key={index} className="border rounded p-2 bg-blue-50">
+                                                        <summary className="cursor-pointer font-mono text-xs hover:bg-blue-100 p-1 rounded">
+                                                            [{index + 1}] Ack - {data.topic || 'Unknown'} - {data.receivedAt.toLocaleString('zh-TW')}
+                                                        </summary>
+                                                        <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
+                                                            {JSON.stringify(data, null, 2)}
+                                                        </pre>
+                                                    </details>
+                                                ))}
+                                            </div>
+                                            <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
+                                                <div className="font-semibold mb-1">Ack 數據說明：</div>
+                                                <div>• 來自 GWxxxx_Ack 主題的確認消息</div>
+                                                <div>• 包含錨點對配置的響應信息</div>
+                                                <div>• 用於調試錨點配對過程</div>
                                             </div>
                                         </div>
                                     </details>

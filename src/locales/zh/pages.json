@@ -898,5 +898,33 @@
             "error": "錯誤",
             "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
         }
+    },
+    "staffManagement": {
+        "title": "員工管理",
+        "searchPlaceholder": "搜索員工姓名、編號或部門...",
+        "filters": {
+            "all": "全部",
+            "active": "在職",
+            "onLeave": "休假"
+        },
+        "status": {
+            "active": "在職",
+            "onLeave": "休假"
+        },
+        "staffList": {
+            "title": "員工列表",
+            "count": "共 {{count}} 位員工",
+            "id": "編號"
+        },
+        "detailModal": {
+            "contactInfo": "聯繫方式",
+            "workInfo": "工作資訊",
+            "hireDate": "入職日期",
+            "notes": "備註資訊",
+            "notesPlaceholder": "請輸入備註資訊...",
+            "noNotes": "暫無備註資訊",
+            "editNotes": "編輯備註",
+            "updateNotes": "更新備註"
+        }
     }
 }

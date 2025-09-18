@@ -1,16 +1,17 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Search, 
-  Phone, 
-  Mail, 
-  Calendar, 
-  MapPin, 
+import {
+  Search,
+  Phone,
+  Mail,
+  Calendar,
+  MapPin,
   Clock,
   Edit,
   CheckCircle,
@@ -108,6 +109,7 @@ const mockStaff: Staff[] = [
 ]
 
 export default function StaffManagementPage() {
+  const { t } = useTranslation()
   const [staff, setStaff] = useState<Staff[]>(mockStaff)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'on-leave'>('all')
@@ -118,8 +120,8 @@ export default function StaffManagementPage() {
   // 篩選員工
   const filteredStaff = staff.filter(person => {
     const matchesSearch = person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         person.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         person.position.toLowerCase().includes(searchTerm.toLowerCase())
+      person.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      person.position.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || person.status === statusFilter
     return matchesSearch && matchesStatus
   })
@@ -132,8 +134,8 @@ export default function StaffManagementPage() {
 
   const handleUpdateNotes = () => {
     if (selectedStaff) {
-      const updatedStaff = staff.map(person => 
-        person.id === selectedStaff.id 
+      const updatedStaff = staff.map(person =>
+        person.id === selectedStaff.id
           ? { ...person, notes: editedNotes }
           : person
       )
@@ -147,12 +149,12 @@ export default function StaffManagementPage() {
     return status === 'active' ? (
       <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
         <CheckCircle className="w-3 h-3 mr-1" />
-        在職
+        {t('pages:staffManagement.status.active')}
       </Badge>
     ) : (
       <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
         <Home className="w-3 h-3 mr-1" />
-        休假
+        {t('pages:staffManagement.status.onLeave')}
       </Badge>
     )
   }
@@ -161,7 +163,7 @@ export default function StaffManagementPage() {
     <div className="p-6 space-y-6">
       {/* 頁面標題 */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">員工管理</h1>
+        <h1 className="text-3xl font-bold">{t('pages:staffManagement.title')}</h1>
       </div>
 
       {/* 搜索和篩選 */}
@@ -171,7 +173,7 @@ export default function StaffManagementPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="搜索員工姓名、編號或部門..."
+                placeholder={t('pages:staffManagement.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -183,7 +185,7 @@ export default function StaffManagementPage() {
                 onClick={() => setStatusFilter('all')}
                 className="whitespace-nowrap"
               >
-                全部
+                {t('pages:staffManagement.filters.all')}
               </Button>
               <Button
                 variant={statusFilter === 'active' ? 'default' : 'outline'}
@@ -191,7 +193,7 @@ export default function StaffManagementPage() {
                 className="whitespace-nowrap"
               >
                 <CheckCircle className="w-4 h-4 mr-1" />
-                在職
+                {t('pages:staffManagement.filters.active')}
               </Button>
               <Button
                 variant={statusFilter === 'on-leave' ? 'default' : 'outline'}
@@ -199,7 +201,7 @@ export default function StaffManagementPage() {
                 className="whitespace-nowrap"
               >
                 <Home className="w-4 h-4 mr-1" />
-                休假
+                {t('pages:staffManagement.filters.onLeave')}
               </Button>
             </div>
           </div>
@@ -210,9 +212,9 @@ export default function StaffManagementPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>員工列表</span>
+            <span>{t('pages:staffManagement.staffList.title')}</span>
             <span className="text-sm font-normal text-muted-foreground">
-              共 {filteredStaff.length} 位員工
+              {t('pages:staffManagement.staffList.count', { count: filteredStaff.length })}
             </span>
           </CardTitle>
         </CardHeader>
@@ -234,7 +236,7 @@ export default function StaffManagementPage() {
                       {getStatusBadge(person.status)}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      編號: {person.id}
+                      {t('pages:staffManagement.staffList.id')}: {person.id}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {person.position}, {person.department}
@@ -266,7 +268,7 @@ export default function StaffManagementPage() {
             <CardContent className="space-y-4">
               {/* 聯繫方式 */}
               <div>
-                <h4 className="font-semibold text-blue-600 mb-2">聯繫方式</h4>
+                <h4 className="font-semibold text-blue-600 mb-2">{t('pages:staffManagement.detailModal.contactInfo')}</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4" />
@@ -281,41 +283,41 @@ export default function StaffManagementPage() {
 
               {/* 工作資訊 */}
               <div>
-                <h4 className="font-semibold text-blue-600 mb-2">工作資訊</h4>
+                <h4 className="font-semibold text-blue-600 mb-2">{t('pages:staffManagement.detailModal.workInfo')}</h4>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  <span className="text-sm">入職日期: {selectedStaff.hireDate}</span>
+                  <span className="text-sm">{t('pages:staffManagement.detailModal.hireDate')}: {selectedStaff.hireDate}</span>
                 </div>
               </div>
 
               {/* 備註資訊 */}
               <div>
-                <h4 className="font-semibold text-blue-600 mb-2">備註資訊</h4>
+                <h4 className="font-semibold text-blue-600 mb-2">{t('pages:staffManagement.detailModal.notes')}</h4>
                 {isEditingNotes ? (
                   <div className="space-y-2">
                     <Textarea
                       value={editedNotes}
                       onChange={(e) => setEditedNotes(e.target.value)}
-                      placeholder="請輸入備註資訊..."
+                      placeholder={t('pages:staffManagement.detailModal.notesPlaceholder')}
                       rows={4}
                     />
                     <div className="flex gap-2">
                       <Button onClick={handleUpdateNotes} size="sm">
-                        儲存
+                        {t('common:actions.save')}
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setIsEditingNotes(false)}
                         size="sm"
                       >
-                        取消
+                        {t('common:actions.cancel')}
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-sm whitespace-pre-wrap">
-                      {selectedStaff.notes || '暫無備註資訊'}
+                      {selectedStaff.notes || t('pages:staffManagement.detailModal.noNotes')}
                     </p>
                     <Button
                       variant="ghost"
@@ -324,7 +326,7 @@ export default function StaffManagementPage() {
                       className="mt-2 p-0 h-auto"
                     >
                       <Edit className="w-4 h-4 mr-1" />
-                      編輯備註
+                      {t('pages:staffManagement.detailModal.editNotes')}
                     </Button>
                   </div>
                 )}
@@ -337,13 +339,13 @@ export default function StaffManagementPage() {
                   onClick={() => setSelectedStaff(null)}
                   className="flex-1"
                 >
-                  取消
+                  {t('common:actions.cancel')}
                 </Button>
                 <Button
                   onClick={() => setIsEditingNotes(true)}
                   className="flex-1"
                 >
-                  更新備註
+                  {t('pages:staffManagement.detailModal.updateNotes')}
                 </Button>
               </div>
             </CardContent>
@@ -352,4 +354,4 @@ export default function StaffManagementPage() {
       )}
     </div>
   )
-} 
+}

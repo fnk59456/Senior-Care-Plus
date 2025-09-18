@@ -898,5 +898,33 @@
             "error": "Error",
             "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
         }
+    },
+    "staffManagement": {
+        "title": "Staff Management",
+        "searchPlaceholder": "Search by name, ID, or department...",
+        "filters": {
+            "all": "All",
+            "active": "Active",
+            "onLeave": "On Leave"
+        },
+        "status": {
+            "active": "Active",
+            "onLeave": "On Leave"
+        },
+        "staffList": {
+            "title": "Staff List",
+            "count": "{{count}} staff members",
+            "id": "ID"
+        },
+        "detailModal": {
+            "contactInfo": "Contact Information",
+            "workInfo": "Work Information",
+            "hireDate": "Hire Date",
+            "notes": "Notes",
+            "notesPlaceholder": "Enter notes...",
+            "noNotes": "No notes available",
+            "editNotes": "Edit Notes",
+            "updateNotes": "Update Notes"
+        }
     }
 }
