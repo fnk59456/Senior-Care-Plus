@@ -202,13 +202,13 @@ export default function HeartRatePage() {
   const getStatusInfo = (status?: string) => {
     switch (status) {
       case 'active':
-        return { badge: '正常', icon: '🟢', bgColor: 'bg-green-50' }
+        return { badge: t('status:device.status.active'), icon: '🟢', bgColor: 'bg-green-50' }
       case 'inactive':
-        return { badge: '離線', icon: '🔴', bgColor: 'bg-red-50' }
+        return { badge: t('status:device.status.inactive'), icon: '🔴', bgColor: 'bg-red-50' }
       case 'warning':
-        return { badge: '警告', icon: '🟡', bgColor: 'bg-yellow-50' }
+        return { badge: t('status:device.status.error'), icon: '🟡', bgColor: 'bg-yellow-50' }
       default:
-        return { badge: '未知', icon: '⚪', bgColor: 'bg-gray-50' }
+        return { badge: t('status:device.status.offline'), icon: '⚪', bgColor: 'bg-gray-50' }
     }
   }
 
@@ -915,7 +915,7 @@ export default function HeartRatePage() {
         {patientName && (
           <div className="mb-3 p-3 bg-pink-50 border border-pink-200 rounded-lg">
             <p className="text-pink-800 text-sm font-medium">
-              💗 從健康監控頁面導航 - 當前患者: {patientName}
+              💗 {t('pages:heartRate.navigationFromHealth')} - {t('pages:heartRate.currentPatient')}: {patientName}
             </p>
           </div>
         )}
@@ -965,7 +965,7 @@ export default function HeartRatePage() {
                 }}
                 disabled={connected}
               >
-                重連本地
+                {t('pages:heartRate.reconnectLocal')}
               </Button>
               <Button
                 size="sm"
@@ -979,7 +979,7 @@ export default function HeartRatePage() {
                 }}
                 disabled={cloudConnected}
               >
-                重連雲端
+                {t('pages:heartRate.reconnectCloud')}
               </Button>
             </div>
           </div>
@@ -989,8 +989,8 @@ export default function HeartRatePage() {
       {/* 主要功能標籤頁 */}
       <Tabs defaultValue="local" className="w-full" value={currentMqttTab} onValueChange={setCurrentMqttTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="local">本地 MQTT</TabsTrigger>
-          <TabsTrigger value="cloud">雲端 MQTT</TabsTrigger>
+          <TabsTrigger value="local">{t('pages:heartRate.tabs.local')}</TabsTrigger>
+          <TabsTrigger value="cloud">{t('pages:heartRate.tabs.cloud')}</TabsTrigger>
         </TabsList>
 
         {/* 本地 MQTT 標籤頁 */}
@@ -1003,19 +1003,19 @@ export default function HeartRatePage() {
                   <Avatar className="mr-3 h-8 w-8">
                     <AvatarFallback>{USERS.find(u => u.id === selectedUser)?.name[0] || "?"}</AvatarFallback>
                   </Avatar>
-                  患者選擇
+                  {t('pages:heartRate.patientSelection.title')}
                 </CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <Select value={selectedUser} onValueChange={setSelectedUser}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="選擇患者" />
+                  <SelectValue placeholder={t('pages:heartRate.patientSelection.selectPatient')} />
                 </SelectTrigger>
                 <SelectContent>
                   {USERS.map(user => (
                     <SelectItem key={user.id} value={user.id}>
-                      患者：{user.name}
+                      {t('pages:heartRate.patientSelection.patient')}：{user.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1032,13 +1032,13 @@ export default function HeartRatePage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center">
                   <AlertTriangle className="mr-3 h-5 w-5 text-pink-500" />
-                  雲端設備監控
+                  {t('pages:heartRate.cloudDeviceMonitoring.title')}
                 </CardTitle>
                 <div className="text-sm">
                   {cloudConnected ? (
                     <span className="text-green-600 flex items-center">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                      連線正常
+                      {t('pages:heartRate.cloudDeviceMonitoring.connected')}
                     </span>
                   ) : (
                     <span className="text-red-500 flex items-center">
@@ -1053,16 +1053,16 @@ export default function HeartRatePage() {
               <div className="space-y-4">
                 {/* Gateway 選擇 */}
                 <div className="space-y-4">
-                  <div className="font-medium text-gray-900">選擇監控區域：</div>
+                  <div className="font-medium text-gray-900">{t('pages:heartRate.cloudDeviceMonitoring.selectArea')}</div>
 
                   {/* 橫排選擇器 */}
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/* 養老院選擇 */}
                     <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">養老院</label>
+                      <label className="text-sm font-medium text-gray-700">{t('pages:heartRate.cloudDeviceMonitoring.selectNursingHome')}</label>
                       <Select value={selectedHome} onValueChange={setSelectedHome}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="選擇養老院" />
+                          <SelectValue placeholder={t('pages:heartRate.cloudDeviceMonitoring.selectNursingHomeFirst')} />
                         </SelectTrigger>
                         <SelectContent>
                           {homes.map(home => (
@@ -1076,10 +1076,10 @@ export default function HeartRatePage() {
 
                     {/* 樓層選擇 */}
                     <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">樓層</label>
+                      <label className="text-sm font-medium text-gray-700">{t('pages:heartRate.cloudDeviceMonitoring.selectFloor')}</label>
                       <Select value={selectedFloor} onValueChange={setSelectedFloor} disabled={!selectedHome}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={selectedHome ? "選擇樓層" : "請先選擇養老院"} />
+                          <SelectValue placeholder={selectedHome ? t('pages:heartRate.cloudDeviceMonitoring.selectFloorFirst') : t('pages:heartRate.cloudDeviceMonitoring.selectNursingHomeFirst')} />
                         </SelectTrigger>
                         <SelectContent>
                           {floors
@@ -1095,10 +1095,10 @@ export default function HeartRatePage() {
 
                     {/* 閘道器選擇 */}
                     <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">閘道器</label>
+                      <label className="text-sm font-medium text-gray-700">{t('pages:heartRate.cloudDeviceMonitoring.selectGateway')}</label>
                       <Select value={selectedGateway} onValueChange={setSelectedGateway} disabled={!selectedFloor}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={selectedFloor ? "選擇閘道器" : "請先選擇樓層"} />
+                          <SelectValue placeholder={selectedFloor ? t('pages:heartRate.cloudDeviceMonitoring.selectGateway') : t('pages:heartRate.cloudDeviceMonitoring.selectFloorFirst')} />
                         </SelectTrigger>
                         <SelectContent>
                           {gateways
@@ -1122,13 +1122,13 @@ export default function HeartRatePage() {
                   {selectedGateway && (
                     <div className="p-3 bg-pink-50 rounded-lg border border-pink-200">
                       <div className="text-sm space-y-1">
-                        <div className="font-medium text-pink-800">當前選擇的閘道器：</div>
+                        <div className="font-medium text-pink-800">{t('pages:heartRate.cloudDeviceMonitoring.currentGateway')}</div>
                         <div className="text-xs text-pink-700">
                           {gateways.find(gw => gw.id === selectedGateway)?.name}
                           ({gateways.find(gw => gw.id === selectedGateway)?.macAddress})
                         </div>
                         <div className="text-xs text-pink-600">
-                          監聽主題: {getHealthTopic() || "無法獲取主題"}
+                          {t('pages:heartRate.cloudDeviceMonitoring.listeningTopic')}: {getHealthTopic() || t('pages:heartRate.cloudDeviceMonitoring.cannotGetTopic')}
                         </div>
                       </div>
                     </div>
@@ -1137,25 +1137,25 @@ export default function HeartRatePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="bg-pink-50 p-3 rounded-lg">
-                    <div className="font-medium text-pink-800">已發現設備</div>
+                    <div className="font-medium text-pink-800">{t('pages:heartRate.cloudDeviceMonitoring.discoveredDevices')}</div>
                     <div className="text-2xl font-bold text-pink-600">{cloudDevices.length}</div>
                   </div>
                   <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="font-medium text-green-800">總記錄數</div>
+                    <div className="font-medium text-green-800">{t('pages:heartRate.cloudDeviceMonitoring.totalRecords')}</div>
                     <div className="text-2xl font-bold text-green-600">{cloudDeviceRecords.length}</div>
                   </div>
                   <div className="bg-purple-50 p-3 rounded-lg">
-                    <div className="font-medium text-purple-800">MQTT消息</div>
+                    <div className="font-medium text-purple-800">{t('pages:heartRate.cloudDeviceMonitoring.mqttMessages')}</div>
                     <div className="text-2xl font-bold text-purple-600">{cloudMqttData.length}</div>
                   </div>
                 </div>
 
                 {cloudDevices.length > 0 ? (
                   <div className="space-y-3">
-                    <div className="font-medium">選擇監控設備：</div>
+                    <div className="font-medium">{t('pages:heartRate.cloudDeviceMonitoring.selectDevice')}</div>
                     <Select value={selectedCloudDevice} onValueChange={setSelectedCloudDevice}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="選擇雲端設備進行詳細監控" />
+                        <SelectValue placeholder={t('pages:heartRate.cloudDeviceMonitoring.selectCloudDevice')} />
                       </SelectTrigger>
                       <SelectContent>
                         {cloudDevices.map(device => {
@@ -1177,7 +1177,7 @@ export default function HeartRatePage() {
                                     {statusInfo.badge}
                                   </span>
                                   <span className="text-xs text-muted-foreground">
-                                    {device.recordCount} 筆記錄
+                                    {device.recordCount} {t('pages:heartRate.cloudDeviceMonitoring.records')}
                                   </span>
                                 </div>
                               </div>
@@ -1190,12 +1190,12 @@ export default function HeartRatePage() {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <AlertTriangle className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p className="font-medium">尚未發現任何雲端設備</p>
+                    <p className="font-medium">{t('pages:heartRate.cloudDeviceMonitoring.noDevices')}</p>
                     <div className="text-xs space-y-1 mt-2">
-                      <p>請確認：</p>
-                      <p>1. 雲端 MQTT 模擬器已啟動</p>
-                      <p>2. 模擬器發送 content: "300B" 格式的數據</p>
-                      <p>3. 數據包含 MAC 和心率相關字段</p>
+                      <p>{t('pages:heartRate.cloudDeviceMonitoring.pleaseConfirm')}</p>
+                      <p>1. {t('pages:heartRate.cloudDeviceMonitoring.cloudMqttSimulator')}</p>
+                      <p>2. {t('pages:heartRate.cloudDeviceMonitoring.simulatorFormat')}</p>
+                      <p>3. {t('pages:heartRate.cloudDeviceMonitoring.dataFields')}</p>
                     </div>
                   </div>
                 )}
@@ -1203,7 +1203,7 @@ export default function HeartRatePage() {
                 {/* 最近接收到的雲端數據 */}
                 {cloudMqttData.length > 0 && (
                   <div className="mt-6 space-y-2">
-                    <div className="font-medium">最近收到的數據：</div>
+                    <div className="font-medium">{t('pages:heartRate.cloudDeviceMonitoring.recentData')}</div>
                     <div className="max-h-40 overflow-y-auto space-y-1">
                       {cloudMqttData.slice(0, 8).map((data, index) => (
                         <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
@@ -1219,15 +1219,15 @@ export default function HeartRatePage() {
                                 const residentInfo = getResidentInfoByMAC(data.MAC)
                                 return (
                                   <>
-                                    設備: <span className="font-mono">{data.MAC}</span>
+                                    {t('pages:heartRate.cloudDeviceMonitoring.device')}: <span className="font-mono">{data.MAC}</span>
                                     {residentInfo?.residentName && (
                                       <span className="text-blue-600 font-medium">
                                         {' '}→ {residentInfo.residentName} ({residentInfo.residentRoom})
                                       </span>
                                     )}
-                                    {data.hr && ` | 心率: ${data.hr} BPM`}
-                                    {data.SpO2 && ` | 血氧: ${data.SpO2}%`}
-                                    {data.bp_syst && data.bp_diast && ` | 血壓: ${data.bp_syst}/${data.bp_diast}`}
+                                    {data.hr && ` | ${t('pages:heartRate.cloudDeviceMonitoring.heartRate')}: ${data.hr} BPM`}
+                                    {data.SpO2 && ` | ${t('pages:heartRate.cloudDeviceMonitoring.spo2')}: ${data.SpO2}%`}
+                                    {data.bp_syst && data.bp_diast && ` | ${t('pages:heartRate.cloudDeviceMonitoring.bloodPressure')}: ${data.bp_syst}/${data.bp_diast}`}
                                   </>
                                 )
                               })()}
@@ -1235,9 +1235,9 @@ export default function HeartRatePage() {
                           )}
                           {data.content === "diaper DV1" && (
                             <div className="text-muted-foreground mt-1">
-                              尿布設備 {data.name && `- ${data.name}`}
-                              {data.temp && ` | 溫度: ${data.temp}°C`}
-                              {data.humi && ` | 濕度: ${data.humi}%`}
+                              {t('pages:heartRate.cloudDeviceMonitoring.diaperDevice')} {data.name && `- ${data.name}`}
+                              {data.temp && ` | ${t('pages:heartRate.cloudDeviceMonitoring.temperature')}: ${data.temp}°C`}
+                              {data.humi && ` | ${t('pages:heartRate.cloudDeviceMonitoring.humidity')}: ${data.humi}%`}
                             </div>
                           )}
                         </div>
@@ -1250,11 +1250,11 @@ export default function HeartRatePage() {
                 <div className="mt-6">
                   <details className="group">
                     <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                      🔍 查看原始MQTT數據 (調試用)
+                      🔍 {t('pages:heartRate.cloudDeviceMonitoring.viewRawData')}
                     </summary>
                     <div className="mt-2 space-y-2 text-xs">
                       <div className="text-muted-foreground">
-                        點擊下方數據可展開查看完整內容
+                        {t('pages:heartRate.cloudDeviceMonitoring.clickToExpand')}
                       </div>
                       <div className="max-h-60 overflow-y-auto space-y-2">
                         {cloudMqttData.slice(0, 5).map((data, index) => (
@@ -1295,11 +1295,11 @@ export default function HeartRatePage() {
                         ))}
                       </div>
                       <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                        <div className="font-semibold mb-1">設備創建條件檢查：</div>
-                        <div>• 必須有 content: "300B"</div>
-                        <div>• 必須有 MAC 字段</div>
-                        <div>• hr, SpO2, bp_syst, bp_diast 字段可以為空或0（已放寬條件）</div>
-                        <div>• diaper DV1 類型數據目前不會創建設備記錄</div>
+                        <div className="font-semibold mb-1">{t('pages:heartRate.cloudDeviceMonitoring.deviceCreationConditions')}</div>
+                        <div>• {t('pages:heartRate.cloudDeviceMonitoring.condition1')}</div>
+                        <div>• {t('pages:heartRate.cloudDeviceMonitoring.condition2')}</div>
+                        <div>• {t('pages:heartRate.cloudDeviceMonitoring.condition3')}</div>
+                        <div>• {t('pages:heartRate.cloudDeviceMonitoring.condition4')}</div>
                       </div>
                     </div>
                   </details>
@@ -1314,11 +1314,11 @@ export default function HeartRatePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Heart className="mr-2 h-5 w-5" />
-                  設備生命體征數據 - {(() => {
+                  {t('pages:heartRate.deviceHeartRateData.title')} - {(() => {
                     const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
                     return device?.residentName
                       ? `${device.residentName} (${device.residentRoom})`
-                      : device?.deviceName || "未知設備"
+                      : device?.deviceName || t('pages:heartRate.deviceHeartRateData.unknownDevice')
                   })()}
                 </CardTitle>
               </CardHeader>
@@ -1356,17 +1356,17 @@ export default function HeartRatePage() {
                               </div>
                               <div className="text-sm text-muted-foreground space-y-1">
                                 <div>
-                                  心率: {record.hr > 0 ? `${record.hr} BPM` : "無數據"}
-                                  {record.SpO2 > 0 && ` | 血氧: ${record.SpO2}%`}
+                                  {t('pages:heartRate.deviceHeartRateData.heartRate')}: {record.hr > 0 ? `${record.hr} BPM` : t('pages:heartRate.deviceHeartRateData.noData')}
+                                  {record.SpO2 > 0 && ` | ${t('pages:heartRate.deviceHeartRateData.spo2')}: ${record.SpO2}%`}
                                 </div>
                                 {(record.bp_syst > 0 || record.bp_diast > 0) && (
                                   <div>
-                                    血壓: {record.bp_syst || "-"}/{record.bp_diast || "-"} mmHg
-                                    {record.skin_temp > 0 && ` | 體溫: ${record.skin_temp}°C`}
+                                    {t('pages:heartRate.deviceHeartRateData.bloodPressure')}: {record.bp_syst || "-"}/{record.bp_diast || "-"} mmHg
+                                    {record.skin_temp > 0 && ` | ${t('pages:heartRate.deviceHeartRateData.skinTemperature')}: ${record.skin_temp}°C`}
                                   </div>
                                 )}
                                 <div className="text-xs text-muted-foreground">
-                                  步數: {record.steps} | 電量: {record.battery_level}%
+                                  {t('pages:heartRate.deviceHeartRateData.steps')}: {record.steps} | {t('pages:heartRate.deviceHeartRateData.battery')}: {record.battery_level}%
                                 </div>
                               </div>
                             </div>
@@ -1380,12 +1380,12 @@ export default function HeartRatePage() {
                                 : 'bg-green-100 text-green-700'
                             }`}>
                             {record.hr === 0
-                              ? '無心率數據'
+                              ? t('pages:heartRate.deviceHeartRateData.noHeartRateData')
                               : record.hr > NORMAL_HEART_RATE_MAX
-                                ? '心率過高'
+                                ? t('pages:heartRate.deviceHeartRateData.heartRateHigh')
                                 : record.hr < NORMAL_HEART_RATE_MIN
-                                  ? '心率過低'
-                                  : '正常'}
+                                  ? t('pages:heartRate.deviceHeartRateData.heartRateLow')
+                                  : t('pages:heartRate.deviceHeartRateData.normal')}
                           </div>
                         </div>
                       ))}
@@ -1400,9 +1400,9 @@ export default function HeartRatePage() {
       {/* 日期選擇標籤 */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="today">今日</TabsTrigger>
-          <TabsTrigger value="yesterday">昨天</TabsTrigger>
-          <TabsTrigger value="dayBefore">前天</TabsTrigger>
+          <TabsTrigger value="today">{t('pages:heartRate.dateTabs.today')}</TabsTrigger>
+          <TabsTrigger value="yesterday">{t('pages:heartRate.dateTabs.yesterday')}</TabsTrigger>
+          <TabsTrigger value="dayBefore">{t('pages:heartRate.dateTabs.dayBefore')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-6">
@@ -1412,20 +1412,20 @@ export default function HeartRatePage() {
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center">
                   <TrendingUp className="mr-2 h-5 w-5" />
-                  心率趨勢圖
+                  {t('pages:heartRate.heartRateChart.title')}
                   {currentMqttTab === "cloud" && selectedCloudDevice && (
                     <span className="ml-2 text-sm font-normal text-pink-600">
                       - {(() => {
                         const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
                         return device?.residentName
                           ? `${device.residentName} (${device.residentRoom})`
-                          : device?.deviceName || "雲端設備"
+                          : device?.deviceName || t('pages:heartRate.heartRateChart.cloudDevice')
                       })()}
                     </span>
                   )}
                   {currentMqttTab === "local" && (
                     <span className="ml-2 text-sm font-normal text-green-600">
-                      - {USERS.find(u => u.id === selectedUser)?.name || "本地用戶"}
+                      - {USERS.find(u => u.id === selectedUser)?.name || t('pages:heartRate.heartRateChart.localUser')}
                     </span>
                   )}
                 </span>
@@ -1446,15 +1446,15 @@ export default function HeartRatePage() {
                       <YAxis
                         domain={currentMqttTab === "cloud" ? ['dataMin - 5', 'dataMax + 5'] : [40, 120]}
                         tick={{ fontSize: 12 }}
-                        label={{ value: '心率 (BPM)', angle: -90, position: 'insideLeft' }}
+                        label={{ value: t('pages:heartRate.heartRateChart.yAxisLabel'), angle: -90, position: 'insideLeft' }}
                       />
                       <Tooltip
-                        labelFormatter={(value) => `時間: ${value}`}
-                        formatter={(value) => [`${value} BPM`, '心率']}
+                        labelFormatter={(value) => `${t('pages:heartRate.heartRateChart.time')}: ${value}`}
+                        formatter={(value) => [`${value} BPM`, t('pages:heartRate.heartRateChart.heartRate')]}
                       />
-                      <ReferenceLine y={TARGET_HEART_RATE} stroke="#ec4899" strokeDasharray="5 5" label="目標心率: 75 BPM" />
-                      <ReferenceLine y={NORMAL_HEART_RATE_MAX} stroke="#ef4444" strokeDasharray="5 5" label="高心率警戒線" />
-                      <ReferenceLine y={NORMAL_HEART_RATE_MIN} stroke="#3b82f6" strokeDasharray="5 5" label="低心率警戒線" />
+                      <ReferenceLine y={TARGET_HEART_RATE} stroke="#ec4899" strokeDasharray="5 5" label={`${t('pages:heartRate.heartRateChart.targetHeartRate')}: 75 BPM`} />
+                      <ReferenceLine y={NORMAL_HEART_RATE_MAX} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:heartRate.heartRateChart.highHeartRateLine')} />
+                      <ReferenceLine y={NORMAL_HEART_RATE_MIN} stroke="#3b82f6" strokeDasharray="5 5" label={t('pages:heartRate.heartRateChart.lowHeartRateLine')} />
                       <Line
                         type="monotone"
                         dataKey="heart_rate"
@@ -1470,14 +1470,14 @@ export default function HeartRatePage() {
                 <div className="h-80 flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
                     <Heart className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                    <p>暫無{getDateString()}的心率數據</p>
+                    <p>{t('pages:heartRate.heartRateChart.noData', { date: getDateString() })}</p>
                     {currentMqttTab === "cloud" ? (
                       <div className="text-sm space-y-1">
-                        <p>請確認雲端MQTT模擬器已啟動</p>
-                        <p>並選擇有效的雲端設備</p>
+                        <p>{t('pages:heartRate.heartRateChart.cloudSimulatorCheck')}</p>
+                        <p>{t('pages:heartRate.heartRateChart.selectValidDevice')}</p>
                       </div>
                     ) : (
-                      <p className="text-sm">請確認本地MQTT模擬器已啟動</p>
+                      <p className="text-sm">{t('pages:heartRate.heartRateChart.localSimulatorCheck')}</p>
                     )}
                   </div>
                 </div>
@@ -1490,20 +1490,20 @@ export default function HeartRatePage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Clock className="mr-2 h-5 w-5" />
-                心率記錄
+                {t('pages:heartRate.heartRateRecords.title')}
                 {currentMqttTab === "cloud" && selectedCloudDevice && (
                   <span className="ml-2 text-sm font-normal text-pink-600">
                     - {(() => {
                       const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
                       return device?.residentName
                         ? `${device.residentName} (${device.residentRoom})`
-                        : device?.deviceName || "雲端設備"
+                        : device?.deviceName || t('pages:heartRate.heartRateChart.cloudDevice')
                     })()}
                   </span>
                 )}
                 {currentMqttTab === "local" && (
                   <span className="ml-2 text-sm font-normal text-green-600">
-                    - {USERS.find(u => u.id === selectedUser)?.name || "本地用戶"}
+                    - {USERS.find(u => u.id === selectedUser)?.name || t('pages:heartRate.heartRateChart.localUser')}
                   </span>
                 )}
               </CardTitle>
@@ -1515,7 +1515,7 @@ export default function HeartRatePage() {
                     size="sm"
                     onClick={() => setRecordFilter("all")}
                   >
-                    全部
+                    {t('pages:heartRate.heartRateRecords.filters.all')}
                   </Button>
                   <Button
                     variant={recordFilter === "high" ? "default" : "outline"}
@@ -1523,7 +1523,7 @@ export default function HeartRatePage() {
                     onClick={() => setRecordFilter("high")}
                     className="text-red-600 border-red-600 hover:bg-red-50"
                   >
-                    高心率
+                    {t('pages:heartRate.heartRateRecords.filters.high')}
                   </Button>
                   <Button
                     variant={recordFilter === "low" ? "default" : "outline"}
@@ -1531,7 +1531,7 @@ export default function HeartRatePage() {
                     onClick={() => setRecordFilter("low")}
                     className="text-blue-600 border-blue-600 hover:bg-blue-50"
                   >
-                    低心率
+                    {t('pages:heartRate.heartRateRecords.filters.low')}
                   </Button>
                 </div>
                 <div className="flex gap-2">
@@ -1540,21 +1540,21 @@ export default function HeartRatePage() {
                     size="sm"
                     onClick={() => setTimeRange("1day")}
                   >
-                    1天
+                    {t('pages:heartRate.heartRateRecords.timeRanges.1day')}
                   </Button>
                   <Button
                     variant={timeRange === "3day" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setTimeRange("3day")}
                   >
-                    3天
+                    {t('pages:heartRate.heartRateRecords.timeRanges.3day')}
                   </Button>
                   <Button
                     variant={timeRange === "7day" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setTimeRange("7day")}
                   >
-                    7天
+                    {t('pages:heartRate.heartRateRecords.timeRanges.7day')}
                   </Button>
                 </div>
               </div>
@@ -1580,9 +1580,9 @@ export default function HeartRatePage() {
                         <div>
                           <div className="font-medium">{record.datetime.toLocaleString('zh-TW')}</div>
                           <div className="text-sm text-muted-foreground">
-                            {record.heart_rate > 0 ? `${record.heart_rate} BPM` : "無心率數據"}
+                            {record.heart_rate > 0 ? `${record.heart_rate} BPM` : t('pages:heartRate.heartRateRecords.noHeartRateData')}
                             {record.temperature && record.temperature > 0 && (
-                              <span className="ml-2">| 體溫: {record.temperature}°C</span>
+                              <span className="ml-2">| {t('pages:heartRate.heartRateRecords.temperature')}: {record.temperature}°C</span>
                             )}
                           </div>
                         </div>
@@ -1596,24 +1596,24 @@ export default function HeartRatePage() {
                             : 'bg-green-100 text-green-700'
                         }`}>
                         {record.heart_rate === 0
-                          ? '無心率數據'
+                          ? t('pages:heartRate.heartRateRecords.noHeartRateData')
                           : record.heart_rate > NORMAL_HEART_RATE_MAX
-                            ? '心率過高'
+                            ? t('pages:heartRate.heartRateRecords.heartRateHigh')
                             : record.heart_rate < NORMAL_HEART_RATE_MIN
-                              ? '心率過低'
-                              : '正常'}
+                              ? t('pages:heartRate.heartRateRecords.heartRateLow')
+                              : t('pages:heartRate.heartRateRecords.normal')}
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Clock className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p>暫無符合條件的記錄</p>
+                    <p>{t('pages:heartRate.heartRateRecords.noRecords')}</p>
                     {currentMqttTab === "cloud" && !selectedCloudDevice && (
-                      <p className="text-sm mt-2">請先選擇雲端設備</p>
+                      <p className="text-sm mt-2">{t('pages:heartRate.heartRateRecords.selectCloudDeviceFirst')}</p>
                     )}
                     {currentMqttTab === "cloud" && selectedCloudDevice && currentCloudDeviceRecords.length === 0 && (
-                      <p className="text-sm mt-2">所選設備暫無心率數據</p>
+                      <p className="text-sm mt-2">{t('pages:heartRate.heartRateRecords.selectedDeviceNoData')}</p>
                     )}
                   </div>
                 )}
