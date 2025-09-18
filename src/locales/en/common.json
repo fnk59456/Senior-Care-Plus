@@ -26,7 +26,8 @@
         "refresh": "Refresh",
         "loading": "Loading...",
         "saving": "Saving...",
-        "saved": "Saved"
+        "saved": "Saved",
+        "view": "View"
     },
     "status": {
         "active": "Active",
