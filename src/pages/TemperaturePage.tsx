@@ -197,13 +197,13 @@ export default function TemperaturePage() {
   const getStatusInfo = (status?: string) => {
     switch (status) {
       case 'active':
-        return { badge: '正常', icon: '🟢', bgColor: 'bg-green-50' }
+        return { badge: t('status:device.status.active'), icon: '🟢', bgColor: 'bg-green-50' }
       case 'inactive':
-        return { badge: '離線', icon: '🔴', bgColor: 'bg-red-50' }
+        return { badge: t('status:device.status.inactive'), icon: '🔴', bgColor: 'bg-red-50' }
       case 'warning':
-        return { badge: '警告', icon: '🟡', bgColor: 'bg-yellow-50' }
+        return { badge: t('status:device.status.error'), icon: '🟡', bgColor: 'bg-yellow-50' }
       default:
-        return { badge: '未知', icon: '⚪', bgColor: 'bg-gray-50' }
+        return { badge: t('status:device.status.offline'), icon: '⚪', bgColor: 'bg-gray-50' }
     }
   }
 
@@ -905,7 +905,7 @@ export default function TemperaturePage() {
         {patientName && (
           <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-blue-800 text-sm font-medium">
-              📋 從健康監控頁面導航 - 當前患者: {patientName}
+              📋 {t('pages:temperature.navigationFromHealth')} - {t('pages:temperature.currentPatient')}: {patientName}
             </p>
           </div>
         )}
@@ -955,7 +955,7 @@ export default function TemperaturePage() {
                 }}
                 disabled={connected}
               >
-                重連本地
+                {t('pages:temperature.reconnectLocal')}
               </Button>
               <Button
                 size="sm"
@@ -969,7 +969,7 @@ export default function TemperaturePage() {
                 }}
                 disabled={cloudConnected}
               >
-                重連雲端
+                {t('pages:temperature.reconnectCloud')}
               </Button>
             </div>
           </div>
@@ -979,8 +979,8 @@ export default function TemperaturePage() {
       {/* 主要功能標籤頁 */}
       <Tabs defaultValue="local" className="w-full" value={currentMqttTab} onValueChange={setCurrentMqttTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="local">本地 MQTT</TabsTrigger>
-          <TabsTrigger value="cloud">雲端 MQTT</TabsTrigger>
+          <TabsTrigger value="local">{t('pages:temperature.tabs.local')}</TabsTrigger>
+          <TabsTrigger value="cloud">{t('pages:temperature.tabs.cloud')}</TabsTrigger>
         </TabsList>
 
         {/* 本地 MQTT 標籤頁 */}
@@ -993,19 +993,19 @@ export default function TemperaturePage() {
                   <Avatar className="mr-3 h-8 w-8">
                     <AvatarFallback>{USERS.find(u => u.id === selectedUser)?.name[0] || "?"}</AvatarFallback>
                   </Avatar>
-                  患者選擇
+                  {t('pages:temperature.patientSelection.title')}
                 </CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <Select value={selectedUser} onValueChange={setSelectedUser}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="選擇患者" />
+                  <SelectValue placeholder={t('pages:temperature.patientSelection.selectPatient')} />
                 </SelectTrigger>
                 <SelectContent>
                   {USERS.map(user => (
                     <SelectItem key={user.id} value={user.id}>
-                      患者：{user.name}
+                      {t('pages:temperature.patientSelection.patient')}：{user.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1022,18 +1022,18 @@ export default function TemperaturePage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center">
                   <AlertTriangle className="mr-3 h-5 w-5 text-blue-500" />
-                  雲端設備監控
+                  {t('pages:temperature.cloudDeviceMonitoring.title')}
                 </CardTitle>
                 <div className="text-sm">
                   {cloudConnected ? (
                     <span className="text-green-600 flex items-center">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                      連線正常
+                      {t('pages:temperature.cloudDeviceMonitoring.connected')}
                     </span>
                   ) : (
                     <span className="text-red-500 flex items-center">
                       <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                      {cloudConnectionStatus}
+                      {t(`pages:temperature.cloudDeviceMonitoring.${cloudConnectionStatus}`)}
                     </span>
                   )}
                 </div>
@@ -1043,16 +1043,16 @@ export default function TemperaturePage() {
               <div className="space-y-4">
                 {/* Gateway 選擇 */}
                 <div className="space-y-4">
-                  <div className="font-medium text-gray-900">選擇監控區域：</div>
+                  <div className="font-medium text-gray-900">{t('pages:temperature.cloudDeviceMonitoring.selectArea')}</div>
 
                   {/* 橫排選擇器 */}
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/* 養老院選擇 */}
                     <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">養老院</label>
+                      <label className="text-sm font-medium text-gray-700">{t('pages:location.selectArea.nursingHome')}</label>
                       <Select value={selectedHome} onValueChange={setSelectedHome}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="選擇養老院" />
+                          <SelectValue placeholder={t('pages:location.selectArea.selectNursingHome')} />
                         </SelectTrigger>
                         <SelectContent>
                           {homes.map(home => (
@@ -1066,10 +1066,10 @@ export default function TemperaturePage() {
 
                     {/* 樓層選擇 */}
                     <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">樓層</label>
+                      <label className="text-sm font-medium text-gray-700">{t('pages:location.selectArea.floor')}</label>
                       <Select value={selectedFloor} onValueChange={setSelectedFloor} disabled={!selectedHome}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={selectedHome ? "選擇樓層" : "請先選擇養老院"} />
+                          <SelectValue placeholder={selectedHome ? t('pages:location.selectArea.selectFloor') : t('pages:temperature.cloudDeviceMonitoring.selectNursingHomeFirst')} />
                         </SelectTrigger>
                         <SelectContent>
                           {floors
@@ -1085,10 +1085,10 @@ export default function TemperaturePage() {
 
                     {/* 閘道器選擇 */}
                     <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">閘道器</label>
+                      <label className="text-sm font-medium text-gray-700">{t('pages:location.selectArea.gateway')}</label>
                       <Select value={selectedGateway} onValueChange={setSelectedGateway} disabled={!selectedFloor}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={selectedFloor ? "選擇閘道器" : "請先選擇樓層"} />
+                          <SelectValue placeholder={selectedFloor ? t('pages:location.selectArea.selectGateway') : t('pages:temperature.cloudDeviceMonitoring.selectFloorFirst')} />
                         </SelectTrigger>
                         <SelectContent>
                           {gateways
@@ -1112,13 +1112,13 @@ export default function TemperaturePage() {
                   {selectedGateway && (
                     <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="text-sm space-y-1">
-                        <div className="font-medium text-blue-800">當前選擇的閘道器：</div>
+                        <div className="font-medium text-blue-800">{t('pages:temperature.cloudDeviceMonitoring.currentGateway')}</div>
                         <div className="text-xs text-blue-700">
                           {gateways.find(gw => gw.id === selectedGateway)?.name}
                           ({gateways.find(gw => gw.id === selectedGateway)?.macAddress})
                         </div>
                         <div className="text-xs text-blue-600">
-                          監聽主題: {getHealthTopic() || "無法獲取主題"}
+                          {t('pages:temperature.cloudDeviceMonitoring.listeningTopic')}: {getHealthTopic() || t('pages:temperature.cloudDeviceMonitoring.cannotGetTopic')}
                         </div>
                       </div>
                     </div>
@@ -1127,25 +1127,25 @@ export default function TemperaturePage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="bg-blue-50 p-3 rounded-lg">
-                    <div className="font-medium text-blue-800">已發現設備</div>
+                    <div className="font-medium text-blue-800">{t('pages:temperature.cloudDeviceMonitoring.discoveredDevices')}</div>
                     <div className="text-2xl font-bold text-blue-600">{cloudDevices.length}</div>
                   </div>
                   <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="font-medium text-green-800">總記錄數</div>
+                    <div className="font-medium text-green-800">{t('pages:temperature.cloudDeviceMonitoring.totalRecords')}</div>
                     <div className="text-2xl font-bold text-green-600">{cloudDeviceRecords.length}</div>
                   </div>
                   <div className="bg-purple-50 p-3 rounded-lg">
-                    <div className="font-medium text-purple-800">MQTT消息</div>
+                    <div className="font-medium text-purple-800">{t('pages:temperature.cloudDeviceMonitoring.mqttMessages')}</div>
                     <div className="text-2xl font-bold text-purple-600">{cloudMqttData.length}</div>
                   </div>
                 </div>
 
                 {cloudDevices.length > 0 ? (
                   <div className="space-y-3">
-                    <div className="font-medium">選擇監控設備：</div>
+                    <div className="font-medium">{t('pages:temperature.cloudDeviceMonitoring.selectDevice')}</div>
                     <Select value={selectedCloudDevice} onValueChange={setSelectedCloudDevice}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="選擇雲端設備進行詳細監控" />
+                        <SelectValue placeholder={t('pages:temperature.cloudDeviceMonitoring.selectCloudDevice')} />
                       </SelectTrigger>
                       <SelectContent>
                         {cloudDevices.map(device => {
@@ -1167,7 +1167,7 @@ export default function TemperaturePage() {
                                     {statusInfo.badge}
                                   </span>
                                   <span className="text-xs text-muted-foreground">
-                                    {device.recordCount} 筆記錄
+                                    {device.recordCount} {t('pages:temperature.cloudDeviceMonitoring.records')}
                                   </span>
                                 </div>
                               </div>
@@ -1180,12 +1180,12 @@ export default function TemperaturePage() {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <AlertTriangle className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p className="font-medium">尚未發現任何雲端設備</p>
+                    <p className="font-medium">{t('pages:temperature.cloudDeviceMonitoring.noDevices')}</p>
                     <div className="text-xs space-y-1 mt-2">
-                      <p>請確認：</p>
-                      <p>1. 雲端 MQTT 模擬器已啟動</p>
-                      <p>2. 模擬器發送 content: "300B" 格式的數據</p>
-                      <p>3. 數據包含 MAC 和 "skin temp" 字段</p>
+                      <p>{t('pages:temperature.cloudDeviceMonitoring.pleaseConfirm')}</p>
+                      <p>1. {t('pages:temperature.cloudDeviceMonitoring.cloudMqttSimulator')}</p>
+                      <p>2. {t('pages:temperature.cloudDeviceMonitoring.simulatorFormat')}</p>
+                      <p>3. {t('pages:temperature.cloudDeviceMonitoring.dataFields')}</p>
                     </div>
                   </div>
                 )}
@@ -1193,7 +1193,7 @@ export default function TemperaturePage() {
                 {/* 最近接收到的雲端數據 */}
                 {cloudMqttData.length > 0 && (
                   <div className="mt-6 space-y-2">
-                    <div className="font-medium">最近收到的數據：</div>
+                    <div className="font-medium">{t('pages:temperature.cloudDeviceMonitoring.recentData')}</div>
                     <div className="max-h-40 overflow-y-auto space-y-1">
                       {cloudMqttData.slice(0, 8).map((data, index) => (
                         <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
@@ -1209,15 +1209,15 @@ export default function TemperaturePage() {
                                 const residentInfo = getResidentInfoByMAC(data.MAC)
                                 return (
                                   <>
-                                    設備: <span className="font-mono">{data.MAC}</span>
+                                    {t('pages:temperature.cloudDeviceMonitoring.device')}: <span className="font-mono">{data.MAC}</span>
                                     {residentInfo?.residentName && (
                                       <span className="text-blue-600 font-medium">
                                         {' '}→ {residentInfo.residentName} ({residentInfo.residentRoom})
                                       </span>
                                     )}
-                                    {data.skin_temp && ` | 體溫: ${data.skin_temp}°C`}
-                                    {data.room_temp && ` | 室溫: ${data.room_temp}°C`}
-                                    {data.battery_level && ` | 電量: ${data.battery_level}%`}
+                                    {data.skin_temp && ` | ${t('pages:temperature.cloudDeviceMonitoring.temperature')}: ${data.skin_temp}°C`}
+                                    {data.room_temp && ` | ${t('pages:temperature.cloudDeviceMonitoring.roomTemperature')}: ${data.room_temp}°C`}
+                                    {data.battery_level && ` | ${t('pages:temperature.cloudDeviceMonitoring.battery')}: ${data.battery_level}%`}
                                   </>
                                 )
                               })()}
@@ -1225,9 +1225,9 @@ export default function TemperaturePage() {
                           )}
                           {data.content === "diaper DV1" && (
                             <div className="text-muted-foreground mt-1">
-                              尿布設備 {data.name && `- ${data.name}`}
-                              {data.temp && ` | 溫度: ${data.temp}°C`}
-                              {data.humi && ` | 濕度: ${data.humi}%`}
+                              {t('pages:temperature.cloudDeviceMonitoring.diaperDevice')} {data.name && `- ${data.name}`}
+                              {data.temp && ` | ${t('pages:temperature.cloudDeviceMonitoring.temperature')}: ${data.temp}°C`}
+                              {data.humi && ` | ${t('pages:temperature.cloudDeviceMonitoring.humidity')}: ${data.humi}%`}
                             </div>
                           )}
                         </div>
@@ -1240,11 +1240,11 @@ export default function TemperaturePage() {
                 <div className="mt-6">
                   <details className="group">
                     <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                      🔍 查看原始MQTT數據 (調試用)
+                      🔍 {t('pages:temperature.cloudDeviceMonitoring.viewRawData')}
                     </summary>
                     <div className="mt-2 space-y-2 text-xs">
                       <div className="text-muted-foreground">
-                        點擊下方數據可展開查看完整內容
+                        {t('pages:temperature.cloudDeviceMonitoring.clickToExpand')}
                       </div>
                       <div className="max-h-60 overflow-y-auto space-y-2">
                         {cloudMqttData.slice(0, 5).map((data, index) => (
@@ -1285,11 +1285,11 @@ export default function TemperaturePage() {
                         ))}
                       </div>
                       <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                        <div className="font-semibold mb-1">設備創建條件檢查：</div>
-                        <div>• 必須有 content: "300B"</div>
-                        <div>• 必須有 MAC 字段</div>
-                        <div>• skin_temp 字段可以為空或0（已放寬條件）</div>
-                        <div>• diaper DV1 類型數據目前不會創建設備記錄</div>
+                        <div className="font-semibold mb-1">{t('pages:temperature.cloudDeviceMonitoring.deviceCreationConditions')}</div>
+                        <div>• {t('pages:temperature.cloudDeviceMonitoring.condition1')}</div>
+                        <div>• {t('pages:temperature.cloudDeviceMonitoring.condition2')}</div>
+                        <div>• {t('pages:temperature.cloudDeviceMonitoring.condition3')}</div>
+                        <div>• {t('pages:temperature.cloudDeviceMonitoring.condition4')}</div>
                       </div>
                     </div>
                   </details>
@@ -1304,11 +1304,11 @@ export default function TemperaturePage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Thermometer className="mr-2 h-5 w-5" />
-                  設備體溫數據 - {(() => {
+                  {t('pages:temperature.deviceTemperatureData.title')} - {(() => {
                     const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
                     return device?.residentName
                       ? `${device.residentName} (${device.residentRoom})`
-                      : device?.deviceName || "未知設備"
+                      : device?.deviceName || t('pages:temperature.deviceTemperatureData.unknownDevice')
                   })()}
                 </CardTitle>
               </CardHeader>
@@ -1345,10 +1345,10 @@ export default function TemperaturePage() {
                                 )}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                皮膚溫度: {record.skin_temp}°C | 環境溫度: {record.room_temp}°C
+                                {t('pages:temperature.deviceTemperatureData.skinTemperature')}: {record.skin_temp}°C | {t('pages:temperature.deviceTemperatureData.roomTemperature')}: {record.room_temp}°C
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                步數: {record.steps} | 電量: {record.battery_level}%
+                                {t('pages:temperature.deviceTemperatureData.steps')}: {record.steps} | {t('pages:temperature.deviceTemperatureData.battery')}: {record.battery_level}%
                               </div>
                             </div>
                           </div>
@@ -1359,10 +1359,10 @@ export default function TemperaturePage() {
                               : 'bg-green-100 text-green-700'
                             }`}>
                             {record.skin_temp > NORMAL_TEMP_MAX
-                              ? '體溫過高'
+                              ? t('pages:temperature.deviceTemperatureData.temperatureHigh')
                               : record.skin_temp < NORMAL_TEMP_MIN
-                                ? '體溫過低'
-                                : '正常'}
+                                ? t('pages:temperature.deviceTemperatureData.temperatureLow')
+                                : t('pages:temperature.deviceTemperatureData.normal')}
                           </div>
                         </div>
                       ))}
@@ -1377,9 +1377,9 @@ export default function TemperaturePage() {
       {/* 日期選擇標籤 */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="today">今日</TabsTrigger>
-          <TabsTrigger value="yesterday">昨天</TabsTrigger>
-          <TabsTrigger value="dayBefore">前天</TabsTrigger>
+          <TabsTrigger value="today">{t('pages:temperature.dateTabs.today')}</TabsTrigger>
+          <TabsTrigger value="yesterday">{t('pages:temperature.dateTabs.yesterday')}</TabsTrigger>
+          <TabsTrigger value="dayBefore">{t('pages:temperature.dateTabs.dayBefore')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-6">
@@ -1389,20 +1389,20 @@ export default function TemperaturePage() {
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center">
                   <TrendingUp className="mr-2 h-5 w-5" />
-                  體溫趨勢圖
+                  {t('pages:temperature.temperatureChart.title')}
                   {currentMqttTab === "cloud" && selectedCloudDevice && (
                     <span className="ml-2 text-sm font-normal text-blue-600">
                       - {(() => {
                         const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
                         return device?.residentName
                           ? `${device.residentName} (${device.residentRoom})`
-                          : device?.deviceName || "雲端設備"
+                          : device?.deviceName || t('pages:temperature.temperatureChart.cloudDevice')
                       })()}
                     </span>
                   )}
                   {currentMqttTab === "local" && (
                     <span className="ml-2 text-sm font-normal text-green-600">
-                      - {USERS.find(u => u.id === selectedUser)?.name || "本地用戶"}
+                      - {USERS.find(u => u.id === selectedUser)?.name || t('pages:temperature.temperatureChart.localUser')}
                     </span>
                   )}
                 </span>
@@ -1423,14 +1423,14 @@ export default function TemperaturePage() {
                       <YAxis
                         domain={currentMqttTab === "cloud" ? ['dataMin - 1', 'dataMax + 1'] : [34, 40]}
                         tick={{ fontSize: 12 }}
-                        label={{ value: '體溫 (°C)', angle: -90, position: 'insideLeft' }}
+                        label={{ value: t('pages:temperature.temperatureChart.yAxisLabel'), angle: -90, position: 'insideLeft' }}
                       />
                       <Tooltip
-                        labelFormatter={(value) => `時間: ${value}`}
-                        formatter={(value) => [`${value}°C`, '體溫']}
+                        labelFormatter={(value) => `${t('pages:temperature.temperatureChart.time')}: ${value}`}
+                        formatter={(value) => [`${value}°C`, t('pages:temperature.temperatureChart.temperature')]}
                       />
-                      <ReferenceLine y={37.5} stroke="#ef4444" strokeDasharray="5 5" label="高溫警戒線" />
-                      <ReferenceLine y={36.0} stroke="#3b82f6" strokeDasharray="5 5" label="低溫警戒線" />
+                      <ReferenceLine y={37.5} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:temperature.temperatureChart.highTempLine')} />
+                      <ReferenceLine y={36.0} stroke="#3b82f6" strokeDasharray="5 5" label={t('pages:temperature.temperatureChart.lowTempLine')} />
                       <Line
                         type="monotone"
                         dataKey="temperature"
@@ -1446,14 +1446,14 @@ export default function TemperaturePage() {
                 <div className="h-80 flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
                     <Thermometer className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                    <p>暫無{getDateString()}的體溫數據</p>
+                    <p>{t('pages:temperature.temperatureChart.noData', { date: getDateString() })}</p>
                     {currentMqttTab === "cloud" ? (
                       <div className="text-sm space-y-1">
-                        <p>請確認雲端MQTT模擬器已啟動</p>
-                        <p>並選擇有效的雲端設備</p>
+                        <p>{t('pages:temperature.temperatureChart.cloudSimulatorCheck')}</p>
+                        <p>{t('pages:temperature.temperatureChart.selectValidDevice')}</p>
                       </div>
                     ) : (
-                      <p className="text-sm">請確認本地MQTT模擬器已啟動</p>
+                      <p className="text-sm">{t('pages:temperature.temperatureChart.localSimulatorCheck')}</p>
                     )}
                   </div>
                 </div>
@@ -1466,20 +1466,20 @@ export default function TemperaturePage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Clock className="mr-2 h-5 w-5" />
-                體溫記錄
+                {t('pages:temperature.temperatureRecords.title')}
                 {currentMqttTab === "cloud" && selectedCloudDevice && (
                   <span className="ml-2 text-sm font-normal text-blue-600">
                     - {(() => {
                       const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
                       return device?.residentName
                         ? `${device.residentName} (${device.residentRoom})`
-                        : device?.deviceName || "雲端設備"
+                        : device?.deviceName || t('pages:temperature.temperatureChart.cloudDevice')
                     })()}
                   </span>
                 )}
                 {currentMqttTab === "local" && (
                   <span className="ml-2 text-sm font-normal text-green-600">
-                    - {USERS.find(u => u.id === selectedUser)?.name || "本地用戶"}
+                    - {USERS.find(u => u.id === selectedUser)?.name || t('pages:temperature.temperatureChart.localUser')}
                   </span>
                 )}
               </CardTitle>
@@ -1491,7 +1491,7 @@ export default function TemperaturePage() {
                     size="sm"
                     onClick={() => setRecordFilter("all")}
                   >
-                    全部
+                    {t('pages:temperature.temperatureRecords.filters.all')}
                   </Button>
                   <Button
                     variant={recordFilter === "high" ? "default" : "outline"}
@@ -1499,7 +1499,7 @@ export default function TemperaturePage() {
                     onClick={() => setRecordFilter("high")}
                     className="text-red-600 border-red-600 hover:bg-red-50"
                   >
-                    高溫
+                    {t('pages:temperature.temperatureRecords.filters.high')}
                   </Button>
                   <Button
                     variant={recordFilter === "low" ? "default" : "outline"}
@@ -1507,7 +1507,7 @@ export default function TemperaturePage() {
                     onClick={() => setRecordFilter("low")}
                     className="text-blue-600 border-blue-600 hover:bg-blue-50"
                   >
-                    低溫
+                    {t('pages:temperature.temperatureRecords.filters.low')}
                   </Button>
                 </div>
                 <div className="flex gap-2">
@@ -1516,21 +1516,21 @@ export default function TemperaturePage() {
                     size="sm"
                     onClick={() => setTimeRange("1day")}
                   >
-                    1天
+                    {t('pages:temperature.temperatureRecords.timeRanges.1day')}
                   </Button>
                   <Button
                     variant={timeRange === "3day" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setTimeRange("3day")}
                   >
-                    3天
+                    {t('pages:temperature.temperatureRecords.timeRanges.3day')}
                   </Button>
                   <Button
                     variant={timeRange === "7day" ? "default" : "outline"}
                     size="sm"
                     onClick={() => setTimeRange("7day")}
                   >
-                    7天
+                    {t('pages:temperature.temperatureRecords.timeRanges.7day')}
                   </Button>
                 </div>
               </div>
@@ -1556,9 +1556,9 @@ export default function TemperaturePage() {
                         <div>
                           <div className="font-medium">{record.datetime.toLocaleString('zh-TW')}</div>
                           <div className="text-sm text-muted-foreground">
-                            {record.temperature > 0 ? `${record.temperature}°C` : "無溫度數據"}
+                            {record.temperature > 0 ? `${record.temperature}°C` : t('pages:temperature.temperatureRecords.noTemperatureData')}
                             {record.room_temp && record.room_temp > 0 && (
-                              <span className="ml-2">| 室溫: {record.room_temp}°C</span>
+                              <span className="ml-2">| {t('pages:temperature.temperatureRecords.roomTemperature')}: {record.room_temp}°C</span>
                             )}
                           </div>
                         </div>
@@ -1572,24 +1572,24 @@ export default function TemperaturePage() {
                             : 'bg-green-100 text-green-700'
                         }`}>
                         {record.temperature === 0
-                          ? '無溫度數據'
+                          ? t('pages:temperature.temperatureRecords.noTemperatureData')
                           : record.temperature > NORMAL_TEMP_MAX
-                            ? '體溫過高'
+                            ? t('pages:temperature.temperatureRecords.temperatureHigh')
                             : record.temperature < NORMAL_TEMP_MIN
-                              ? '體溫過低'
-                              : '正常'}
+                              ? t('pages:temperature.temperatureRecords.temperatureLow')
+                              : t('pages:temperature.temperatureRecords.normal')}
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Clock className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p>暫無符合條件的記錄</p>
+                    <p>{t('pages:temperature.temperatureRecords.noRecords')}</p>
                     {currentMqttTab === "cloud" && !selectedCloudDevice && (
-                      <p className="text-sm mt-2">請先選擇雲端設備</p>
+                      <p className="text-sm mt-2">{t('pages:temperature.temperatureRecords.selectCloudDeviceFirst')}</p>
                     )}
                     {currentMqttTab === "cloud" && selectedCloudDevice && currentCloudDeviceRecords.length === 0 && (
-                      <p className="text-sm mt-2">所選設備暫無體溫數據</p>
+                      <p className="text-sm mt-2">{t('pages:temperature.temperatureRecords.selectedDeviceNoData')}</p>
                     )}
                   </div>
                 )}

@@ -468,6 +468,122 @@
             "online": "在線"
         }
     },
+    "temperature": {
+        "title": "體溫監控",
+        "subtitle": "即時監控長者體溫變化，及時發現健康異常",
+        "navigationFromHealth": "從健康監控頁面導航",
+        "currentPatient": "當前患者",
+        "reconnectLocal": "重連本地",
+        "reconnectCloud": "重連雲端",
+        "tabs": {
+            "local": "本地 MQTT",
+            "cloud": "雲端 MQTT"
+        },
+        "patientSelection": {
+            "title": "患者選擇",
+            "selectPatient": "選擇患者",
+            "patient": "患者"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "雲端設備監控",
+            "connected": "連線正常",
+            "離線": "離線",
+            "連接中...": "連接中...",
+            "重新連接中...": "重新連接中...",
+            "連接已關閉": "連接已關閉",
+            "連接錯誤": "連接錯誤",
+            "未選擇閘道器": "未選擇閘道器",
+            "selectArea": "選擇監控區域：",
+            "selectNursingHomeFirst": "請先選擇養老院",
+            "selectFloorFirst": "請先選擇樓層",
+            "currentGateway": "當前選擇的閘道器：",
+            "listeningTopic": "監聽主題",
+            "cannotGetTopic": "無法獲取主題",
+            "discoveredDevices": "已發現設備",
+            "totalRecords": "總記錄數",
+            "mqttMessages": "MQTT消息",
+            "selectDevice": "選擇監控設備：",
+            "selectCloudDevice": "選擇雲端設備進行詳細監控",
+            "records": "筆記錄",
+            "noDevices": "尚未發現任何雲端設備",
+            "pleaseConfirm": "請確認：",
+            "cloudMqttSimulator": "雲端 MQTT 模擬器已啟動",
+            "simulatorFormat": "模擬器發送 content: \"300B\" 格式的數據",
+            "dataFields": "數據包含 MAC 和 \"skin temp\" 字段",
+            "recentData": "最近收到的數據：",
+            "device": "設備",
+            "temperature": "體溫",
+            "roomTemperature": "室溫",
+            "battery": "電量",
+            "diaperDevice": "尿布設備",
+            "humidity": "濕度",
+            "viewRawData": "查看原始MQTT數據 (調試用)",
+            "clickToExpand": "點擊下方數據可展開查看完整內容",
+            "deviceCreationConditions": "設備創建條件檢查：",
+            "condition1": "必須有 content: \"300B\"",
+            "condition2": "必須有 MAC 字段",
+            "condition3": "skin_temp 字段可以為空或0（已放寬條件）",
+            "condition4": "diaper DV1 類型數據目前不會創建設備記錄"
+        },
+        "deviceTemperatureData": {
+            "title": "設備體溫數據",
+            "unknownDevice": "未知設備",
+            "skinTemperature": "皮膚溫度",
+            "roomTemperature": "環境溫度",
+            "steps": "步數",
+            "battery": "電量",
+            "temperatureHigh": "體溫過高",
+            "temperatureLow": "體溫過低",
+            "normal": "正常"
+        },
+        "dateTabs": {
+            "today": "今日",
+            "yesterday": "昨天",
+            "dayBefore": "前天"
+        },
+        "temperatureChart": {
+            "title": "體溫趨勢圖",
+            "cloudDevice": "雲端設備",
+            "localUser": "本地用戶",
+            "yAxisLabel": "體溫 (°C)",
+            "time": "時間",
+            "temperature": "體溫",
+            "highTempLine": "高溫警戒線",
+            "lowTempLine": "低溫警戒線",
+            "noData": "暫無{{date}}的體溫數據",
+            "cloudSimulatorCheck": "請確認雲端MQTT模擬器已啟動",
+            "selectValidDevice": "並選擇有效的雲端設備",
+            "localSimulatorCheck": "請確認本地MQTT模擬器已啟動"
+        },
+        "temperatureRecords": {
+            "title": "體溫記錄",
+            "filters": {
+                "all": "全部",
+                "high": "高溫",
+                "low": "低溫"
+            },
+            "timeRanges": {
+                "1day": "1天",
+                "3day": "3天",
+                "7day": "7天"
+            },
+            "noTemperatureData": "無溫度數據",
+            "roomTemperature": "室溫",
+            "temperatureHigh": "體溫過高",
+            "temperatureLow": "體溫過低",
+            "normal": "正常",
+            "noRecords": "暫無符合條件的記錄",
+            "selectCloudDeviceFirst": "請先選擇雲端設備",
+            "selectedDeviceNoData": "所選設備暫無體溫數據"
+        },
+        "connectionStatus": {
+            "title": "連線狀態監控",
+            "localMqtt": "本地 MQTT",
+            "cloudMqtt": "雲端 MQTT",
+            "error": "錯誤",
+            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
+        }
+    },
     "settings": {
         "title": "系統設置",
         "subtitle": "管理系統配置、個人設置和安全選項",
@@ -513,29 +629,6 @@
         "title": "{{title}}",
         "description": "此頁面正在開發中"
     },
-    "temperature": {
-        "title": "體溫監測",
-        "subtitle": "即時監控長者體溫變化與異常警示",
-        "currentTemp": "當前體溫",
-        "averageTemp": "平均體溫",
-        "maxTemp": "最高體溫",
-        "minTemp": "最低體溫",
-        "normalRange": "正常範圍",
-        "abnormalTemp": "異常體溫",
-        "lastUpdate": "最後更新",
-        "noData": "暫無體溫數據",
-        "selectPatient": "選擇病患",
-        "realTime": "即時監測",
-        "history": "歷史記錄",
-        "alerts": "異常警示",
-        "connectionStatus": {
-            "title": "連線狀態監控",
-            "localMqtt": "本地 MQTT",
-            "cloudMqtt": "雲端 MQTT",
-            "error": "錯誤",
-            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
-        }
-    },
     "heartRate": {
         "title": "心跳監測",
         "subtitle": "即時監控長者心率變化與異常警示",
@@ -550,13 +643,6 @@
         "selectPatient": "選擇病患",
         "realTime": "即時監測",
         "history": "歷史記錄",
-        "alerts": "異常警示",
-        "connectionStatus": {
-            "title": "連線狀態監控",
-            "localMqtt": "本地 MQTT",
-            "cloudMqtt": "雲端 MQTT",
-            "error": "錯誤",
-            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
-        }
+        "alerts": "異常警示"
     }
 }

@@ -258,6 +258,20 @@ export default function TestI18nPage() {
                         <p>設備列表: {t('pages:location.deviceList.onlineDevices', { count: 5 })}, {t('pages:location.deviceList.totalDevices', { count: 10 })}</p>
                         <p>狀態標籤: {t('status:resident.status.good')}, {t('status:resident.status.attention')}, {t('status:resident.status.critical')}</p>
                     </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">體溫監控頁面：</h3>
+                        <p>頁面標題: {t('pages:temperature.title')}</p>
+                        <p>頁面描述: {t('pages:temperature.subtitle')}</p>
+                        <p>標籤頁: {t('pages:temperature.tabs.local')}, {t('pages:temperature.tabs.cloud')}</p>
+                        <p>患者選擇: {t('pages:temperature.patientSelection.title')}, {t('pages:temperature.patientSelection.selectPatient')}</p>
+                        <p>雲端監控: {t('pages:temperature.cloudDeviceMonitoring.title')}, {t('pages:temperature.cloudDeviceMonitoring.connected')}</p>
+                        <p>日期標籤: {t('pages:temperature.dateTabs.today')}, {t('pages:temperature.dateTabs.yesterday')}, {t('pages:temperature.dateTabs.dayBefore')}</p>
+                        <p>體溫圖表: {t('pages:temperature.temperatureChart.title')}, {t('pages:temperature.temperatureChart.yAxisLabel')}</p>
+                        <p>體溫記錄: {t('pages:temperature.temperatureRecords.title')}, {t('pages:temperature.temperatureRecords.filters.all')}, {t('pages:temperature.temperatureRecords.filters.high')}, {t('pages:temperature.temperatureRecords.filters.low')}</p>
+                        <p>時間範圍: {t('pages:temperature.temperatureRecords.timeRanges.1day')}, {t('pages:temperature.temperatureRecords.timeRanges.3day')}, {t('pages:temperature.temperatureRecords.timeRanges.7day')}</p>
+                        <p>狀態標籤: {t('status:device.status.active')}, {t('status:device.status.inactive')}, {t('status:device.status.error')}, {t('status:device.status.offline')}</p>
+                    </div>
                 </CardContent>
             </Card>
 

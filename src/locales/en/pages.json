@@ -468,6 +468,122 @@
             "online": "Online"
         }
     },
+    "temperature": {
+        "title": "Temperature Monitoring",
+        "subtitle": "Real-time monitoring of elderly temperature changes to detect health abnormalities in time",
+        "navigationFromHealth": "Navigated from Health Monitoring page",
+        "currentPatient": "Current Patient",
+        "reconnectLocal": "Reconnect Local",
+        "reconnectCloud": "Reconnect Cloud",
+        "tabs": {
+            "local": "Local MQTT",
+            "cloud": "Cloud MQTT"
+        },
+        "patientSelection": {
+            "title": "Patient Selection",
+            "selectPatient": "Select Patient",
+            "patient": "Patient"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Cloud Device Monitoring",
+            "connected": "Connected",
+            "離線": "Offline",
+            "連接中...": "Connecting...",
+            "重新連接中...": "Reconnecting...",
+            "連接已關閉": "Connection Closed",
+            "連接錯誤": "Connection Error",
+            "未選擇閘道器": "No Gateway Selected",
+            "selectArea": "Select Monitoring Area:",
+            "selectNursingHomeFirst": "Please select nursing home first",
+            "selectFloorFirst": "Please select floor first",
+            "currentGateway": "Currently Selected Gateway:",
+            "listeningTopic": "Listening Topic",
+            "cannotGetTopic": "Cannot get topic",
+            "discoveredDevices": "Discovered Devices",
+            "totalRecords": "Total Records",
+            "mqttMessages": "MQTT Messages",
+            "selectDevice": "Select Monitoring Device:",
+            "selectCloudDevice": "Select cloud device for detailed monitoring",
+            "records": " records",
+            "noDevices": "No cloud devices discovered yet",
+            "pleaseConfirm": "Please confirm:",
+            "cloudMqttSimulator": "Cloud MQTT simulator is running",
+            "simulatorFormat": "Simulator sends data in content: \"300B\" format",
+            "dataFields": "Data contains MAC and \"skin temp\" fields",
+            "recentData": "Recently Received Data:",
+            "device": "Device",
+            "temperature": "Temperature",
+            "roomTemperature": "Room Temperature",
+            "battery": "Battery",
+            "diaperDevice": "Diaper Device",
+            "humidity": "Humidity",
+            "viewRawData": "View Raw MQTT Data (Debug)",
+            "clickToExpand": "Click on data below to expand and view full content",
+            "deviceCreationConditions": "Device Creation Condition Check:",
+            "condition1": "Must have content: \"300B\"",
+            "condition2": "Must have MAC field",
+            "condition3": "skin_temp field can be empty or 0 (condition relaxed)",
+            "condition4": "diaper DV1 type data currently does not create device records"
+        },
+        "deviceTemperatureData": {
+            "title": "Device Temperature Data",
+            "unknownDevice": "Unknown Device",
+            "skinTemperature": "Skin Temperature",
+            "roomTemperature": "Room Temperature",
+            "steps": "Steps",
+            "battery": "Battery",
+            "temperatureHigh": "Temperature High",
+            "temperatureLow": "Temperature Low",
+            "normal": "Normal"
+        },
+        "dateTabs": {
+            "today": "Today",
+            "yesterday": "Yesterday",
+            "dayBefore": "Day Before"
+        },
+        "temperatureChart": {
+            "title": "Temperature Trend Chart",
+            "cloudDevice": "Cloud Device",
+            "localUser": "Local User",
+            "yAxisLabel": "Temperature (°C)",
+            "time": "Time",
+            "temperature": "Temperature",
+            "highTempLine": "High Temperature Alert Line",
+            "lowTempLine": "Low Temperature Alert Line",
+            "noData": "No temperature data for {{date}}",
+            "cloudSimulatorCheck": "Please confirm cloud MQTT simulator is running",
+            "selectValidDevice": "and select a valid cloud device",
+            "localSimulatorCheck": "Please confirm local MQTT simulator is running"
+        },
+        "temperatureRecords": {
+            "title": "Temperature Records",
+            "filters": {
+                "all": "All",
+                "high": "High",
+                "low": "Low"
+            },
+            "timeRanges": {
+                "1day": "1 Day",
+                "3day": "3 Days",
+                "7day": "7 Days"
+            },
+            "noTemperatureData": "No Temperature Data",
+            "roomTemperature": "Room Temperature",
+            "temperatureHigh": "Temperature High",
+            "temperatureLow": "Temperature Low",
+            "normal": "Normal",
+            "noRecords": "No matching records",
+            "selectCloudDeviceFirst": "Please select a cloud device first",
+            "selectedDeviceNoData": "Selected device has no temperature data"
+        },
+        "connectionStatus": {
+            "title": "Connection Status Monitoring",
+            "localMqtt": "Local MQTT",
+            "cloudMqtt": "Cloud MQTT",
+            "error": "Error",
+            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
+        }
+    },
     "settings": {
         "title": "System Settings",
         "subtitle": "Manage system configuration, personal settings, and security options",
@@ -513,29 +629,6 @@
         "title": "{{title}}",
         "description": "This page is under development"
     },
-    "temperature": {
-        "title": "Temperature Monitor",
-        "subtitle": "Real-time monitoring of temperature changes and alerts",
-        "currentTemp": "Current Temperature",
-        "averageTemp": "Average Temperature",
-        "maxTemp": "Max Temperature",
-        "minTemp": "Min Temperature",
-        "normalRange": "Normal Range",
-        "abnormalTemp": "Abnormal Temperature",
-        "lastUpdate": "Last Update",
-        "noData": "No temperature data available",
-        "selectPatient": "Select Patient",
-        "realTime": "Real-time Monitor",
-        "history": "History Records",
-        "alerts": "Abnormal Alerts",
-        "connectionStatus": {
-            "title": "Connection Status Monitoring",
-            "localMqtt": "Local MQTT",
-            "cloudMqtt": "Cloud MQTT",
-            "error": "Error",
-            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
-        }
-    },
     "heartRate": {
         "title": "Heart Rate Monitor",
         "subtitle": "Real-time monitoring of heart rate changes and alerts",
@@ -550,13 +643,6 @@
         "selectPatient": "Select Patient",
         "realTime": "Real-time Monitor",
         "history": "History Records",
-        "alerts": "Abnormal Alerts",
-        "connectionStatus": {
-            "title": "Connection Status Monitoring",
-            "localMqtt": "Local MQTT",
-            "cloudMqtt": "Cloud MQTT",
-            "error": "Error",
-            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
-        }
+        "alerts": "Abnormal Alerts"
     }
 }
