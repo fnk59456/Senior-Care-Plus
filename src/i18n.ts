@@ -13,6 +13,11 @@ import enNavigation from './locales/en/navigation.json'
 import enPages from './locales/en/pages.json'
 import enStatus from './locales/en/status.json'
 
+import jpCommon from './locales/jp/common.json'
+import jpNavigation from './locales/jp/navigation.json'
+import jpPages from './locales/jp/pages.json'
+import jpStatus from './locales/jp/status.json'
+
 const resources = {
     zh: {
         common: zhCommon,
@@ -25,6 +30,12 @@ const resources = {
         navigation: enNavigation,
         pages: enPages,
         status: enStatus,
+    },
+    jp: {
+        common: jpCommon,
+        navigation: jpNavigation,
+        pages: jpPages,
+        status: jpStatus,
     },
 }
 

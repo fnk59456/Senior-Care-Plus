@@ -12,6 +12,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 const availableLanguages = [
     { code: 'zh', name: '中文', flag: '🇨🇳' },
     { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'jp', name: '日本語', flag: '🇯🇵' },
 ]
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {

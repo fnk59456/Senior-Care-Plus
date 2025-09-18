@@ -1,0 +1,68 @@
+{
+    "status": {
+        "active": "アクティブ",
+        "inactive": "非アクティブ",
+        "offline": "オフライン",
+        "error": "エラー",
+        "good": "良好",
+        "attention": "注意",
+        "critical": "緊急",
+        "unknown": "不明"
+    },
+    "health": {
+        "normal": "正常",
+        "abnormal": "異常",
+        "attention": "注意",
+        "critical": "緊急"
+    },
+    "device": {
+        "online": "オンライン",
+        "offline": "オフライン",
+        "error": "エラー",
+        "lowBattery": "バッテリー低下",
+        "lost": "紛失"
+    },
+    "emergency": {
+        "responding": "対応中...",
+        "caregiverOnWay": "ケアワーカーが向かっています...",
+        "completed": "解決済み",
+        "cancelled": "キャンセル済み",
+        "pending": "対応待ち"
+    },
+    "reminder": {
+        "pending": "待機中",
+        "completed": "完了",
+        "overdue": "期限切れ",
+        "cancelled": "キャンセル済み"
+    },
+    "location": {
+        "indoor": "屋内",
+        "outdoor": "屋外",
+        "unknown": "不明"
+    },
+    "temperature": {
+        "normal": "正常",
+        "high": "高温",
+        "low": "低温",
+        "critical": "危険"
+    },
+    "heartRate": {
+        "normal": "正常",
+        "high": "高心拍",
+        "low": "低心拍",
+        "critical": "危険"
+    },
+    "diaper": {
+        "dry": "乾燥",
+        "slightlyWet": "少し湿っている",
+        "wet": "湿っている",
+        "veryWet": "非常に湿っている",
+        "soiled": "汚れている"
+    },
+    "alerts": {
+        "emergency": "緊急",
+        "priority": "優先",
+        "warning": "警告",
+        "info": "情報"
+    }
+}

@@ -1,0 +1,431 @@
+{
+    "home": {
+        "title": "高齢者ケアシステムへようこそ",
+        "subtitle": "高齢者に最適なケアと注意を提供する包括的な高齢者ケア管理。健康監視、位置追跡、スマートリマインダー機能を統合。",
+        "features": {
+            "emergency": {
+                "title": "緊急通報",
+                "description": "迅速な緊急支援信号の送信で、適時の支援を確保"
+            },
+            "health": {
+                "title": "健康監視",
+                "description": "高齢者の健康状態と異常警告のリアルタイム監視"
+            },
+            "reminders": {
+                "title": "リマインダー",
+                "description": "薬物、水分補給、測定などのリマインダー管理"
+            },
+            "location": {
+                "title": "屋内位置",
+                "description": "施設内の高齢者とデバイスの位置追跡"
+            },
+            "temperature": {
+                "title": "体温監視",
+                "description": "体温変化と異常警告のリアルタイム監視"
+            },
+            "heartRate": {
+                "title": "心拍監視",
+                "description": "心拍変化と異常警告のリアルタイム監視"
+            },
+            "diaper": {
+                "title": "おむつ監視",
+                "description": "おむつ湿度状態と交換記録のリアルタイム監視"
+            }
+        },
+        "stats": {
+            "totalResidents": "総居住者数",
+            "todayTasks": "今日のタスク",
+            "healthAlerts": "健康警告",
+            "monthlyReport": "月次レポート",
+            "completed": "完了"
+        },
+        "actions": {
+            "startUsing": "今すぐ使用開始",
+            "systemGuide": "システムガイド"
+        }
+    },
+    "residents": {
+        "title": "居住者管理",
+        "subtitle": "居住者データとデバイスバインディングの管理",
+        "stats": {
+            "totalResidents": "総居住者数",
+            "activeDevices": "アクティブデバイス",
+            "offlineDevices": "オフラインデバイス",
+            "errorDevices": "エラーデバイス",
+            "unboundDevices": "未バインドデバイス"
+        },
+        "filters": {
+            "all": "すべて",
+            "good": "良好",
+            "attention": "注意",
+            "critical": "緊急"
+        },
+        "search": {
+            "placeholder": "居住者名、ID、部屋番号で検索..."
+        },
+        "list": {
+            "title": "居住者リスト",
+            "count": "{{count}}名の居住者",
+            "noDevices": "まだバインドされたデバイスがありません",
+            "boundDevices": "バインドデバイス:"
+        },
+        "actions": {
+            "addResident": "居住者追加",
+            "showDeviceManagement": "デバイス管理を表示",
+            "hideDeviceManagement": "デバイス管理を非表示",
+            "manageDevices": "デバイス管理",
+            "edit": "編集",
+            "remove": "削除"
+        },
+        "form": {
+            "name": "名前",
+            "age": "年齢",
+            "gender": "性別",
+            "room": "部屋番号",
+            "status": "状態",
+            "avatar": "アバター",
+            "emergencyContact": "緊急連絡先",
+            "relationship": "関係",
+            "phone": "電話",
+            "careNotes": "ケア注意事項",
+            "male": "男性",
+            "female": "女性",
+            "good": "良好",
+            "attention": "注意",
+            "critical": "緊急"
+        },
+        "deviceManagement": {
+            "title": "未バインドデバイス",
+            "count": "{{count}}個のデバイス",
+            "bind": "バインド"
+        },
+        "deviceCount": "デバイス",
+        "id": "ID",
+        "room": "部屋",
+        "ageUnit": "歳",
+        "boundDevices": "バインドデバイス",
+        "modal": {
+            "addResident": "居住者追加",
+            "name": "名前",
+            "age": "年齢",
+            "gender": "性別",
+            "room": "部屋番号",
+            "status": "状態",
+            "avatar": "アバター",
+            "emergencyContactName": "緊急連絡先名",
+            "relationship": "関係",
+            "phone": "電話",
+            "careNotes": "ケア注意事項",
+            "placeholders": {
+                "name": "居住者名を入力",
+                "age": "年齢を入力",
+                "room": "部屋番号を入力",
+                "avatar": "絵文字またはテキストを入力",
+                "emergencyContactName": "緊急連絡先名を入力",
+                "relationship": "関係を入力",
+                "phone": "電話番号を入力",
+                "careNotes": "ケア注意事項を入力"
+            },
+            "genderOptions": {
+                "male": "男性",
+                "female": "女性"
+            }
+        },
+        "deviceBinding": {
+            "title": "デバイスバインディング管理",
+            "currentBinding": "現在のバインディング",
+            "deviceBoundToResident": "デバイス {{deviceName}} は居住者 {{residentName}} にバインドされています",
+            "unbind": "バインド解除",
+            "selectDevice": "デバイス選択",
+            "searchDevicePlaceholder": "デバイス名、ハードウェアIDで検索...",
+            "alreadyBound": "既にバインド済み",
+            "selectResident": "居住者選択",
+            "searchResidentPlaceholder": "居住者名、部屋番号で検索...",
+            "bindingSettings": "バインディング設定",
+            "bindingType": "バインディングタイプ",
+            "primaryDevice": "主要デバイス",
+            "secondaryDevice": "補助デバイス",
+            "notes": "備考",
+            "notesPlaceholder": "バインディング備考（オプション）",
+            "residentDevices": "{{name}} のデバイス",
+            "confirmBind": "バインド確認"
+        },
+        "detailModal": {
+            "editInfo": "居住者情報編集",
+            "emergencyContact": "緊急連絡先",
+            "careNotes": "ケア注意事項",
+            "careNotesPlaceholder": "ケア注意事項を入力してください...",
+            "noCareNotes": "ケア注意事項がありません",
+            "editCareNotes": "注意事項編集",
+            "addDevice": "デバイス追加",
+            "noDevicesBound": "まだバインドされたデバイスがありません",
+            "close": "閉じる"
+        },
+        "unboundDevices": "未バインドデバイス",
+        "bindDevice": "バインド",
+        "alerts": {
+            "importSuccess": "✅ データインポート成功！注意：居住者データはシステム管理を通じて更新する必要があります",
+            "invalidFormat": "❌ 無効なデータ形式",
+            "importFailed": "❌ データインポート失敗"
+        },
+        "confirms": {
+            "resetSettings": "すべての居住者管理設定をリセットしてもよろしいですか？この操作は元に戻せません！",
+            "removeResident": "この居住者を削除してもよろしいですか？この操作は元に戻せません。"
+        }
+    },
+    "uwbLocation": {
+        "title": "高齢者施設管理",
+        "subtitle": "UWB位置システムのフィールド、フロア、ゲートウェイ設定管理",
+        "selectHome": "フィールド選択",
+        "tabs": {
+            "overview": "システム概要",
+            "homes": "フィールド管理",
+            "floors": "フロア管理",
+            "gateways": "ゲートウェイ管理",
+            "anchors": "アンカーペアリング",
+            "tags": "タグ管理"
+        },
+        "stats": {
+            "homes": "フィールド数",
+            "floors": "フロア数",
+            "gateways": "ゲートウェイ数",
+            "anchors": "アンカー数",
+            "tags": "タグ数"
+        },
+        "actions": {
+            "addHome": "フィールド追加",
+            "addFloor": "フロア追加",
+            "addGateway": "ゲートウェイ追加",
+            "addAnchor": "アンカー追加",
+            "addTag": "タグ追加"
+        },
+        "forms": {
+            "homeName": "フィールド名",
+            "homeNamePlaceholder": "フィールド名を入力",
+            "homeDescription": "フィールド説明",
+            "homeDescriptionPlaceholder": "フィールド説明を入力",
+            "homeAddress": "フィールド住所",
+            "homeAddressPlaceholder": "フィールド住所を入力"
+        },
+        "messages": {
+            "selectFieldFirst": "まずフィールドを選択してください",
+            "addFloorFirst": "ゲートウェイを設定する前にフロアを追加してください",
+            "selectGatewayFirst": "まずゲートウェイを選択してください",
+            "noAnchorsFound": "アンカーが見つかりません",
+            "noTagsFound": "タグが見つかりません",
+            "noGatewaysFound": "クラウドゲートウェイが見つかりません"
+        },
+        "currentFieldStatus": "現在のフィールド状態",
+        "floorInfo": "フロア {{level}} | {{width}}m × {{height}}m",
+        "mapStatus": {
+            "calibrated": "マップキャリブレーション済み",
+            "uploaded": "マップアップロード済み",
+            "noMap": "マップなし"
+        },
+        "gatewaysOnline": "ゲートウェイオンライン",
+        "mapCalibrationProgress": "マップキャリブレーション進捗",
+        "calibrationStatus": {
+            "completed": "キャリブレーション完了",
+            "pending": "キャリブレーション待ち",
+            "noMap": "マップ未アップロード"
+        },
+        "overallProgress": "全体進捗",
+        "floorForm": {
+            "name": "フロア名",
+            "namePlaceholder": "フロア名を入力",
+            "level": "フロア番号",
+            "realWidth": "実際の幅（メートル）",
+            "realHeight": "実際の高さ（メートル）"
+        },
+        "mapCalibration": "マップキャリブレーション",
+        "anchorLocationMap": "アンカー位置マップ",
+        "showAnchorsOnMap": "マップ上にアンカーを表示",
+        "doubleClickAnchorToCalibrate": "アンカーをダブルクリックしてキャリブレーション",
+        "anchorCount": "アンカー数",
+        "close": "閉じる",
+        "calibrationSteps": {
+            "upload": "マップアップロード",
+            "setOrigin": "原点設定",
+            "setScale": "スケール設定"
+        },
+        "uploadFloorMap": "フロアマップアップロード",
+        "uploadInstructions": "{{floorName}} の屋内マップをアップロードしてください。PNG、JPG、SVG形式をサポート。",
+        "selectMapFile": "マップファイル選択",
+        "dragImageHint": "または画像をこのエリアにドラッグ",
+        "actualSize": "実際のサイズ",
+        "calibratedMap": "キャリブレーションマップ",
+        "setCoordinateOrigin": "座標原点設定",
+        "originInstructions": "マップ上の任意の位置をクリックして座標原点として設定し、その点の実際の座標を入力してください。通常、部屋や廊下の角を参照点として選択することをお勧めします。",
+        "clickMapSetOrigin": "マップをクリックして原点設定",
+        "originPixelPosition": "原点ピクセル位置",
+        "actualXCoordinate": "実際のX座標（メートル）",
+        "actualYCoordinate": "実際のY座標（メートル）",
+        "reselectOrigin": "原点再選択",
+        "nextStep": "次のステップ",
+        "setCoordinateScale": "座標スケール設定",
+        "scaleInstructions": "マップ上で2つの点をクリックし、その2点間の実際の距離を入力してください。システムがピクセルとメートルの変換比率を自動計算します。",
+        "clickTwoPointsSetScale": "2つの点をクリックしてスケール設定",
+        "selectedPoints": "選択された点",
+        "point1": "点1",
+        "point2": "点2",
+        "clickMapSelect": "マップをクリックして選択",
+        "pixelDistance": "ピクセル距離",
+        "actualDistance": "実際の距離（メートル）",
+        "enterActualDistance": "2点間の実際の距離を入力",
+        "calculationResult": "計算結果",
+        "ratio": "比率",
+        "pixelsPerMeter": "ピクセル/メートル",
+        "previousStep": "前のステップ",
+        "reselectPoints": "点再選択",
+        "saveCalibration": "キャリブレーション保存",
+        "calibrationComplete": "キャリブレーション完了",
+        "calibrationInfo": "キャリブレーション情報",
+        "floor": "フロア",
+        "originActualCoordinates": "原点実際座標",
+        "meters": "メートル",
+        "calibrationPoint1": "キャリブレーションポイント1",
+        "calibrationPoint2": "キャリブレーションポイント2",
+        "pixels": "ピクセル",
+        "complete": "完了",
+        "recalibrate": "再キャリブレーション",
+        "mapStatusLabel": "マップ状態",
+        "manualAdd": "手動追加",
+        "reconnectCloud": "クラウド再接続",
+        "cloudGatewayDiscovery": "クラウドゲートウェイ発見",
+        "connectionNormal": "接続正常",
+        "cloudMqttStatus": "クラウドMQTT状態",
+        "server": "サーバー",
+        "topic": "トピック",
+        "waitingForGatewayTopic": "content: \"gateway topic\" を待機中",
+        "error": "エラー",
+        "discoveredGateways": "発見されたゲートウェイ",
+        "onlineGateways": "オンラインゲートウェイ",
+        "mqttMessages": "MQTTメッセージ",
+        "discoveredCloudGateways": "発見されたクラウドゲートウェイ",
+        "status": {
+            "online": "オンライン",
+            "offline": "オフライン",
+            "error": "エラー"
+        },
+        "id": "ID",
+        "firmware": "ファームウェア",
+        "network": "ネットワーク",
+        "ap": "AP",
+        "voltage": "電圧",
+        "lastUpdate": "最終更新",
+        "addToSystem": "システムに追加",
+        "noCloudGatewaysFound": "クラウドゲートウェイが見つかりません",
+        "pleaseConfirm": "確認してください",
+        "cloudMqttSimulatorStarted": "クラウドMQTTシミュレーターが開始されました",
+        "simulatorSendsGatewayTopic": "シミュレーターがcontent: \"gateway topic\" 形式のデータを送信",
+        "dataContainsGatewayIdAndName": "データに \"gateway id\" とnameフィールドが含まれています",
+        "viewRawGatewayMqttData": "生のゲートウェイMQTTデータを表示（デバッグ用）",
+        "clickDataToExpand": "下のデータをクリックして展開し、完全な内容を表示",
+        "gatewayDiscoveryConditions": "ゲートウェイ発見条件",
+        "mustHaveGatewayTopic": "content: \"gateway topic\" が必要",
+        "mustHaveGatewayIdAndName": "\"gateway id\" とnameフィールドが必要",
+        "uwbJoinedAnd5VPluggedOnline": "UWB Joined: \"yes\" かつ 5V plugged: \"yes\" をオンラインとみなす",
+        "belongingFloor": "所属フロア",
+        "macAddress": "MACアドレス",
+        "ipAddress": "IPアドレス",
+        "lastConnection": "最終接続",
+        "unknown": "不明",
+        "editGateway": "ゲートウェイ編集",
+        "addCloudGatewayToSystem": "クラウドゲートウェイをシステムに追加",
+        "manualAddGateway": "手動ゲートウェイ追加",
+        "addDiscoveredGatewayToFloor": "クラウドから発見されたゲートウェイ（ID: {{id}}）を選択されたフロアに追加",
+        "gatewayName": "ゲートウェイ名",
+        "enterGatewayName": "ゲートウェイ名を入力",
+        "selectFloor": "フロア選択",
+        "reconnectAnchors": "アンカー再接続",
+        "cloudAnchorDiscovery": "クラウドアンカー発見",
+        "anchorMqttStatus": "アンカーMQTT状態",
+        "selectedGateway": "選択されたゲートウェイ",
+        "notSelected": "未選択",
+        "listeningTopic": "リスニングトピック",
+        "none": "なし",
+        "connectionStatus": "接続状態",
+        "discoveredAnchors": "発見されたアンカー",
+        "onlineAnchors": "オンラインアンカー",
+        "ackMessages": "Ackメッセージ",
+        "discoveredCloudAnchors": "発見されたクラウドアンカー",
+        "mainAnchor": "メインアンカー",
+        "gateway": "ゲートウェイ",
+        "on": "オン",
+        "off": "オフ",
+        "position": "位置",
+        "configure": "設定",
+        "gatewayAnchorConfigTopicCorrect": "ゲートウェイのアンカー設定トピックが正しい",
+        "simulatorSendsAnchorConfigData": "シミュレーターがcontent: \"config\", node: \"ANCHOR\" 形式のデータを送信",
+        "dataContainsIdAndName": "データにidとnameフィールドが含まれています",
+        "anchorPairing": {
+            "title": "アンカーペアリング管理",
+            "localAnchorManagement": "ローカルアンカー管理（追加されたアンカー）",
+            "currentGateway": "現在選択されたゲートウェイ",
+            "startSimulationPairing": "シミュレーションペアリング開始",
+            "pairingInProgress": "ペアリング中...",
+            "selectGatewayFirst": "アンカーを管理するために上でゲートウェイを選択してください",
+            "noOnlineGateways": "ペアリングに利用可能なオンラインローカルゲートウェイがありません",
+            "simulationPairingProgress": "シミュレーションペアリング進捗",
+            "scanningNearbyAnchors": "近くのアンカーデバイスをスキャン中...",
+            "discoveredNewAnchor": "新しいアンカーを発見",
+            "add": "追加",
+            "noPairedAnchors": "このゲートウェイ下にペアリングされたアンカーがありません",
+            "anchorStatus": {
+                "running": "実行中",
+                "paired": "ペアリング済み",
+                "calibrating": "キャリブレーション中",
+                "unpaired": "未ペアリング",
+                "error": "エラー"
+            },
+            "anchorInfo": {
+                "belongingGateway": "所属ゲートウェイ",
+                "macAddress": "MACアドレス",
+                "cloudId": "クラウドID",
+                "position": "位置座標",
+                "functionStatus": "機能状態",
+                "signalStrength": "信号強度",
+                "batteryLevel": "バッテリーレベル",
+                "lastConnection": "最終接続"
+            },
+            "actions": {
+                "calibrate": "座標キャリブレーション",
+                "sendConfigToCloud": "設定をクラウドに送信",
+                "deleteAnchor": "アンカー削除"
+            },
+            "functionStatus": {
+                "led": "LED",
+                "ble": "BLE",
+                "mainAnchor": "メインアンカー"
+            },
+            "mapLegend": {
+                "coordinateOrigin": "座標原点",
+                "generalAnchor": "一般アンカー",
+                "mainAnchor": "メインアンカー"
+            },
+            "debug": {
+                "viewRawAnchorMqttData": "生のアンカーMQTTデータを表示（デバッグ用）",
+                "clickDataToExpand": "下のデータをクリックして展開し、完全な内容を表示",
+                "anchorDiscoveryConditions": "アンカー発見条件",
+                "mustHaveConfig": "content: \"config\" が必要",
+                "mustHaveNodeAnchor": "node: \"ANCHOR\" が必要",
+                "mustHaveIdAndName": "idとnameフィールドが必要",
+                "initiatorMainAnchor": "initiator: 1 はメインアンカーを示す",
+                "viewRawAckData": "生のアンカーMQTTデータを表示（デバッグ用）- Ackデータ"
+            },
+            "noAvailableGateways": "このフロアに利用可能なゲートウェイがありません",
+            "doubleClickToCalibrate": "位置をキャリブレーションするためにダブルクリック",
+            "mainAnchorOption": "メインアンカー",
+            "generalAnchorOption": "一般アンカー",
+            "currentStatus": "現在の状態",
+            "deviceId": "デバイスID",
+            "deviceName": "デバイス名",
+            "anchorDeviceInfo": "アンカーデバイス情報",
+            "sendConfigPreview": "送信情報プレビュー",
+            "sendConfigToCloud": "設定をクラウドに送信",
+            "cancelCalibration": "キャリブレーションキャンセル",
+            "cancel": "キャンセル",
+            "confirm": "確認"
+        }
+    }
+}
