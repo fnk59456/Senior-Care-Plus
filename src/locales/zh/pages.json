@@ -992,6 +992,10 @@
             "realHeight": "實際高度 (米)"
         },
         "mapCalibration": "地圖標定",
+        "anchorLocationMap": "錨點位置地圖",
+        "showAnchorsOnMap": "在地圖上顯示錨點",
+        "doubleClickAnchorToCalibrate": "雙擊錨點進行校正",
+        "anchorCount": "錨點數量",
         "close": "關閉",
         "calibrationSteps": {
             "upload": "上傳地圖",
@@ -1086,6 +1090,96 @@
         "addDiscoveredGatewayToFloor": "從雲端發現的閘道器 (ID: {{id}}) 加入到選定的樓層",
         "gatewayName": "閘道器名稱",
         "enterGatewayName": "請輸入閘道器名稱",
-        "selectFloor": "選擇樓層"
+        "selectFloor": "選擇樓層",
+        "reconnectAnchors": "重連錨點",
+        "cloudAnchorDiscovery": "雲端錨點發現",
+        "anchorMqttStatus": "錨點 MQTT 狀態",
+        "selectedGateway": "選擇的閘道器",
+        "notSelected": "未選擇",
+        "listeningTopic": "監聽主題",
+        "none": "無",
+        "connectionStatus": "連線狀態",
+        "discoveredAnchors": "發現的錨點",
+        "onlineAnchors": "在線錨點",
+        "ackMessages": "Ack消息",
+        "discoveredCloudAnchors": "發現的雲端錨點",
+        "mainAnchor": "主錨點",
+        "gateway": "閘道器",
+        "on": "開",
+        "off": "關",
+        "position": "位置",
+        "configure": "配置",
+        "gatewayAnchorConfigTopicCorrect": "閘道器的錨點配置主題正確",
+        "simulatorSendsAnchorConfigData": "模擬器發送 content: \"config\", node: \"ANCHOR\" 格式的數據",
+        "dataContainsIdAndName": "數據包含 id 和 name 字段",
+        "anchorPairing": {
+            "title": "錨點配對管理",
+            "localAnchorManagement": "本地錨點管理 (已加入的錨點)",
+            "currentGateway": "當前選擇的閘道器",
+            "startSimulationPairing": "開始模擬配對",
+            "pairingInProgress": "配對中...",
+            "selectGatewayFirst": "請先在上方選擇閘道器以管理錨點",
+            "noOnlineGateways": "沒有在線的本地閘道器可進行配對",
+            "simulationPairingProgress": "模擬配對進度",
+            "scanningNearbyAnchors": "正在掃描附近的錨點設備...",
+            "discoveredNewAnchor": "發現新錨點",
+            "add": "添加",
+            "noPairedAnchors": "該閘道器下暫無已配對的錨點",
+            "anchorStatus": {
+                "running": "運行中",
+                "paired": "已配對",
+                "calibrating": "標定中",
+                "unpaired": "未配對",
+                "error": "錯誤"
+            },
+            "anchorInfo": {
+                "belongingGateway": "所屬閘道器",
+                "macAddress": "MAC 地址",
+                "cloudId": "雲端 ID",
+                "position": "位置座標",
+                "functionStatus": "功能狀態",
+                "signalStrength": "信號強度",
+                "batteryLevel": "電池電量",
+                "lastConnection": "最後連線"
+            },
+            "actions": {
+                "calibrate": "校正座標",
+                "sendConfigToCloud": "發送配置到雲端",
+                "deleteAnchor": "刪除錨點"
+            },
+            "functionStatus": {
+                "led": "LED",
+                "ble": "BLE",
+                "mainAnchor": "主錨點"
+            },
+            "mapLegend": {
+                "coordinateOrigin": "座標原點",
+                "generalAnchor": "一般錨點",
+                "mainAnchor": "主錨點"
+            },
+            "debug": {
+                "viewRawAnchorMqttData": "查看原始 Anchor MQTT 數據 (調試用)",
+                "clickDataToExpand": "點擊下方數據可展開查看完整內容",
+                "anchorDiscoveryConditions": "錨點發現條件",
+                "mustHaveConfig": "必須有 content: \"config\"",
+                "mustHaveNodeAnchor": "必須有 node: \"ANCHOR\"",
+                "mustHaveIdAndName": "必須有 id 和 name 字段",
+                "initiatorMainAnchor": "initiator: 1 表示主錨點",
+                "viewRawAckData": "查看原始 Anchor MQTT 數據 (調試用) - Ack 數據"
+            },
+            "noAvailableGateways": "該樓層暫無可用的閘道器",
+            "doubleClickToCalibrate": "雙擊校正位置",
+            "mainAnchorOption": "主錨點",
+            "generalAnchorOption": "一般錨點",
+            "currentStatus": "當前狀態",
+            "deviceId": "設備 ID",
+            "deviceName": "設備名稱",
+            "anchorDeviceInfo": "Anchor 設備信息",
+            "sendConfigPreview": "發送信息預覽",
+            "sendConfigToCloud": "發送配置到雲端",
+            "cancelCalibration": "取消校正",
+            "cancel": "取消",
+            "confirm": "確認"
+        }
     }
 }

@@ -995,6 +995,10 @@
             "realHeight": "Actual Height (meters)"
         },
         "mapCalibration": "Map Calibration",
+        "anchorLocationMap": "Anchor Location Map",
+        "showAnchorsOnMap": "Show Anchors on Map",
+        "doubleClickAnchorToCalibrate": "Double-click Anchor to Calibrate",
+        "anchorCount": "Anchor Count",
         "close": "Close",
         "calibrationSteps": {
             "upload": "Upload Map",
@@ -1089,6 +1093,96 @@
         "addDiscoveredGatewayToFloor": "Add the gateway discovered from the cloud (ID: {{id}}) to the selected floor",
         "gatewayName": "Gateway Name",
         "enterGatewayName": "Enter gateway name",
-        "selectFloor": "Select Floor"
+        "selectFloor": "Select Floor",
+        "reconnectAnchors": "Reconnect Anchors",
+        "cloudAnchorDiscovery": "Cloud Anchor Discovery",
+        "anchorMqttStatus": "Anchor MQTT Status",
+        "selectedGateway": "Selected Gateway",
+        "notSelected": "Not Selected",
+        "listeningTopic": "Listening Topic",
+        "none": "None",
+        "connectionStatus": "Connection Status",
+        "discoveredAnchors": "Discovered Anchors",
+        "onlineAnchors": "Online Anchors",
+        "ackMessages": "Ack Messages",
+        "discoveredCloudAnchors": "Discovered Cloud Anchors",
+        "mainAnchor": "Main Anchor",
+        "gateway": "Gateway",
+        "on": "On",
+        "off": "Off",
+        "position": "Position",
+        "configure": "Configure",
+        "gatewayAnchorConfigTopicCorrect": "Gateway's anchor configuration topic is correct",
+        "simulatorSendsAnchorConfigData": "Simulator sends content: \"config\", node: \"ANCHOR\" format data",
+        "dataContainsIdAndName": "Data contains id and name fields",
+        "anchorPairing": {
+            "title": "Anchor Pairing Management",
+            "localAnchorManagement": "Local Anchor Management (Added Anchors)",
+            "currentGateway": "Currently Selected Gateway",
+            "startSimulationPairing": "Start Simulation Pairing",
+            "pairingInProgress": "Pairing...",
+            "selectGatewayFirst": "Please select a gateway above to manage anchors",
+            "noOnlineGateways": "No online local gateways available for pairing",
+            "simulationPairingProgress": "Simulation Pairing Progress",
+            "scanningNearbyAnchors": "Scanning for nearby anchor devices...",
+            "discoveredNewAnchor": "Discovered New Anchor",
+            "add": "Add",
+            "noPairedAnchors": "No paired anchors under this gateway",
+            "anchorStatus": {
+                "running": "Running",
+                "paired": "Paired",
+                "calibrating": "Calibrating",
+                "unpaired": "Unpaired",
+                "error": "Error"
+            },
+            "anchorInfo": {
+                "belongingGateway": "Belonging Gateway",
+                "macAddress": "MAC Address",
+                "cloudId": "Cloud ID",
+                "position": "Position Coordinates",
+                "functionStatus": "Function Status",
+                "signalStrength": "Signal Strength",
+                "batteryLevel": "Battery Level",
+                "lastConnection": "Last Connection"
+            },
+            "actions": {
+                "calibrate": "Calibrate Coordinates",
+                "sendConfigToCloud": "Send Config to Cloud",
+                "deleteAnchor": "Delete Anchor"
+            },
+            "functionStatus": {
+                "led": "LED",
+                "ble": "BLE",
+                "mainAnchor": "Main Anchor"
+            },
+            "mapLegend": {
+                "coordinateOrigin": "Coordinate Origin",
+                "generalAnchor": "General Anchor",
+                "mainAnchor": "Main Anchor"
+            },
+            "debug": {
+                "viewRawAnchorMqttData": "View Raw Anchor MQTT Data (Debug)",
+                "clickDataToExpand": "Click data below to expand and view full content",
+                "anchorDiscoveryConditions": "Anchor Discovery Conditions",
+                "mustHaveConfig": "Must have content: \"config\"",
+                "mustHaveNodeAnchor": "Must have node: \"ANCHOR\"",
+                "mustHaveIdAndName": "Must have id and name fields",
+                "initiatorMainAnchor": "initiator: 1 indicates main anchor",
+                "viewRawAckData": "View Raw Anchor MQTT Data (Debug) - Ack Data"
+            },
+            "noAvailableGateways": "No available gateways on this floor",
+            "doubleClickToCalibrate": "Double-click to calibrate position",
+            "mainAnchorOption": "Main Anchor",
+            "generalAnchorOption": "General Anchor",
+            "currentStatus": "Current Status",
+            "deviceId": "Device ID",
+            "deviceName": "Device Name",
+            "anchorDeviceInfo": "Anchor Device Info",
+            "sendConfigPreview": "Send Config Preview",
+            "sendConfigToCloud": "Send Config to Cloud",
+            "cancelCalibration": "Cancel Calibration",
+            "cancel": "Cancel",
+            "confirm": "Confirm"
+        }
     }
 }

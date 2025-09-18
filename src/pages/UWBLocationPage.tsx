@@ -4351,7 +4351,7 @@ export default function UWBLocationPage() {
                 {/* 錨點配對管理 */}
                 <TabsContent value="anchors" className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">錨點配對與管理</h2>
+                        <h2 className="text-xl font-semibold">{t('pages:uwbLocation.anchorPairing.title')}</h2>
                         <div className="flex items-center gap-4">
                             {/* 三層巢狀選擇：養老院 -> 樓層 -> Gateway */}
                             <div className="flex items-center gap-2">
@@ -4365,7 +4365,7 @@ export default function UWBLocationPage() {
                                     }}
                                 >
                                     <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="選擇養老院" />
+                                        <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {homes.map(home => (
@@ -4386,7 +4386,7 @@ export default function UWBLocationPage() {
                                     disabled={!selectedHomeForAnchors}
                                 >
                                     <SelectTrigger className="w-[150px]">
-                                        <SelectValue placeholder="選擇樓層" />
+                                        <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {floors
@@ -4406,7 +4406,7 @@ export default function UWBLocationPage() {
                                     disabled={!selectedFloorForAnchors}
                                 >
                                     <SelectTrigger className="w-[200px]">
-                                        <SelectValue placeholder="選擇閘道器" />
+                                        <SelectValue placeholder={t('pages:uwbLocation.selectGateway')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {/* 顯示該樓層下的系統閘道器 */}
@@ -4431,7 +4431,7 @@ export default function UWBLocationPage() {
                                         {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
                                         {currentGateways.filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online').length === 0 && (
                                             <div className="px-2 py-1.5 text-sm text-gray-500">
-                                                該樓層暫無可用的閘道器
+                                                {t('pages:uwbLocation.anchorPairing.noAvailableGateways')}
                                             </div>
                                         )}
                                     </SelectContent>
@@ -4466,7 +4466,7 @@ export default function UWBLocationPage() {
                                 }}
                             >
                                 <RefreshIcon className="h-4 w-4 mr-2" />
-                                重連錨點
+                                {t('pages:uwbLocation.reconnectAnchors')}
                             </Button>
                         </div>
                     </div>
@@ -4477,13 +4477,13 @@ export default function UWBLocationPage() {
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-lg flex items-center">
                                     <Anchor className="mr-3 h-5 w-5 text-indigo-500" />
-                                    雲端錨點發現
+                                    {t('pages:uwbLocation.cloudAnchorDiscovery')}
                                 </CardTitle>
                                 <div className="text-sm">
                                     {anchorCloudConnected ? (
                                         <span className="text-green-600 flex items-center">
                                             <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                                            連線正常
+                                            {t('pages:uwbLocation.connectionNormal')}
                                         </span>
                                     ) : (
                                         <span className="text-red-500 flex items-center">
@@ -4497,9 +4497,9 @@ export default function UWBLocationPage() {
                         <CardContent>
                             <div className="space-y-4">
                                 <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
-                                    <div className="font-semibold">錨點 MQTT 狀態</div>
+                                    <div className="font-semibold">{t('pages:uwbLocation.anchorMqttStatus')}</div>
                                     <div className="flex items-center justify-between">
-                                        <span>選擇的閘道器:</span>
+                                        <span>{t('pages:uwbLocation.selectedGateway')}:</span>
                                         <span className="font-medium">
                                             {selectedGatewayForAnchors ? (() => {
                                                 // 先檢查雲端發現的閘道器
@@ -4521,46 +4521,46 @@ export default function UWBLocationPage() {
                                                 }
 
                                                 return selectedGatewayForAnchors
-                                            })() : "未選擇"}
+                                            })() : t('pages:uwbLocation.notSelected')}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span>監聽主題:</span>
+                                        <span>{t('pages:uwbLocation.listeningTopic')}:</span>
                                         <div className="text-xs font-mono text-muted-foreground text-right">
-                                            <div>Anchor: {currentAnchorTopic || "無"}</div>
-                                            <div>Ack: {currentAckTopic || "無"}</div>
+                                            <div>Anchor: {currentAnchorTopic || t('pages:uwbLocation.none')}</div>
+                                            <div>Ack: {currentAckTopic || t('pages:uwbLocation.none')}</div>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span>連線狀態:</span>
+                                        <span>{t('pages:uwbLocation.connectionStatus')}:</span>
                                         <span className={anchorCloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                                             {anchorCloudConnectionStatus}
                                         </span>
                                     </div>
                                     {anchorCloudError && (
                                         <div className="text-xs text-red-500">
-                                            錯誤: {anchorCloudError}
+                                            {t('pages:uwbLocation.error')}: {anchorCloudError}
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                     <div className="bg-indigo-50 p-3 rounded-lg">
-                                        <div className="font-medium text-indigo-800">發現的錨點</div>
+                                        <div className="font-medium text-indigo-800">{t('pages:uwbLocation.discoveredAnchors')}</div>
                                         <div className="text-2xl font-bold text-indigo-600">{discoveredCloudAnchors.length}</div>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-lg">
-                                        <div className="font-medium text-green-800">在線錨點</div>
+                                        <div className="font-medium text-green-800">{t('pages:uwbLocation.onlineAnchors')}</div>
                                         <div className="text-2xl font-bold text-green-600">
                                             {discoveredCloudAnchors.filter(a => a.isOnline).length}
                                         </div>
                                     </div>
                                     <div className="bg-purple-50 p-3 rounded-lg">
-                                        <div className="font-medium text-purple-800">MQTT消息</div>
+                                        <div className="font-medium text-purple-800">{t('pages:uwbLocation.mqttMessages')}</div>
                                         <div className="text-2xl font-bold text-purple-600">{cloudAnchorData.length}</div>
                                     </div>
                                     <div className="bg-blue-50 p-3 rounded-lg">
-                                        <div className="font-medium text-blue-800">Ack消息</div>
+                                        <div className="font-medium text-blue-800">{t('pages:uwbLocation.ackMessages')}</div>
                                         <div className="text-2xl font-bold text-blue-600">{cloudAckData.length}</div>
                                     </div>
                                 </div>
@@ -4568,7 +4568,7 @@ export default function UWBLocationPage() {
                                 {/* 發現的錨點列表 */}
                                 {discoveredCloudAnchors.length > 0 ? (
                                     <div className="space-y-3">
-                                        <div className="font-medium">發現的雲端錨點：</div>
+                                        <div className="font-medium">{t('pages:uwbLocation.discoveredCloudAnchors')}:</div>
                                         <div className="space-y-2 max-h-60 overflow-y-auto">
                                             {discoveredCloudAnchors.map(anchor => (
                                                 <div key={anchor.id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
@@ -4589,20 +4589,20 @@ export default function UWBLocationPage() {
                                                                         : "bg-gray-100 text-gray-700 border-gray-200"
                                                                     }
                                                                 >
-                                                                    {anchor.isOnline ? '在線' : '離線'}
+                                                                    {anchor.isOnline ? t('pages:uwbLocation.status.online') : t('pages:uwbLocation.status.offline')}
                                                                 </Badge>
                                                                 {anchor.initiator === 1 && (
                                                                     <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
-                                                                        主錨點
+                                                                        {t('pages:uwbLocation.mainAnchor')}
                                                                     </Badge>
                                                                 )}
                                                             </div>
                                                             <div className="text-sm text-muted-foreground">
-                                                                ID: {anchor.id} | 閘道器: {anchor.gateway_id} | LED: {anchor.led ? '開' : '關'} | BLE: {anchor.ble ? '開' : '關'}
+                                                                {t('pages:uwbLocation.id')}: {anchor.id} | {t('pages:uwbLocation.gateway')}: {anchor.gateway_id} | LED: {anchor.led ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')} | BLE: {anchor.ble ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground">
-                                                                位置: ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)}) |
-                                                                最後更新: {anchor.lastSeen instanceof Date ? anchor.lastSeen.toLocaleTimeString('zh-TW') : '未知'}
+                                                                {t('pages:uwbLocation.position')}: ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)}) |
+                                                                {t('pages:uwbLocation.lastUpdate')}: {anchor.lastSeen instanceof Date ? anchor.lastSeen.toLocaleTimeString('zh-TW') : t('pages:uwbLocation.unknown')}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -4617,7 +4617,7 @@ export default function UWBLocationPage() {
                                                             disabled={!anchor.isOnline}
                                                         >
                                                             <Plus className="h-4 w-4 mr-1" />
-                                                            加入系統
+                                                            {t('pages:uwbLocation.addToSystem')}
                                                         </Button>
                                                         <Button
                                                             size="sm"
@@ -4629,7 +4629,7 @@ export default function UWBLocationPage() {
                                                             disabled={!anchor.isOnline}
                                                         >
                                                             <Settings className="h-4 w-4 mr-1" />
-                                                            配置
+                                                            {t('pages:uwbLocation.configure')}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -4644,10 +4644,10 @@ export default function UWBLocationPage() {
                                         </p>
                                         {selectedGatewayForAnchors && (
                                             <div className="text-xs space-y-1 mt-2">
-                                                <p>請確認：</p>
-                                                <p>1. 閘道器的錨點配置主題正確</p>
-                                                <p>2. 模擬器發送 content: "config", node: "ANCHOR" 格式的數據</p>
-                                                <p>3. 數據包含 id 和 name 字段</p>
+                                                <p>{t('pages:uwbLocation.pleaseConfirm')}:</p>
+                                                <p>1. {t('pages:uwbLocation.gatewayAnchorConfigTopicCorrect')}</p>
+                                                <p>2. {t('pages:uwbLocation.simulatorSendsAnchorConfigData')}</p>
+                                                <p>3. {t('pages:uwbLocation.dataContainsIdAndName')}</p>
                                             </div>
                                         )}
                                     </div>
@@ -4658,11 +4658,11 @@ export default function UWBLocationPage() {
                                     {/* Anchor 數據 */}
                                     <details className="group">
                                         <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                                            🔍 查看原始 Anchor MQTT 數據 (調試用)
+                                            🔍 {t('pages:uwbLocation.anchorPairing.debug.viewRawAnchorMqttData')}
                                         </summary>
                                         <div className="mt-2 space-y-2 text-xs">
                                             <div className="text-muted-foreground">
-                                                點擊下方數據可展開查看完整內容
+                                                {t('pages:uwbLocation.anchorPairing.debug.clickDataToExpand')}
                                             </div>
                                             <div className="max-h-60 overflow-y-auto space-y-2">
                                                 {cloudAnchorData.slice(0, 5).map((data, index) => (
@@ -4677,11 +4677,11 @@ export default function UWBLocationPage() {
                                                 ))}
                                             </div>
                                             <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                                                <div className="font-semibold mb-1">錨點發現條件：</div>
-                                                <div>• 必須有 content: "config"</div>
-                                                <div>• 必須有 node: "ANCHOR"</div>
-                                                <div>• 必須有 id 和 name 字段</div>
-                                                <div>• initiator: 1 表示主錨點</div>
+                                                <div className="font-semibold mb-1">{t('pages:uwbLocation.anchorPairing.debug.anchorDiscoveryConditions')}:</div>
+                                                <div>• {t('pages:uwbLocation.anchorPairing.debug.mustHaveConfig')}</div>
+                                                <div>• {t('pages:uwbLocation.anchorPairing.debug.mustHaveNodeAnchor')}</div>
+                                                <div>• {t('pages:uwbLocation.anchorPairing.debug.mustHaveIdAndName')}</div>
+                                                <div>• {t('pages:uwbLocation.anchorPairing.debug.initiatorMainAnchor')}</div>
                                             </div>
                                         </div>
                                     </details>
@@ -4689,11 +4689,11 @@ export default function UWBLocationPage() {
                                     {/* Ack 數據 */}
                                     <details className="group">
                                         <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                                            🔍 查看原始 Anchor MQTT 數據 (調試用) - Ack 數據
+                                            🔍 {t('pages:uwbLocation.anchorPairing.debug.viewRawAckData')}
                                         </summary>
                                         <div className="mt-2 space-y-2 text-xs">
                                             <div className="text-muted-foreground">
-                                                點擊下方數據可展開查看完整內容
+                                                {t('pages:uwbLocation.anchorPairing.debug.clickDataToExpand')}
                                             </div>
                                             <div className="max-h-60 overflow-y-auto space-y-2">
                                                 {cloudAckData.slice(0, 5).map((data, index) => (
@@ -4745,17 +4745,17 @@ export default function UWBLocationPage() {
                                 <CardHeader>
                                     <CardTitle className="text-lg flex items-center">
                                         <Map className="mr-3 h-5 w-5 text-green-500" />
-                                        Anchor 位置地圖 - {floor.name}
+                                        {t('pages:uwbLocation.anchorLocationMap')} - {floor.name}
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
                                             <div className="text-sm text-muted-foreground">
-                                                顯示已加入系統的 Anchor 在地圖上的位置
+                                                {t('pages:uwbLocation.showAnchorsOnMap')}
                                             </div>
                                             <Badge variant="outline">
-                                                {floorAnchors.length} 個 Anchor
+                                                {t('pages:uwbLocation.anchorCount', { count: floorAnchors.length })}
                                             </Badge>
                                         </div>
 
@@ -4774,11 +4774,11 @@ export default function UWBLocationPage() {
                                             {/* 操作提示 */}
                                             {calibratingAnchor ? (
                                                 <div className="absolute top-2 left-2 bg-green-600 text-white text-sm px-3 py-1 rounded shadow-sm animate-pulse">
-                                                    點擊地圖設定 {calibratingAnchor.name} 的新位置
+                                                    {t('pages:uwbLocation.clickMapSetNewPosition', { name: calibratingAnchor.name })}
                                                 </div>
                                             ) : (
                                                 <div className="absolute top-2 left-2 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm">
-                                                    雙擊 Anchor 點可快速校正位置
+                                                    {t('pages:uwbLocation.doubleClickAnchorToCalibrate')}
                                                 </div>
                                             )}
 
@@ -4805,7 +4805,7 @@ export default function UWBLocationPage() {
                                                             left: `${displayCoords.x}px`,
                                                             top: `${displayCoords.y}px`
                                                         }}
-                                                        title={`座標原點 (${floor.calibration.originCoordinates?.x || 0}, ${floor.calibration.originCoordinates?.y || 0})`}
+                                                        title={t('pages:uwbLocation.coordinateOrigin', { x: floor.calibration.originCoordinates?.x || 0, y: floor.calibration.originCoordinates?.y || 0 })}
                                                     />
                                                 )
                                             })()}
@@ -4838,7 +4838,7 @@ export default function UWBLocationPage() {
                                                                     : 'border-white bg-blue-500 hover:bg-blue-600'
                                                                 }`}
                                                             onDoubleClick={(e) => startAnchorMapCalibration(anchor, e)}
-                                                            title={calibratingAnchor?.id === anchor.id ? "正在校正中..." : "雙擊校正位置"}
+                                                            title={calibratingAnchor?.id === anchor.id ? t('pages:uwbLocation.anchorPairing.actions.calibrate') + "..." : t('pages:uwbLocation.anchorPairing.doubleClickToCalibrate')}
                                                         >
                                                             <Anchor className="w-3 h-3 text-white" />
                                                         </div>
@@ -4850,7 +4850,7 @@ export default function UWBLocationPage() {
                                                                 ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
                                                             </div>
                                                             {anchor.cloudData?.initiator === 1 && (
-                                                                <div className="text-orange-600 text-xs">主錨點</div>
+                                                                <div className="text-orange-600 text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}</div>
                                                             )}
                                                         </div>
                                                     </div>
@@ -4862,15 +4862,15 @@ export default function UWBLocationPage() {
                                         <div className="flex items-center gap-6 text-sm">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-3 h-3 bg-red-500 rounded-full border border-white"></div>
-                                                <span>座標原點</span>
+                                                <span>{t('pages:uwbLocation.anchorPairing.mapLegend.coordinateOrigin')}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <div className="w-3 h-3 bg-blue-500 rounded-full border border-white"></div>
-                                                <span>一般錨點</span>
+                                                <span>{t('pages:uwbLocation.anchorPairing.mapLegend.generalAnchor')}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <div className="w-3 h-3 bg-orange-500 rounded-full border border-white"></div>
-                                                <span>主錨點</span>
+                                                <span>{t('pages:uwbLocation.anchorPairing.mapLegend.mainAnchor')}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -4884,7 +4884,7 @@ export default function UWBLocationPage() {
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center">
                                 <Radio className="mr-3 h-5 w-5 text-gray-500" />
-                                本地錨點管理 (已加入的錨點)
+                                {t('pages:uwbLocation.anchorPairing.localAnchorManagement')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
@@ -4892,7 +4892,7 @@ export default function UWBLocationPage() {
                                 {selectedGatewayForAnchors ? (
                                     <div className="flex items-center gap-4">
                                         <div className="text-sm text-muted-foreground">
-                                            當前選擇的閘道器: <span className="font-medium">{selectedGatewayForAnchors}</span>
+                                            {t('pages:uwbLocation.anchorPairing.currentGateway')}: <span className="font-medium">{selectedGatewayForAnchors}</span>
                                         </div>
                                         <Button
                                             onClick={startAnchorPairing}
@@ -4902,12 +4902,12 @@ export default function UWBLocationPage() {
                                             {pairingInProgress ? (
                                                 <>
                                                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                    配對中...
+                                                    {t('pages:uwbLocation.anchorPairing.pairingInProgress')}
                                                 </>
                                             ) : (
                                                 <>
                                                     <Radio className="h-4 w-4 mr-2" />
-                                                    開始模擬配對
+                                                    {t('pages:uwbLocation.anchorPairing.startSimulationPairing')}
                                                 </>
                                             )}
                                         </Button>
@@ -4915,14 +4915,14 @@ export default function UWBLocationPage() {
                                 ) : (
                                     <div className="text-center py-4 text-muted-foreground">
                                         <AlertCircle className="mx-auto h-6 w-6 mb-2 opacity-50" />
-                                        <p className="text-sm">請先在上方選擇閘道器以管理錨點</p>
+                                        <p className="text-sm">{t('pages:uwbLocation.anchorPairing.selectGatewayFirst')}</p>
                                     </div>
                                 )}
 
                                 {onlineGateways.length === 0 ? (
                                     <div className="text-center py-4 text-muted-foreground">
                                         <AlertCircle className="mx-auto h-6 w-6 mb-2 opacity-50" />
-                                        <p className="text-sm">沒有在線的本地閘道器可進行配對</p>
+                                        <p className="text-sm">{t('pages:uwbLocation.anchorPairing.noOnlineGateways')}</p>
                                     </div>
                                 ) : (
                                     <>
@@ -4932,7 +4932,7 @@ export default function UWBLocationPage() {
                                                 <CardHeader>
                                                     <CardTitle className="flex items-center">
                                                         <Radio className="mr-2 h-5 w-5" />
-                                                        模擬配對進度
+                                                        {t('pages:uwbLocation.anchorPairing.simulationPairingProgress')}
                                                     </CardTitle>
                                                 </CardHeader>
                                                 <CardContent>
@@ -4940,7 +4940,7 @@ export default function UWBLocationPage() {
                                                         {pairingInProgress && (
                                                             <div className="flex items-center gap-2 text-blue-600">
                                                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                                                <span>正在掃描附近的錨點設備...</span>
+                                                                <span>{t('pages:uwbLocation.anchorPairing.scanningNearbyAnchors')}</span>
                                                             </div>
                                                         )}
 
@@ -4949,7 +4949,7 @@ export default function UWBLocationPage() {
                                                                 <div className="flex items-center gap-3">
                                                                     <CheckCircle2 className="h-5 w-5 text-green-500" />
                                                                     <div>
-                                                                        <div className="font-medium">發現新錨點</div>
+                                                                        <div className="font-medium">{t('pages:uwbLocation.anchorPairing.discoveredNewAnchor')}</div>
                                                                         <div className="text-sm text-muted-foreground font-mono">{macAddress}</div>
                                                                     </div>
                                                                 </div>
@@ -4958,7 +4958,7 @@ export default function UWBLocationPage() {
                                                                     onClick={() => addDiscoveredAnchor(macAddress)}
                                                                 >
                                                                     <Plus className="h-4 w-4 mr-1" />
-                                                                    添加
+                                                                    {t('pages:uwbLocation.anchorPairing.add')}
                                                                 </Button>
                                                             </div>
                                                         ))}
@@ -4980,7 +4980,7 @@ export default function UWBLocationPage() {
                                                     return (
                                                         <div className="col-span-2 text-center py-8 text-muted-foreground">
                                                             <Anchor className="mx-auto h-12 w-12 mb-3 opacity-30" />
-                                                            <p className="text-sm">該閘道器下暫無已配對的錨點</p>
+                                                            <p className="text-sm">{t('pages:uwbLocation.anchorPairing.noPairedAnchors')}</p>
                                                         </div>
                                                     )
                                                 }
@@ -5007,17 +5007,17 @@ export default function UWBLocationPage() {
                                                                                     anchor.status === 'calibrating' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : ''
                                                                             }
                                                                         >
-                                                                            {anchor.status === 'active' ? '運行中' :
-                                                                                anchor.status === 'paired' ? '已配對' :
-                                                                                    anchor.status === 'calibrating' ? '標定中' :
-                                                                                        anchor.status === 'unpaired' ? '未配對' : '錯誤'}
+                                                                            {anchor.status === 'active' ? t('pages:uwbLocation.anchorPairing.anchorStatus.running') :
+                                                                                anchor.status === 'paired' ? t('pages:uwbLocation.anchorPairing.anchorStatus.paired') :
+                                                                                    anchor.status === 'calibrating' ? t('pages:uwbLocation.anchorPairing.anchorStatus.calibrating') :
+                                                                                        anchor.status === 'unpaired' ? t('pages:uwbLocation.anchorPairing.anchorStatus.unpaired') : t('pages:uwbLocation.anchorPairing.anchorStatus.error')}
                                                                         </Badge>
                                                                         <Button
                                                                             size="sm"
                                                                             variant="outline"
                                                                             onClick={() => startAnchorCalibration(anchor)}
                                                                             disabled={calibratingAnchor !== null}
-                                                                            title="校正座標"
+                                                                            title={t('pages:uwbLocation.anchorPairing.actions.calibrate')}
                                                                         >
                                                                             <Target className="h-4 w-4" />
                                                                         </Button>
@@ -5027,7 +5027,7 @@ export default function UWBLocationPage() {
                                                                                 variant="outline"
                                                                                 onClick={() => openConfigDialog(anchor, anchor.position!)}
                                                                                 disabled={sendingConfig}
-                                                                                title="發送配置到雲端"
+                                                                                title={t('pages:uwbLocation.anchorPairing.actions.sendConfigToCloud')}
                                                                             >
                                                                                 <Upload className="h-4 w-4" />
                                                                             </Button>
@@ -5036,7 +5036,7 @@ export default function UWBLocationPage() {
                                                                             size="sm"
                                                                             variant="outline"
                                                                             onClick={() => deleteAnchor(anchor.id)}
-                                                                            title="刪除錨點"
+                                                                            title={t('pages:uwbLocation.anchorPairing.actions.deleteAnchor')}
                                                                         >
                                                                             <Trash2 className="h-4 w-4" />
                                                                         </Button>
@@ -5046,22 +5046,22 @@ export default function UWBLocationPage() {
                                                             <CardContent>
                                                                 <div className="space-y-2">
                                                                     <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">所屬閘道器</span>
+                                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.belongingGateway')}</span>
                                                                         <span className="font-medium">{gateway?.name}</span>
                                                                     </div>
                                                                     <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">MAC 地址</span>
+                                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.macAddress')}</span>
                                                                         <span className="font-mono text-sm">{anchor.macAddress}</span>
                                                                     </div>
                                                                     {anchor.cloudData && (
                                                                         <div className="flex items-center justify-between">
-                                                                            <span className="text-sm text-muted-foreground">雲端 ID</span>
+                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.cloudId')}</span>
                                                                             <span className="text-sm">{anchor.cloudData.id}</span>
                                                                         </div>
                                                                     )}
                                                                     {anchor.position && (
                                                                         <div className="flex items-center justify-between">
-                                                                            <span className="text-sm text-muted-foreground">位置座標</span>
+                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.position')}</span>
                                                                             <span className="text-sm">
                                                                                 ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)})
                                                                             </span>
@@ -5069,27 +5069,27 @@ export default function UWBLocationPage() {
                                                                     )}
                                                                     {anchor.cloudData && (
                                                                         <div className="flex items-center justify-between">
-                                                                            <span className="text-sm text-muted-foreground">功能狀態</span>
+                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.functionStatus')}</span>
                                                                             <div className="flex items-center gap-2">
-                                                                                <span className="text-xs">LED: {anchor.cloudData.led ? '開' : '關'}</span>
-                                                                                <span className="text-xs">BLE: {anchor.cloudData.ble ? '開' : '關'}</span>
+                                                                                <span className="text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.led')}: {anchor.cloudData.led ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')}</span>
+                                                                                <span className="text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.ble')}: {anchor.cloudData.ble ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')}</span>
                                                                                 {anchor.cloudData.initiator === 1 && (
                                                                                     <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
-                                                                                        主錨點
+                                                                                        {t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}
                                                                                     </Badge>
                                                                                 )}
                                                                             </div>
                                                                         </div>
                                                                     )}
                                                                     <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">信號強度</span>
+                                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.signalStrength')}</span>
                                                                         <div className="flex items-center gap-2">
                                                                             <Signal className="h-4 w-4" />
                                                                             <span className="text-sm">{anchor.signalStrength || 0}%</span>
                                                                         </div>
                                                                     </div>
                                                                     <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">電池電量</span>
+                                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.batteryLevel')}</span>
                                                                         <div className="flex items-center gap-2">
                                                                             <Battery className="h-4 w-4" />
                                                                             <span className="text-sm">{anchor.batteryLevel || 0}%</span>
@@ -5097,7 +5097,7 @@ export default function UWBLocationPage() {
                                                                     </div>
                                                                     {anchor.lastSeen && (
                                                                         <div className="flex items-center justify-between">
-                                                                            <span className="text-sm text-muted-foreground">最後連線</span>
+                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.lastConnection')}</span>
                                                                             <span className="text-sm">{anchor.lastSeen.toLocaleString('zh-TW')}</span>
                                                                         </div>
                                                                     )}
@@ -5198,7 +5198,7 @@ export default function UWBLocationPage() {
                                         {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
                                         {currentGateways.filter(gw => gw.floorId === selectedFloorForTags && gw.status === 'online').length === 0 && (
                                             <div className="px-2 py-1.5 text-sm text-gray-500">
-                                                該樓層暫無可用的閘道器
+                                                {t('pages:uwbLocation.anchorPairing.noAvailableGateways')}
                                             </div>
                                         )}
                                     </SelectContent>
@@ -5813,7 +5813,7 @@ export default function UWBLocationPage() {
                                     保存手動輸入座標
                                 </Button>
                                 <Button variant="outline" onClick={cancelAnchorCalibration}>
-                                    取消校正
+                                    {t('pages:uwbLocation.anchorPairing.cancelCalibration')}
                                 </Button>
                             </div>
 
@@ -5837,7 +5837,7 @@ export default function UWBLocationPage() {
                             <div className="flex items-center justify-between">
                                 <CardTitle className="flex items-center">
                                     <Upload className="mr-2 h-5 w-5 text-blue-500" />
-                                    發送配置到雲端 - {configAnchor.name}
+                                    {t('pages:uwbLocation.anchorPairing.sendConfigToCloud')} - {configAnchor.name}
                                 </CardTitle>
                                 <Button
                                     variant="ghost"
@@ -5932,8 +5932,8 @@ export default function UWBLocationPage() {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="0">一般錨點</SelectItem>
-                                                <SelectItem value="1">主錨點</SelectItem>
+                                                <SelectItem value="0">{t('pages:uwbLocation.anchorPairing.generalAnchorOption')}</SelectItem>
+                                                <SelectItem value="1">{t('pages:uwbLocation.anchorPairing.mainAnchorOption')}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -5962,26 +5962,26 @@ export default function UWBLocationPage() {
 
                             {/* Anchor 信息顯示 */}
                             <div className="bg-yellow-50 p-3 rounded border border-yellow-200 text-xs">
-                                <div className="font-medium mb-2 text-yellow-800">🏷️ Anchor 設備信息:</div>
+                                <div className="font-medium mb-2 text-yellow-800">🏷️ {t('pages:uwbLocation.anchorPairing.anchorDeviceInfo')}:</div>
                                 <div className="grid grid-cols-2 gap-2 text-yellow-700">
                                     <div>
-                                        <span className="font-medium">設備名稱:</span> {configAnchor.cloudData?.name || configAnchor.name}
+                                        <span className="font-medium">{t('pages:uwbLocation.anchorPairing.deviceName')}:</span> {configAnchor.cloudData?.name || configAnchor.name}
                                     </div>
                                     <div>
-                                        <span className="font-medium">設備 ID:</span> {configAnchor.cloudData?.id || parseInt(configAnchor.macAddress.replace(/[^0-9]/g, '')) || '未知'}
+                                        <span className="font-medium">{t('pages:uwbLocation.anchorPairing.deviceId')}:</span> {configAnchor.cloudData?.id || parseInt(configAnchor.macAddress.replace(/[^0-9]/g, '')) || t('common:status.unknown')}
                                     </div>
                                     <div>
-                                        <span className="font-medium">MAC 地址:</span> {configAnchor.macAddress}
+                                        <span className="font-medium">{t('pages:uwbLocation.anchorPairing.anchorInfo.macAddress')}:</span> {configAnchor.macAddress}
                                     </div>
                                     <div>
-                                        <span className="font-medium">當前狀態:</span> {configAnchor.cloudData?.initiator === 1 ? '主錨點' : '一般錨點'}
+                                        <span className="font-medium">{t('pages:uwbLocation.anchorPairing.currentStatus')}:</span> {configAnchor.cloudData?.initiator === 1 ? t('pages:uwbLocation.anchorPairing.mainAnchorOption') : t('pages:uwbLocation.anchorPairing.generalAnchorOption')}
                                     </div>
                                 </div>
                             </div>
 
                             {/* 發送信息預覽 */}
                             <div className="bg-gray-50 p-3 rounded border text-xs">
-                                <div className="font-medium mb-2">📤 將發送到:</div>
+                                <div className="font-medium mb-2">📤 {t('pages:uwbLocation.anchorPairing.sendConfigPreview')}:</div>
                                 <div className="text-gray-600">
                                     主題: {(() => {
                                         const gateway = gateways.find(g => g.id === configAnchor.gatewayId)
@@ -6027,7 +6027,7 @@ export default function UWBLocationPage() {
                                     )}
                                 </Button>
                                 <Button variant="outline" onClick={closeConfigDialog} disabled={sendingConfig}>
-                                    取消
+                                    {t('pages:uwbLocation.anchorPairing.cancel')}
                                 </Button>
                             </div>
                         </CardContent>
