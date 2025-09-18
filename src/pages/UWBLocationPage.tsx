@@ -3984,11 +3984,11 @@ export default function UWBLocationPage() {
                 {/* 閘道器管理 */}
                 <TabsContent value="gateways" className="space-y-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">閘道器管理</h2>
+                        <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.gateways')}</h2>
                         <div className="flex gap-2">
                             <Button onClick={() => setShowGatewayForm(true)} disabled={currentFloors.length === 0}>
                                 <Plus className="h-4 w-4 mr-2" />
-                                手動新增
+                                {t('pages:uwbLocation.manualAdd')}
                             </Button>
                             <Button
                                 variant="outline"
@@ -4002,7 +4002,7 @@ export default function UWBLocationPage() {
                                 disabled={cloudConnected}
                             >
                                 <RefreshIcon className="h-4 w-4 mr-2" />
-                                重連雲端
+                                {t('pages:uwbLocation.reconnectCloud')}
                             </Button>
                         </div>
                     </div>
@@ -4013,13 +4013,13 @@ export default function UWBLocationPage() {
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-lg flex items-center">
                                     <CloudIcon className="mr-3 h-5 w-5 text-blue-500" />
-                                    雲端閘道器發現
+                                    {t('pages:uwbLocation.cloudGatewayDiscovery')}
                                 </CardTitle>
                                 <div className="text-sm">
                                     {cloudConnected ? (
                                         <span className="text-green-600 flex items-center">
                                             <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                                            連線正常
+                                            {t('pages:uwbLocation.connectionNormal')}
                                         </span>
                                     ) : (
                                         <span className="text-red-500 flex items-center">
@@ -4033,39 +4033,39 @@ export default function UWBLocationPage() {
                         <CardContent>
                             <div className="space-y-4">
                                 <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
-                                    <div className="font-semibold">雲端 MQTT 狀態</div>
+                                    <div className="font-semibold">{t('pages:uwbLocation.cloudMqttStatus')}</div>
                                     <div className="flex items-center justify-between">
-                                        <span>伺服器 ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
+                                        <span>{t('pages:uwbLocation.server')} ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
                                         <span className={cloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                                             {cloudConnectionStatus}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span>主題 ({CLOUD_MQTT_TOPIC}):</span>
+                                        <span>{t('pages:uwbLocation.topic')} ({CLOUD_MQTT_TOPIC}):</span>
                                         <span className="text-xs text-muted-foreground">
-                                            等待 content: "gateway topic"
+                                            {t('pages:uwbLocation.waitingForGatewayTopic')}
                                         </span>
                                     </div>
                                     {cloudError && (
                                         <div className="text-xs text-red-500">
-                                            錯誤: {cloudError}
+                                            {t('pages:uwbLocation.error')}: {cloudError}
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                     <div className="bg-blue-50 p-3 rounded-lg">
-                                        <div className="font-medium text-blue-800">發現的閘道器</div>
+                                        <div className="font-medium text-blue-800">{t('pages:uwbLocation.discoveredGateways')}</div>
                                         <div className="text-2xl font-bold text-blue-600">{discoveredGateways.length}</div>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-lg">
-                                        <div className="font-medium text-green-800">在線閘道器</div>
+                                        <div className="font-medium text-green-800">{t('pages:uwbLocation.onlineGateways')}</div>
                                         <div className="text-2xl font-bold text-green-600">
                                             {discoveredGateways.filter(g => g.isOnline).length}
                                         </div>
                                     </div>
                                     <div className="bg-purple-50 p-3 rounded-lg">
-                                        <div className="font-medium text-purple-800">MQTT消息</div>
+                                        <div className="font-medium text-purple-800">{t('pages:uwbLocation.mqttMessages')}</div>
                                         <div className="text-2xl font-bold text-purple-600">{cloudGatewayData.length}</div>
                                     </div>
                                 </div>
@@ -4073,7 +4073,7 @@ export default function UWBLocationPage() {
                                 {/* 發現的閘道器列表 */}
                                 {discoveredGateways.length > 0 ? (
                                     <div className="space-y-3">
-                                        <div className="font-medium">發現的雲端閘道器：</div>
+                                        <div className="font-medium">{t('pages:uwbLocation.discoveredCloudGateways')}:</div>
                                         <div className="space-y-2 max-h-60 overflow-y-auto">
                                             {discoveredGateways.map(gateway => (
                                                 <div key={gateway.gateway_id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
@@ -4094,15 +4094,15 @@ export default function UWBLocationPage() {
                                                                         : "bg-gray-100 text-gray-700 border-gray-200"
                                                                     }
                                                                 >
-                                                                    {gateway.isOnline ? '在線' : '離線'}
+                                                                    {gateway.isOnline ? t('pages:uwbLocation.status.online') : t('pages:uwbLocation.status.offline')}
                                                                 </Badge>
                                                             </div>
                                                             <div className="text-sm text-muted-foreground">
-                                                                ID: {gateway.gateway_id} | 韌體: {gateway.fw_ver} | 網路: {gateway.uwb_network_id}
+                                                                {t('pages:uwbLocation.id')}: {gateway.gateway_id} | {t('pages:uwbLocation.firmware')}: {gateway.fw_ver} | {t('pages:uwbLocation.network')}: {gateway.uwb_network_id}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground">
-                                                                AP: {gateway.connected_ap} | 電壓: {gateway.battery_voltage}V |
-                                                                最後更新: {gateway.lastSeen instanceof Date ? gateway.lastSeen.toLocaleTimeString('zh-TW') : '未知'}
+                                                                {t('pages:uwbLocation.ap')}: {gateway.connected_ap} | {t('pages:uwbLocation.voltage')}: {gateway.battery_voltage}V |
+                                                                {t('pages:uwbLocation.lastUpdate')}: {gateway.lastSeen instanceof Date ? gateway.lastSeen.toLocaleTimeString('zh-TW') : t('pages:uwbLocation.unknown')}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -4124,7 +4124,7 @@ export default function UWBLocationPage() {
                                                             disabled={currentFloors.length === 0}
                                                         >
                                                             <Plus className="h-4 w-4 mr-1" />
-                                                            加入系統
+                                                            {t('pages:uwbLocation.addToSystem')}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -4134,12 +4134,12 @@ export default function UWBLocationPage() {
                                 ) : (
                                     <div className="text-center py-8 text-muted-foreground">
                                         <AlertCircle className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                                        <p className="font-medium">尚未發現任何雲端閘道器</p>
+                                        <p className="font-medium">{t('pages:uwbLocation.noCloudGatewaysFound')}</p>
                                         <div className="text-xs space-y-1 mt-2">
-                                            <p>請確認：</p>
-                                            <p>1. 雲端 MQTT 模擬器已啟動</p>
-                                            <p>2. 模擬器發送 content: "gateway topic" 格式的數據</p>
-                                            <p>3. 數據包含 "gateway id" 和 name 字段</p>
+                                            <p>{t('pages:uwbLocation.pleaseConfirm')}:</p>
+                                            <p>1. {t('pages:uwbLocation.cloudMqttSimulatorStarted')}</p>
+                                            <p>2. {t('pages:uwbLocation.simulatorSendsGatewayTopic')}</p>
+                                            <p>3. {t('pages:uwbLocation.dataContainsGatewayIdAndName')}</p>
                                         </div>
                                     </div>
                                 )}
@@ -4148,11 +4148,11 @@ export default function UWBLocationPage() {
                                 <div className="mt-6">
                                     <details className="group">
                                         <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                                            🔍 查看原始 Gateway MQTT 數據 (調試用)
+                                            🔍 {t('pages:uwbLocation.viewRawGatewayMqttData')}
                                         </summary>
                                         <div className="mt-2 space-y-2 text-xs">
                                             <div className="text-muted-foreground">
-                                                點擊下方數據可展開查看完整內容
+                                                {t('pages:uwbLocation.clickDataToExpand')}
                                             </div>
                                             <div className="max-h-60 overflow-y-auto space-y-2">
                                                 {cloudGatewayData.slice(0, 5).map((data, index) => (
@@ -4167,10 +4167,10 @@ export default function UWBLocationPage() {
                                                 ))}
                                             </div>
                                             <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                                                <div className="font-semibold mb-1">閘道器發現條件：</div>
-                                                <div>• 必須有 content: "gateway topic"</div>
-                                                <div>• 必須有 "gateway id" 和 name 字段</div>
-                                                <div>• UWB Joined: "yes" 且 5V plugged: "yes" 視為在線</div>
+                                                <div className="font-semibold mb-1">{t('pages:uwbLocation.gatewayDiscoveryConditions')}:</div>
+                                                <div>• {t('pages:uwbLocation.mustHaveGatewayTopic')}</div>
+                                                <div>• {t('pages:uwbLocation.mustHaveGatewayIdAndName')}</div>
+                                                <div>• {t('pages:uwbLocation.uwbJoinedAnd5VPluggedOnline')}</div>
                                             </div>
                                         </div>
                                     </details>
@@ -4208,8 +4208,8 @@ export default function UWBLocationPage() {
                                                             gateway.status === 'online' ? 'bg-green-100 text-green-700 border-green-200' : ''
                                                         }
                                                     >
-                                                        {gateway.status === 'online' ? '在線' :
-                                                            gateway.status === 'error' ? '錯誤' : '離線'}
+                                                        {gateway.status === 'online' ? t('pages:uwbLocation.status.online') :
+                                                            gateway.status === 'error' ? t('pages:uwbLocation.status.error') : t('pages:uwbLocation.status.offline')}
                                                     </Badge>
                                                     <div className="flex gap-1">
                                                         <Button
@@ -4242,20 +4242,20 @@ export default function UWBLocationPage() {
                                         <CardContent>
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">所屬樓層</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.belongingFloor')}</span>
                                                     <span className="font-medium">{floor?.name}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">MAC 地址</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.macAddress')}</span>
                                                     <span className="font-mono text-sm">{gateway.macAddress}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">IP 地址</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.ipAddress')}</span>
                                                     <span className="font-mono text-sm">{gateway.ipAddress}</span>
                                                 </div>
                                                 {gateway.lastSeen && (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">最後連線</span>
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.lastConnection')}</span>
                                                         <span className="text-sm">{gateway.lastSeen.toLocaleString('zh-TW')}</span>
                                                     </div>
                                                 )}
@@ -4275,38 +4275,38 @@ export default function UWBLocationPage() {
                                     {selectedDiscoveredGateway ? (
                                         <>
                                             <CloudIcon className="mr-2 h-5 w-5 text-blue-500" />
-                                            {editingItem ? "編輯閘道器" : "加入雲端閘道器到系統"}
+                                            {editingItem ? t('pages:uwbLocation.editGateway') : t('pages:uwbLocation.addCloudGatewayToSystem')}
                                         </>
                                     ) : (
                                         <>
                                             <Plus className="mr-2 h-5 w-5" />
-                                            {editingItem ? "編輯閘道器" : "手動新增閘道器"}
+                                            {editingItem ? t('pages:uwbLocation.editGateway') : t('pages:uwbLocation.manualAddGateway')}
                                         </>
                                     )}
                                 </CardTitle>
                                 {selectedDiscoveredGateway && (
                                     <div className="text-sm text-muted-foreground mt-2">
-                                        從雲端發現的閘道器 (ID: {selectedDiscoveredGateway}) 加入到選定的樓層
+                                        {t('pages:uwbLocation.addDiscoveredGatewayToFloor', { id: selectedDiscoveredGateway })}
                                     </div>
                                 )}
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-medium">閘道器名稱</label>
+                                    <label className="text-sm font-medium">{t('pages:uwbLocation.gatewayName')}</label>
                                     <Input
                                         value={gatewayForm.name}
                                         onChange={(e) => setGatewayForm(prev => ({ ...prev, name: e.target.value }))}
-                                        placeholder="請輸入閘道器名稱"
+                                        placeholder={t('pages:uwbLocation.enterGatewayName')}
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium">所屬樓層</label>
+                                    <label className="text-sm font-medium">{t('pages:uwbLocation.belongingFloor')}</label>
                                     <Select
                                         value={gatewayForm.floorId}
                                         onValueChange={(value) => setGatewayForm(prev => ({ ...prev, floorId: value }))}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="選擇樓層" />
+                                            <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {currentFloors.map(floor => (
@@ -4319,7 +4319,7 @@ export default function UWBLocationPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-medium">MAC 地址</label>
+                                        <label className="text-sm font-medium">{t('pages:uwbLocation.macAddress')}</label>
                                         <Input
                                             value={gatewayForm.macAddress}
                                             onChange={(e) => setGatewayForm(prev => ({ ...prev, macAddress: e.target.value }))}
@@ -4327,7 +4327,7 @@ export default function UWBLocationPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">IP 地址</label>
+                                        <label className="text-sm font-medium">{t('pages:uwbLocation.ipAddress')}</label>
                                         <Input
                                             value={gatewayForm.ipAddress}
                                             onChange={(e) => setGatewayForm(prev => ({ ...prev, ipAddress: e.target.value }))}
@@ -4337,10 +4337,10 @@ export default function UWBLocationPage() {
                                 </div>
                                 <div className="flex gap-2">
                                     <Button onClick={handleGatewaySubmit}>
-                                        {editingItem ? "更新" : "新增"}
+                                        {editingItem ? t('common:actions.update') : t('common:actions.add')}
                                     </Button>
                                     <Button variant="outline" onClick={resetGatewayForm}>
-                                        取消
+                                        {t('common:actions.cancel')}
                                     </Button>
                                 </div>
                             </CardContent>
