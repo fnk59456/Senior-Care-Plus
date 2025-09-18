@@ -29,6 +29,7 @@ import { useLocation } from "react-router-dom"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { DeviceType } from "@/types/device-types"
+import { useTranslation } from "react-i18next"
 
 // 本地 MQTT 設置
 const MQTT_URL = "ws://localhost:9001"
@@ -246,6 +247,7 @@ const getPatientIdByName = (patientName: string): string => {
 }
 
 export default function DiaperMonitoringPage() {
+  const { t } = useTranslation()
   const location = useLocation()
   const patientName = location.state?.patientName
 
@@ -383,7 +385,7 @@ export default function DiaperMonitoringPage() {
           badge: (
             <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
               <Heart className="w-3 h-3 mr-1 fill-current" />
-              良好
+              {t('status:resident.status.good')}
             </Badge>
           ),
           icon: '💚',
@@ -394,7 +396,7 @@ export default function DiaperMonitoringPage() {
           badge: (
             <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
               <AlertTriangle className="w-3 h-3 mr-1" />
-              需注意
+              {t('status:resident.status.attention')}
             </Badge>
           ),
           icon: '⚠️',
@@ -405,7 +407,7 @@ export default function DiaperMonitoringPage() {
           badge: (
             <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
               <AlertCircle className="w-3 h-3 mr-1" />
-              危急
+              {t('status:resident.status.critical')}
             </Badge>
           ),
           icon: '🚨',
@@ -413,7 +415,7 @@ export default function DiaperMonitoringPage() {
         }
       default:
         return {
-          badge: <Badge>未知</Badge>,
+          badge: <Badge>{t('status:resident.status.unknown')}</Badge>,
           icon: '❓',
           bgColor: 'bg-gray-100'
         }
@@ -901,47 +903,47 @@ export default function DiaperMonitoringPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold flex items-center">
           <Droplets className="mr-3 h-8 w-8 text-blue-500" />
-          尿布監測
+          {t('pages:diaperMonitoring.title')}
         </h1>
         {patientName && (
           <div className="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
             <p className="text-purple-800 text-sm font-medium">
-              👶 從健康監控頁面導航 - 當前患者: {patientName}
+              👶 {t('pages:diaperMonitoring.navigationFromHealth')} - {t('pages:diaperMonitoring.currentPatient')}: {patientName}
             </p>
           </div>
         )}
         <p className="text-muted-foreground">
-          即時監測長者尿布濕度狀態，確保舒適與健康
+          {t('pages:diaperMonitoring.subtitle')}
         </p>
         <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
-          <div className="font-semibold">連線狀態監控</div>
+          <div className="font-semibold">{t('pages:diaperMonitoring.connectionStatus.title')}</div>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span>本地 MQTT ({MQTT_URL}):</span>
+              <span>{t('pages:diaperMonitoring.connectionStatus.localMqtt')} ({MQTT_URL}):</span>
               <span className={connected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                 {localConnectionStatus}
               </span>
             </div>
             {localError && (
               <div className="text-xs text-red-500 ml-4">
-                錯誤: {localError}
+                {t('pages:diaperMonitoring.connectionStatus.error')}: {localError}
               </div>
             )}
             <div className="flex items-center justify-between">
-              <span>雲端 MQTT ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
+              <span>{t('pages:diaperMonitoring.connectionStatus.cloudMqtt')} ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
               <span className={cloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                 {cloudConnectionStatus}
               </span>
             </div>
             {cloudError && (
               <div className="text-xs text-red-500 ml-4">
-                錯誤: {cloudError}
+                {t('pages:diaperMonitoring.connectionStatus.error')}: {cloudError}
               </div>
             )}
           </div>
           <div className="flex items-center justify-between mt-3">
             <div className="text-xs text-gray-500">
-              提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務
+              {t('pages:diaperMonitoring.connectionStatus.hint')}
             </div>
             <div className="flex gap-2">
               <Button
@@ -956,7 +958,7 @@ export default function DiaperMonitoringPage() {
                 }}
                 disabled={connected}
               >
-                重連本地
+                {t('pages:diaperMonitoring.reconnectLocal')}
               </Button>
               <Button
                 size="sm"
@@ -970,7 +972,7 @@ export default function DiaperMonitoringPage() {
                 }}
                 disabled={cloudConnected}
               >
-                重連雲端
+                {t('pages:diaperMonitoring.reconnectCloud')}
               </Button>
             </div>
           </div>
@@ -980,8 +982,8 @@ export default function DiaperMonitoringPage() {
       {/* 主要功能標籤頁 */}
       <Tabs defaultValue="local" className="w-full" value={currentMqttTab} onValueChange={setCurrentMqttTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="local">本地 MQTT</TabsTrigger>
-          <TabsTrigger value="cloud">雲端 MQTT</TabsTrigger>
+          <TabsTrigger value="local">{t('pages:diaperMonitoring.tabs.local')}</TabsTrigger>
+          <TabsTrigger value="cloud">{t('pages:diaperMonitoring.tabs.cloud')}</TabsTrigger>
         </TabsList>
 
         {/* 本地 MQTT 標籤頁 */}
@@ -992,19 +994,19 @@ export default function DiaperMonitoringPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center">
                   <User className="mr-3 h-5 w-5 text-blue-500" />
-                  患者選擇
+                  {t('pages:diaperMonitoring.patientSelection.title')}
                 </CardTitle>
               </div>
             </CardHeader>
             <CardContent>
               <Select value={selectedPatient} onValueChange={setSelectedPatient}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="選擇患者" />
+                  <SelectValue placeholder={t('pages:diaperMonitoring.patientSelection.selectPatient')} />
                 </SelectTrigger>
                 <SelectContent>
                   {patients.map(patient => (
                     <SelectItem key={patient.id} value={patient.id}>
-                      患者：{patient.name}
+                      {t('pages:diaperMonitoring.patientSelection.patient')}：{patient.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1021,13 +1023,13 @@ export default function DiaperMonitoringPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center">
                   <Droplets className="mr-3 h-5 w-5 text-blue-500" />
-                  雲端尿布設備監控
+                  {t('pages:diaperMonitoring.cloudDeviceMonitoring.title')}
                 </CardTitle>
                 <div className="text-sm">
                   {cloudConnected ? (
                     <span className="text-green-600 flex items-center">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                      連線正常
+                      {t('pages:diaperMonitoring.cloudDeviceMonitoring.connected')}
                     </span>
                   ) : (
                     <span className="text-red-500 flex items-center">
@@ -1042,16 +1044,16 @@ export default function DiaperMonitoringPage() {
               <div className="space-y-4">
                 {/* Gateway 選擇 */}
                 <div className="space-y-4">
-                  <div className="font-medium text-gray-900">選擇監控區域：</div>
+                  <div className="font-medium text-gray-900">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectArea')}</div>
 
                   {/* 橫排選擇器 */}
                   <div className="flex flex-col sm:flex-row gap-4">
                     {/* 養老院選擇 */}
                     <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">養老院</label>
+                      <label className="text-sm font-medium text-gray-700">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHome')}</label>
                       <Select value={selectedHome} onValueChange={setSelectedHome}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="選擇養老院" />
+                          <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHomeFirst')} />
                         </SelectTrigger>
                         <SelectContent>
                           {homes.map(home => (
@@ -1065,10 +1067,10 @@ export default function DiaperMonitoringPage() {
 
                     {/* 樓層選擇 */}
                     <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">樓層</label>
+                      <label className="text-sm font-medium text-gray-700">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor')}</label>
                       <Select value={selectedFloor} onValueChange={setSelectedFloor} disabled={!selectedHome}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={selectedHome ? "選擇樓層" : "請先選擇養老院"} />
+                          <SelectValue placeholder={selectedHome ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloorFirst')} />
                         </SelectTrigger>
                         <SelectContent>
                           {floors
@@ -1084,10 +1086,10 @@ export default function DiaperMonitoringPage() {
 
                     {/* 閘道器選擇 */}
                     <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">閘道器</label>
+                      <label className="text-sm font-medium text-gray-700">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGateway')}</label>
                       <Select value={selectedGateway} onValueChange={setSelectedGateway} disabled={!selectedFloor}>
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={selectedFloor ? "選擇閘道器" : "請先選擇樓層"} />
+                          <SelectValue placeholder={selectedFloor ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGateway') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGatewayFirst')} />
                         </SelectTrigger>
                         <SelectContent>
                           {gateways
@@ -1111,13 +1113,13 @@ export default function DiaperMonitoringPage() {
                   {selectedGateway && (
                     <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="text-sm space-y-1">
-                        <div className="font-medium text-blue-800">當前選擇的閘道器：</div>
+                        <div className="font-medium text-blue-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.currentGateway')}</div>
                         <div className="text-xs text-blue-700">
                           {gateways.find(gw => gw.id === selectedGateway)?.name}
                           ({gateways.find(gw => gw.id === selectedGateway)?.macAddress})
                         </div>
                         <div className="text-xs text-blue-600">
-                          監聽主題: {getHealthTopic() || "無法獲取主題"}
+                          {t('pages:diaperMonitoring.cloudDeviceMonitoring.listeningTopic')}: {getHealthTopic() || t('pages:diaperMonitoring.cloudDeviceMonitoring.cannotGetTopic')}
                         </div>
                       </div>
                     </div>
@@ -1126,25 +1128,25 @@ export default function DiaperMonitoringPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="bg-blue-50 p-3 rounded-lg">
-                    <div className="font-medium text-blue-800">已發現設備</div>
+                    <div className="font-medium text-blue-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.discoveredDevices')}</div>
                     <div className="text-2xl font-bold text-blue-600">{cloudDiaperDevices.length}</div>
                   </div>
                   <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="font-medium text-green-800">總記錄數</div>
+                    <div className="font-medium text-green-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.totalRecords')}</div>
                     <div className="text-2xl font-bold text-green-600">{cloudDiaperRecords.length}</div>
                   </div>
                   <div className="bg-purple-50 p-3 rounded-lg">
-                    <div className="font-medium text-purple-800">MQTT消息</div>
+                    <div className="font-medium text-purple-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.mqttMessages')}</div>
                     <div className="text-2xl font-bold text-purple-600">{cloudMqttData.length}</div>
                   </div>
                 </div>
 
                 {cloudDiaperDevices.length > 0 ? (
                   <div className="space-y-3">
-                    <div className="font-medium">選擇監控設備：</div>
+                    <div className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectDevice')}</div>
                     <Select value={selectedCloudDevice} onValueChange={setSelectedCloudDevice}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="選擇雲端尿布設備進行詳細監控" />
+                        <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectCloudDevice')} />
                       </SelectTrigger>
                       <SelectContent>
                         {cloudDiaperDevices.map(device => {
@@ -1168,7 +1170,7 @@ export default function DiaperMonitoringPage() {
                                 <div className="flex items-center gap-2">
                                   {statusInfo.badge}
                                   <span className="text-xs text-muted-foreground">
-                                    濕度: {device.currentHumidity}%
+                                    {t('pages:diaperMonitoring.cloudDeviceMonitoring.humidity')}: {device.currentHumidity}%
                                   </span>
                                 </div>
                               </div>
@@ -1181,12 +1183,12 @@ export default function DiaperMonitoringPage() {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Droplets className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p className="font-medium">尚未發現任何雲端尿布設備</p>
+                    <p className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.noDevices')}</p>
                     <div className="text-xs space-y-1 mt-2">
-                      <p>請確認：</p>
-                      <p>1. 雲端 MQTT 模擬器已啟動</p>
-                      <p>2. 模擬器發送 content: "diaper DV1" 格式的數據</p>
-                      <p>3. 數據包含 MAC 和濕度相關字段</p>
+                      <p>{t('pages:diaperMonitoring.cloudDeviceMonitoring.pleaseConfirm')}</p>
+                      <p>1. {t('pages:diaperMonitoring.cloudDeviceMonitoring.cloudMqttSimulator')}</p>
+                      <p>2. {t('pages:diaperMonitoring.cloudDeviceMonitoring.simulatorFormat')}</p>
+                      <p>3. {t('pages:diaperMonitoring.cloudDeviceMonitoring.dataFields')}</p>
                     </div>
                   </div>
                 )}
@@ -1194,7 +1196,7 @@ export default function DiaperMonitoringPage() {
                 {/* 最近接收到的雲端數據 */}
                 {cloudMqttData.length > 0 && (
                   <div className="mt-6 space-y-2">
-                    <div className="font-medium">最近收到的數據：</div>
+                    <div className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.recentData')}</div>
                     <div className="max-h-40 overflow-y-auto space-y-1">
                       {cloudMqttData.slice(0, 8).map((data, index) => {
                         const residentInfo = getResidentInfoByMAC(data.MAC)
@@ -1210,17 +1212,17 @@ export default function DiaperMonitoringPage() {
                             {data.MAC && data.content === "diaper DV1" && (
                               <div className="text-muted-foreground mt-1">
                                 <div className="flex items-center gap-2">
-                                  <span>設備: <span className="font-mono">{data.MAC}</span></span>
+                                  <span>{t('pages:diaperMonitoring.cloudDeviceMonitoring.device')}: <span className="font-mono">{data.MAC}</span></span>
                                   {residentInfo && (
                                     <span className="text-green-600 font-medium">
                                       → {residentInfo.residentName} ({residentInfo.residentRoom})
                                     </span>
                                   )}
                                 </div>
-                                {data.name && `設備名稱: ${data.name}`}
-                                {data.humi && ` | 濕度: ${data.humi}%`}
-                                {data.temp && ` | 溫度: ${data.temp}°C`}
-                                {data.battery_level && ` | 電量: ${data.battery_level}%`}
+                                {data.name && `${t('pages:diaperMonitoring.cloudDeviceMonitoring.deviceName')}: ${data.name}`}
+                                {data.humi && ` | ${t('pages:diaperMonitoring.cloudDeviceMonitoring.humidity')}: ${data.humi}%`}
+                                {data.temp && ` | ${t('pages:diaperMonitoring.cloudDeviceMonitoring.temperature')}: ${data.temp}°C`}
+                                {data.battery_level && ` | ${t('pages:diaperMonitoring.cloudDeviceMonitoring.battery')}: ${data.battery_level}%`}
                               </div>
                             )}
                             {data.content !== "diaper DV1" && (
@@ -1239,11 +1241,11 @@ export default function DiaperMonitoringPage() {
                 <div className="mt-6">
                   <details className="group">
                     <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                      🔍 查看原始MQTT數據 (調試用)
+                      🔍 {t('pages:diaperMonitoring.cloudDeviceMonitoring.viewRawData')}
                     </summary>
                     <div className="mt-2 space-y-2 text-xs">
                       <div className="text-muted-foreground">
-                        點擊下方數據可展開查看完整內容
+                        {t('pages:diaperMonitoring.cloudDeviceMonitoring.clickToExpand')}
                       </div>
                       <div className="max-h-60 overflow-y-auto space-y-2">
                         {cloudMqttData.slice(0, 5).map((data, index) => (
@@ -1285,11 +1287,11 @@ export default function DiaperMonitoringPage() {
                         ))}
                       </div>
                       <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                        <div className="font-semibold mb-1">尿布設備創建條件檢查：</div>
-                        <div>• 必須有 content: "diaper DV1"</div>
-                        <div>• 必須有 MAC 字段</div>
-                        <div>• humi, temp, battery level 字段可以為空或0（已放寬條件）</div>
-                        <div>• 濕度 &gt; 75% 時會觸發換尿布警告</div>
+                        <div className="font-semibold mb-1">{t('pages:diaperMonitoring.cloudDeviceMonitoring.deviceCreationConditions')}</div>
+                        <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition1')}</div>
+                        <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition2')}</div>
+                        <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition3')}</div>
+                        <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition4')}</div>
                       </div>
                     </div>
                   </details>
@@ -1304,9 +1306,9 @@ export default function DiaperMonitoringPage() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Clock className="mr-2 h-5 w-5" />
-                  設備監測記錄 - {(() => {
+                  {t('pages:diaperMonitoring.deviceDiaperData.title')} - {(() => {
                     const device = cloudDiaperDevices.find(d => d.MAC === selectedCloudDevice)
-                    return device?.residentName ? `${device.residentName} (${device.residentRoom})` : device?.deviceName
+                    return device?.residentName ? `${device.residentName} (${device.residentRoom})` : device?.deviceName || t('pages:diaperMonitoring.deviceDiaperData.unknownDevice')
                   })()}
                 </CardTitle>
               </CardHeader>
@@ -1354,11 +1356,11 @@ export default function DiaperMonitoringPage() {
                                     {statusInfo.badge}
                                   </div>
                                   <div>
-                                    濕度: {record.humi > 0 ? `${record.humi}%` : "無數據"}
-                                    {record.temp > 0 && ` | 溫度: ${record.temp}°C`}
+                                    {t('pages:diaperMonitoring.deviceDiaperData.humidity')}: {record.humi > 0 ? `${record.humi}%` : t('pages:diaperMonitoring.deviceDiaperData.noData')}
+                                    {record.temp > 0 && ` | ${t('pages:diaperMonitoring.deviceDiaperData.temperature')}: ${record.temp}°C`}
                                   </div>
                                   <div className="text-xs text-muted-foreground">
-                                    電量: {record.battery_level}% |
+                                    {t('pages:diaperMonitoring.deviceDiaperData.battery')}: {record.battery_level}% |
                                     固件版本: {record.fw_ver} |
                                     序列號: {record.serial_no}
                                   </div>
@@ -1374,12 +1376,12 @@ export default function DiaperMonitoringPage() {
                                   : 'bg-green-100 text-green-700'
                               }`}>
                               {record.humi === 0
-                                ? '無濕度數據'
+                                ? t('pages:diaperMonitoring.deviceDiaperData.noHumidityData')
                                 : record.humi > 75
-                                  ? '需要更換'
+                                  ? t('pages:diaperMonitoring.deviceDiaperData.needsChange')
                                   : record.humi > 50
-                                    ? '潮濕'
-                                    : '正常'}
+                                    ? t('pages:diaperMonitoring.deviceDiaperData.wet')
+                                    : t('pages:diaperMonitoring.deviceDiaperData.normal')}
                             </div>
                           </div>
                         )
@@ -1390,34 +1392,34 @@ export default function DiaperMonitoringPage() {
                   {currentCloudDevice && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                       <div className="text-sm space-y-2">
-                        <div className="font-semibold text-blue-800">設備統計信息</div>
+                        <div className="font-semibold text-blue-800">{t('pages:diaperMonitoring.deviceDiaperData.deviceStats')}</div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                           <div>
-                            <span className="text-muted-foreground">設備MAC:</span>
+                            <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.deviceMAC')}:</span>
                             <div className="font-mono">{currentCloudDevice.MAC}</div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">病患資訊:</span>
+                            <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.patientInfo')}:</span>
                             <div>
                               {currentCloudDevice.residentName ?
                                 `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` :
-                                '未綁定病患'
+                                t('pages:diaperMonitoring.deviceDiaperData.unboundPatient')
                               }
                             </div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">最後連接:</span>
+                            <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.lastConnection')}:</span>
                             <div>{currentCloudDevice.lastSeen.toLocaleString('zh-TW')}</div>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">記錄總數:</span>
+                            <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.totalRecords')}:</span>
                             <div>{currentCloudDevice.recordCount} 筆</div>
                           </div>
                         </div>
                         <div className="mt-2">
-                          <span className="text-muted-foreground">當前狀態:</span>
+                          <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.currentStatus')}:</span>
                           <div className={currentCloudDevice.currentHumidity > 75 ? "text-red-600 font-medium" : "text-green-600"}>
-                            {currentCloudDevice.currentHumidity > 75 ? "需要關注" : "正常"}
+                            {currentCloudDevice.currentHumidity > 75 ? t('pages:diaperMonitoring.deviceDiaperData.needsAttention') : t('pages:diaperMonitoring.deviceDiaperData.normal')}
                           </div>
                         </div>
                       </div>
@@ -1433,9 +1435,9 @@ export default function DiaperMonitoringPage() {
       {/* 時間範圍標籤 */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
         <TabsList>
-          <TabsTrigger value="today">今日</TabsTrigger>
-          <TabsTrigger value="week">本週</TabsTrigger>
-          <TabsTrigger value="month">本月</TabsTrigger>
+          <TabsTrigger value="today">{t('pages:diaperMonitoring.dateTabs.today')}</TabsTrigger>
+          <TabsTrigger value="week">{t('pages:diaperMonitoring.dateTabs.week')}</TabsTrigger>
+          <TabsTrigger value="month">{t('pages:diaperMonitoring.dateTabs.month')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value={selectedTab} className="mt-6 space-y-6">
@@ -1445,20 +1447,20 @@ export default function DiaperMonitoringPage() {
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center">
                   <TrendingUp className="mr-2 h-5 w-5" />
-                  濕度趨勢圖
+                  {t('pages:diaperMonitoring.humidityChart.title')}
                   {currentMqttTab === "cloud" && selectedCloudDevice && (
                     <span className="ml-2 text-sm font-normal text-blue-600">
                       - {(() => {
                         const device = cloudDiaperDevices.find(d => d.MAC === selectedCloudDevice)
                         return device?.residentName
                           ? `${device.residentName} (${device.residentRoom})`
-                          : device?.deviceName || "雲端設備"
+                          : device?.deviceName || t('pages:diaperMonitoring.humidityChart.cloudDevice')
                       })()}
                     </span>
                   )}
                   {currentMqttTab === "local" && (
                     <span className="ml-2 text-sm font-normal text-green-600">
-                      - {currentPatient.name || "本地患者"}
+                      - {currentPatient.name || t('pages:diaperMonitoring.humidityChart.localPatient')}
                     </span>
                   )}
                 </span>
@@ -1479,15 +1481,15 @@ export default function DiaperMonitoringPage() {
                       <YAxis
                         domain={[0, 100]}
                         tick={{ fontSize: 12 }}
-                        label={{ value: '濕度 (%)', angle: -90, position: 'insideLeft' }}
+                        label={{ value: t('pages:diaperMonitoring.humidityChart.yAxisLabel'), angle: -90, position: 'insideLeft' }}
                       />
                       <Tooltip
-                        labelFormatter={(value) => `時間: ${value}`}
-                        formatter={(value) => [`${value}%`, '濕度']}
+                        labelFormatter={(value) => `${t('pages:diaperMonitoring.humidityChart.time')}: ${value}`}
+                        formatter={(value) => [`${value}%`, t('pages:diaperMonitoring.humidityChart.humidity')]}
                       />
-                      <ReferenceLine y={75} stroke="#ef4444" strokeDasharray="5 5" label="更換警戒線: 75%" />
-                      <ReferenceLine y={50} stroke="#f59e0b" strokeDasharray="5 5" label="注意線: 50%" />
-                      <ReferenceLine y={25} stroke="#10b981" strokeDasharray="5 5" label="正常線: 25%" />
+                      <ReferenceLine y={75} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:diaperMonitoring.humidityChart.changeAlertLine')} />
+                      <ReferenceLine y={50} stroke="#f59e0b" strokeDasharray="5 5" label={t('pages:diaperMonitoring.humidityChart.attentionLine')} />
+                      <ReferenceLine y={25} stroke="#10b981" strokeDasharray="5 5" label={t('pages:diaperMonitoring.humidityChart.normalLine')} />
                       <Line
                         type="monotone"
                         dataKey="humidity"
@@ -1503,14 +1505,14 @@ export default function DiaperMonitoringPage() {
                 <div className="h-80 flex items-center justify-center text-muted-foreground">
                   <div className="text-center">
                     <Droplets className="mx-auto h-12 w-12 mb-4 opacity-50" />
-                    <p>暫無{getDateString()}的濕度數據</p>
+                    <p>{t('pages:diaperMonitoring.humidityChart.noData', { date: getDateString() })}</p>
                     {currentMqttTab === "cloud" ? (
                       <div className="text-sm space-y-1">
-                        <p>請確認雲端MQTT模擬器已啟動</p>
-                        <p>並選擇有效的雲端設備</p>
+                        <p>{t('pages:diaperMonitoring.humidityChart.cloudSimulatorCheck')}</p>
+                        <p>{t('pages:diaperMonitoring.humidityChart.selectValidDevice')}</p>
                       </div>
                     ) : (
-                      <p className="text-sm">請確認本地MQTT模擬器已啟動</p>
+                      <p className="text-sm">{t('pages:diaperMonitoring.humidityChart.localSimulatorCheck')}</p>
                     )}
                   </div>
                 </div>
@@ -1524,9 +1526,9 @@ export default function DiaperMonitoringPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">當前尿布狀態</span>
+                    <span className="font-medium">{t('pages:diaperMonitoring.currentDiaperStatus.title')}</span>
                     <div className="flex items-center gap-2">
-                      <span>自動通知</span>
+                      <span>{t('pages:diaperMonitoring.currentDiaperStatus.autoNotification')}</span>
                       <Switch
                         checked={autoNotification}
                         onCheckedChange={setAutoNotification}
@@ -1542,11 +1544,11 @@ export default function DiaperMonitoringPage() {
                     </div>
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-red-600 mb-2">
-                        需要更換尿布！
+                        {t('pages:diaperMonitoring.currentDiaperStatus.needsChange')}
                       </h3>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm">濕度:</span>
+                          <span className="text-sm">{t('pages:diaperMonitoring.currentDiaperStatus.humidity')}:</span>
                           <Progress
                             value={currentMqttTab === "cloud"
                               ? (currentCloudDevice ? currentCloudDevice.currentHumidity : 0)
@@ -1556,14 +1558,14 @@ export default function DiaperMonitoringPage() {
                           />
                           <span className="text-sm font-medium">
                             {currentMqttTab === "cloud"
-                              ? (currentCloudDevice ? `${currentCloudDevice.currentHumidity}%` : "無數據")
+                              ? (currentCloudDevice ? `${currentCloudDevice.currentHumidity}%` : t('pages:diaperMonitoring.currentDiaperStatus.noData'))
                               : `${currentPatient.currentHumidity}%`
                             }
                           </span>
                         </div>
                         <div className="text-sm text-muted-foreground space-y-1">
                           <p>
-                            設備: {currentMqttTab === "cloud"
+                            {t('pages:diaperMonitoring.currentDiaperStatus.device')}: {currentMqttTab === "cloud"
                               ? (currentCloudDevice ?
                                 (currentCloudDevice.residentName ?
                                   `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` :
@@ -1576,9 +1578,9 @@ export default function DiaperMonitoringPage() {
                             <p>MAC: {currentCloudDevice.MAC}</p>
                           )}
                           <p>
-                            上次更換時間: {currentMqttTab === "local" && currentPatient.records.length > 0 ?
+                            {t('pages:diaperMonitoring.currentDiaperStatus.lastChangeTime')}: {currentMqttTab === "local" && currentPatient.records.length > 0 ?
                               `${currentPatient.records[0].timestamp} (${getTimeDifference(currentPatient.lastUpdate)})` :
-                              '無記錄'
+                              t('pages:diaperMonitoring.currentDiaperStatus.noRecords')
                             }
                           </p>
                         </div>
@@ -1591,7 +1593,7 @@ export default function DiaperMonitoringPage() {
                     className="w-full"
                     size="lg"
                   >
-                    記錄尿布更換
+                    {t('pages:diaperMonitoring.currentDiaperStatus.recordChange')}
                   </Button>
                 </div>
               </CardContent>
@@ -1605,18 +1607,18 @@ export default function DiaperMonitoringPage() {
                 <div className="flex items-center gap-3">
                   <Droplets className="h-5 w-5 text-blue-500" />
                   <div>
-                    <p className="text-sm text-muted-foreground">濕度</p>
+                    <p className="text-sm text-muted-foreground">{t('pages:diaperMonitoring.deviceStatus.humidity')}</p>
                     <p className="text-2xl font-bold">
                       {currentMqttTab === "cloud"
-                        ? (currentCloudDevice ? `${currentCloudDevice.currentHumidity}%` : "無數據")
+                        ? (currentCloudDevice ? `${currentCloudDevice.currentHumidity}%` : t('pages:diaperMonitoring.deviceStatus.noData'))
                         : `${currentPatient.currentHumidity}%`
                       }
                     </p>
                     {currentMqttTab === "cloud" && currentCloudDevice && currentCloudDevice.currentHumidity > 75 && (
-                      <Badge className="bg-red-100 text-red-700 mt-1">需要更換</Badge>
+                      <Badge className="bg-red-100 text-red-700 mt-1">{t('pages:diaperMonitoring.deviceStatus.needsChange')}</Badge>
                     )}
                     {currentMqttTab === "local" && currentPatient.currentHumidity > 75 && (
-                      <Badge className="bg-red-100 text-red-700 mt-1">需要更換</Badge>
+                      <Badge className="bg-red-100 text-red-700 mt-1">{t('pages:diaperMonitoring.deviceStatus.needsChange')}</Badge>
                     )}
                   </div>
                 </div>
@@ -1628,10 +1630,10 @@ export default function DiaperMonitoringPage() {
                 <div className="flex items-center gap-3">
                   <Thermometer className="h-5 w-5 text-orange-500" />
                   <div>
-                    <p className="text-sm text-muted-foreground">溫度</p>
+                    <p className="text-sm text-muted-foreground">{t('pages:diaperMonitoring.deviceStatus.temperature')}</p>
                     <p className="text-2xl font-bold">
                       {currentMqttTab === "cloud"
-                        ? (currentCloudDevice ? `${currentCloudDevice.currentTemperature}°C` : "無數據")
+                        ? (currentCloudDevice ? `${currentCloudDevice.currentTemperature}°C` : t('pages:diaperMonitoring.deviceStatus.noData'))
                         : `${currentPatient.temperature}°C`
                       }
                     </p>
@@ -1645,10 +1647,10 @@ export default function DiaperMonitoringPage() {
                 <div className="flex items-center gap-3">
                   <Battery className="h-5 w-5 text-green-500" />
                   <div>
-                    <p className="text-sm text-muted-foreground">電量</p>
+                    <p className="text-sm text-muted-foreground">{t('pages:diaperMonitoring.deviceStatus.battery')}</p>
                     <p className="text-2xl font-bold">
                       {currentMqttTab === "cloud"
-                        ? (currentCloudDevice ? `${currentCloudDevice.currentBatteryLevel}%` : "無數據")
+                        ? (currentCloudDevice ? `${currentCloudDevice.currentBatteryLevel}%` : t('pages:diaperMonitoring.deviceStatus.noData'))
                         : `${currentPatient.batteryLevel}%`
                       }
                     </p>
@@ -1661,12 +1663,12 @@ export default function DiaperMonitoringPage() {
           {/* 尿布更換記錄 */}
           <Card>
             <CardHeader>
-              <CardTitle>尿布更換記錄</CardTitle>
+              <CardTitle>{t('pages:diaperMonitoring.diaperRecords.title')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {currentPatient.records.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">暫無更換記錄</p>
+                  <p className="text-center text-muted-foreground py-8">{t('pages:diaperMonitoring.diaperRecords.noRecords')}</p>
                 ) : (
                   currentPatient.records.map((record) => (
                     <div key={record.id} className="flex items-center gap-4 p-4 border rounded-lg">
@@ -1677,11 +1679,11 @@ export default function DiaperMonitoringPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-medium">{record.timestamp}</span>
                           <Badge className={record.status.color}>
-                            狀態: {record.status.label}
+                            {t('pages:diaperMonitoring.diaperRecords.status')}: {record.status.label}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          更換人: {record.nurse}
+                          {t('pages:diaperMonitoring.diaperRecords.nurse')}: {record.nurse}
                         </p>
                       </div>
                     </div>
@@ -1698,11 +1700,11 @@ export default function DiaperMonitoringPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <Card className="w-full max-w-md">
             <CardHeader>
-              <CardTitle>記錄尿布更換</CardTitle>
+              <CardTitle>{t('pages:diaperMonitoring.recordModal.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <label className="text-sm font-medium mb-3 block">尿布狀態</label>
+                <label className="text-sm font-medium mb-3 block">{t('pages:diaperMonitoring.recordModal.diaperStatus')}</label>
                 <div className="space-y-2">
                   {Object.values(DIAPER_STATUS).map((status) => (
                     <label key={status.value} className="flex items-center gap-3 cursor-pointer">
@@ -1723,7 +1725,7 @@ export default function DiaperMonitoringPage() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-3 block">護理人員</label>
+                <label className="text-sm font-medium mb-3 block">{t('pages:diaperMonitoring.recordModal.nurse')}</label>
                 <div className="space-y-2">
                   {NURSES.map((nurse) => (
                     <label key={nurse.id} className="flex items-center gap-3 cursor-pointer">
@@ -1747,13 +1749,13 @@ export default function DiaperMonitoringPage() {
                   onClick={() => setShowRecordModal(false)}
                   className="flex-1"
                 >
-                  取消
+                  {t('pages:diaperMonitoring.recordModal.cancel')}
                 </Button>
                 <Button
                   onClick={handleRecordChange}
                   className="flex-1"
                 >
-                  確認
+                  {t('pages:diaperMonitoring.recordModal.confirm')}
                 </Button>
               </div>
             </CardContent>

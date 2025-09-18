@@ -753,5 +753,150 @@
             "error": "錯誤",
             "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
         }
+    },
+    "diaperMonitoring": {
+        "title": "尿布監測",
+        "subtitle": "即時監測長者尿布濕度狀態，確保舒適與健康",
+        "navigationFromHealth": "從健康監控頁面導航",
+        "currentPatient": "當前患者",
+        "reconnectLocal": "重連本地",
+        "reconnectCloud": "重連雲端",
+        "tabs": {
+            "local": "本地 MQTT",
+            "cloud": "雲端 MQTT"
+        },
+        "patientSelection": {
+            "title": "患者選擇",
+            "selectPatient": "選擇患者",
+            "patient": "患者"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "雲端尿布設備監控",
+            "connected": "連線正常",
+            "離線": "離線",
+            "連接中...": "連接中...",
+            "重新連接中...": "重新連接中...",
+            "連接已關閉": "連接已關閉",
+            "連接錯誤": "連接錯誤",
+            "未選擇閘道器": "未選擇閘道器",
+            "selectArea": "選擇監控區域：",
+            "selectNursingHome": "養老院",
+            "selectNursingHomeFirst": "選擇養老院",
+            "selectFloor": "樓層",
+            "selectFloorFirst": "請先選擇養老院",
+            "selectGateway": "閘道器",
+            "selectGatewayFirst": "請先選擇樓層",
+            "currentGateway": "當前選擇的閘道器：",
+            "listeningTopic": "監聽主題",
+            "cannotGetTopic": "無法獲取主題",
+            "discoveredDevices": "已發現設備",
+            "totalRecords": "總記錄數",
+            "mqttMessages": "MQTT消息",
+            "selectDevice": "選擇監控設備：",
+            "selectCloudDevice": "選擇雲端尿布設備進行詳細監控",
+            "noDevices": "尚未發現任何雲端尿布設備",
+            "pleaseConfirm": "請確認：",
+            "cloudMqttSimulator": "雲端 MQTT 模擬器已啟動",
+            "simulatorFormat": "模擬器發送 content: \"diaper DV1\" 格式的數據",
+            "dataFields": "數據包含 MAC 和濕度相關字段",
+            "recentData": "最近收到的數據：",
+            "device": "設備",
+            "humidity": "濕度",
+            "temperature": "溫度",
+            "battery": "電量",
+            "deviceName": "設備名稱",
+            "viewRawData": "查看原始MQTT數據 (調試用)",
+            "clickToExpand": "點擊下方數據可展開查看完整內容",
+            "deviceCreationConditions": "尿布設備創建條件檢查：",
+            "condition1": "必須有 content: \"diaper DV1\"",
+            "condition2": "必須有 MAC 字段",
+            "condition3": "humi, temp, battery level 字段可以為空或0（已放寬條件）",
+            "condition4": "濕度 > 75% 時會觸發換尿布警告"
+        },
+        "deviceDiaperData": {
+            "title": "設備監測記錄",
+            "unknownDevice": "未知設備",
+            "humidity": "濕度",
+            "temperature": "溫度",
+            "battery": "電量",
+            "noData": "無數據",
+            "noHumidityData": "無濕度數據",
+            "needsChange": "需要更換",
+            "wet": "潮濕",
+            "normal": "正常",
+            "deviceStats": "設備統計信息",
+            "deviceMAC": "設備MAC",
+            "patientInfo": "病患資訊",
+            "unboundPatient": "未綁定病患",
+            "lastConnection": "最後連接",
+            "totalRecords": "記錄總數",
+            "currentStatus": "當前狀態",
+            "needsAttention": "需要關注"
+        },
+        "dateTabs": {
+            "today": "今日",
+            "week": "本週",
+            "month": "本月"
+        },
+        "humidityChart": {
+            "title": "濕度趨勢圖",
+            "cloudDevice": "雲端設備",
+            "localPatient": "本地患者",
+            "yAxisLabel": "濕度 (%)",
+            "time": "時間",
+            "humidity": "濕度",
+            "changeAlertLine": "更換警戒線: 75%",
+            "attentionLine": "注意線: 50%",
+            "normalLine": "正常線: 25%",
+            "noData": "暫無{{date}}的濕度數據",
+            "cloudSimulatorCheck": "請確認雲端MQTT模擬器已啟動",
+            "selectValidDevice": "並選擇有效的雲端設備",
+            "localSimulatorCheck": "請確認本地MQTT模擬器已啟動"
+        },
+        "currentDiaperStatus": {
+            "title": "當前尿布狀態",
+            "autoNotification": "自動通知",
+            "needsChange": "需要更換尿布！",
+            "humidity": "濕度",
+            "device": "設備",
+            "lastChangeTime": "上次更換時間",
+            "noRecords": "無記錄",
+            "recordChange": "記錄尿布更換"
+        },
+        "deviceStatus": {
+            "humidity": "濕度",
+            "temperature": "溫度",
+            "battery": "電量",
+            "needsChange": "需要更換",
+            "noData": "無數據"
+        },
+        "diaperRecords": {
+            "title": "尿布更換記錄",
+            "noRecords": "暫無更換記錄",
+            "timestamp": "時間",
+            "status": "狀態",
+            "nurse": "更換人"
+        },
+        "recordModal": {
+            "title": "記錄尿布更換",
+            "diaperStatus": "尿布狀態",
+            "nurse": "護理人員",
+            "cancel": "取消",
+            "confirm": "確認"
+        },
+        "diaperStatus": {
+            "dry": "乾燥",
+            "slightlyWet": "微濕",
+            "wet": "潮濕",
+            "veryWet": "非常潮濕",
+            "soiled": "髒污"
+        },
+        "connectionStatus": {
+            "title": "連線狀態監控",
+            "localMqtt": "本地 MQTT",
+            "cloudMqtt": "雲端 MQTT",
+            "error": "錯誤",
+            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
+        }
     }
 }

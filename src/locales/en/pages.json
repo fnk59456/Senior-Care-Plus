@@ -753,5 +753,150 @@
             "error": "Error",
             "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
         }
+    },
+    "diaperMonitoring": {
+        "title": "Diaper Monitoring",
+        "subtitle": "Real-time monitoring of elderly diaper humidity status for comfort and health",
+        "navigationFromHealth": "Navigated from Health Monitoring page",
+        "currentPatient": "Current Patient",
+        "reconnectLocal": "Reconnect Local",
+        "reconnectCloud": "Reconnect Cloud",
+        "tabs": {
+            "local": "Local MQTT",
+            "cloud": "Cloud MQTT"
+        },
+        "patientSelection": {
+            "title": "Patient Selection",
+            "selectPatient": "Select Patient",
+            "patient": "Patient"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Cloud Diaper Device Monitoring",
+            "connected": "Connected",
+            "離線": "Offline",
+            "連接中...": "Connecting...",
+            "重新連接中...": "Reconnecting...",
+            "連接已關閉": "Connection Closed",
+            "連接錯誤": "Connection Error",
+            "未選擇閘道器": "No Gateway Selected",
+            "selectArea": "Select Monitoring Area:",
+            "selectNursingHome": "Nursing Home",
+            "selectNursingHomeFirst": "Select nursing home",
+            "selectFloor": "Floor",
+            "selectFloorFirst": "Please select nursing home first",
+            "selectGateway": "Gateway",
+            "selectGatewayFirst": "Please select floor first",
+            "currentGateway": "Currently Selected Gateway:",
+            "listeningTopic": "Listening Topic",
+            "cannotGetTopic": "Cannot get topic",
+            "discoveredDevices": "Discovered Devices",
+            "totalRecords": "Total Records",
+            "mqttMessages": "MQTT Messages",
+            "selectDevice": "Select Monitoring Device:",
+            "selectCloudDevice": "Select cloud diaper device for detailed monitoring",
+            "noDevices": "No cloud diaper devices discovered yet",
+            "pleaseConfirm": "Please confirm:",
+            "cloudMqttSimulator": "Cloud MQTT simulator is running",
+            "simulatorFormat": "Simulator sends data in content: \"diaper DV1\" format",
+            "dataFields": "Data contains MAC and humidity related fields",
+            "recentData": "Recently Received Data:",
+            "device": "Device",
+            "humidity": "Humidity",
+            "temperature": "Temperature",
+            "battery": "Battery",
+            "deviceName": "Device Name",
+            "viewRawData": "View Raw MQTT Data (Debug)",
+            "clickToExpand": "Click on data below to expand and view full content",
+            "deviceCreationConditions": "Diaper Device Creation Condition Check:",
+            "condition1": "Must have content: \"diaper DV1\"",
+            "condition2": "Must have MAC field",
+            "condition3": "humi, temp, battery level fields can be empty or 0 (condition relaxed)",
+            "condition4": "Humidity > 75% will trigger diaper change warning"
+        },
+        "deviceDiaperData": {
+            "title": "Device Monitoring Records",
+            "unknownDevice": "Unknown Device",
+            "humidity": "Humidity",
+            "temperature": "Temperature",
+            "battery": "Battery",
+            "noData": "No Data",
+            "noHumidityData": "No Humidity Data",
+            "needsChange": "Needs Change",
+            "wet": "Wet",
+            "normal": "Normal",
+            "deviceStats": "Device Statistics",
+            "deviceMAC": "Device MAC",
+            "patientInfo": "Patient Info",
+            "unboundPatient": "Unbound Patient",
+            "lastConnection": "Last Connection",
+            "totalRecords": "Total Records",
+            "currentStatus": "Current Status",
+            "needsAttention": "Needs Attention"
+        },
+        "dateTabs": {
+            "today": "Today",
+            "week": "This Week",
+            "month": "This Month"
+        },
+        "humidityChart": {
+            "title": "Humidity Trend Chart",
+            "cloudDevice": "Cloud Device",
+            "localPatient": "Local Patient",
+            "yAxisLabel": "Humidity (%)",
+            "time": "Time",
+            "humidity": "Humidity",
+            "changeAlertLine": "Change Alert Line: 75%",
+            "attentionLine": "Attention Line: 50%",
+            "normalLine": "Normal Line: 25%",
+            "noData": "No humidity data for {{date}}",
+            "cloudSimulatorCheck": "Please confirm cloud MQTT simulator is running",
+            "selectValidDevice": "and select a valid cloud device",
+            "localSimulatorCheck": "Please confirm local MQTT simulator is running"
+        },
+        "currentDiaperStatus": {
+            "title": "Current Diaper Status",
+            "autoNotification": "Auto Notification",
+            "needsChange": "Diaper Change Needed!",
+            "humidity": "Humidity",
+            "device": "Device",
+            "lastChangeTime": "Last Change Time",
+            "noRecords": "No Records",
+            "recordChange": "Record Diaper Change"
+        },
+        "deviceStatus": {
+            "humidity": "Humidity",
+            "temperature": "Temperature",
+            "battery": "Battery",
+            "needsChange": "Needs Change",
+            "noData": "No Data"
+        },
+        "diaperRecords": {
+            "title": "Diaper Change Records",
+            "noRecords": "No change records",
+            "timestamp": "Time",
+            "status": "Status",
+            "nurse": "Changed By"
+        },
+        "recordModal": {
+            "title": "Record Diaper Change",
+            "diaperStatus": "Diaper Status",
+            "nurse": "Nurse",
+            "cancel": "Cancel",
+            "confirm": "Confirm"
+        },
+        "diaperStatus": {
+            "dry": "Dry",
+            "slightlyWet": "Slightly Wet",
+            "wet": "Wet",
+            "veryWet": "Very Wet",
+            "soiled": "Soiled"
+        },
+        "connectionStatus": {
+            "title": "Connection Status Monitoring",
+            "localMqtt": "Local MQTT",
+            "cloudMqtt": "Cloud MQTT",
+            "error": "Error",
+            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
+        }
     }
 }
