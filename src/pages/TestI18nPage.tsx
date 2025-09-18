@@ -246,6 +246,18 @@ export default function TestI18nPage() {
                         <p>完成按鈕: {t('pages:reminders.complete')}</p>
                         <p>功能卡片: {t('pages:reminders.cards.periodic.title')}, {t('pages:reminders.cards.statistics.title')}, {t('pages:reminders.cards.settings.title')}</p>
                     </div>
+
+                    <div>
+                        <h3 className="font-semibold mb-2">室內定位頁面：</h3>
+                        <p>頁面標題: {t('pages:location.title')}</p>
+                        <p>頁面描述: {t('pages:location.subtitle')}</p>
+                        <p>選擇區域: {t('pages:location.selectArea.title')}, {t('pages:location.selectArea.nursingHome')}, {t('pages:location.selectArea.floor')}, {t('pages:location.selectArea.gateway')}</p>
+                        <p>MQTT狀態: {t('pages:location.mqttStatus.title')}, {t('pages:location.mqttStatus.refreshData')}</p>
+                        <p>搜索過濾: {t('pages:location.searchFilter.title')}, {t('pages:location.searchFilter.allStatus')}, {t('pages:location.searchFilter.allDevices')}</p>
+                        <p>地圖控制: {t('pages:location.map.zoomIn')}, {t('pages:location.map.zoomOut')}, {t('pages:location.map.resetView')}</p>
+                        <p>設備列表: {t('pages:location.deviceList.onlineDevices', { count: 5 })}, {t('pages:location.deviceList.totalDevices', { count: 10 })}</p>
+                        <p>狀態標籤: {t('status:resident.status.good')}, {t('status:resident.status.attention')}, {t('status:resident.status.critical')}</p>
+                    </div>
                 </CardContent>
             </Card>
 

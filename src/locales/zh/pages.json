@@ -398,6 +398,76 @@
             }
         }
     },
+    "location": {
+        "title": "室內定位",
+        "subtitle": "追蹤長者和設備在院內的位置，確保安全和照護",
+        "selectArea": {
+            "title": "選擇監控區域",
+            "nursingHome": "養老院",
+            "floor": "樓層",
+            "gateway": "閘道器",
+            "selectNursingHome": "選擇養老院",
+            "selectFloor": "選擇樓層",
+            "selectGateway": "選擇閘道器",
+            "local": "本地"
+        },
+        "mqttStatus": {
+            "title": "MQTT連接狀態",
+            "refreshData": "刷新數據",
+            "refreshTitle": "刷新標定數據",
+            "status": "狀態",
+            "topic": "主題",
+            "deviceCount": "設備數量",
+            "error": "錯誤",
+            "none": "無",
+            "未連線": "未連線",
+            "已連線": "已連線",
+            "連接中...": "連接中...",
+            "重新連接中...": "重新連接中...",
+            "連接已關閉": "連接已關閉",
+            "客戶端離線": "客戶端離線",
+            "連接錯誤": "連接錯誤",
+            "未選擇閘道器": "未選擇閘道器",
+            "無法獲取閘道器主題": "無法獲取閘道器主題"
+        },
+        "searchFilter": {
+            "title": "搜索和過濾",
+            "searchPlaceholder": "搜索院友姓名或房間號...",
+            "allStatus": "全部狀態",
+            "allDevices": "全部設備",
+            "watch": "手錶",
+            "uwbTag": "定位標籤"
+        },
+        "map": {
+            "realtimeMap": "即時位置地圖",
+            "showDevices": "顯示 {{count}} 個設備",
+            "zoomIn": "放大",
+            "zoomOut": "縮小",
+            "resetView": "重置視圖",
+            "zoom": "縮放",
+            "controls": "滾輪縮放 | 拖拽移動",
+            "noDevices": "尚無符合條件的設備",
+            "selectGateway": "請先選擇閘道器並建立連接",
+            "noDimensions": "該樓層尚未設定地圖尺寸",
+            "selectFloor": "請先選擇樓層以顯示地圖",
+            "mapStatus": "地圖狀態",
+            "calibrated": "已標定",
+            "notCalibrated": "未標定",
+            "ratio": "比例",
+            "pixelsPerMeter": "像素/米",
+            "translate": "平移",
+            "onlineDevices": "在線設備",
+            "filtered": "過濾後"
+        },
+        "deviceList": {
+            "onlineDevices": "在線設備 ({{count}})",
+            "totalDevices": "總計 {{count}} 個設備",
+            "room": "房間",
+            "position": "位置",
+            "updated": "更新",
+            "online": "在線"
+        }
+    },
     "settings": {
         "title": "系統設置",
         "subtitle": "管理系統配置、個人設置和安全選項",

@@ -398,6 +398,76 @@
             }
         }
     },
+    "location": {
+        "title": "Indoor Location",
+        "subtitle": "Track the location of elderly and devices in the facility to ensure safety and care",
+        "selectArea": {
+            "title": "Select Monitoring Area",
+            "nursingHome": "Nursing Home",
+            "floor": "Floor",
+            "gateway": "Gateway",
+            "selectNursingHome": "Select Nursing Home",
+            "selectFloor": "Select Floor",
+            "selectGateway": "Select Gateway",
+            "local": "Local"
+        },
+        "mqttStatus": {
+            "title": "MQTT Connection Status",
+            "refreshData": "Refresh Data",
+            "refreshTitle": "Refresh Calibration Data",
+            "status": "Status",
+            "topic": "Topic",
+            "deviceCount": "Device Count",
+            "error": "Error",
+            "none": "None",
+            "未連線": "Disconnected",
+            "已連線": "Connected",
+            "連接中...": "Connecting...",
+            "重新連接中...": "Reconnecting...",
+            "連接已關閉": "Connection Closed",
+            "客戶端離線": "Client Offline",
+            "連接錯誤": "Connection Error",
+            "未選擇閘道器": "No Gateway Selected",
+            "無法獲取閘道器主題": "Cannot Get Gateway Topic"
+        },
+        "searchFilter": {
+            "title": "Search and Filter",
+            "searchPlaceholder": "Search resident name or room number...",
+            "allStatus": "All Status",
+            "allDevices": "All Devices",
+            "watch": "Watch",
+            "uwbTag": "UWB Tag"
+        },
+        "map": {
+            "realtimeMap": "Real-time Location Map",
+            "showDevices": "Show {{count}} devices",
+            "zoomIn": "Zoom In",
+            "zoomOut": "Zoom Out",
+            "resetView": "Reset View",
+            "zoom": "Zoom",
+            "controls": "Wheel to zoom | Drag to move",
+            "noDevices": "No devices match the criteria",
+            "selectGateway": "Please select a gateway and establish connection first",
+            "noDimensions": "This floor has not set map dimensions",
+            "selectFloor": "Please select a floor to display the map",
+            "mapStatus": "Map Status",
+            "calibrated": "Calibrated",
+            "notCalibrated": "Not Calibrated",
+            "ratio": "Ratio",
+            "pixelsPerMeter": "pixels/meter",
+            "translate": "Translate",
+            "onlineDevices": "Online Devices",
+            "filtered": "Filtered"
+        },
+        "deviceList": {
+            "onlineDevices": "Online Devices ({{count}})",
+            "totalDevices": "Total {{count}} devices",
+            "room": "Room",
+            "position": "Position",
+            "updated": "Updated",
+            "online": "Online"
+        }
+    },
     "settings": {
         "title": "System Settings",
         "subtitle": "Manage system configuration, personal settings, and security options",

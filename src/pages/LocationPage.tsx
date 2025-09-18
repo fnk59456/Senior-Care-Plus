@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 // @ts-ignore
 import mqtt from "mqtt"
+import { useTranslation } from "react-i18next"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -50,6 +51,8 @@ interface Patient {
 }
 
 export default function LocationPage() {
+  const { t } = useTranslation()
+
   // 從Context獲取共享狀態
   const {
     homes,
@@ -175,7 +178,7 @@ export default function LocationPage() {
           badge: (
             <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
               <Heart className="w-3 h-3 mr-1 fill-current" />
-              良好
+              {t('status:resident.status.good')}
             </Badge>
           ),
           icon: '💚',
@@ -186,7 +189,7 @@ export default function LocationPage() {
           badge: (
             <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-100">
               <AlertTriangle className="w-3 h-3 mr-1" />
-              需注意
+              {t('status:resident.status.attention')}
             </Badge>
           ),
           icon: '⚠️',
@@ -197,7 +200,7 @@ export default function LocationPage() {
           badge: (
             <Badge className="bg-red-100 text-red-800 hover:bg-red-100">
               <AlertCircle className="w-3 h-3 mr-1" />
-              危急
+              {t('status:resident.status.critical')}
             </Badge>
           ),
           icon: '🚨',
@@ -205,7 +208,7 @@ export default function LocationPage() {
         }
       default:
         return {
-          badge: <Badge>未知</Badge>,
+          badge: <Badge>{t('status:resident.status.unknown')}</Badge>,
           icon: '❓',
           bgColor: 'bg-gray-100'
         }
@@ -446,7 +449,7 @@ export default function LocationPage() {
 
           if (msg.content === "location" && msg.id && msg.position) {
             const deviceId = String(msg.id)
-            
+
             // 查找對應的設備和院友信息
             const device = devices.find(d => {
               // 解析設備UID，提取實際ID
@@ -456,21 +459,21 @@ export default function LocationPage() {
               }
               return d.deviceUid === deviceId || d.hardwareId === deviceId
             })
-            
+
             console.log('🔍 查找設備:', {
               mqttDeviceId: deviceId,
               foundDevice: device,
               allDevices: devices.map(d => ({ id: d.id, deviceUid: d.deviceUid, hardwareId: d.hardwareId, residentId: d.residentId }))
             })
-            
+
             const resident = device ? getResidentForDevice(device.id) : undefined
-            
+
             console.log('🔍 查找院友:', {
               deviceId: device?.id,
               foundResident: resident,
               allResidents: residents.map(r => ({ id: r.id, name: r.name, room: r.room }))
             })
-            
+
             setPatients(prev => ({
               ...prev,
               [deviceId]: {
@@ -519,14 +522,14 @@ export default function LocationPage() {
 
   // 過濾患者列表
   const filteredPatients = onlinePatients.filter(patient => {
-    const matchesSearch = 
+    const matchesSearch =
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (patient.residentRoom && patient.residentRoom.toLowerCase().includes(searchTerm.toLowerCase()))
-    
+
     const matchesStatus = statusFilter === 'all' || patient.residentStatus === statusFilter
-    
+
     const matchesDeviceType = deviceTypeFilter === 'all' || patient.deviceType === deviceTypeFilter
-    
+
     return matchesSearch && matchesStatus && matchesDeviceType
   })
 
@@ -539,9 +542,9 @@ export default function LocationPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold mb-4">室內定位</h1>
+        <h1 className="text-3xl font-bold mb-4">{t('pages:location.title')}</h1>
         <p className="text-muted-foreground mb-4">
-          追蹤長者和設備在院內的位置，確保安全和照護
+          {t('pages:location.subtitle')}
         </p>
       </div>
 
@@ -550,14 +553,14 @@ export default function LocationPage() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <MapPin className="mr-2 h-5 w-5" />
-            選擇監控區域
+            {t('pages:location.selectArea.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
             {/* 養老院選擇 */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">養老院</label>
+              <label className="text-sm font-medium">{t('pages:location.selectArea.nursingHome')}</label>
               <Select
                 value={selectedHome}
                 onValueChange={(value) => {
@@ -567,7 +570,7 @@ export default function LocationPage() {
                 }}
               >
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="選擇養老院" />
+                  <SelectValue placeholder={t('pages:location.selectArea.selectNursingHome')} />
                 </SelectTrigger>
                 <SelectContent>
                   {homes.map(home => (
@@ -581,7 +584,7 @@ export default function LocationPage() {
 
             {/* 樓層選擇 */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">樓層</label>
+              <label className="text-sm font-medium">{t('pages:location.selectArea.floor')}</label>
               <Select
                 value={selectedFloor}
                 onValueChange={(value) => {
@@ -591,7 +594,7 @@ export default function LocationPage() {
                 disabled={!selectedHome}
               >
                 <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="選擇樓層" />
+                  <SelectValue placeholder={t('pages:location.selectArea.selectFloor')} />
                 </SelectTrigger>
                 <SelectContent>
                   {floors
@@ -607,14 +610,14 @@ export default function LocationPage() {
 
             {/* Gateway選擇 */}
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">閘道器</label>
+              <label className="text-sm font-medium">{t('pages:location.selectArea.gateway')}</label>
               <Select
                 value={selectedGateway}
                 onValueChange={setSelectedGateway}
                 disabled={!selectedFloor}
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="選擇閘道器" />
+                  <SelectValue placeholder={t('pages:location.selectArea.selectGateway')} />
                 </SelectTrigger>
                 <SelectContent>
                   {gateways
@@ -623,7 +626,7 @@ export default function LocationPage() {
                       <SelectItem key={gateway.id} value={gateway.id}>
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                          {gateway.name} {gateway.cloudData ? '' : '(本地)'}
+                          {gateway.name} {gateway.cloudData ? '' : `(${t('pages:location.selectArea.local')})`}
                         </div>
                       </SelectItem>
                     ))}
@@ -640,44 +643,44 @@ export default function LocationPage() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center">
               <Wifi className="mr-2 h-5 w-5" />
-              MQTT連接狀態
+              {t('pages:location.mqttStatus.title')}
             </div>
             <Button
               onClick={refreshData}
               variant="outline"
               size="sm"
-              title="刷新標定數據"
+              title={t('pages:location.mqttStatus.refreshTitle')}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              刷新數據
+              {t('pages:location.mqttStatus.refreshData')}
             </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">狀態:</span>
+              <span className="text-sm font-medium">{t('pages:location.mqttStatus.status')}:</span>
               <Badge variant={connected ? "default" : "secondary"}>
                 {connected ? (
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                 ) : (
                   <AlertCircle className="mr-1 h-3 w-3" />
                 )}
-                {connectionStatus}
+                {t(`pages:location.mqttStatus.${connectionStatus}`)}
               </Badge>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">主題:</span>
-              <span className="text-sm font-mono">{currentTopic || "無"}</span>
+              <span className="text-sm font-medium">{t('pages:location.mqttStatus.topic')}:</span>
+              <span className="text-sm font-mono">{currentTopic || t('pages:location.mqttStatus.none')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">設備數量:</span>
+              <span className="text-sm font-medium">{t('pages:location.mqttStatus.deviceCount')}:</span>
               <span className="text-sm">{onlinePatients.length}</span>
             </div>
           </div>
           {mqttError && (
             <div className="mt-2 text-sm text-red-600">
-              錯誤: {mqttError}
+              {t('pages:location.mqttStatus.error')}: {mqttError}
             </div>
           )}
         </CardContent>
@@ -690,7 +693,7 @@ export default function LocationPage() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Search className="mr-2 h-5 w-5" />
-            搜索和過濾
+            {t('pages:location.searchFilter.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -699,7 +702,7 @@ export default function LocationPage() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="搜索院友姓名或房間號..."
+                placeholder={t('pages:location.searchFilter.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -713,7 +716,7 @@ export default function LocationPage() {
                 onClick={() => setStatusFilter('all')}
                 className="whitespace-nowrap"
               >
-                全部狀態
+                {t('pages:location.searchFilter.allStatus')}
               </Button>
               <Button
                 variant={statusFilter === 'good' ? 'default' : 'outline'}
@@ -721,7 +724,7 @@ export default function LocationPage() {
                 className="whitespace-nowrap"
               >
                 <Heart className="w-4 h-4 mr-1" />
-                良好
+                {t('status:resident.status.good')}
               </Button>
               <Button
                 variant={statusFilter === 'attention' ? 'default' : 'outline'}
@@ -729,7 +732,7 @@ export default function LocationPage() {
                 className="whitespace-nowrap"
               >
                 <AlertTriangle className="w-4 h-4 mr-1" />
-                需注意
+                {t('status:resident.status.attention')}
               </Button>
               <Button
                 variant={statusFilter === 'critical' ? 'default' : 'outline'}
@@ -737,7 +740,7 @@ export default function LocationPage() {
                 className="whitespace-nowrap"
               >
                 <AlertCircle className="w-4 h-4 mr-1" />
-                危急
+                {t('status:resident.status.critical')}
               </Button>
             </div>
 
@@ -748,7 +751,7 @@ export default function LocationPage() {
                 onClick={() => setDeviceTypeFilter('all')}
                 className="whitespace-nowrap"
               >
-                全部設備
+                {t('pages:location.searchFilter.allDevices')}
               </Button>
               <Button
                 variant={deviceTypeFilter === DeviceType.SMARTWATCH_300B ? 'default' : 'outline'}
@@ -756,7 +759,7 @@ export default function LocationPage() {
                 className="whitespace-nowrap"
               >
                 <Watch className="w-4 h-4 mr-1" />
-                手錶
+                {t('pages:location.searchFilter.watch')}
               </Button>
               <Button
                 variant={deviceTypeFilter === DeviceType.UWB_TAG ? 'default' : 'outline'}
@@ -764,7 +767,7 @@ export default function LocationPage() {
                 className="whitespace-nowrap"
               >
                 <MapPin className="w-4 h-4 mr-1" />
-                定位標籤
+                {t('pages:location.searchFilter.uwbTag')}
               </Button>
             </div>
           </div>
@@ -778,10 +781,10 @@ export default function LocationPage() {
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center">
                 <MapPin className="mr-2 h-5 w-5" />
-                {selectedFloorData.name} - 即時位置地圖
+                {selectedFloorData.name} - {t('pages:location.map.realtimeMap')}
               </div>
               <div className="text-sm text-muted-foreground">
-                顯示 {filteredPatients.length} 個設備
+                {t('pages:location.map.showDevices', { count: filteredPatients.length })}
               </div>
             </CardTitle>
           </CardHeader>
@@ -857,7 +860,7 @@ export default function LocationPage() {
                                 {patient.residentName ? patient.residentName[0] : '設'}
                               </AvatarFallback>
                             </Avatar>
-                            
+
                             {/* 設備類型圖標 */}
                             <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-md">
                               <DeviceIcon className="h-3 w-3 text-blue-600" />
@@ -871,7 +874,7 @@ export default function LocationPage() {
                             </div>
                             {patient.residentRoom && (
                               <div className="text-gray-600 text-[10px]">
-                                房間: {patient.residentRoom}
+                                {t('pages:location.deviceList.room')}: {patient.residentRoom}
                               </div>
                             )}
                             {patient.position.z !== undefined && (
@@ -892,7 +895,7 @@ export default function LocationPage() {
                     {/* 无人在线提示 */}
                     {filteredPatients.length === 0 && (
                       <div className="absolute inset-0 flex items-center justify-center text-lg text-muted-foreground bg-white/70 pointer-events-none">
-                        {connected ? "尚無符合條件的設備" : "請先選擇閘道器並建立連接"}
+                        {connected ? t('pages:location.map.noDevices') : t('pages:location.map.selectGateway')}
                       </div>
                     )}
                   </div>
@@ -904,7 +907,7 @@ export default function LocationPage() {
                       onClick={handleZoomIn}
                       disabled={mapTransform.scale >= mapTransform.maxScale}
                       className="w-8 h-8 p-0"
-                      title="放大"
+                      title={t('pages:location.map.zoomIn')}
                     >
                       <ZoomIn className="h-4 w-4" />
                     </Button>
@@ -913,7 +916,7 @@ export default function LocationPage() {
                       onClick={handleZoomOut}
                       disabled={mapTransform.scale <= mapTransform.minScale}
                       className="w-8 h-8 p-0"
-                      title="縮小"
+                      title={t('pages:location.map.zoomOut')}
                     >
                       <ZoomOut className="h-4 w-4" />
                     </Button>
@@ -922,7 +925,7 @@ export default function LocationPage() {
                       variant="outline"
                       onClick={resetMapView}
                       className="w-8 h-8 p-0"
-                      title="重置視圖"
+                      title={t('pages:location.map.resetView')}
                     >
                       <RotateCcw className="h-4 w-4" />
                     </Button>
@@ -930,18 +933,18 @@ export default function LocationPage() {
 
                   {/* 缩放比例显示 */}
                   <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-lg shadow-lg text-sm z-10">
-                    縮放: {(mapTransform.scale * 100).toFixed(0)}%
+                    {t('pages:location.map.zoom')}: {(mapTransform.scale * 100).toFixed(0)}%
                   </div>
 
                   {/* 操作提示 */}
                   <div className="absolute top-4 left-4 bg-blue-600/90 text-white px-3 py-1 rounded-lg shadow-lg text-sm z-10">
-                    滾輪縮放 | 拖拽移動
+                    {t('pages:location.map.controls')}
                   </div>
                 </div>
               ) : (
                 <div className="p-8 text-center text-muted-foreground">
                   <MapPin className="mx-auto h-12 w-12 mb-3 opacity-30" />
-                  <p>該樓層尚未設定地圖尺寸</p>
+                  <p>{t('pages:location.map.noDimensions')}</p>
                 </div>
               )}
             </div>
@@ -949,15 +952,15 @@ export default function LocationPage() {
             {/* 地圖資訊 */}
             {calibration && (
               <div className="mt-4 text-sm text-muted-foreground">
-                <div>地圖狀態: {calibration.isCalibrated ? "已標定" : "未標定"}</div>
+                <div>{t('pages:location.map.mapStatus')}: {calibration.isCalibrated ? t('pages:location.map.calibrated') : t('pages:location.map.notCalibrated')}</div>
                 {calibration.isCalibrated && (
-                  <div>比例: {calibration.pixelToMeterRatio.toFixed(2)} 像素/米</div>
+                  <div>{t('pages:location.map.ratio')}: {calibration.pixelToMeterRatio.toFixed(2)} {t('pages:location.map.pixelsPerMeter')}</div>
                 )}
                 <div className="flex items-center gap-4 mt-2">
-                  <div>縮放: {(mapTransform.scale * 100).toFixed(0)}%</div>
-                  <div>平移: ({mapTransform.translateX.toFixed(0)}, {mapTransform.translateY.toFixed(0)})</div>
-                  <div>在線設備: {onlinePatients.length}</div>
-                  <div>過濾後: {filteredPatients.length}</div>
+                  <div>{t('pages:location.map.zoom')}: {(mapTransform.scale * 100).toFixed(0)}%</div>
+                  <div>{t('pages:location.map.translate')}: ({mapTransform.translateX.toFixed(0)}, {mapTransform.translateY.toFixed(0)})</div>
+                  <div>{t('pages:location.map.onlineDevices')}: {onlinePatients.length}</div>
+                  <div>{t('pages:location.map.filtered')}: {filteredPatients.length}</div>
                 </div>
               </div>
             )}
@@ -967,7 +970,7 @@ export default function LocationPage() {
         <Card>
           <CardContent className="p-8 text-center text-muted-foreground">
             <MapPin className="mx-auto h-12 w-12 mb-3 opacity-30" />
-            <p>請先選擇樓層以顯示地圖</p>
+            <p>{t('pages:location.map.selectFloor')}</p>
           </CardContent>
         </Card>
       )}
@@ -979,10 +982,10 @@ export default function LocationPage() {
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center">
                 <Signal className="mr-2 h-5 w-5" />
-                在線設備 ({filteredPatients.length})
+                {t('pages:location.deviceList.onlineDevices', { count: filteredPatients.length })}
               </div>
               <div className="text-sm text-muted-foreground">
-                總計 {onlinePatients.length} 個設備
+                {t('pages:location.deviceList.totalDevices', { count: onlinePatients.length })}
               </div>
             </CardTitle>
           </CardHeader>
@@ -1001,7 +1004,7 @@ export default function LocationPage() {
                           {patient.residentName ? patient.residentName[0] : '設'}
                         </AvatarFallback>
                       </Avatar>
-                      
+
                       {/* 設備類型圖標 */}
                       <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-sm">
                         <DeviceIcon className="h-3 w-3 text-blue-600" />
@@ -1016,13 +1019,13 @@ export default function LocationPage() {
                         </h3>
                         {statusInfo && statusInfo.badge}
                       </div>
-                      
+
                       <div className="text-sm text-muted-foreground space-y-1">
                         {patient.residentRoom && (
-                          <div>房間: {patient.residentRoom}</div>
+                          <div>{t('pages:location.deviceList.room')}: {patient.residentRoom}</div>
                         )}
                         <div>
-                          位置: ({patient.position.x.toFixed(2)}, {patient.position.y.toFixed(2)})
+                          {t('pages:location.deviceList.position')}: ({patient.position.x.toFixed(2)}, {patient.position.y.toFixed(2)})
                           {patient.position.z !== undefined && `, Z: ${patient.position.z.toFixed(2)}`}
                         </div>
                         {patient.deviceType && (
@@ -1032,7 +1035,7 @@ export default function LocationPage() {
                           </div>
                         )}
                         <div className="text-xs text-muted-foreground">
-                          更新: {new Date(patient.updatedAt).toLocaleTimeString()}
+                          {t('pages:location.deviceList.updated')}: {new Date(patient.updatedAt).toLocaleTimeString()}
                         </div>
                       </div>
                     </div>
@@ -1040,7 +1043,7 @@ export default function LocationPage() {
                     {/* 狀態指示 */}
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-xs text-green-600">在線</span>
+                      <span className="text-xs text-green-600">{t('pages:location.deviceList.online')}</span>
                     </div>
                   </div>
                 )
