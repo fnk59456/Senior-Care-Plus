@@ -1180,6 +1180,99 @@
             "cancelCalibration": "取消校正",
             "cancel": "取消",
             "confirm": "確認"
+        },
+        "tagManagement": {
+            "title": "標籤設備管理",
+            "subtitle": "管理UWB定位標籤設備，包括人員標籤、設備標籤和資產標籤",
+            "controls": {
+                "selectGateway": "選擇閘道器",
+                "reconnectTags": "重連標籤",
+                "addTag": "新增標籤"
+            },
+            "stats": {
+                "personnelTags": "人員標籤",
+                "activeTags": "活躍中",
+                "cloudTags": "雲端標籤"
+            },
+            "cloudDiscovery": {
+                "title": "雲端標籤發現",
+                "mqttStatus": "標籤 MQTT 狀態",
+                "selectedGateway": "選擇的閘道器",
+                "notSelected": "未選擇",
+                "listeningTopic": "監聽主題",
+                "none": "無",
+                "connectionStatus": "連線狀態",
+                "gatewayNotSelected": "未選擇閘道器",
+                "discoveredTags": "發現的標籤",
+                "onlineTags": "在線標籤",
+                "mqttMessages": "MQTT消息",
+                "discoveredCloudTags": "發現的雲端標籤",
+                "autoAddedToSystem": "已自動加入系統"
+            },
+            "tagList": {
+                "noTagsUnderGateway": "該閘道器下暫無標籤設備",
+                "pleaseConfirm": "請確認：",
+                "gatewayMessageLocationTopics": "1. 閘道器的 message 和 location 主題正確",
+                "simulatorSendsInfoLocation": "2. 模擬器發送 content: \"info\"/\"location\", node: \"TAG\" 格式的數據",
+                "dataContainsFields": "3. 數據包含 id、battery level、position、time 等字段",
+                "viewRawTagMqttData": "查看原始 Tag MQTT 數據 (調試用)",
+                "clickDataToExpand": "點擊下方數據可展開查看完整內容",
+                "tagDiscoveryConditions": "標籤發現條件：",
+                "messageTopic": "• message 主題: content: \"info\", node: \"TAG\"",
+                "locationTopic": "• location 主題: content: \"location\", node: \"TAG\"",
+                "mustHaveId": "• 必須有 id 字段",
+                "messageContainsBattery": "• message 包含 battery level 信息",
+                "locationContainsPosition": "• location 包含 position 和 time 信息"
+            },
+            "tagCard": {
+                "macAddress": "MAC 地址",
+                "type": "類型",
+                "personnel": "人員",
+                "assignedTo": "分配給",
+                "batteryLevel": "電池電量",
+                "lastPosition": "最後位置",
+                "updateTime": "更新時間",
+                "cloud": "雲端",
+                "edit": "編輯",
+                "delete": "刪除"
+            },
+            "tagForm": {
+                "editTag": "編輯標籤",
+                "addTag": "新增標籤",
+                "tagName": "標籤名稱",
+                "tagNamePlaceholder": "請輸入標籤名稱",
+                "macAddress": "MAC 地址",
+                "macAddressPlaceholder": "AA:BB:CC:DD:EE:FF",
+                "tagType": "標籤類型",
+                "selectType": "選擇類型",
+                "person": "人員",
+                "equipment": "設備",
+                "asset": "資產",
+                "assignedTo": "分配給",
+                "assignedToPlaceholder": "分配給誰（可選）",
+                "cancel": "取消",
+                "save": "保存"
+            },
+            "tagStatus": {
+                "running": "運行中",
+                "inactive": "未激活",
+                "lowBattery": "電量不足",
+                "lost": "失聯",
+                "online": "在線",
+                "offline": "離線"
+            },
+            "tagTypes": {
+                "person": "人員",
+                "equipment": "設備",
+                "asset": "資產"
+            },
+            "messages": {
+                "selectGatewayFirst": "請先選擇閘道器",
+                "noTagsFound": "尚未發現任何標籤",
+                "connectionError": "錯誤",
+                "connectionNormal": "連線正常",
+                "manualReconnecting": "手動重連中..."
+            }
         }
     }
 }

@@ -5219,7 +5219,7 @@ export default function UWBLocationPage() {
 
                                     // 重置狀態
                                     setTagCloudConnected(false)
-                                    setTagCloudConnectionStatus("手動重連中...")
+                                    setTagCloudConnectionStatus(t('pages:uwbLocation.tagManagement.messages.manualReconnecting'))
                                     setTagCloudError("")
 
                                     // 觸發重新連接（通過重新設置選擇的 Gateway）
@@ -5233,11 +5233,11 @@ export default function UWBLocationPage() {
                                 disabled={!selectedGatewayForTags}
                             >
                                 <RefreshIcon className="h-4 w-4 mr-2" />
-                                重連標籤
+                                {t('pages:uwbLocation.tagManagement.controls.reconnectTags')}
                             </Button>
                             <Button onClick={() => setShowTagForm(true)}>
                                 <Plus className="h-4 w-4 mr-2" />
-                                新增標籤
+                                {t('pages:uwbLocation.tagManagement.controls.addTag')}
                             </Button>
                         </div>
                     </div>
@@ -5249,7 +5249,7 @@ export default function UWBLocationPage() {
                                 <div className="flex items-center gap-3">
                                     <Tag className="h-6 w-6 text-green-500" />
                                     <div>
-                                        <p className="text-sm text-muted-foreground">人員標籤</p>
+                                        <p className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.stats.personnelTags')}</p>
                                         <p className="text-xl font-bold">{tags.filter(t => t.type === 'person').length}</p>
                                     </div>
                                 </div>
@@ -5260,7 +5260,7 @@ export default function UWBLocationPage() {
                                 <div className="flex items-center gap-3">
                                     <Activity className="h-6 w-6 text-orange-500" />
                                     <div>
-                                        <p className="text-sm text-muted-foreground">活躍中</p>
+                                        <p className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.stats.activeTags')}</p>
                                         <p className="text-xl font-bold text-green-600">{tags.filter(t => t.status === 'active').length}</p>
                                     </div>
                                 </div>
@@ -5271,7 +5271,7 @@ export default function UWBLocationPage() {
                                 <div className="flex items-center gap-3">
                                     <CloudIcon className="h-6 w-6 text-blue-500" />
                                     <div>
-                                        <p className="text-sm text-muted-foreground">雲端標籤</p>
+                                        <p className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.stats.cloudTags')}</p>
                                         <p className="text-xl font-bold text-blue-600">{discoveredCloudTags.length}</p>
                                     </div>
                                 </div>
@@ -5285,13 +5285,13 @@ export default function UWBLocationPage() {
                             <div className="flex items-center justify-between">
                                 <CardTitle className="text-lg flex items-center">
                                     <Tag className="mr-3 h-5 w-5 text-teal-500" />
-                                    雲端標籤發現
+                                    {t('pages:uwbLocation.tagManagement.cloudDiscovery.title')}
                                 </CardTitle>
                                 <div className="text-sm">
                                     {tagCloudConnected ? (
                                         <span className="text-green-600 flex items-center">
                                             <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                                            連線正常
+                                            {t('pages:uwbLocation.tagManagement.messages.connectionNormal')}
                                         </span>
                                     ) : (
                                         <span className="text-red-500 flex items-center">
@@ -5305,9 +5305,9 @@ export default function UWBLocationPage() {
                         <CardContent>
                             <div className="space-y-4">
                                 <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
-                                    <div className="font-semibold">標籤 MQTT 狀態</div>
+                                    <div className="font-semibold">{t('pages:uwbLocation.tagManagement.cloudDiscovery.mqttStatus')}</div>
                                     <div className="flex items-center justify-between">
-                                        <span>選擇的閘道器:</span>
+                                        <span>{t('pages:uwbLocation.tagManagement.cloudDiscovery.selectedGateway')}:</span>
                                         <span className="font-medium">
                                             {selectedGatewayForTags ? (() => {
                                                 // 先檢查雲端發現的閘道器
@@ -5329,41 +5329,41 @@ export default function UWBLocationPage() {
                                                 }
 
                                                 return selectedGatewayForTags
-                                            })() : "未選擇"}
+                                            })() : t('pages:uwbLocation.tagManagement.cloudDiscovery.notSelected')}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span>監聽主題:</span>
+                                        <span>{t('pages:uwbLocation.tagManagement.cloudDiscovery.listeningTopic')}:</span>
                                         <span className="text-xs font-mono text-muted-foreground">
-                                            {currentTagTopic || "無"}
+                                            {currentTagTopic || t('pages:uwbLocation.tagManagement.cloudDiscovery.none')}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span>連線狀態:</span>
+                                        <span>{t('pages:uwbLocation.tagManagement.cloudDiscovery.connectionStatus')}:</span>
                                         <span className={tagCloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                                             {tagCloudConnectionStatus}
                                         </span>
                                     </div>
                                     {tagCloudError && (
                                         <div className="text-xs text-red-500">
-                                            錯誤: {tagCloudError}
+                                            {t('pages:uwbLocation.tagManagement.messages.connectionError')}: {tagCloudError}
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                     <div className="bg-teal-50 p-3 rounded-lg">
-                                        <div className="font-medium text-teal-800">發現的標籤</div>
+                                        <div className="font-medium text-teal-800">{t('pages:uwbLocation.tagManagement.cloudDiscovery.discoveredTags')}</div>
                                         <div className="text-2xl font-bold text-teal-600">{discoveredCloudTags.length}</div>
                                     </div>
                                     <div className="bg-green-50 p-3 rounded-lg">
-                                        <div className="font-medium text-green-800">在線標籤</div>
+                                        <div className="font-medium text-green-800">{t('pages:uwbLocation.tagManagement.cloudDiscovery.onlineTags')}</div>
                                         <div className="text-2xl font-bold text-green-600">
                                             {discoveredCloudTags.filter(t => t.isOnline).length}
                                         </div>
                                     </div>
                                     <div className="bg-purple-50 p-3 rounded-lg">
-                                        <div className="font-medium text-purple-800">MQTT消息</div>
+                                        <div className="font-medium text-purple-800">{t('pages:uwbLocation.tagManagement.cloudDiscovery.mqttMessages')}</div>
                                         <div className="text-2xl font-bold text-purple-600">{cloudTagData.length}</div>
                                     </div>
                                 </div>
@@ -5371,7 +5371,7 @@ export default function UWBLocationPage() {
                                 {/* 發現的標籤列表 */}
                                 {discoveredCloudTags.length > 0 ? (
                                     <div className="space-y-3">
-                                        <div className="font-medium">發現的雲端標籤：</div>
+                                        <div className="font-medium">{t('pages:uwbLocation.tagManagement.cloudDiscovery.discoveredCloudTags')}：</div>
                                         <div className="space-y-2 max-h-60 overflow-y-auto">
                                             {discoveredCloudTags.map(tag => (
                                                 <div key={tag.id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
@@ -5397,28 +5397,28 @@ export default function UWBLocationPage() {
                                                                         : "bg-gray-100 text-gray-700 border-gray-200"
                                                                     }
                                                                 >
-                                                                    {tag.isOnline ? '在線' : '離線'}
+                                                                    {tag.isOnline ? t('pages:uwbLocation.tagManagement.tagStatus.online') : t('pages:uwbLocation.tagManagement.tagStatus.offline')}
                                                                 </Badge>
                                                             </div>
                                                             <div className="text-sm text-muted-foreground">
-                                                                閘道器: {tag.gateway_id} | 韌體: {tag.fw_ver || '未知'}
+                                                                {t('pages:uwbLocation.gateway')}: {tag.gateway_id} | {t('pages:uwbLocation.firmware')}: {tag.fw_ver || t('pages:uwbLocation.unknown')}
                                                             </div>
                                                             <div className="text-xs text-muted-foreground">
                                                                 {tag.battery_level !== undefined && (
-                                                                    <>電池: {tag.battery_level}% | </>
+                                                                    <>{t('pages:uwbLocation.tagManagement.tagCard.batteryLevel')}: {tag.battery_level}% | </>
                                                                 )}
                                                                 {tag.position && (
-                                                                    <>位置: ({tag.position.x.toFixed(2)}, {tag.position.y.toFixed(2)}, {tag.position.z.toFixed(2)}) | </>
+                                                                    <>{t('pages:uwbLocation.position')}: ({tag.position.x.toFixed(2)}, {tag.position.y.toFixed(2)}, {tag.position.z.toFixed(2)}) | </>
                                                                 )}
                                                                 {tag.time && (
-                                                                    <>時間: {tag.time} | </>
+                                                                    <>{t('pages:uwbLocation.time')}: {tag.time} | </>
                                                                 )}
-                                                                最後更新: {tag.lastSeen instanceof Date ? tag.lastSeen.toLocaleTimeString('zh-TW') : '未知'}
+                                                                {t('pages:uwbLocation.lastUpdate')}: {tag.lastSeen instanceof Date ? tag.lastSeen.toLocaleTimeString('zh-TW') : t('pages:uwbLocation.unknown')}
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div className="text-sm text-gray-500">
-                                                        已自動加入系統
+                                                        {t('pages:uwbLocation.tagManagement.cloudDiscovery.autoAddedToSystem')}
                                                     </div>
                                                 </div>
                                             ))}
@@ -5428,14 +5428,14 @@ export default function UWBLocationPage() {
                                     <div className="text-center py-8 text-muted-foreground">
                                         <Tag className="mx-auto h-8 w-8 mb-2 opacity-50" />
                                         <p className="font-medium">
-                                            {selectedGatewayForTags ? t('pages:uwbLocation.messages.noTagsFound') : t('pages:uwbLocation.messages.selectGatewayFirst')}
+                                            {selectedGatewayForTags ? t('pages:uwbLocation.tagManagement.messages.noTagsFound') : t('pages:uwbLocation.tagManagement.messages.selectGatewayFirst')}
                                         </p>
                                         {selectedGatewayForTags && (
                                             <div className="text-xs space-y-1 mt-2">
-                                                <p>請確認：</p>
-                                                <p>1. 閘道器的 message 和 location 主題正確</p>
-                                                <p>2. 模擬器發送 content: "info"/"location", node: "TAG" 格式的數據</p>
-                                                <p>3. 數據包含 id、battery level、position、time 等字段</p>
+                                                <p>{t('pages:uwbLocation.tagManagement.tagList.pleaseConfirm')}</p>
+                                                <p>1. {t('pages:uwbLocation.tagManagement.tagList.gatewayMessageLocationTopics')}</p>
+                                                <p>2. {t('pages:uwbLocation.tagManagement.tagList.simulatorSendsInfoLocation')}</p>
+                                                <p>3. {t('pages:uwbLocation.tagManagement.tagList.dataContainsFields')}</p>
                                             </div>
                                         )}
                                     </div>
@@ -5445,11 +5445,11 @@ export default function UWBLocationPage() {
                                 <div className="mt-6">
                                     <details className="group">
                                         <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                                            🔍 查看原始 Tag MQTT 數據 (調試用)
+                                            🔍 {t('pages:uwbLocation.tagManagement.tagList.viewRawTagMqttData')}
                                         </summary>
                                         <div className="mt-2 space-y-2 text-xs">
                                             <div className="text-muted-foreground">
-                                                點擊下方數據可展開查看完整內容
+                                                {t('pages:uwbLocation.tagManagement.tagList.clickDataToExpand')}
                                             </div>
                                             <div className="max-h-60 overflow-y-auto space-y-2">
                                                 {cloudTagData.slice(0, 5).map((data, index) => (
@@ -5464,12 +5464,12 @@ export default function UWBLocationPage() {
                                                 ))}
                                             </div>
                                             <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                                                <div className="font-semibold mb-1">標籤發現條件：</div>
-                                                <div>• message 主題: content: "info", node: "TAG"</div>
-                                                <div>• location 主題: content: "location", node: "TAG"</div>
-                                                <div>• 必須有 id 字段</div>
-                                                <div>• message 包含 battery level 信息</div>
-                                                <div>• location 包含 position 和 time 信息</div>
+                                                <div className="font-semibold mb-1">{t('pages:uwbLocation.tagManagement.tagList.tagDiscoveryConditions')}</div>
+                                                <div>{t('pages:uwbLocation.tagManagement.tagList.messageTopic')}</div>
+                                                <div>{t('pages:uwbLocation.tagManagement.tagList.locationTopic')}</div>
+                                                <div>{t('pages:uwbLocation.tagManagement.tagList.mustHaveId')}</div>
+                                                <div>{t('pages:uwbLocation.tagManagement.tagList.messageContainsBattery')}</div>
+                                                <div>{t('pages:uwbLocation.tagManagement.tagList.locationContainsPosition')}</div>
                                             </div>
                                         </div>
                                     </details>
@@ -5516,7 +5516,7 @@ export default function UWBLocationPage() {
                                 return (
                                     <div className="col-span-2 text-center py-8 text-muted-foreground">
                                         <Tag className="mx-auto h-12 w-12 mb-3 opacity-30" />
-                                        <p className="text-sm">該閘道器下暫無標籤設備</p>
+                                        <p className="text-sm">{t('pages:uwbLocation.tagManagement.tagList.noTagsUnderGateway')}</p>
                                     </div>
                                 )
                             }
@@ -5542,10 +5542,10 @@ export default function UWBLocationPage() {
 
                                 const getStatusText = (status: TagDevice['status']) => {
                                     switch (status) {
-                                        case 'active': return '運行中'
-                                        case 'inactive': return '未激活'
-                                        case 'low_battery': return '電量不足'
-                                        case 'lost': return '失聯'
+                                        case 'active': return t('pages:uwbLocation.tagManagement.tagStatus.running')
+                                        case 'inactive': return t('pages:uwbLocation.tagManagement.tagStatus.inactive')
+                                        case 'low_battery': return t('pages:uwbLocation.tagManagement.tagStatus.lowBattery')
+                                        case 'lost': return t('pages:uwbLocation.tagManagement.tagStatus.lost')
                                         default: return status
                                     }
                                 }
@@ -5569,7 +5569,7 @@ export default function UWBLocationPage() {
                                                     {discoveredCloudTags.some(cloudTag => cloudTag.id.toString() === tag.id) && (
                                                         <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
                                                             <CloudIcon className="h-3 w-3 mr-1" />
-                                                            雲端
+                                                            {t('pages:uwbLocation.tagManagement.tagCard.cloud')}
                                                         </Badge>
                                                     )}
                                                     <div className="flex gap-1">
@@ -5603,21 +5603,21 @@ export default function UWBLocationPage() {
                                         <CardContent>
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">MAC 地址</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.macAddress')}</span>
                                                     <span className="font-mono text-sm">{tag.macAddress}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">類型</span>
-                                                    <span className="text-sm">人員</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.type')}</span>
+                                                    <span className="text-sm">{t('pages:uwbLocation.tagManagement.tagCard.personnel')}</span>
                                                 </div>
                                                 {tag.assignedTo && (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">分配給</span>
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.assignedTo')}</span>
                                                         <span className="text-sm">{tag.assignedTo}</span>
                                                     </div>
                                                 )}
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">電池電量</span>
+                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.batteryLevel')}</span>
                                                     <div className="flex items-center gap-2">
                                                         <Battery className="h-4 w-4" />
                                                         <span className="text-sm">{tag.batteryLevel || 0}%</span>
@@ -5626,13 +5626,13 @@ export default function UWBLocationPage() {
                                                 {tag.lastPosition && (
                                                     <div className="space-y-1">
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-muted-foreground">最後位置</span>
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.lastPosition')}</span>
                                                             <span className="text-sm">
                                                                 ({tag.lastPosition.x.toFixed(1)}, {tag.lastPosition.y.toFixed(1)})
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-muted-foreground">更新時間</span>
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.updateTime')}</span>
                                                             <span className="text-sm">
                                                                 {tag.lastPosition.timestamp.toLocaleString('zh-TW')}
                                                             </span>
@@ -5651,59 +5651,59 @@ export default function UWBLocationPage() {
                     {showTagForm && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>{editingTag ? "編輯標籤" : "新增標籤"}</CardTitle>
+                                <CardTitle>{editingTag ? t('pages:uwbLocation.tagManagement.tagForm.editTag') : t('pages:uwbLocation.tagManagement.tagForm.addTag')}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-medium">標籤名稱</label>
+                                        <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.tagName')}</label>
                                         <Input
                                             value={tagForm.name}
                                             onChange={(e) => setTagForm(prev => ({ ...prev, name: e.target.value }))}
-                                            placeholder="請輸入標籤名稱"
+                                            placeholder={t('pages:uwbLocation.tagManagement.tagForm.tagNamePlaceholder')}
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">MAC 地址</label>
+                                        <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.macAddress')}</label>
                                         <Input
                                             value={tagForm.macAddress}
                                             onChange={(e) => setTagForm(prev => ({ ...prev, macAddress: e.target.value }))}
-                                            placeholder="AA:BB:CC:DD:EE:FF"
+                                            placeholder={t('pages:uwbLocation.tagManagement.tagForm.macAddressPlaceholder')}
                                         />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-medium">標籤類型</label>
+                                        <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.tagType')}</label>
                                         <Select
                                             value={tagForm.type}
                                             onValueChange={(value) => setTagForm(prev => ({ ...prev, type: value as TagDevice['type'] }))}
                                         >
                                             <SelectTrigger>
-                                                <SelectValue placeholder="選擇類型" />
+                                                <SelectValue placeholder={t('pages:uwbLocation.tagManagement.tagForm.selectType')} />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="person">人員</SelectItem>
-                                                <SelectItem value="equipment">設備</SelectItem>
-                                                <SelectItem value="asset">資產</SelectItem>
+                                                <SelectItem value="person">{t('pages:uwbLocation.tagManagement.tagForm.person')}</SelectItem>
+                                                <SelectItem value="equipment">{t('pages:uwbLocation.tagManagement.tagForm.equipment')}</SelectItem>
+                                                <SelectItem value="asset">{t('pages:uwbLocation.tagManagement.tagForm.asset')}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">分配給</label>
+                                        <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.assignedTo')}</label>
                                         <Input
                                             value={tagForm.assignedTo}
                                             onChange={(e) => setTagForm(prev => ({ ...prev, assignedTo: e.target.value }))}
-                                            placeholder="分配給誰（可選）"
+                                            placeholder={t('pages:uwbLocation.tagManagement.tagForm.assignedToPlaceholder')}
                                         />
                                     </div>
                                 </div>
                                 <div className="flex gap-2">
                                     <Button onClick={handleTagSubmit}>
-                                        {editingTag ? "更新" : "新增"}
+                                        {editingTag ? t('pages:uwbLocation.tagManagement.tagForm.save') : t('pages:uwbLocation.tagManagement.controls.addTag')}
                                     </Button>
                                     <Button variant="outline" onClick={resetTagForm}>
-                                        取消
+                                        {t('pages:uwbLocation.tagManagement.tagForm.cancel')}
                                     </Button>
                                 </div>
                             </CardContent>

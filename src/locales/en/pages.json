@@ -1183,6 +1183,99 @@
             "cancelCalibration": "Cancel Calibration",
             "cancel": "Cancel",
             "confirm": "Confirm"
+        },
+        "tagManagement": {
+            "title": "Tag Device Management",
+            "subtitle": "Manage UWB positioning tag devices, including personnel tags, equipment tags, and asset tags",
+            "controls": {
+                "selectGateway": "Select Gateway",
+                "reconnectTags": "Reconnect Tags",
+                "addTag": "Add Tag"
+            },
+            "stats": {
+                "personnelTags": "Personnel Tags",
+                "activeTags": "Active",
+                "cloudTags": "Cloud Tags"
+            },
+            "cloudDiscovery": {
+                "title": "Cloud Tag Discovery",
+                "mqttStatus": "Tag MQTT Status",
+                "selectedGateway": "Selected Gateway",
+                "notSelected": "Not Selected",
+                "listeningTopic": "Listening Topic",
+                "none": "None",
+                "connectionStatus": "Connection Status",
+                "gatewayNotSelected": "Gateway Not Selected",
+                "discoveredTags": "Discovered Tags",
+                "onlineTags": "Online Tags",
+                "mqttMessages": "MQTT Messages",
+                "discoveredCloudTags": "Discovered Cloud Tags",
+                "autoAddedToSystem": "Auto Added to System"
+            },
+            "tagList": {
+                "noTagsUnderGateway": "No tag devices under this gateway",
+                "pleaseConfirm": "Please confirm:",
+                "gatewayMessageLocationTopics": "1. Gateway's message and location topics are correct",
+                "simulatorSendsInfoLocation": "2. Simulator sends content: \"info\"/\"location\", node: \"TAG\" format data",
+                "dataContainsFields": "3. Data contains id, battery level, position, time and other fields",
+                "viewRawTagMqttData": "View Raw Tag MQTT Data (Debug)",
+                "clickDataToExpand": "Click data below to expand and view full content",
+                "tagDiscoveryConditions": "Tag Discovery Conditions:",
+                "messageTopic": "• message topic: content: \"info\", node: \"TAG\"",
+                "locationTopic": "• location topic: content: \"location\", node: \"TAG\"",
+                "mustHaveId": "• Must have id field",
+                "messageContainsBattery": "• message contains battery level information",
+                "locationContainsPosition": "• location contains position and time information"
+            },
+            "tagCard": {
+                "macAddress": "MAC Address",
+                "type": "Type",
+                "personnel": "Personnel",
+                "assignedTo": "Assigned To",
+                "batteryLevel": "Battery Level",
+                "lastPosition": "Last Position",
+                "updateTime": "Update Time",
+                "cloud": "Cloud",
+                "edit": "Edit",
+                "delete": "Delete"
+            },
+            "tagForm": {
+                "editTag": "Edit Tag",
+                "addTag": "Add Tag",
+                "tagName": "Tag Name",
+                "tagNamePlaceholder": "Enter tag name",
+                "macAddress": "MAC Address",
+                "macAddressPlaceholder": "AA:BB:CC:DD:EE:FF",
+                "tagType": "Tag Type",
+                "selectType": "Select Type",
+                "person": "Personnel",
+                "equipment": "Equipment",
+                "asset": "Asset",
+                "assignedTo": "Assigned To",
+                "assignedToPlaceholder": "Assign to whom (optional)",
+                "cancel": "Cancel",
+                "save": "Save"
+            },
+            "tagStatus": {
+                "running": "Running",
+                "inactive": "Inactive",
+                "lowBattery": "Low Battery",
+                "lost": "Lost",
+                "online": "Online",
+                "offline": "Offline"
+            },
+            "tagTypes": {
+                "person": "Personnel",
+                "equipment": "Equipment",
+                "asset": "Asset"
+            },
+            "messages": {
+                "selectGatewayFirst": "Please select a gateway first",
+                "noTagsFound": "No tags discovered yet",
+                "connectionError": "Error",
+                "connectionNormal": "Connection Normal",
+                "manualReconnecting": "Manual Reconnecting..."
+            }
         }
     }
 }

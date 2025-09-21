@@ -426,6 +426,99 @@
             "cancelCalibration": "キャリブレーションキャンセル",
             "cancel": "キャンセル",
             "confirm": "確認"
+        },
+        "tagManagement": {
+            "title": "タグデバイス管理",
+            "subtitle": "UWB位置タグデバイスの管理、人員タグ、設備タグ、資産タグを含む",
+            "controls": {
+                "selectGateway": "ゲートウェイ選択",
+                "reconnectTags": "タグ再接続",
+                "addTag": "タグ追加"
+            },
+            "stats": {
+                "personnelTags": "人員タグ",
+                "activeTags": "アクティブ",
+                "cloudTags": "クラウドタグ"
+            },
+            "cloudDiscovery": {
+                "title": "クラウドタグ発見",
+                "mqttStatus": "タグ MQTT 状態",
+                "selectedGateway": "選択されたゲートウェイ",
+                "notSelected": "未選択",
+                "listeningTopic": "リスニングトピック",
+                "none": "なし",
+                "connectionStatus": "接続状態",
+                "gatewayNotSelected": "ゲートウェイ未選択",
+                "discoveredTags": "発見されたタグ",
+                "onlineTags": "オンラインタグ",
+                "mqttMessages": "MQTTメッセージ",
+                "discoveredCloudTags": "発見されたクラウドタグ",
+                "autoAddedToSystem": "システムに自動追加済み"
+            },
+            "tagList": {
+                "noTagsUnderGateway": "このゲートウェイ下にタグデバイスがありません",
+                "pleaseConfirm": "確認してください：",
+                "gatewayMessageLocationTopics": "1. ゲートウェイのmessageとlocationトピックが正しい",
+                "simulatorSendsInfoLocation": "2. シミュレーターがcontent: \"info\"/\"location\", node: \"TAG\" 形式のデータを送信",
+                "dataContainsFields": "3. データにid、battery level、position、timeなどのフィールドが含まれている",
+                "viewRawTagMqttData": "生のタグMQTTデータを表示（デバッグ用）",
+                "clickDataToExpand": "下のデータをクリックして展開し、完全な内容を表示",
+                "tagDiscoveryConditions": "タグ発見条件：",
+                "messageTopic": "• messageトピック: content: \"info\", node: \"TAG\"",
+                "locationTopic": "• locationトピック: content: \"location\", node: \"TAG\"",
+                "mustHaveId": "• idフィールドが必要",
+                "messageContainsBattery": "• messageにバッテリーレベル情報が含まれている",
+                "locationContainsPosition": "• locationにpositionとtime情報が含まれている"
+            },
+            "tagCard": {
+                "macAddress": "MACアドレス",
+                "type": "タイプ",
+                "personnel": "人員",
+                "assignedTo": "割り当て先",
+                "batteryLevel": "バッテリーレベル",
+                "lastPosition": "最終位置",
+                "updateTime": "更新時間",
+                "cloud": "クラウド",
+                "edit": "編集",
+                "delete": "削除"
+            },
+            "tagForm": {
+                "editTag": "タグ編集",
+                "addTag": "タグ追加",
+                "tagName": "タグ名",
+                "tagNamePlaceholder": "タグ名を入力",
+                "macAddress": "MACアドレス",
+                "macAddressPlaceholder": "AA:BB:CC:DD:EE:FF",
+                "tagType": "タグタイプ",
+                "selectType": "タイプ選択",
+                "person": "人員",
+                "equipment": "設備",
+                "asset": "資産",
+                "assignedTo": "割り当て先",
+                "assignedToPlaceholder": "誰に割り当てるか（オプション）",
+                "cancel": "キャンセル",
+                "save": "保存"
+            },
+            "tagStatus": {
+                "running": "実行中",
+                "inactive": "非アクティブ",
+                "lowBattery": "バッテリー不足",
+                "lost": "失連",
+                "online": "オンライン",
+                "offline": "オフライン"
+            },
+            "tagTypes": {
+                "person": "人員",
+                "equipment": "設備",
+                "asset": "資産"
+            },
+            "messages": {
+                "selectGatewayFirst": "まずゲートウェイを選択してください",
+                "noTagsFound": "まだタグが発見されていません",
+                "connectionError": "エラー",
+                "connectionNormal": "接続正常",
+                "manualReconnecting": "手動再接続中..."
+            }
         }
     }
 }
