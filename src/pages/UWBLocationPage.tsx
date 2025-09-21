@@ -1008,6 +1008,8 @@ export default function UWBLocationPage() {
     // 彈窗狀態
     const [showHomeModal, setShowHomeModal] = useState(false)
     const [showFloorModal, setShowFloorModal] = useState(false)
+    const [showGatewayModal, setShowGatewayModal] = useState(false)
+    const [showCloudGatewayModal, setShowCloudGatewayModal] = useState(false)
 
     // 表單數據
     const [homeForm, setHomeForm] = useState({ name: "", description: "", address: "" })
@@ -2161,6 +2163,8 @@ export default function UWBLocationPage() {
     const resetGatewayForm = () => {
         setGatewayForm({ name: "", macAddress: "", ipAddress: "", floorId: "" })
         setShowGatewayForm(false)
+        setShowGatewayModal(false)
+        setShowCloudGatewayModal(false)
         setEditingItem(null)
         setSelectedDiscoveredGateway(null)
     }
@@ -3986,7 +3990,7 @@ export default function UWBLocationPage() {
                     <div className="flex items-center justify-between">
                         <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.gateways')}</h2>
                         <div className="flex gap-2">
-                            <Button onClick={() => setShowGatewayForm(true)} disabled={currentFloors.length === 0}>
+                            <Button onClick={() => setShowGatewayModal(true)} disabled={currentFloors.length === 0}>
                                 <Plus className="h-4 w-4 mr-2" />
                                 {t('pages:uwbLocation.manualAdd')}
                             </Button>
@@ -4119,7 +4123,7 @@ export default function UWBLocationPage() {
                                                                     ipAddress: "192.168.1.100", // 預設IP
                                                                     floorId: currentFloors[0]?.id || ""
                                                                 })
-                                                                setShowGatewayForm(true)
+                                                                setShowCloudGatewayModal(true)
                                                             }}
                                                             disabled={currentFloors.length === 0}
                                                         >
@@ -4267,85 +4271,6 @@ export default function UWBLocationPage() {
                         </div>
                     )}
 
-                    {/* 新增/編輯閘道器表單 */}
-                    {showGatewayForm && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center">
-                                    {selectedDiscoveredGateway ? (
-                                        <>
-                                            <CloudIcon className="mr-2 h-5 w-5 text-blue-500" />
-                                            {editingItem ? t('pages:uwbLocation.editGateway') : t('pages:uwbLocation.addCloudGatewayToSystem')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Plus className="mr-2 h-5 w-5" />
-                                            {editingItem ? t('pages:uwbLocation.editGateway') : t('pages:uwbLocation.manualAddGateway')}
-                                        </>
-                                    )}
-                                </CardTitle>
-                                {selectedDiscoveredGateway && (
-                                    <div className="text-sm text-muted-foreground mt-2">
-                                        {t('pages:uwbLocation.addDiscoveredGatewayToFloor', { id: selectedDiscoveredGateway })}
-                                    </div>
-                                )}
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div>
-                                    <label className="text-sm font-medium">{t('pages:uwbLocation.gatewayName')}</label>
-                                    <Input
-                                        value={gatewayForm.name}
-                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, name: e.target.value }))}
-                                        placeholder={t('pages:uwbLocation.enterGatewayName')}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium">{t('pages:uwbLocation.belongingFloor')}</label>
-                                    <Select
-                                        value={gatewayForm.floorId}
-                                        onValueChange={(value) => setGatewayForm(prev => ({ ...prev, floorId: value }))}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {currentFloors.map(floor => (
-                                                <SelectItem key={floor.id} value={floor.id}>
-                                                    {floor.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm font-medium">{t('pages:uwbLocation.macAddress')}</label>
-                                        <Input
-                                            value={gatewayForm.macAddress}
-                                            onChange={(e) => setGatewayForm(prev => ({ ...prev, macAddress: e.target.value }))}
-                                            placeholder="AA:BB:CC:DD:EE:FF"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium">{t('pages:uwbLocation.ipAddress')}</label>
-                                        <Input
-                                            value={gatewayForm.ipAddress}
-                                            onChange={(e) => setGatewayForm(prev => ({ ...prev, ipAddress: e.target.value }))}
-                                            placeholder="192.168.1.100"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button onClick={handleGatewaySubmit}>
-                                        {editingItem ? t('common:actions.update') : t('common:actions.add')}
-                                    </Button>
-                                    <Button variant="outline" onClick={resetGatewayForm}>
-                                        {t('common:actions.cancel')}
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
                 </TabsContent>
 
                 {/* 錨點配對管理 */}
@@ -6162,6 +6087,195 @@ export default function UWBLocationPage() {
                     </Card>
                 </div>
             )}
+
+            {/* 新增閘道器彈窗 */}
+            {showGatewayModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <Card className="w-full max-w-md">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="flex items-center">
+                                <Plus className="mr-2 h-5 w-5" />
+                                {t('pages:uwbLocation.manualAddGateway')}
+                            </CardTitle>
+                            <Button variant="ghost" size="sm" onClick={() => setShowGatewayModal(false)}>
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.gatewayName')}</label>
+                                <Input
+                                    value={gatewayForm.name}
+                                    onChange={(e) => setGatewayForm(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder={t('pages:uwbLocation.enterGatewayName')}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.belongingFloor')}</label>
+                                <Select
+                                    value={gatewayForm.floorId}
+                                    onValueChange={(value) => setGatewayForm(prev => ({ ...prev, floorId: value }))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {currentFloors.map(floor => (
+                                            <SelectItem key={floor.id} value={floor.id}>
+                                                {floor.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.macAddress')}</label>
+                                    <Input
+                                        value={gatewayForm.macAddress}
+                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, macAddress: e.target.value }))}
+                                        placeholder="AA:BB:CC:DD:EE:FF"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.ipAddress')}</label>
+                                    <Input
+                                        value={gatewayForm.ipAddress}
+                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, ipAddress: e.target.value }))}
+                                        placeholder="192.168.1.100"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => {
+                                        setShowGatewayModal(false)
+                                        resetGatewayForm()
+                                    }}
+                                >
+                                    {t('common:actions.cancel')}
+                                </Button>
+                                <Button
+                                    className="flex-1"
+                                    onClick={() => {
+                                        handleGatewaySubmit()
+                                        setShowGatewayModal(false)
+                                    }}
+                                    disabled={!gatewayForm.name || !gatewayForm.floorId}
+                                >
+                                    {t('common:actions.add')}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* 雲端閘道器加入系統彈窗 */}
+            {showCloudGatewayModal && selectedDiscoveredGateway && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <Card className="w-full max-w-md">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="flex items-center">
+                                <CloudIcon className="mr-2 h-5 w-5 text-blue-500" />
+                                {t('pages:uwbLocation.addCloudGatewayToSystem')}
+                            </CardTitle>
+                            <Button variant="ghost" size="sm" onClick={() => setShowCloudGatewayModal(false)}>
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {/* 雲端閘道器資訊顯示 */}
+                            {(() => {
+                                const cloudGateway = cloudGatewayData.find(gw => gw.gateway_id === selectedDiscoveredGateway)
+                                return cloudGateway ? (
+                                    <div className="bg-blue-50 p-3 rounded-lg border">
+                                        <div className="text-sm font-medium text-blue-900 mb-2">雲端閘道器資訊</div>
+                                        <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
+                                            <div>ID: {cloudGateway.gateway_id}</div>
+                                            <div>韌體: {cloudGateway.fw_ver}</div>
+                                            <div>網路: {cloudGateway.uwb_network_id}</div>
+                                            <div>AP: {cloudGateway.connected_ap}</div>
+                                            <div>電壓: {cloudGateway.battery_voltage}V</div>
+                                            <div>狀態: {cloudGateway.uwb_joined === "yes" ? "已加入" : "未加入"}</div>
+                                        </div>
+                                    </div>
+                                ) : null
+                            })()}
+
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.gatewayName')}</label>
+                                <Input
+                                    value={gatewayForm.name}
+                                    onChange={(e) => setGatewayForm(prev => ({ ...prev, name: e.target.value }))}
+                                    placeholder={t('pages:uwbLocation.enterGatewayName')}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.belongingFloor')}</label>
+                                <Select
+                                    value={gatewayForm.floorId}
+                                    onValueChange={(value) => setGatewayForm(prev => ({ ...prev, floorId: value }))}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {currentFloors.map(floor => (
+                                            <SelectItem key={floor.id} value={floor.id}>
+                                                {floor.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.macAddress')}</label>
+                                    <Input
+                                        value={gatewayForm.macAddress}
+                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, macAddress: e.target.value }))}
+                                        placeholder="AA:BB:CC:DD:EE:FF"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.ipAddress')}</label>
+                                    <Input
+                                        value={gatewayForm.ipAddress}
+                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, ipAddress: e.target.value }))}
+                                        placeholder="192.168.1.100"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => {
+                                        setShowCloudGatewayModal(false)
+                                        resetGatewayForm()
+                                    }}
+                                >
+                                    {t('common:actions.cancel')}
+                                </Button>
+                                <Button
+                                    className="flex-1"
+                                    onClick={() => {
+                                        handleGatewaySubmit()
+                                        setShowCloudGatewayModal(false)
+                                    }}
+                                    disabled={!gatewayForm.name || !gatewayForm.floorId}
+                                >
+                                    {t('pages:uwbLocation.addToSystem')}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
         </div >
     )
 }
