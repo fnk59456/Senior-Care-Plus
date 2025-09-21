@@ -242,6 +242,8 @@
         "showAnchorsOnMap": "マップ上にアンカーを表示",
         "doubleClickAnchorToCalibrate": "アンカーをダブルクリックしてキャリブレーション",
         "anchorCount": "アンカー数",
+        "calibrationMode": "キャリブレーションモード",
+        "zoomMode": "ズームモード",
         "close": "閉じる",
         "calibrationSteps": {
             "upload": "マップアップロード",

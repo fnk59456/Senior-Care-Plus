@@ -42,7 +42,9 @@ import {
     Ruler,
     X,
     Loader2 as CloudIcon,
-    RefreshCw as RefreshIcon
+    RefreshCw as RefreshIcon,
+    ZoomIn,
+    ZoomOut
 } from "lucide-react"
 
 // 雲端 MQTT 設置
@@ -962,6 +964,8 @@ export default function UWBLocationPage() {
     const [currentAnchorTopic, setCurrentAnchorTopic] = useState<string>("")
     const [currentAckTopic, setCurrentAckTopic] = useState<string>("") // 新增：當前 Ack 主題
     const anchorCloudClientRef = useRef<mqtt.MqttClient | null>(null)
+    const anchorMapContainerRef = useRef<HTMLDivElement>(null)
+    const anchorMapImageRef = useRef<HTMLImageElement>(null)
 
     // Anchor配對相關狀態
     const [pairingInProgress, setPairingInProgress] = useState(false)
@@ -971,6 +975,23 @@ export default function UWBLocationPage() {
     // Tag管理相關狀態
     const [showTagForm, setShowTagForm] = useState(false)
     const [editingTag, setEditingTag] = useState<TagDevice | null>(null)
+
+    // 錨點地圖模式狀態
+    const [anchorMapMode, setAnchorMapMode] = useState<'calibration' | 'zoom'>('calibration')
+
+    // 縮放模式專用狀態（只在縮放模式下使用）
+    const [anchorMapTransform, setAnchorMapTransform] = useState({
+        scale: 1,
+        translateX: 0,
+        translateY: 0,
+        minScale: 0.5,
+        maxScale: 3,
+    })
+
+    // 錨點地圖拖拽狀態
+    const [isAnchorDragging, setIsAnchorDragging] = useState(false)
+    const [anchorDragStart, setAnchorDragStart] = useState({ x: 0, y: 0 })
+    const [anchorLastTransform, setAnchorLastTransform] = useState({ translateX: 0, translateY: 0 })
 
     // Tag 雲端 MQTT 相關狀態
     const [tagCloudConnected, setTagCloudConnected] = useState(false)
@@ -2175,6 +2196,194 @@ export default function UWBLocationPage() {
         setShowCloudAnchorModal(false)
         setSelectedCloudAnchor(null)
     }
+
+    // 模式切換處理
+    const handleModeSwitch = (mode: 'calibration' | 'zoom') => {
+        setAnchorMapMode(mode)
+
+        if (mode === 'zoom') {
+            // 切換到縮放模式時重置縮放狀態
+            setAnchorMapTransform({
+                scale: 1,
+                translateX: 0,
+                translateY: 0,
+                minScale: 0.5,
+                maxScale: 3,
+            })
+        } else {
+            // 切換到校正模式時取消校正狀態
+            setCalibratingAnchor(null)
+        }
+    }
+
+    // 縮放模式專用函數
+    const handleAnchorZoomIn = useCallback(() => {
+        setAnchorMapTransform(prev => ({
+            ...prev,
+            scale: Math.min(prev.maxScale, prev.scale * 1.2)
+        }))
+    }, [])
+
+    const handleAnchorZoomOut = useCallback(() => {
+        setAnchorMapTransform(prev => ({
+            ...prev,
+            scale: Math.max(prev.minScale, prev.scale / 1.2)
+        }))
+    }, [])
+
+    const resetAnchorMapView = useCallback(() => {
+        setAnchorMapTransform({
+            scale: 1,
+            translateX: 0,
+            translateY: 0,
+            minScale: 0.5,
+            maxScale: 3,
+        })
+    }, [])
+
+    // 錨點地圖滾輪縮放
+    const handleAnchorWheel = useCallback((e: WheelEvent) => {
+        if (anchorMapMode !== 'zoom') return
+
+        e.preventDefault()
+        e.stopPropagation()
+
+        const delta = e.deltaY > 0 ? 0.9 : 1.1
+        const newScale = Math.max(
+            anchorMapTransform.minScale,
+            Math.min(anchorMapTransform.maxScale, anchorMapTransform.scale * delta)
+        )
+
+        if (newScale === anchorMapTransform.scale) return
+
+        // 计算鼠标位置相对于地图容器的偏移
+        const rect = (e.target as HTMLElement).getBoundingClientRect()
+        const mouseX = e.clientX - rect.left
+        const mouseY = e.clientY - rect.top
+
+        // 以鼠标位置为中心进行缩放
+        const scaleRatio = newScale / anchorMapTransform.scale
+        const newTranslateX = mouseX - (mouseX - anchorMapTransform.translateX) * scaleRatio
+        const newTranslateY = mouseY - (mouseY - anchorMapTransform.translateY) * scaleRatio
+
+        setAnchorMapTransform(prev => ({
+            ...prev,
+            scale: newScale,
+            translateX: newTranslateX,
+            translateY: newTranslateY
+        }))
+    }, [anchorMapMode, anchorMapTransform])
+
+    // 錨點地圖滑鼠拖拽事件
+    const handleAnchorMouseDown = useCallback((e: React.MouseEvent) => {
+        if (anchorMapMode !== 'zoom' || e.button !== 0) return
+
+        setIsAnchorDragging(true)
+        setAnchorDragStart({ x: e.clientX, y: e.clientY })
+        setAnchorLastTransform({ translateX: anchorMapTransform.translateX, translateY: anchorMapTransform.translateY })
+
+        e.preventDefault()
+    }, [anchorMapMode, anchorMapTransform])
+
+    const handleAnchorMouseMove = useCallback((e: React.MouseEvent) => {
+        if (anchorMapMode !== 'zoom' || !isAnchorDragging) return
+
+        const deltaX = e.clientX - anchorDragStart.x
+        const deltaY = e.clientY - anchorDragStart.y
+
+        setAnchorMapTransform(prev => ({
+            ...prev,
+            translateX: anchorLastTransform.translateX + deltaX,
+            translateY: anchorLastTransform.translateY + deltaY
+        }))
+    }, [anchorMapMode, isAnchorDragging, anchorDragStart, anchorLastTransform])
+
+    const handleAnchorMouseUp = useCallback(() => {
+        if (anchorMapMode !== 'zoom') return
+        setIsAnchorDragging(false)
+    }, [anchorMapMode])
+
+    // 錨點地圖觸控事件支持
+    const handleAnchorTouchStart = useCallback((e: React.TouchEvent) => {
+        if (anchorMapMode !== 'zoom' || e.touches.length !== 1) return
+
+        const touch = e.touches[0]
+        setIsAnchorDragging(true)
+        setAnchorDragStart({ x: touch.clientX, y: touch.clientY })
+        setAnchorLastTransform({ translateX: anchorMapTransform.translateX, translateY: anchorMapTransform.translateY })
+    }, [anchorMapMode, anchorMapTransform])
+
+    const handleAnchorTouchMove = useCallback((e: React.TouchEvent) => {
+        if (anchorMapMode !== 'zoom' || e.touches.length !== 1 || !isAnchorDragging) return
+
+        e.preventDefault()
+        const touch = e.touches[0]
+
+        const deltaX = touch.clientX - anchorDragStart.x
+        const deltaY = touch.clientY - anchorDragStart.y
+
+        setAnchorMapTransform(prev => ({
+            ...prev,
+            translateX: anchorLastTransform.translateX + deltaX,
+            translateY: anchorLastTransform.translateY + deltaY
+        }))
+    }, [anchorMapMode, isAnchorDragging, anchorDragStart, anchorLastTransform])
+
+    const handleAnchorTouchEnd = useCallback(() => {
+        if (anchorMapMode !== 'zoom') return
+        setIsAnchorDragging(false)
+    }, [anchorMapMode])
+
+    // 錨點地圖容器滑鼠進入/離開事件
+    const handleAnchorMapMouseEnter = useCallback(() => {
+        if (anchorMapMode !== 'zoom' || !anchorMapContainerRef.current) return
+        anchorMapContainerRef.current.style.cursor = 'grab'
+    }, [anchorMapMode])
+
+    const handleAnchorMapMouseLeave = useCallback(() => {
+        if (anchorMapMode !== 'zoom' || !anchorMapContainerRef.current) return
+        anchorMapContainerRef.current.style.cursor = isAnchorDragging ? 'grabbing' : 'grab'
+    }, [anchorMapMode, isAnchorDragging])
+
+    // 錨點地圖座標轉換函數（支援兩種模式）
+    const convertAnchorRealToDisplayCoords = useCallback((x: number, y: number, floor: Floor, imgElement: HTMLImageElement) => {
+        if (!floor?.calibration?.isCalibrated || !imgElement) return null
+
+        const { originPixel, originCoordinates, pixelToMeterRatio } = floor.calibration
+
+        // 計算相對於原點的實際距離（米）
+        const deltaX = x - (originCoordinates?.x || 0)
+        const deltaY = y - (originCoordinates?.y || 0)
+
+        // 轉換為像素距離
+        const pixelX = originPixel.x + (deltaX * pixelToMeterRatio)
+        const pixelY = originPixel.y - (deltaY * pixelToMeterRatio) // Y軸反向
+
+        // 轉換為基礎顯示座標
+        const displayX = (pixelX / imgElement.naturalWidth) * imgElement.width
+        const displayY = (pixelY / imgElement.naturalHeight) * imgElement.height
+
+        return { x: displayX, y: displayY }
+    }, [])
+
+    // 設置錨點地圖原生滾輪事件監聽器
+    useEffect(() => {
+        const mapContainer = anchorMapContainerRef.current
+        if (mapContainer && anchorMapMode === 'zoom') {
+            mapContainer.addEventListener('wheel', handleAnchorWheel, { passive: false })
+            return () => {
+                mapContainer.removeEventListener('wheel', handleAnchorWheel)
+            }
+        }
+    }, [handleAnchorWheel, anchorMapMode])
+
+    // 當選擇的樓層變化時重置錨點地圖視圖
+    useEffect(() => {
+        if (anchorMapMode === 'zoom') {
+            resetAnchorMapView()
+        }
+    }, [selectedFloorForAnchors, resetAnchorMapView, anchorMapMode])
+
 
     // 從雲端發現的 Anchor 加入系統
     const handleAddAnchorFromCloud = (cloudAnchor: DiscoveredCloudAnchor) => {
@@ -4683,112 +4892,279 @@ export default function UWBLocationPage() {
                                 <CardContent>
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <div className="text-sm text-muted-foreground">
+                                            <div className="text-lg font-medium text-muted-foreground">
                                                 {t('pages:uwbLocation.showAnchorsOnMap')}
                                             </div>
-                                            <Badge variant="outline">
-                                                {t('pages:uwbLocation.anchorCount', { count: floorAnchors.length })}
-                                            </Badge>
+                                            {/* 模式切換按鈕 - 移到右邊 */}
+                                            <div className="flex items-center gap-3">
+                                                <Button
+                                                    size="lg"
+                                                    variant={anchorMapMode === 'calibration' ? 'default' : 'outline'}
+                                                    onClick={() => handleModeSwitch('calibration')}
+                                                    className="px-6 py-3"
+                                                >
+                                                    {t('pages:uwbLocation.calibrationMode')}
+                                                </Button>
+                                                <Button
+                                                    size="lg"
+                                                    variant={anchorMapMode === 'zoom' ? 'default' : 'outline'}
+                                                    onClick={() => handleModeSwitch('zoom')}
+                                                    className="px-6 py-3"
+                                                >
+                                                    {t('pages:uwbLocation.zoomMode')}
+                                                </Button>
+                                            </div>
                                         </div>
 
-                                        <div className="relative border rounded-lg overflow-hidden" style={{ height: '400px' }}>
-                                            <img
-                                                src={floor.mapImage}
-                                                alt={`${floor.name} 地圖`}
-                                                className={`w-full h-full object-contain bg-gray-50 anchor-map-image ${calibratingAnchor ? 'cursor-crosshair' : ''}`}
-                                                onClick={calibratingAnchor ? handleMapClickCalibration : undefined}
-                                                onLoad={(e) => {
-                                                    // 圖片加載完成後觸發重新渲染
-                                                    setImageLoaded(prev => !prev)
-                                                }}
-                                            />
+                                        {anchorMapMode === 'calibration' ? (
+                                            // 校正模式：使用原始結構
+                                            <div className="relative border rounded-lg overflow-hidden" style={{ height: '400px' }}>
+                                                <img
+                                                    src={floor.mapImage}
+                                                    alt={`${floor.name} 地圖`}
+                                                    className={`w-full h-full object-contain bg-gray-50 anchor-map-image ${calibratingAnchor ? 'cursor-crosshair' : ''}`}
+                                                    onClick={calibratingAnchor ? handleMapClickCalibration : undefined}
+                                                    onLoad={(e) => {
+                                                        // 圖片加載完成後觸發重新渲染
+                                                        setImageLoaded(prev => !prev)
+                                                    }}
+                                                />
 
-                                            {/* 操作提示 */}
-                                            {calibratingAnchor ? (
-                                                <div className="absolute top-2 left-2 bg-green-600 text-white text-sm px-3 py-1 rounded shadow-sm animate-pulse">
-                                                    {t('pages:uwbLocation.clickMapSetNewPosition', { name: calibratingAnchor.name })}
-                                                </div>
-                                            ) : (
-                                                <div className="absolute top-2 left-2 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm">
-                                                    {t('pages:uwbLocation.doubleClickAnchorToCalibrate')}
-                                                </div>
-                                            )}
+                                                {/* 操作提示 */}
+                                                {calibratingAnchor ? (
+                                                    <div className="absolute top-2 left-2 bg-green-600 text-white text-sm px-3 py-1 rounded shadow-sm animate-pulse">
+                                                        {t('pages:uwbLocation.clickMapSetNewPosition', { name: calibratingAnchor.name })}
+                                                    </div>
+                                                ) : (
+                                                    <div className="absolute top-2 left-2 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm">
+                                                        {t('pages:uwbLocation.doubleClickAnchorToCalibrate')}
+                                                    </div>
+                                                )}
 
-                                            {/* 座標原點 */}
-                                            {floor.calibration?.originPixel && (() => {
-                                                const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
-                                                if (!imgElement || imgElement.naturalWidth === 0) return null
+                                                {/* 座標原點 */}
+                                                {floor.calibration?.originPixel && (() => {
+                                                    const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
+                                                    if (!imgElement || imgElement.naturalWidth === 0) return null
 
-                                                // 將原點的自然座標轉換為當前圖片的顯示座標
-                                                const displayCoords = convertNaturalToDisplayCoords(
-                                                    floor.calibration.originPixel.x,
-                                                    floor.calibration.originPixel.y,
-                                                    imgElement
-                                                )
+                                                    // 將原點的自然座標轉換為當前圖片的顯示座標
+                                                    const displayCoords = convertNaturalToDisplayCoords(
+                                                        floor.calibration.originPixel.x,
+                                                        floor.calibration.originPixel.y,
+                                                        imgElement
+                                                    )
 
-                                                console.log(`🎯 Anchor地圖原點顯示:`)
-                                                console.log(`- 原點自然座標: (${floor.calibration.originPixel.x}, ${floor.calibration.originPixel.y})`)
-                                                console.log(`- 原點顯示座標: (${displayCoords.x.toFixed(1)}, ${displayCoords.y.toFixed(1)})`)
+                                                    return (
+                                                        <div
+                                                            className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
+                                                            style={{
+                                                                left: `${displayCoords.x}px`,
+                                                                top: `${displayCoords.y}px`
+                                                            }}
+                                                            title={t('pages:uwbLocation.coordinateOrigin', { x: floor.calibration.originCoordinates?.x || 0, y: floor.calibration.originCoordinates?.y || 0 })}
+                                                        />
+                                                    )
+                                                })()}
 
-                                                return (
+                                                {/* Anchor 位置 */}
+                                                {floorAnchors.map(anchor => {
+                                                    if (!anchor.position) return null
+
+                                                    const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
+                                                    if (!imgElement || imgElement.naturalWidth === 0) return null
+
+                                                    const displayPos = convertRealToDisplayCoords(anchor.position.x, anchor.position.y, floor, imgElement)
+                                                    if (!displayPos) return null
+
+                                                    return (
+                                                        <div
+                                                            key={anchor.id}
+                                                            className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                                                            style={{
+                                                                left: `${displayPos.x}px`,
+                                                                top: `${displayPos.y}px`
+                                                            }}
+                                                        >
+                                                            {/* Anchor 圖標 */}
+                                                            <div
+                                                                className={`w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${calibratingAnchor?.id === anchor.id
+                                                                    ? 'border-yellow-400 bg-yellow-500 animate-pulse'
+                                                                    : anchor.cloudData?.initiator === 1
+                                                                        ? 'border-white bg-orange-500 hover:bg-orange-600'
+                                                                        : 'border-white bg-blue-500 hover:bg-blue-600'
+                                                                    }`}
+                                                                onDoubleClick={(e) => startAnchorMapCalibration(anchor, e)}
+                                                                title={calibratingAnchor?.id === anchor.id ? t('pages:uwbLocation.anchorPairing.actions.calibrate') + "..." : t('pages:uwbLocation.anchorPairing.doubleClickToCalibrate')}
+                                                            >
+                                                                <Anchor className="w-3 h-3 text-white" />
+                                                            </div>
+
+                                                            {/* Anchor 標籤 */}
+                                                            <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm border">
+                                                                <div className="font-medium">{anchor.name}</div>
+                                                                <div className="text-muted-foreground">
+                                                                    ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
+                                                                </div>
+                                                                {anchor.cloudData?.initiator === 1 && (
+                                                                    <div className="text-orange-600 text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}</div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        ) : (
+                                            // 縮放模式：使用縮放結構
+                                            <div className="relative border rounded-lg overflow-hidden bg-gray-50" style={{ height: '400px' }}>
+                                                <div
+                                                    ref={anchorMapContainerRef}
+                                                    className="relative select-none w-full h-full"
+                                                    style={{
+                                                        cursor: isAnchorDragging ? 'grabbing' : 'grab',
+                                                        touchAction: 'none',
+                                                        overscrollBehavior: 'none'
+                                                    }}
+                                                    onMouseDown={handleAnchorMouseDown}
+                                                    onMouseMove={handleAnchorMouseMove}
+                                                    onMouseUp={handleAnchorMouseUp}
+                                                    onMouseEnter={handleAnchorMapMouseEnter}
+                                                    onMouseLeave={() => {
+                                                        handleAnchorMouseUp()
+                                                        handleAnchorMapMouseLeave()
+                                                    }}
+                                                    onTouchStart={handleAnchorTouchStart}
+                                                    onTouchMove={handleAnchorTouchMove}
+                                                    onTouchEnd={handleAnchorTouchEnd}
+                                                >
+                                                    {/* 縮放變換容器 */}
                                                     <div
-                                                        className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
+                                                        className="relative origin-top-left w-full h-full"
                                                         style={{
-                                                            left: `${displayCoords.x}px`,
-                                                            top: `${displayCoords.y}px`
-                                                        }}
-                                                        title={t('pages:uwbLocation.coordinateOrigin', { x: floor.calibration.originCoordinates?.x || 0, y: floor.calibration.originCoordinates?.y || 0 })}
-                                                    />
-                                                )
-                                            })()}
-
-                                            {/* Anchor 位置 */}
-                                            {floorAnchors.map(anchor => {
-                                                if (!anchor.position) return null
-
-                                                const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
-                                                if (!imgElement || imgElement.naturalWidth === 0) return null
-
-                                                const displayPos = convertRealToDisplayCoords(anchor.position.x, anchor.position.y, floor, imgElement)
-                                                if (!displayPos) return null
-
-                                                return (
-                                                    <div
-                                                        key={anchor.id}
-                                                        className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                                                        style={{
-                                                            left: `${displayPos.x}px`,
-                                                            top: `${displayPos.y}px`
+                                                            transform: `translate(${anchorMapTransform.translateX}px, ${anchorMapTransform.translateY}px) scale(${anchorMapTransform.scale})`,
+                                                            transformOrigin: '0 0',
+                                                            transition: isAnchorDragging ? 'none' : 'transform 0.1s ease-out'
                                                         }}
                                                     >
-                                                        {/* Anchor 圖標 */}
-                                                        <div
-                                                            className={`w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${calibratingAnchor?.id === anchor.id
-                                                                ? 'border-yellow-400 bg-yellow-500 animate-pulse'
-                                                                : anchor.cloudData?.initiator === 1
-                                                                    ? 'border-white bg-orange-500 hover:bg-orange-600'
-                                                                    : 'border-white bg-blue-500 hover:bg-blue-600'
-                                                                }`}
-                                                            onDoubleClick={(e) => startAnchorMapCalibration(anchor, e)}
-                                                            title={calibratingAnchor?.id === anchor.id ? t('pages:uwbLocation.anchorPairing.actions.calibrate') + "..." : t('pages:uwbLocation.anchorPairing.doubleClickToCalibrate')}
-                                                        >
-                                                            <Anchor className="w-3 h-3 text-white" />
-                                                        </div>
+                                                        <img
+                                                            ref={anchorMapImageRef}
+                                                            src={floor.mapImage}
+                                                            alt={`${floor.name} 地圖`}
+                                                            className="w-full h-full object-contain anchor-map-image"
+                                                            draggable={false}
+                                                        />
 
-                                                        {/* Anchor 標籤 */}
-                                                        <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm border">
-                                                            <div className="font-medium">{anchor.name}</div>
-                                                            <div className="text-muted-foreground">
-                                                                ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
-                                                            </div>
-                                                            {anchor.cloudData?.initiator === 1 && (
-                                                                <div className="text-orange-600 text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}</div>
-                                                            )}
-                                                        </div>
+                                                        {/* 座標原點 */}
+                                                        {floor.calibration?.originPixel && (() => {
+                                                            const imgElement = anchorMapImageRef.current
+                                                            if (!imgElement || imgElement.naturalWidth === 0) return null
+
+                                                            const displayCoords = convertNaturalToDisplayCoords(
+                                                                floor.calibration.originPixel.x,
+                                                                floor.calibration.originPixel.y,
+                                                                imgElement
+                                                            )
+
+                                                            return (
+                                                                <div
+                                                                    className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
+                                                                    style={{
+                                                                        left: `${displayCoords.x}px`,
+                                                                        top: `${displayCoords.y}px`
+                                                                    }}
+                                                                    title={t('pages:uwbLocation.coordinateOrigin', { x: floor.calibration.originCoordinates?.x || 0, y: floor.calibration.originCoordinates?.y || 0 })}
+                                                                />
+                                                            )
+                                                        })()}
+
+                                                        {/* Anchor 位置 */}
+                                                        {floorAnchors.map(anchor => {
+                                                            if (!anchor.position) return null
+
+                                                            const imgElement = anchorMapImageRef.current
+                                                            if (!imgElement || imgElement.naturalWidth === 0) return null
+
+                                                            // 在縮放模式下，使用基礎顯示座標，不應用變換
+                                                            // 因為錨點標記在變換容器內，會自動跟著地圖一起變換
+                                                            const displayPos = convertRealToDisplayCoords(anchor.position.x, anchor.position.y, floor, imgElement)
+                                                            if (!displayPos) return null
+
+                                                            return (
+                                                                <div
+                                                                    key={anchor.id}
+                                                                    className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                                                                    style={{
+                                                                        left: `${displayPos.x}px`,
+                                                                        top: `${displayPos.y}px`
+                                                                    }}
+                                                                >
+                                                                    {/* Anchor 圖標 */}
+                                                                    <div
+                                                                        className={`w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${anchor.cloudData?.initiator === 1
+                                                                            ? 'border-white bg-orange-500 hover:bg-orange-600'
+                                                                            : 'border-white bg-blue-500 hover:bg-blue-600'
+                                                                            }`}
+                                                                        title={anchor.name}
+                                                                    >
+                                                                        <Anchor className="w-3 h-3 text-white" />
+                                                                    </div>
+
+                                                                    {/* Anchor 標籤 */}
+                                                                    <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm border">
+                                                                        <div className="font-medium">{anchor.name}</div>
+                                                                        <div className="text-muted-foreground">
+                                                                            ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
+                                                                        </div>
+                                                                        {anchor.cloudData?.initiator === 1 && (
+                                                                            <div className="text-orange-600 text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}</div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        })}
                                                     </div>
-                                                )
-                                            })}
-                                        </div>
+
+                                                    {/* 縮放控制按鈕 */}
+                                                    <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-lg z-10">
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={handleAnchorZoomIn}
+                                                            disabled={anchorMapTransform.scale >= anchorMapTransform.maxScale}
+                                                            className="w-8 h-8 p-0"
+                                                            title="放大"
+                                                        >
+                                                            <ZoomIn className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={handleAnchorZoomOut}
+                                                            disabled={anchorMapTransform.scale <= anchorMapTransform.minScale}
+                                                            className="w-8 h-8 p-0"
+                                                            title="縮小"
+                                                        >
+                                                            <ZoomOut className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={resetAnchorMapView}
+                                                            className="w-8 h-8 p-0"
+                                                            title="重置視圖"
+                                                        >
+                                                            <RotateCcw className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+
+                                                    {/* 縮放比例顯示 */}
+                                                    <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-lg shadow-lg text-sm z-10">
+                                                        縮放: {(anchorMapTransform.scale * 100).toFixed(0)}%
+                                                    </div>
+
+                                                    {/* 操作提示 */}
+                                                    <div className="absolute top-4 left-4 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm z-10">
+                                                        滑鼠在地圖上滾動縮放，拖拽移動
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {/* 圖例 */}
                                         <div className="flex items-center gap-6 text-sm">

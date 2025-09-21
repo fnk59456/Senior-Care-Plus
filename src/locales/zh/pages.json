@@ -996,6 +996,8 @@
         "showAnchorsOnMap": "在地圖上顯示錨點",
         "doubleClickAnchorToCalibrate": "雙擊錨點進行校正",
         "anchorCount": "錨點數量",
+        "calibrationMode": "校正模式",
+        "zoomMode": "縮放模式",
         "close": "關閉",
         "calibrationSteps": {
             "upload": "上傳地圖",

@@ -999,6 +999,8 @@
         "showAnchorsOnMap": "Show Anchors on Map",
         "doubleClickAnchorToCalibrate": "Double-click Anchor to Calibrate",
         "anchorCount": "Anchor Count",
+        "calibrationMode": "Calibration Mode",
+        "zoomMode": "Zoom Mode",
         "close": "Close",
         "calibrationSteps": {
             "upload": "Upload Map",
