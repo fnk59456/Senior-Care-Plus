@@ -1010,6 +1010,8 @@ export default function UWBLocationPage() {
     const [showFloorModal, setShowFloorModal] = useState(false)
     const [showGatewayModal, setShowGatewayModal] = useState(false)
     const [showCloudGatewayModal, setShowCloudGatewayModal] = useState(false)
+    const [showCloudAnchorModal, setShowCloudAnchorModal] = useState(false)
+    const [selectedCloudAnchor, setSelectedCloudAnchor] = useState<DiscoveredCloudAnchor | null>(null)
 
     // 表單數據
     const [homeForm, setHomeForm] = useState({ name: "", description: "", address: "" })
@@ -2167,6 +2169,11 @@ export default function UWBLocationPage() {
         setShowCloudGatewayModal(false)
         setEditingItem(null)
         setSelectedDiscoveredGateway(null)
+    }
+
+    const resetAnchorForm = () => {
+        setShowCloudAnchorModal(false)
+        setSelectedCloudAnchor(null)
     }
 
     // 從雲端發現的 Anchor 加入系統
@@ -4536,8 +4543,8 @@ export default function UWBLocationPage() {
                                                             size="sm"
                                                             variant="outline"
                                                             onClick={() => {
-                                                                // 加入系統邏輯
-                                                                handleAddAnchorFromCloud(anchor)
+                                                                setSelectedCloudAnchor(anchor)
+                                                                setShowCloudAnchorModal(true)
                                                             }}
                                                             disabled={!anchor.isOnline}
                                                         >
@@ -6269,6 +6276,105 @@ export default function UWBLocationPage() {
                                     disabled={!gatewayForm.name || !gatewayForm.floorId}
                                 >
                                     {t('pages:uwbLocation.addToSystem')}
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
+
+            {/* 雲端錨點加入系統彈窗 */}
+            {showCloudAnchorModal && selectedCloudAnchor && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <Card className="w-full max-w-md">
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="flex items-center">
+                                <CloudIcon className="mr-2 h-5 w-5 text-blue-500" />
+                                加入雲端錨點到系統
+                            </CardTitle>
+                            <Button variant="ghost" size="sm" onClick={() => setShowCloudAnchorModal(false)}>
+                                <X className="h-5 w-5" />
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {/* 雲端錨點資訊顯示 */}
+                            <div className="bg-blue-50 p-3 rounded-lg border">
+                                <div className="text-sm font-medium text-blue-900 mb-2">雲端錨點資訊</div>
+                                <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
+                                    <div>ID: {selectedCloudAnchor.id}</div>
+                                    <div>名稱: {selectedCloudAnchor.name}</div>
+                                    <div>閘道器: {selectedCloudAnchor.gateway_id}</div>
+                                    <div>韌體: {selectedCloudAnchor.fw_update}</div>
+                                    <div>位置: ({selectedCloudAnchor.position.x}, {selectedCloudAnchor.position.y}, {selectedCloudAnchor.position.z})</div>
+                                    <div>LED: {selectedCloudAnchor.led ? '開啟' : '關閉'}</div>
+                                    <div>BLE: {selectedCloudAnchor.ble ? '開啟' : '關閉'}</div>
+                                    <div>發起者: {selectedCloudAnchor.initiator ? '是' : '否'}</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">錨點名稱</label>
+                                <Input
+                                    value={selectedCloudAnchor.name}
+                                    onChange={(e) => setSelectedCloudAnchor(prev => prev ? { ...prev, name: e.target.value } : null)}
+                                    placeholder="輸入錨點名稱"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-sm font-medium mb-2 block">所屬閘道器</label>
+                                <Select
+                                    value={(() => {
+                                        // 找到對應的閘道器ID
+                                        const relatedGateway = gateways.find(gw => {
+                                            if (gw.cloudData && gw.cloudData.gateway_id === selectedCloudAnchor.gateway_id) {
+                                                return true
+                                            }
+                                            if (gw.macAddress.startsWith('GW:')) {
+                                                const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
+                                                return gatewayIdFromMac === selectedCloudAnchor.gateway_id
+                                            }
+                                            return false
+                                        })
+                                        return relatedGateway?.id || ""
+                                    })()}
+                                    onValueChange={(value) => {
+                                        // 這裡可以更新選中的閘道器，但通常錨點已經綁定到特定閘道器
+                                        console.log("選擇閘道器:", value)
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="選擇閘道器" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {gateways.map(gateway => (
+                                            <SelectItem key={gateway.id} value={gateway.id}>
+                                                {gateway.name} ({gateway.macAddress})
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={resetAnchorForm}
+                                >
+                                    取消
+                                </Button>
+                                <Button
+                                    className="flex-1"
+                                    onClick={() => {
+                                        if (selectedCloudAnchor) {
+                                            handleAddAnchorFromCloud(selectedCloudAnchor)
+                                            resetAnchorForm()
+                                        }
+                                    }}
+                                    disabled={!selectedCloudAnchor}
+                                >
+                                    加入系統
                                 </Button>
                             </div>
                         </CardContent>
