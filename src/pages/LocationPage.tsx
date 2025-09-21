@@ -241,9 +241,10 @@ export default function LocationPage() {
     })
   }, [])
 
-  // 鼠标滚轮缩放
-  const handleWheel = useCallback((e: React.WheelEvent) => {
+  // 鼠标滚轮缩放 - 使用原生事件避免被動監聽器問題
+  const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault()
+    e.stopPropagation()
 
     const delta = e.deltaY > 0 ? 0.9 : 1.1
     const newScale = Math.max(
@@ -254,7 +255,7 @@ export default function LocationPage() {
     if (newScale === mapTransform.scale) return
 
     // 计算鼠标位置相对于地图容器的偏移
-    const rect = e.currentTarget.getBoundingClientRect()
+    const rect = (e.target as HTMLElement).getBoundingClientRect()
     const mouseX = e.clientX - rect.left
     const mouseY = e.clientY - rect.top
 
@@ -331,10 +332,38 @@ export default function LocationPage() {
     setIsDragging(false)
   }, [])
 
+  // 地圖容器滑鼠進入/離開事件
+  const handleMapMouseEnter = useCallback(() => {
+    // 地圖容器獲得焦點時，可以進行縮放操作
+    if (mapContainerRef.current) {
+      mapContainerRef.current.style.cursor = 'grab'
+    }
+  }, [])
+
+  const handleMapMouseLeave = useCallback(() => {
+    // 地圖容器失去焦點時，恢復正常游標
+    if (mapContainerRef.current) {
+      mapContainerRef.current.style.cursor = isDragging ? 'grabbing' : 'grab'
+    }
+  }, [isDragging])
+
   // 当选择的楼层变化时重置地图视图
   useEffect(() => {
     resetMapView()
   }, [selectedFloor, resetMapView])
+
+  // 設置原生滾輪事件監聽器
+  useEffect(() => {
+    const mapContainer = mapContainerRef.current
+    if (mapContainer) {
+      // 使用原生事件監聽器，設置為非被動模式
+      mapContainer.addEventListener('wheel', handleWheel, { passive: false })
+
+      return () => {
+        mapContainer.removeEventListener('wheel', handleWheel)
+      }
+    }
+  }, [handleWheel])
 
   // MQTT連接管理
   useEffect(() => {
@@ -789,7 +818,13 @@ export default function LocationPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="relative border rounded-md overflow-hidden bg-gray-50">
+            <div
+              className="relative border rounded-md overflow-hidden bg-gray-50"
+              style={{
+                overscrollBehavior: 'none',
+                touchAction: 'none'
+              }}
+            >
               {dimensions ? (
                 <div
                   ref={mapContainerRef}
@@ -797,13 +832,18 @@ export default function LocationPage() {
                   style={{
                     width: dimensions.width,
                     height: dimensions.height,
-                    cursor: isDragging ? 'grabbing' : 'grab'
+                    cursor: isDragging ? 'grabbing' : 'grab',
+                    touchAction: 'none', // 阻止觸控滾動
+                    overscrollBehavior: 'none' // 阻止過度滾動
                   }}
-                  onWheel={handleWheel}
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
+                  onMouseEnter={handleMapMouseEnter}
+                  onMouseLeave={() => {
+                    handleMouseUp()
+                    handleMapMouseLeave()
+                  }}
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
@@ -938,7 +978,7 @@ export default function LocationPage() {
 
                   {/* 操作提示 */}
                   <div className="absolute top-4 left-4 bg-blue-600/90 text-white px-3 py-1 rounded-lg shadow-lg text-sm z-10">
-                    {t('pages:location.map.controls')}
+                    {t('pages:location.map.controls')} | 滑鼠在地圖上滾動縮放
                   </div>
                 </div>
               ) : (
