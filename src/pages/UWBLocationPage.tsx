@@ -2816,7 +2816,7 @@ export default function UWBLocationPage() {
         console.log(`🎉 ${calibratingAnchor.name} 座標校正完成！`)
 
         // 詢問是否要發送配置到雲端
-        const shouldSendToCloud = confirm(`✅ ${calibratingAnchor.name} 座標已更新！\n\n是否要將新座標發送到雲端硬體？\n\n點擊「確定」可進一步配置參數並發送`)
+        const shouldSendToCloud = confirm(`✅ ${t('pages:uwbLocation.anchorCalibration.coordinatesUpdated', { name: calibratingAnchor.name })}\n\n${t('pages:uwbLocation.anchorCalibration.sendToCloudQuestion')}\n\n${t('pages:uwbLocation.anchorCalibration.sendToCloudInstruction')}`)
 
         if (shouldSendToCloud) {
             // 開啟配置對話框
@@ -2874,7 +2874,7 @@ export default function UWBLocationPage() {
         console.log(`- 新座標: (${finalCoords.x.toFixed(2)}, ${finalCoords.y.toFixed(2)}, ${finalCoords.z.toFixed(2)})`)
 
         // 詢問是否要發送配置到雲端
-        const shouldSendToCloud = confirm(`✅ ${calibratingAnchor.name} 座標已更新！\n\n是否要將新座標發送到雲端硬體？\n\n點擊「確定」可進一步配置參數並發送`)
+        const shouldSendToCloud = confirm(`✅ ${t('pages:uwbLocation.anchorCalibration.coordinatesUpdated', { name: calibratingAnchor.name })}\n\n${t('pages:uwbLocation.anchorCalibration.sendToCloudQuestion')}\n\n${t('pages:uwbLocation.anchorCalibration.sendToCloudInstruction')}`)
 
         if (shouldSendToCloud) {
             // 開啟配置對話框
@@ -2945,7 +2945,7 @@ export default function UWBLocationPage() {
                         alert('發送配置失敗: ' + error.message)
                     } else {
                         console.log('✅ Anchor 配置已成功發送到雲端')
-                        alert(`✅ 已將 ${anchor.name} 的新座標發送到雲端硬體`)
+                        alert(t('pages:uwbLocation.anchorCalibration.coordinatesSentToCloud', { name: anchor.name }))
 
                         // 發送成功後，更新全域 serial_no 為下一個值
                         const nextSerial = anchorConfigForm.serial_no >= 9999 ? 1306 : anchorConfigForm.serial_no + 1
@@ -6058,7 +6058,7 @@ export default function UWBLocationPage() {
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="flex items-center">
                                         <Target className="mr-2 h-5 w-5 text-green-500" />
-                                        校正 {calibratingAnchor.name}
+                                        {t('pages:uwbLocation.anchorCalibration.title', { name: calibratingAnchor.name })}
                                     </CardTitle>
                                     <Button
                                         variant="ghost"
@@ -6074,19 +6074,19 @@ export default function UWBLocationPage() {
                                 {/* 說明文字 */}
                                 <div className="text-sm bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
                                     <div className="font-medium mb-2 text-green-800 flex items-center">
-                                        🎯 地圖點擊校正模式
+                                        🎯 {t('pages:uwbLocation.anchorCalibration.mapClickMode')}
                                         <span className="ml-2 inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                                     </div>
                                     <div className="mb-3 text-green-700">
-                                        <strong>👆 直接點擊左側地圖</strong> 來設定 <span className="font-medium bg-yellow-100 px-1 rounded">{calibratingAnchor.name}</span> 的新位置
+                                        <strong>👆 {t('pages:uwbLocation.anchorCalibration.mapClickInstruction', { name: calibratingAnchor.name })}</strong>
                                     </div>
                                     <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded border-l-2 border-blue-300">
-                                        💡 或者在下方手動輸入精確座標值
+                                        💡 {t('pages:uwbLocation.anchorCalibration.manualInputInstruction')}
                                     </div>
                                 </div>
                                 <div className="space-y-3">
                                     <div>
-                                        <label className="text-sm font-medium">座標類型</label>
+                                        <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.coordinateType')}</label>
                                         <Select
                                             value={anchorPositionInput.coordinateType}
                                             onValueChange={(value: 'real' | 'pixel') =>
@@ -6097,15 +6097,15 @@ export default function UWBLocationPage() {
                                                 <SelectValue />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="real">真實座標 (米)</SelectItem>
-                                                <SelectItem value="pixel">像素座標 (px)</SelectItem>
+                                                <SelectItem value="real">{t('pages:uwbLocation.anchorCalibration.realCoordinates')}</SelectItem>
+                                                <SelectItem value="pixel">{t('pages:uwbLocation.anchorCalibration.pixelCoordinates')}</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-2">
                                         <div>
-                                            <label className="text-sm font-medium">X 座標</label>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.xCoordinate')}</label>
                                             <Input
                                                 type="number"
                                                 step="0.01"
@@ -6115,7 +6115,7 @@ export default function UWBLocationPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium">Y 座標</label>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.yCoordinate')}</label>
                                             <Input
                                                 type="number"
                                                 step="0.01"
@@ -6125,7 +6125,7 @@ export default function UWBLocationPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium">Z 座標 (米)</label>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.zCoordinate')}</label>
                                             <Input
                                                 type="number"
                                                 step="0.01"
@@ -6138,8 +6138,8 @@ export default function UWBLocationPage() {
 
                                     <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
                                         {anchorPositionInput.coordinateType === 'real' ?
-                                            '💡 輸入真實世界的座標（單位：米）' :
-                                            '💡 輸入圖片上的像素座標，系統會自動轉換為真實座標'
+                                            t('pages:uwbLocation.anchorCalibration.realCoordinatesHint') :
+                                            t('pages:uwbLocation.anchorCalibration.pixelCoordinatesHint')
                                         }
                                     </div>
                                 </div>
@@ -6148,7 +6148,7 @@ export default function UWBLocationPage() {
                                 <div className="flex gap-2 pt-2">
                                     <Button onClick={saveAnchorCalibration} className="flex-1">
                                         <Save className="h-4 w-4 mr-2" />
-                                        保存手動輸入座標
+                                        {t('pages:uwbLocation.anchorCalibration.saveManualCoordinates')}
                                     </Button>
                                     <Button variant="outline" onClick={cancelAnchorCalibration}>
                                         {t('pages:uwbLocation.anchorPairing.cancelCalibration')}
@@ -6157,9 +6157,9 @@ export default function UWBLocationPage() {
 
                                 {/* 快速操作提示 */}
                                 <div className="text-xs text-center bg-gradient-to-r from-yellow-50 to-orange-50 p-3 rounded border border-yellow-200">
-                                    <div className="font-medium text-orange-700 mb-1">⚡ 快速操作</div>
+                                    <div className="font-medium text-orange-700 mb-1">{t('pages:uwbLocation.anchorCalibration.quickOperation')}</div>
                                     <div className="text-orange-600">
-                                        點擊左側地圖 = 快速設定 | 手動輸入 = 精確座標
+                                        {t('pages:uwbLocation.anchorCalibration.quickOperationDescription')}
                                     </div>
                                 </div>
                             </CardContent>
@@ -6175,7 +6175,7 @@ export default function UWBLocationPage() {
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="flex items-center">
                                         <Upload className="mr-2 h-5 w-5 text-blue-500" />
-                                        {t('pages:uwbLocation.anchorPairing.sendConfigToCloud')} - {configAnchor.name}
+                                        {t('pages:uwbLocation.anchorCalibration.sendConfigToCloud', { name: configAnchor.name })}
                                     </CardTitle>
                                     <Button
                                         variant="ghost"
@@ -6190,18 +6190,18 @@ export default function UWBLocationPage() {
                             <CardContent className="space-y-4">
                                 {/* 座標預覽 */}
                                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                    <div className="font-medium text-blue-800 mb-2">📍 新座標位置</div>
+                                    <div className="font-medium text-blue-800 mb-2">{t('pages:uwbLocation.anchorCalibration.newCoordinatePosition')}</div>
                                     <div className="grid grid-cols-3 gap-4 text-sm">
                                         <div className="text-center">
-                                            <div className="text-blue-600 font-medium">X 座標</div>
+                                            <div className="text-blue-600 font-medium">{t('pages:uwbLocation.anchorCalibration.xCoordinate')}</div>
                                             <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.x).toFixed(3)}</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-blue-600 font-medium">Y 座標</div>
+                                            <div className="text-blue-600 font-medium">{t('pages:uwbLocation.anchorCalibration.yCoordinate')}</div>
                                             <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.y).toFixed(3)}</div>
                                         </div>
                                         <div className="text-center">
-                                            <div className="text-blue-600 font-medium">Z 座標</div>
+                                            <div className="text-blue-600 font-medium">{t('pages:uwbLocation.anchorCalibration.zCoordinate')}</div>
                                             <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.z).toFixed(3)}</div>
                                         </div>
                                     </div>
@@ -6209,11 +6209,11 @@ export default function UWBLocationPage() {
 
                                 {/* 配置參數 */}
                                 <div className="space-y-3">
-                                    <div className="font-medium text-gray-800">🔧 Anchor 配置參數</div>
+                                    <div className="font-medium text-gray-800">{t('pages:uwbLocation.anchorCalibration.anchorConfigParameters')}</div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="text-sm font-medium">韌體更新</label>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.firmwareUpdate')}</label>
                                             <Select
                                                 value={anchorConfigForm.fw_update.toString()}
                                                 onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, fw_update: parseInt(value) }))}
@@ -6222,14 +6222,14 @@ export default function UWBLocationPage() {
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="0">關閉</SelectItem>
-                                                    <SelectItem value="1">開啟</SelectItem>
+                                                    <SelectItem value="0">{t('pages:uwbLocation.anchorCalibration.off')}</SelectItem>
+                                                    <SelectItem value="1">{t('pages:uwbLocation.anchorCalibration.on')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
                                         <div>
-                                            <label className="text-sm font-medium">LED 狀態</label>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.ledStatus')}</label>
                                             <Select
                                                 value={anchorConfigForm.led.toString()}
                                                 onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, led: parseInt(value) }))}
@@ -6238,14 +6238,14 @@ export default function UWBLocationPage() {
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="0">關閉</SelectItem>
-                                                    <SelectItem value="1">開啟</SelectItem>
+                                                    <SelectItem value="0">{t('pages:uwbLocation.anchorCalibration.off')}</SelectItem>
+                                                    <SelectItem value="1">{t('pages:uwbLocation.anchorCalibration.on')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
                                         <div>
-                                            <label className="text-sm font-medium">BLE 狀態</label>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.bleStatus')}</label>
                                             <Select
                                                 value={anchorConfigForm.ble.toString()}
                                                 onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, ble: parseInt(value) }))}
@@ -6254,14 +6254,14 @@ export default function UWBLocationPage() {
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="0">關閉</SelectItem>
-                                                    <SelectItem value="1">開啟</SelectItem>
+                                                    <SelectItem value="0">{t('pages:uwbLocation.anchorCalibration.off')}</SelectItem>
+                                                    <SelectItem value="1">{t('pages:uwbLocation.anchorCalibration.on')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
                                         <div>
-                                            <label className="text-sm font-medium">發起者</label>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.initiator')}</label>
                                             <Select
                                                 value={anchorConfigForm.initiator.toString()}
                                                 onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, initiator: parseInt(value) }))}
@@ -6270,14 +6270,14 @@ export default function UWBLocationPage() {
                                                     <SelectValue />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="0">{t('pages:uwbLocation.anchorPairing.generalAnchorOption')}</SelectItem>
-                                                    <SelectItem value="1">{t('pages:uwbLocation.anchorPairing.mainAnchorOption')}</SelectItem>
+                                                    <SelectItem value="0">{t('pages:uwbLocation.anchorCalibration.generalAnchor')}</SelectItem>
+                                                    <SelectItem value="1">{t('pages:uwbLocation.anchorCalibration.mainAnchor')}</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
                                         <div>
-                                            <label className="text-sm font-medium">Serial No</label>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.serialNo')}</label>
                                             <Input
                                                 type="number"
                                                 min="1306"
@@ -6292,7 +6292,7 @@ export default function UWBLocationPage() {
                                                 placeholder="1306-9999"
                                             />
                                             <p className="text-xs text-muted-foreground mt-1">
-                                                範圍: 1306-9999，每次發送後會自動遞增
+                                                {t('pages:uwbLocation.anchorCalibration.serialNoRange')}
                                             </p>
                                         </div>
                                     </div>
@@ -6300,36 +6300,36 @@ export default function UWBLocationPage() {
 
                                 {/* Anchor 信息顯示 */}
                                 <div className="bg-yellow-50 p-3 rounded border border-yellow-200 text-xs">
-                                    <div className="font-medium mb-2 text-yellow-800">🏷️ {t('pages:uwbLocation.anchorPairing.anchorDeviceInfo')}:</div>
+                                    <div className="font-medium mb-2 text-yellow-800">{t('pages:uwbLocation.anchorCalibration.anchorDeviceInfo')}</div>
                                     <div className="grid grid-cols-2 gap-2 text-yellow-700">
                                         <div>
-                                            <span className="font-medium">{t('pages:uwbLocation.anchorPairing.deviceName')}:</span> {configAnchor.cloudData?.name || configAnchor.name}
+                                            <span className="font-medium">{t('pages:uwbLocation.anchorCalibration.deviceName')}:</span> {configAnchor.cloudData?.name || configAnchor.name}
                                         </div>
                                         <div>
-                                            <span className="font-medium">{t('pages:uwbLocation.anchorPairing.deviceId')}:</span> {configAnchor.cloudData?.id || parseInt(configAnchor.macAddress.replace(/[^0-9]/g, '')) || t('common:status.unknown')}
+                                            <span className="font-medium">{t('pages:uwbLocation.anchorCalibration.deviceId')}:</span> {configAnchor.cloudData?.id || parseInt(configAnchor.macAddress.replace(/[^0-9]/g, '')) || t('pages:uwbLocation.anchorCalibration.unknown')}
                                         </div>
                                         <div>
-                                            <span className="font-medium">{t('pages:uwbLocation.anchorPairing.anchorInfo.macAddress')}:</span> {configAnchor.macAddress}
+                                            <span className="font-medium">{t('pages:uwbLocation.anchorCalibration.macAddress')}:</span> {configAnchor.macAddress}
                                         </div>
                                         <div>
-                                            <span className="font-medium">{t('pages:uwbLocation.anchorPairing.currentStatus')}:</span> {configAnchor.cloudData?.initiator === 1 ? t('pages:uwbLocation.anchorPairing.mainAnchorOption') : t('pages:uwbLocation.anchorPairing.generalAnchorOption')}
+                                            <span className="font-medium">{t('pages:uwbLocation.anchorCalibration.currentStatus')}:</span> {configAnchor.cloudData?.initiator === 1 ? t('pages:uwbLocation.anchorCalibration.mainAnchor') : t('pages:uwbLocation.anchorCalibration.generalAnchor')}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* 發送信息預覽 */}
                                 <div className="bg-gray-50 p-3 rounded border text-xs">
-                                    <div className="font-medium mb-2">📤 {t('pages:uwbLocation.anchorPairing.sendConfigPreview')}:</div>
+                                    <div className="font-medium mb-2">{t('pages:uwbLocation.anchorCalibration.sendConfigPreview')}</div>
                                     <div className="text-gray-600">
-                                        主題: {(() => {
+                                        {t('pages:uwbLocation.anchorCalibration.topic')}: {(() => {
                                             const gateway = gateways.find(g => g.id === configAnchor.gatewayId)
-                                            const downlinkValue = gateway?.cloudData?.sub_topic?.downlink || '未知'
-                                            return downlinkValue === '未知' ? 'UWB/未知' :
+                                            const downlinkValue = gateway?.cloudData?.sub_topic?.downlink || t('pages:uwbLocation.anchorCalibration.unknown')
+                                            return downlinkValue === t('pages:uwbLocation.anchorCalibration.unknown') ? `UWB/${t('pages:uwbLocation.anchorCalibration.unknown')}` :
                                                 downlinkValue.startsWith('UWB/') ? downlinkValue : `UWB/${downlinkValue}`
                                         })()}
                                     </div>
                                     <div className="text-gray-600">
-                                        Gateway ID: {gateways.find(g => g.id === configAnchor.gatewayId)?.cloudData?.gateway_id || '未知'}
+                                        {t('pages:uwbLocation.anchorCalibration.gatewayId')}: {gateways.find(g => g.id === configAnchor.gatewayId)?.cloudData?.gateway_id || t('pages:uwbLocation.anchorCalibration.unknown')}
                                     </div>
                                 </div>
 
@@ -6355,12 +6355,12 @@ export default function UWBLocationPage() {
                                         {sendingConfig ? (
                                             <>
                                                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                發送中...
+                                                {t('pages:uwbLocation.anchorCalibration.sending')}
                                             </>
                                         ) : (
                                             <>
                                                 <Upload className="h-4 w-4 mr-2" />
-                                                發送到雲端硬體
+                                                {t('pages:uwbLocation.anchorCalibration.sendToCloudHardware')}
                                             </>
                                         )}
                                     </Button>
