@@ -1183,6 +1183,17 @@
             "cancel": "取消",
             "confirm": "確認"
         },
+        "notifications": {
+            "ackReceived": "Ack 消息接收",
+            "gatewayId": "Gateway ID",
+            "command": "命令",
+            "nodeType": "節點類型",
+            "deviceId": "設備ID",
+            "topic": "主題",
+            "receivedAt": "接收時間",
+            "messageType": "消息類型",
+            "ackMessage": "Ack 消息"
+        },
         "tagManagement": {
             "title": "標籤設備管理",
             "subtitle": "管理UWB定位標籤設備，包括人員標籤、設備標籤和資產標籤",

@@ -9,6 +9,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { useToast } from "@/hooks/use-toast"
+import { Toaster } from "@/components/ui/toaster"
+import AckNotification, { AckNotificationData } from "@/components/AckNotification"
 import {
     Building2,
     Plus,
@@ -442,6 +445,7 @@ type DiscoveredCloudAnchor = {
 
 export default function UWBLocationPage() {
     const { t } = useTranslation()
+    const { toast } = useToast()
 
     // 從 localStorage 加載數據的輔助函數（含智能恢復）
     const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
@@ -1558,6 +1562,31 @@ export default function UWBLocationPage() {
                         const newData = [ackData, ...prev].slice(0, 50)
                         return newData
                     })
+
+                    // 顯示 Ack 通知
+                    try {
+                        const notificationData: AckNotificationData = {
+                            gatewayId: msg['gateway id']?.toString() || 'Unknown',
+                            command: msg.command || 'Unknown',
+                            node: msg.node || 'Unknown',
+                            id: msg.id?.toString() || 'Unknown',
+                            idHex: msg.id ? `0x${parseInt(msg.id.toString()).toString(16).toUpperCase()}` : 'Unknown',
+                            receivedAt: new Date().toISOString(),
+                            topic: topic
+                        }
+
+                        toast({
+                            title: t('pages:uwbLocation.notifications.ackReceived', 'Ack 消息接收'),
+                            description: (
+                                <AckNotification
+                                    data={notificationData}
+                                />
+                            ),
+                            duration: 5000,
+                        })
+                    } catch (error) {
+                        console.error('創建 Ack 通知時發生錯誤:', error)
+                    }
                 } else {
                     console.log("⚠️ 非預期數據，主題:", topic, "內容:", msg.content, "節點:", msg.node)
                 }
@@ -3225,189 +3254,424 @@ export default function UWBLocationPage() {
     }
 
     return (
-        <div className="space-y-6">
-            {/* 標題區域 */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold flex items-center">
-                        <Building2 className="mr-3 h-8 w-8 text-cyan-500" />
-                        {t('pages:uwbLocation.title')}
-                    </h1>
-                    <p className="text-muted-foreground mt-2">
-                        {t('pages:uwbLocation.subtitle')}
-                    </p>
-                </div>
-
-                {/* 場域選擇 */}
-                <div className="flex items-center gap-4">
-                    <Select value={selectedHome} onValueChange={setSelectedHome}>
-                        <SelectTrigger className="w-[240px]">
-                            <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {homes.map(home => (
-                                <SelectItem key={home.id} value={home.id}>
-                                    <div className="flex items-center gap-2">
-                                        <Home className="h-4 w-4" />
-                                        {home.name}
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-
-            {/* 主要內容標籤頁 */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-6">
-                    <TabsTrigger value="overview">{t('pages:uwbLocation.tabs.overview')}</TabsTrigger>
-                    <TabsTrigger value="homes">{t('pages:uwbLocation.tabs.homes')}</TabsTrigger>
-                    <TabsTrigger value="floors">{t('pages:uwbLocation.tabs.floors')}</TabsTrigger>
-                    <TabsTrigger value="gateways">{t('pages:uwbLocation.tabs.gateways')}</TabsTrigger>
-                    <TabsTrigger value="anchors">{t('pages:uwbLocation.tabs.anchors')}</TabsTrigger>
-                    <TabsTrigger value="tags">{t('pages:uwbLocation.tabs.tags')}</TabsTrigger>
-                </TabsList>
-
-                {/* 系統總覽 */}
-                <TabsContent value="overview" className="space-y-6">
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
-                        <Card>
-                            <CardContent className="pt-8 pb-6">
-                                <div className="flex flex-col items-center text-center space-y-3">
-                                    <Home className="h-12 w-12 text-blue-500" />
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.homes')}</p>
-                                        <p className="text-3xl font-bold text-blue-600">{homes.length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardContent className="pt-8 pb-6">
-                                <div className="flex flex-col items-center text-center space-y-3">
-                                    <Layers3 className="h-12 w-12 text-green-500" />
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.floors')}</p>
-                                        <p className="text-3xl font-bold text-green-600">{currentFloors.length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardContent className="pt-8 pb-6">
-                                <div className="flex flex-col items-center text-center space-y-3">
-                                    <Wifi className="h-12 w-12 text-purple-500" />
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.gateways')}</p>
-                                        <p className="text-3xl font-bold text-purple-600">{currentGateways.length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardContent className="pt-8 pb-6">
-                                <div className="flex flex-col items-center text-center space-y-3">
-                                    <Anchor className="h-12 w-12 text-indigo-500" />
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.anchors')}</p>
-                                        <p className="text-3xl font-bold text-indigo-600">{currentAnchors.length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardContent className="pt-8 pb-6">
-                                <div className="flex flex-col items-center text-center space-y-3">
-                                    <Tag className="h-12 w-12 text-teal-500" />
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.tags')}</p>
-                                        <p className="text-3xl font-bold text-teal-600">{tags.length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardContent className="pt-8 pb-6">
-                                <div className="flex flex-col items-center text-center space-y-3">
-                                    <Activity className="h-12 w-12 text-orange-500" />
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-1">活躍標籤</p>
-                                        <p className="text-3xl font-bold text-orange-600">
-                                            {tags.filter(t => t.status === 'active').length}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card>
-                            <CardContent className="pt-8 pb-6">
-                                <div className="flex flex-col items-center text-center space-y-3">
-                                    <Save className="h-12 w-12 text-blue-500" />
-                                    <div>
-                                        <p className="text-sm font-medium text-muted-foreground mb-2">數據狀態</p>
-                                        <div className="flex justify-center mb-2">
-                                            {pendingSave ? (
-                                                <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-sm px-3 py-1">
-                                                    保存中...
-                                                </Badge>
-                                            ) : (
-                                                <Badge className="bg-green-100 text-green-700 border-green-200 text-sm px-3 py-1">
-                                                    已同步
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            {lastSaveTime.toLocaleTimeString('zh-TW')}
-                                        </p>
-                                        {process.env.NODE_ENV === 'development' && (
-                                            <p className="text-xs text-gray-400 mt-1">
-                                                Ctrl+Shift+D 調試
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
+        <>
+            <div className="space-y-6">
+                {/* 標題區域 */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold flex items-center">
+                            <Building2 className="mr-3 h-8 w-8 text-cyan-500" />
+                            {t('pages:uwbLocation.title')}
+                        </h1>
+                        <p className="text-muted-foreground mt-2">
+                            {t('pages:uwbLocation.subtitle')}
+                        </p>
                     </div>
 
-                    {/* 系統狀態概覽 */}
-                    {selectedHome && (
-                        <>
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>{t('pages:uwbLocation.currentFieldStatus')} - {homes.find(h => h.id === selectedHome)?.name}</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        {currentFloors.map(floor => {
-                                            const floorGateways = gateways.filter(g => g.floorId === floor.id)
-                                            const onlineCount = floorGateways.filter(g => g.status === 'online').length
+                    {/* 場域選擇 */}
+                    <div className="flex items-center gap-4">
+                        <Select value={selectedHome} onValueChange={setSelectedHome}>
+                            <SelectTrigger className="w-[240px]">
+                                <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {homes.map(home => (
+                                    <SelectItem key={home.id} value={home.id}>
+                                        <div className="flex items-center gap-2">
+                                            <Home className="h-4 w-4" />
+                                            {home.name}
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
 
-                                            return (
-                                                <div key={floor.id} className="flex items-center justify-between p-4 border rounded-lg">
-                                                    <div className="flex items-center gap-3">
-                                                        <Layers3 className="h-5 w-5 text-blue-500" />
-                                                        <div>
-                                                            <div className="font-medium">{floor.name}</div>
-                                                            <div className="text-sm text-muted-foreground">
-                                                                {t('pages:uwbLocation.floorInfo', { level: floor.level, width: floor.dimensions?.realWidth, height: floor.dimensions?.realHeight })}
+                {/* 主要內容標籤頁 */}
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <TabsList className="grid w-full grid-cols-6">
+                        <TabsTrigger value="overview">{t('pages:uwbLocation.tabs.overview')}</TabsTrigger>
+                        <TabsTrigger value="homes">{t('pages:uwbLocation.tabs.homes')}</TabsTrigger>
+                        <TabsTrigger value="floors">{t('pages:uwbLocation.tabs.floors')}</TabsTrigger>
+                        <TabsTrigger value="gateways">{t('pages:uwbLocation.tabs.gateways')}</TabsTrigger>
+                        <TabsTrigger value="anchors">{t('pages:uwbLocation.tabs.anchors')}</TabsTrigger>
+                        <TabsTrigger value="tags">{t('pages:uwbLocation.tabs.tags')}</TabsTrigger>
+                    </TabsList>
+
+                    {/* 系統總覽 */}
+                    <TabsContent value="overview" className="space-y-6">
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+                            <Card>
+                                <CardContent className="pt-8 pb-6">
+                                    <div className="flex flex-col items-center text-center space-y-3">
+                                        <Home className="h-12 w-12 text-blue-500" />
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.homes')}</p>
+                                            <p className="text-3xl font-bold text-blue-600">{homes.length}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent className="pt-8 pb-6">
+                                    <div className="flex flex-col items-center text-center space-y-3">
+                                        <Layers3 className="h-12 w-12 text-green-500" />
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.floors')}</p>
+                                            <p className="text-3xl font-bold text-green-600">{currentFloors.length}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent className="pt-8 pb-6">
+                                    <div className="flex flex-col items-center text-center space-y-3">
+                                        <Wifi className="h-12 w-12 text-purple-500" />
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.gateways')}</p>
+                                            <p className="text-3xl font-bold text-purple-600">{currentGateways.length}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent className="pt-8 pb-6">
+                                    <div className="flex flex-col items-center text-center space-y-3">
+                                        <Anchor className="h-12 w-12 text-indigo-500" />
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.anchors')}</p>
+                                            <p className="text-3xl font-bold text-indigo-600">{currentAnchors.length}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent className="pt-8 pb-6">
+                                    <div className="flex flex-col items-center text-center space-y-3">
+                                        <Tag className="h-12 w-12 text-teal-500" />
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground mb-1">{t('pages:uwbLocation.stats.tags')}</p>
+                                            <p className="text-3xl font-bold text-teal-600">{tags.length}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent className="pt-8 pb-6">
+                                    <div className="flex flex-col items-center text-center space-y-3">
+                                        <Activity className="h-12 w-12 text-orange-500" />
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground mb-1">活躍標籤</p>
+                                            <p className="text-3xl font-bold text-orange-600">
+                                                {tags.filter(t => t.status === 'active').length}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent className="pt-8 pb-6">
+                                    <div className="flex flex-col items-center text-center space-y-3">
+                                        <Save className="h-12 w-12 text-blue-500" />
+                                        <div>
+                                            <p className="text-sm font-medium text-muted-foreground mb-2">數據狀態</p>
+                                            <div className="flex justify-center mb-2">
+                                                {pendingSave ? (
+                                                    <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-sm px-3 py-1">
+                                                        保存中...
+                                                    </Badge>
+                                                ) : (
+                                                    <Badge className="bg-green-100 text-green-700 border-green-200 text-sm px-3 py-1">
+                                                        已同步
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground">
+                                                {lastSaveTime.toLocaleTimeString('zh-TW')}
+                                            </p>
+                                            {process.env.NODE_ENV === 'development' && (
+                                                <p className="text-xs text-gray-400 mt-1">
+                                                    Ctrl+Shift+D 調試
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* 系統狀態概覽 */}
+                        {selectedHome && (
+                            <>
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>{t('pages:uwbLocation.currentFieldStatus')} - {homes.find(h => h.id === selectedHome)?.name}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            {currentFloors.map(floor => {
+                                                const floorGateways = gateways.filter(g => g.floorId === floor.id)
+                                                const onlineCount = floorGateways.filter(g => g.status === 'online').length
+
+                                                return (
+                                                    <div key={floor.id} className="flex items-center justify-between p-4 border rounded-lg">
+                                                        <div className="flex items-center gap-3">
+                                                            <Layers3 className="h-5 w-5 text-blue-500" />
+                                                            <div>
+                                                                <div className="font-medium">{floor.name}</div>
+                                                                <div className="text-sm text-muted-foreground">
+                                                                    {t('pages:uwbLocation.floorInfo', { level: floor.level, width: floor.dimensions?.realWidth, height: floor.dimensions?.realHeight })}
+                                                                </div>
                                                             </div>
                                                         </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className={
+                                                                    floor.calibration?.isCalibrated ? "bg-green-100 text-green-700 border-green-200" :
+                                                                        floor.mapImage ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-gray-100 text-gray-600"
+                                                                }
+                                                            >
+                                                                {
+                                                                    floor.calibration?.isCalibrated ? t('pages:uwbLocation.mapStatus.calibrated') :
+                                                                        floor.mapImage ? t('pages:uwbLocation.mapStatus.uploaded') : t('pages:uwbLocation.mapStatus.noMap')
+                                                                }
+                                                            </Badge>
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className={onlineCount > 0 ? "bg-green-100 text-green-700 border-green-200" : ""}
+                                                            >
+                                                                {onlineCount}/{floorGateways.length} {t('pages:uwbLocation.gatewaysOnline')}
+                                                            </Badge>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center gap-2">
+                                                )
+                                            })}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                {/* 地圖標定進度統計 */}
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center">
+                                            <Map className="mr-2 h-5 w-5 text-cyan-500" />
+                                            {t('pages:uwbLocation.mapCalibrationProgress')}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div className="text-center p-4 bg-green-50 rounded-lg">
+                                                <div className="text-2xl font-bold text-green-600">
+                                                    {currentFloors.filter(f => f.calibration?.isCalibrated).length}
+                                                </div>
+                                                <div className="text-sm text-green-700">{t('pages:uwbLocation.calibrationStatus.completed')}</div>
+                                            </div>
+                                            <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                                                <div className="text-2xl font-bold text-yellow-600">
+                                                    {currentFloors.filter(f => f.mapImage && !f.calibration?.isCalibrated).length}
+                                                </div>
+                                                <div className="text-sm text-yellow-700">{t('pages:uwbLocation.calibrationStatus.pending')}</div>
+                                            </div>
+                                            <div className="text-center p-4 bg-gray-50 rounded-lg">
+                                                <div className="text-2xl font-bold text-gray-600">
+                                                    {currentFloors.filter(f => !f.mapImage).length}
+                                                </div>
+                                                <div className="text-sm text-gray-700">{t('pages:uwbLocation.calibrationStatus.noMap')}</div>
+                                            </div>
+                                        </div>
+
+                                        {/* 標定進度條 */}
+                                        <div className="mt-4">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-sm font-medium">{t('pages:uwbLocation.overallProgress')}</span>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {currentFloors.length > 0
+                                                        ? Math.round((currentFloors.filter(f => f.calibration?.isCalibrated).length / currentFloors.length) * 100)
+                                                        : 0}%
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div
+                                                    className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                                                    style={{
+                                                        width: `${currentFloors.length > 0
+                                                            ? (currentFloors.filter(f => f.calibration?.isCalibrated).length / currentFloors.length) * 100
+                                                            : 0}%`
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </>
+                        )}
+                    </TabsContent>
+
+                    {/* 場域管理 */}
+                    <TabsContent value="homes" className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.homes')}</h2>
+                            <Button onClick={() => setShowHomeModal(true)}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                {t('pages:uwbLocation.actions.addHome')}
+                            </Button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {homes.map(home => (
+                                <Card key={home.id}>
+                                    <CardHeader className="pb-3">
+                                        <div className="flex items-center justify-between">
+                                            <CardTitle className="flex items-center">
+                                                <Home className="mr-2 h-5 w-5 text-blue-500" />
+                                                {home.name}
+                                            </CardTitle>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                        setEditingItem(home)
+                                                        setHomeForm({
+                                                            name: home.name,
+                                                            description: home.description,
+                                                            address: home.address
+                                                        })
+                                                        setShowHomeForm(true)
+                                                    }}
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    onClick={() => deleteHome(home.id)}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-2">
+                                            <p className="text-sm text-muted-foreground">{home.description}</p>
+                                            <p className="text-xs text-muted-foreground flex items-center">
+                                                <MapPin className="h-3 w-3 mr-1" />
+                                                {home.address}
+                                            </p>
+                                            <div className="flex items-center gap-4 pt-2">
+                                                <span className="text-xs text-muted-foreground">
+                                                    樓層: {floors.filter(f => f.homeId === home.id).length}
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    閘道器: {gateways.filter(g =>
+                                                        floors.some(f => f.homeId === home.id && f.id === g.floorId)
+                                                    ).length}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+
+                    </TabsContent>
+
+                    {/* 樓層管理 */}
+                    <TabsContent value="floors" className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.floors')}</h2>
+                            <Button onClick={() => setShowFloorModal(true)} disabled={!selectedHome}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                {t('pages:uwbLocation.actions.addFloor')}
+                            </Button>
+                        </div>
+
+                        {!selectedHome ? (
+                            <Card>
+                                <CardContent className="pt-6 text-center">
+                                    <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                    <p className="text-muted-foreground">{t('pages:uwbLocation.messages.selectFieldFirst')}</p>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {currentFloors.map(floor => {
+                                    const floorGateways = gateways.filter(g => g.floorId === floor.id)
+
+                                    return (
+                                        <Card key={floor.id}>
+                                            <CardHeader className="pb-3">
+                                                <div className="flex items-center justify-between">
+                                                    <CardTitle className="flex items-center">
+                                                        <Layers3 className="mr-2 h-5 w-5 text-green-500" />
+                                                        {floor.name}
+                                                    </CardTitle>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => startMapCalibration(floor)}
+                                                            title="地圖標定"
+                                                        >
+                                                            <Map className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => {
+                                                                setEditingItem(floor)
+                                                                setFloorForm({
+                                                                    name: floor.name,
+                                                                    level: floor.level,
+                                                                    realWidth: floor.dimensions?.realWidth || 0,
+                                                                    realHeight: floor.dimensions?.realHeight || 0
+                                                                })
+                                                                setShowFloorForm(true)
+                                                            }}
+                                                        >
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            onClick={() => deleteFloor(floor.id)}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.floor')}</span>
+                                                        <span className="font-medium">{floor.level}F</span>
+                                                    </div>
+                                                    {floor.dimensions && (
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.actualSize')}</span>
+                                                            <span className="font-medium">
+                                                                {floor.dimensions.realWidth}m × {floor.dimensions.realHeight}m
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.mapStatusLabel')}</span>
                                                         <Badge
                                                             variant="secondary"
                                                             className={
                                                                 floor.calibration?.isCalibrated ? "bg-green-100 text-green-700 border-green-200" :
-                                                                    floor.mapImage ? "bg-yellow-100 text-yellow-700 border-yellow-200" : "bg-gray-100 text-gray-600"
+                                                                    floor.mapImage ? "bg-yellow-100 text-yellow-700 border-yellow-200" : ""
                                                             }
                                                         >
                                                             {
@@ -3415,3349 +3679,3117 @@ export default function UWBLocationPage() {
                                                                     floor.mapImage ? t('pages:uwbLocation.mapStatus.uploaded') : t('pages:uwbLocation.mapStatus.noMap')
                                                             }
                                                         </Badge>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.stats.gateways')}</span>
+                                                        <Badge variant="outline">{floorGateways.length}</Badge>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.status.online')}</span>
                                                         <Badge
                                                             variant="secondary"
-                                                            className={onlineCount > 0 ? "bg-green-100 text-green-700 border-green-200" : ""}
+                                                            className={floorGateways.some(g => g.status === 'online') ? "bg-green-100 text-green-700 border-green-200" : ""}
                                                         >
-                                                            {onlineCount}/{floorGateways.length} {t('pages:uwbLocation.gatewaysOnline')}
+                                                            {floorGateways.filter(g => g.status === 'online').length}/{floorGateways.length}
                                                         </Badge>
                                                     </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                </CardContent>
-                            </Card>
 
-                            {/* 地圖標定進度統計 */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center">
-                                        <Map className="mr-2 h-5 w-5 text-cyan-500" />
-                                        {t('pages:uwbLocation.mapCalibrationProgress')}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div className="text-center p-4 bg-green-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-green-600">
-                                                {currentFloors.filter(f => f.calibration?.isCalibrated).length}
-                                            </div>
-                                            <div className="text-sm text-green-700">{t('pages:uwbLocation.calibrationStatus.completed')}</div>
-                                        </div>
-                                        <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-yellow-600">
-                                                {currentFloors.filter(f => f.mapImage && !f.calibration?.isCalibrated).length}
-                                            </div>
-                                            <div className="text-sm text-yellow-700">{t('pages:uwbLocation.calibrationStatus.pending')}</div>
-                                        </div>
-                                        <div className="text-center p-4 bg-gray-50 rounded-lg">
-                                            <div className="text-2xl font-bold text-gray-600">
-                                                {currentFloors.filter(f => !f.mapImage).length}
-                                            </div>
-                                            <div className="text-sm text-gray-700">{t('pages:uwbLocation.calibrationStatus.noMap')}</div>
-                                        </div>
-                                    </div>
-
-                                    {/* 標定進度條 */}
-                                    <div className="mt-4">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-medium">{t('pages:uwbLocation.overallProgress')}</span>
-                                            <span className="text-sm text-muted-foreground">
-                                                {currentFloors.length > 0
-                                                    ? Math.round((currentFloors.filter(f => f.calibration?.isCalibrated).length / currentFloors.length) * 100)
-                                                    : 0}%
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                                className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                                                style={{
-                                                    width: `${currentFloors.length > 0
-                                                        ? (currentFloors.filter(f => f.calibration?.isCalibrated).length / currentFloors.length) * 100
-                                                        : 0}%`
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </>
-                    )}
-                </TabsContent>
-
-                {/* 場域管理 */}
-                <TabsContent value="homes" className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.homes')}</h2>
-                        <Button onClick={() => setShowHomeModal(true)}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            {t('pages:uwbLocation.actions.addHome')}
-                        </Button>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {homes.map(home => (
-                            <Card key={home.id}>
-                                <CardHeader className="pb-3">
-                                    <div className="flex items-center justify-between">
-                                        <CardTitle className="flex items-center">
-                                            <Home className="mr-2 h-5 w-5 text-blue-500" />
-                                            {home.name}
-                                        </CardTitle>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => {
-                                                    setEditingItem(home)
-                                                    setHomeForm({
-                                                        name: home.name,
-                                                        description: home.description,
-                                                        address: home.address
-                                                    })
-                                                    setShowHomeForm(true)
-                                                }}
-                                            >
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => deleteHome(home.id)}
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-2">
-                                        <p className="text-sm text-muted-foreground">{home.description}</p>
-                                        <p className="text-xs text-muted-foreground flex items-center">
-                                            <MapPin className="h-3 w-3 mr-1" />
-                                            {home.address}
-                                        </p>
-                                        <div className="flex items-center gap-4 pt-2">
-                                            <span className="text-xs text-muted-foreground">
-                                                樓層: {floors.filter(f => f.homeId === home.id).length}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground">
-                                                閘道器: {gateways.filter(g =>
-                                                    floors.some(f => f.homeId === home.id && f.id === g.floorId)
-                                                ).length}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-
-                </TabsContent>
-
-                {/* 樓層管理 */}
-                <TabsContent value="floors" className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.floors')}</h2>
-                        <Button onClick={() => setShowFloorModal(true)} disabled={!selectedHome}>
-                            <Plus className="h-4 w-4 mr-2" />
-                            {t('pages:uwbLocation.actions.addFloor')}
-                        </Button>
-                    </div>
-
-                    {!selectedHome ? (
-                        <Card>
-                            <CardContent className="pt-6 text-center">
-                                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                                <p className="text-muted-foreground">{t('pages:uwbLocation.messages.selectFieldFirst')}</p>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {currentFloors.map(floor => {
-                                const floorGateways = gateways.filter(g => g.floorId === floor.id)
-
-                                return (
-                                    <Card key={floor.id}>
-                                        <CardHeader className="pb-3">
-                                            <div className="flex items-center justify-between">
-                                                <CardTitle className="flex items-center">
-                                                    <Layers3 className="mr-2 h-5 w-5 text-green-500" />
-                                                    {floor.name}
-                                                </CardTitle>
-                                                <div className="flex gap-2">
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => startMapCalibration(floor)}
-                                                        title="地圖標定"
-                                                    >
-                                                        <Map className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            setEditingItem(floor)
-                                                            setFloorForm({
-                                                                name: floor.name,
-                                                                level: floor.level,
-                                                                realWidth: floor.dimensions?.realWidth || 0,
-                                                                realHeight: floor.dimensions?.realHeight || 0
-                                                            })
-                                                            setShowFloorForm(true)
-                                                        }}
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => deleteFloor(floor.id)}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.floor')}</span>
-                                                    <span className="font-medium">{floor.level}F</span>
-                                                </div>
-                                                {floor.dimensions && (
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.actualSize')}</span>
-                                                        <span className="font-medium">
-                                                            {floor.dimensions.realWidth}m × {floor.dimensions.realHeight}m
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.mapStatusLabel')}</span>
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className={
-                                                            floor.calibration?.isCalibrated ? "bg-green-100 text-green-700 border-green-200" :
-                                                                floor.mapImage ? "bg-yellow-100 text-yellow-700 border-yellow-200" : ""
-                                                        }
-                                                    >
-                                                        {
-                                                            floor.calibration?.isCalibrated ? t('pages:uwbLocation.mapStatus.calibrated') :
-                                                                floor.mapImage ? t('pages:uwbLocation.mapStatus.uploaded') : t('pages:uwbLocation.mapStatus.noMap')
-                                                        }
-                                                    </Badge>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.stats.gateways')}</span>
-                                                    <Badge variant="outline">{floorGateways.length}</Badge>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.status.online')}</span>
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className={floorGateways.some(g => g.status === 'online') ? "bg-green-100 text-green-700 border-green-200" : ""}
-                                                    >
-                                                        {floorGateways.filter(g => g.status === 'online').length}/{floorGateways.length}
-                                                    </Badge>
-                                                </div>
-
-                                                {/* 顯示地圖預覽 */}
-                                                {floor.mapImage && (
-                                                    <div className="mt-3 pt-3 border-t">
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <span className="text-sm font-medium">地圖預覽</span>
-                                                            <div className="flex items-center gap-2">
-                                                                {floor.calibration?.isCalibrated && (
-                                                                    <Badge variant="outline" className="text-xs">
-                                                                        比例: {floor.calibration.pixelToMeterRatio.toFixed(2)}px/m
-                                                                    </Badge>
-                                                                )}
-                                                                {getAnchorsForFloor(floor.id).length > 0 && (
-                                                                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                                                                        {getAnchorsForFloor(floor.id).length} 個錨點
-                                                                    </Badge>
-                                                                )}
+                                                    {/* 顯示地圖預覽 */}
+                                                    {floor.mapImage && (
+                                                        <div className="mt-3 pt-3 border-t">
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className="text-sm font-medium">地圖預覽</span>
+                                                                <div className="flex items-center gap-2">
+                                                                    {floor.calibration?.isCalibrated && (
+                                                                        <Badge variant="outline" className="text-xs">
+                                                                            比例: {floor.calibration.pixelToMeterRatio.toFixed(2)}px/m
+                                                                        </Badge>
+                                                                    )}
+                                                                    {getAnchorsForFloor(floor.id).length > 0 && (
+                                                                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                                                            {getAnchorsForFloor(floor.id).length} 個錨點
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                        <div className="relative">
-                                                            <img
-                                                                src={floor.mapImage}
-                                                                alt={`${floor.name} 地圖`}
-                                                                className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80"
-                                                                onClick={() => startMapCalibration(floor)}
-                                                            />
-                                                            {floor.calibration?.originPixel && (
-                                                                <div
-                                                                    className="absolute w-2 h-2 bg-red-500 rounded-full border border-white transform -translate-x-1 -translate-y-1"
-                                                                    style={{
-                                                                        left: `${floor.calibration.originPixel.x}px`,
-                                                                        top: `${floor.calibration.originPixel.y}px`
-                                                                    }}
-                                                                    title="座標原點"
+                                                            <div className="relative">
+                                                                <img
+                                                                    src={floor.mapImage}
+                                                                    alt={`${floor.name} 地圖`}
+                                                                    className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80"
+                                                                    onClick={() => startMapCalibration(floor)}
                                                                 />
-                                                            )}
-                                                            {/* 顯示該樓層的 Anchor 位置 */}
-                                                            {floor.calibration?.isCalibrated && getAnchorsForFloor(floor.id).map(anchor => {
-                                                                if (!anchor.position) return null
-                                                                const pixelPos = convertToMapPixels(anchor.position.x, anchor.position.y, floor)
-                                                                if (!pixelPos) return null
-
-                                                                return (
+                                                                {floor.calibration?.originPixel && (
                                                                     <div
-                                                                        key={anchor.id}
-                                                                        className="absolute w-3 h-3 bg-blue-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-sm"
+                                                                        className="absolute w-2 h-2 bg-red-500 rounded-full border border-white transform -translate-x-1 -translate-y-1"
                                                                         style={{
-                                                                            left: `${pixelPos.x}px`,
-                                                                            top: `${pixelPos.y}px`
+                                                                            left: `${floor.calibration.originPixel.x}px`,
+                                                                            top: `${floor.calibration.originPixel.y}px`
                                                                         }}
-                                                                        title={`${anchor.name} (${anchor.position.x.toFixed(1)}, ${anchor.position.y.toFixed(1)}, ${anchor.position.z.toFixed(1)})`}
+                                                                        title="座標原點"
                                                                     />
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                )
-                            })}
-                        </div>
-                    )}
+                                                                )}
+                                                                {/* 顯示該樓層的 Anchor 位置 */}
+                                                                {floor.calibration?.isCalibrated && getAnchorsForFloor(floor.id).map(anchor => {
+                                                                    if (!anchor.position) return null
+                                                                    const pixelPos = convertToMapPixels(anchor.position.x, anchor.position.y, floor)
+                                                                    if (!pixelPos) return null
 
-
-                    {/* 地圖標定模態框 */}
-                    {showMapCalibration && calibratingFloor && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                            <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto m-4">
-                                <div className="p-6">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <h2 className="text-2xl font-bold flex items-center">
-                                            <Map className="mr-3 h-6 w-6" />
-                                            {calibratingFloor.name} - {t('pages:uwbLocation.mapCalibration')}
-                                        </h2>
-                                        <Button variant="outline" onClick={resetMapCalibration}>
-                                            <Trash2 className="h-4 w-4 mr-1" />
-                                            {t('pages:uwbLocation.close')}
-                                        </Button>
-                                    </div>
-
-                                    {/* 步驟指示器 */}
-                                    <div className="flex items-center mb-6">
-                                        <div className={`flex items-center ${calibrationStep === 'upload' ? 'text-blue-600' : 'text-green-600'}`}>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'upload' ? 'border-blue-600 bg-blue-50' : 'border-green-600 bg-green-50'
-                                                }`}>
-                                                {calibrationStep === 'upload' ? '1' : <CheckCircle2 className="h-5 w-5" />}
-                                            </div>
-                                            <span className="ml-2">{t('pages:uwbLocation.calibrationSteps.upload')}</span>
-                                        </div>
-                                        <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
-                                        <div className={`flex items-center ${calibrationStep === 'setOrigin' ? 'text-blue-600' :
-                                            ['setScale', 'complete'].includes(calibrationStep) ? 'text-green-600' : 'text-gray-400'
-                                            }`}>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'setOrigin' ? 'border-blue-600 bg-blue-50' :
-                                                ['setScale', 'complete'].includes(calibrationStep) ? 'border-green-600 bg-green-50' : 'border-gray-300'
-                                                }`}>
-                                                {calibrationStep === 'setOrigin' ? '2' :
-                                                    ['setScale', 'complete'].includes(calibrationStep) ? <CheckCircle2 className="h-5 w-5" /> : '2'}
-                                            </div>
-                                            <span className="ml-2">{t('pages:uwbLocation.calibrationSteps.setOrigin')}</span>
-                                        </div>
-                                        <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
-                                        <div className={`flex items-center ${calibrationStep === 'setScale' ? 'text-blue-600' :
-                                            calibrationStep === 'complete' ? 'text-green-600' : 'text-gray-400'
-                                            }`}>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'setScale' ? 'border-blue-600 bg-blue-50' :
-                                                calibrationStep === 'complete' ? 'border-green-600 bg-green-50' : 'border-gray-300'
-                                                }`}>
-                                                {calibrationStep === 'setScale' ? '3' :
-                                                    calibrationStep === 'complete' ? <CheckCircle2 className="h-5 w-5" /> : '3'}
-                                            </div>
-                                            <span className="ml-2">{t('pages:uwbLocation.calibrationSteps.setScale')}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* 步驟1: 上傳地圖 */}
-                                    {calibrationStep === 'upload' && (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle className="flex items-center">
-                                                    <Upload className="mr-2 h-5 w-5" />
-                                                    {t('pages:uwbLocation.uploadFloorMap')}
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="space-y-4">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {t('pages:uwbLocation.uploadInstructions', { floorName: calibratingFloor.name })}
-                                                    </p>
-                                                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                                        <Image className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={handleImageUpload}
-                                                            className="hidden"
-                                                            id="map-upload"
-                                                        />
-                                                        <label
-                                                            htmlFor="map-upload"
-                                                            className="cursor-pointer inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                                                        >
-                                                            <Upload className="h-4 w-4 mr-2" />
-                                                            {t('pages:uwbLocation.selectMapFile')}
-                                                        </label>
-                                                        <p className="text-sm text-muted-foreground mt-2">
-                                                            {t('pages:uwbLocation.dragImageHint')}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )}
-
-                                    {/* 步驟2: 設定原點 */}
-                                    {calibrationStep === 'setOrigin' && uploadedImage && (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle className="flex items-center">
-                                                    <Target className="mr-2 h-5 w-5" />
-                                                    {t('pages:uwbLocation.setCoordinateOrigin')}
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="space-y-4">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {t('pages:uwbLocation.originInstructions')}
-                                                    </p>
-                                                    <div className="relative border-2 border-blue-300 rounded-lg overflow-hidden bg-blue-50">
-                                                        <img
-                                                            ref={mapImageRef}
-                                                            src={uploadedImage}
-                                                            alt="樓層地圖"
-                                                            className="w-full max-h-96 object-contain cursor-crosshair hover:opacity-90 transition-opacity map-calibration-image"
-                                                            onClick={handleMapClick}
-                                                            onLoad={() => setImageLoaded(true)}
-                                                        />
-                                                        {/* 點擊提示 */}
-                                                        <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded shadow-sm">
-                                                            {t('pages:uwbLocation.clickMapSetOrigin')}
-                                                        </div>
-                                                        {selectedOrigin && imageLoaded && (() => {
-                                                            const imgElement = mapImageRef.current
-
-                                                            if (!imgElement || imgElement.naturalWidth === 0) {
-                                                                console.warn('圖片元素未找到或未加載完成')
-                                                                return null
-                                                            }
-
-                                                            const displayCoords = convertNaturalToDisplayCoords(selectedOrigin.x, selectedOrigin.y, imgElement)
-
-                                                            return (
-                                                                <div
-                                                                    className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse shadow-lg"
-                                                                    style={{
-                                                                        left: displayCoords.x,
-                                                                        top: displayCoords.y
-                                                                    }}
-                                                                    title={`原點: 自然座標(${selectedOrigin.x.toFixed(0)}, ${selectedOrigin.y.toFixed(0)}) 顯示座標(${displayCoords.x.toFixed(0)}, ${displayCoords.y.toFixed(0)})`}
-                                                                />
-                                                            )
-                                                        })()}
-                                                    </div>
-                                                    {selectedOrigin && (
-                                                        <div className="space-y-4 p-4 bg-green-50 rounded-lg">
-                                                            <div className="flex items-center">
-                                                                <Crosshair className="h-5 w-5 text-green-600 mr-2" />
-                                                                <span className="text-sm font-medium">
-                                                                    {t('pages:uwbLocation.originPixelPosition')}: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})
-                                                                </span>
-                                                            </div>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <label className="text-sm font-medium mb-2 block">
-                                                                        {t('pages:uwbLocation.actualXCoordinate')}
-                                                                    </label>
-                                                                    <Input
-                                                                        type="number"
-                                                                        value={originCoordinates.x}
-                                                                        onChange={(e) => setOriginCoordinates(prev => ({
-                                                                            ...prev,
-                                                                            x: parseFloat(e.target.value) || 0
-                                                                        }))}
-                                                                        placeholder="0"
-                                                                        step="0.1"
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="text-sm font-medium mb-2 block">
-                                                                        {t('pages:uwbLocation.actualYCoordinate')}
-                                                                    </label>
-                                                                    <Input
-                                                                        type="number"
-                                                                        value={originCoordinates.y}
-                                                                        onChange={(e) => setOriginCoordinates(prev => ({
-                                                                            ...prev,
-                                                                            y: parseFloat(e.target.value) || 0
-                                                                        }))}
-                                                                        placeholder="0"
-                                                                        step="0.1"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                            <div className="flex justify-between">
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="outline"
-                                                                    onClick={() => {
-                                                                        setSelectedOrigin(null)
-                                                                        setOriginCoordinates({ x: 0, y: 0 })
-                                                                    }}
-                                                                >
-                                                                    <RotateCcw className="h-4 w-4 mr-1" />
-                                                                    {t('pages:uwbLocation.reselectOrigin')}
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    onClick={() => setCalibrationStep('setScale')}
-                                                                >
-                                                                    {t('pages:uwbLocation.nextStep')}
-                                                                </Button>
+                                                                    return (
+                                                                        <div
+                                                                            key={anchor.id}
+                                                                            className="absolute w-3 h-3 bg-blue-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-sm"
+                                                                            style={{
+                                                                                left: `${pixelPos.x}px`,
+                                                                                top: `${pixelPos.y}px`
+                                                                            }}
+                                                                            title={`${anchor.name} (${anchor.position.x.toFixed(1)}, ${anchor.position.y.toFixed(1)}, ${anchor.position.z.toFixed(1)})`}
+                                                                        />
+                                                                    )
+                                                                })}
                                                             </div>
                                                         </div>
                                                     )}
                                                 </div>
                                             </CardContent>
                                         </Card>
-                                    )}
-
-                                    {/* 步驟3: 設定比例 */}
-                                    {calibrationStep === 'setScale' && (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle className="flex items-center">
-                                                    <Ruler className="mr-2 h-5 w-5" />
-                                                    {t('pages:uwbLocation.setCoordinateScale')}
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="space-y-4">
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {t('pages:uwbLocation.scaleInstructions')}
-                                                    </p>
-                                                    <div className="relative border-2 border-green-300 rounded-lg overflow-hidden bg-green-50">
-                                                        <img
-                                                            ref={scaleImageRef}
-                                                            src={uploadedImage}
-                                                            alt="樓層地圖"
-                                                            className="w-full max-h-96 object-contain cursor-crosshair hover:opacity-90 transition-opacity map-calibration-image"
-                                                            onClick={handleMapClick}
-                                                            onLoad={() => setImageLoaded(true)}
-                                                        />
-                                                        {/* 點擊提示 */}
-                                                        <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow-sm">
-                                                            {t('pages:uwbLocation.clickTwoPointsSetScale')}
-                                                        </div>
-                                                        {/* 顯示原點 */}
-                                                        {selectedOrigin && (() => {
-                                                            const imgElement = scaleImageRef.current
-                                                            if (!imgElement) return null
-
-                                                            const displayCoords = convertNaturalToDisplayCoords(selectedOrigin.x, selectedOrigin.y, imgElement)
-
-                                                            return (
-                                                                <div
-                                                                    className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 shadow-lg"
-                                                                    style={{
-                                                                        left: displayCoords.x,
-                                                                        top: displayCoords.y
-                                                                    }}
-                                                                    title={`原點: 自然座標(${selectedOrigin.x.toFixed(0)}, ${selectedOrigin.y.toFixed(0)}) 實際(${originCoordinates.x}, ${originCoordinates.y})米`}
-                                                                />
-                                                            )
-                                                        })()}
-                                                        {/* 顯示比例標定點 */}
-                                                        {scalePoints.point1 && (() => {
-                                                            const imgElement = scaleImageRef.current
-                                                            if (!imgElement) return null
-
-                                                            const displayCoords = convertNaturalToDisplayCoords(scalePoints.point1.x, scalePoints.point1.y, imgElement)
-
-                                                            return (
-                                                                <div
-                                                                    className="absolute w-4 h-4 bg-blue-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
-                                                                    style={{
-                                                                        left: displayCoords.x,
-                                                                        top: displayCoords.y
-                                                                    }}
-                                                                    title="比例點1"
-                                                                />
-                                                            )
-                                                        })()}
-                                                        {scalePoints.point2 && (() => {
-                                                            const imgElement = scaleImageRef.current
-                                                            if (!imgElement) return null
-
-                                                            const displayCoords = convertNaturalToDisplayCoords(scalePoints.point2.x, scalePoints.point2.y, imgElement)
-
-                                                            return (
-                                                                <div
-                                                                    className="absolute w-4 h-4 bg-green-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
-                                                                    style={{
-                                                                        left: displayCoords.x,
-                                                                        top: displayCoords.y
-                                                                    }}
-                                                                    title="比例點2"
-                                                                />
-                                                            )
-                                                        })()}
-                                                        {/* 顯示連線 */}
-                                                        {scalePoints.point1 && scalePoints.point2 && (() => {
-                                                            const imgElement = scaleImageRef.current
-                                                            if (!imgElement) return null
-
-                                                            const displayCoords1 = convertNaturalToDisplayCoords(scalePoints.point1.x, scalePoints.point1.y, imgElement)
-                                                            const displayCoords2 = convertNaturalToDisplayCoords(scalePoints.point2.x, scalePoints.point2.y, imgElement)
-
-                                                            return (
-                                                                <svg
-                                                                    className="absolute top-0 left-0 w-full h-full pointer-events-none"
-                                                                    style={{ zIndex: 10 }}
-                                                                >
-                                                                    <line
-                                                                        x1={displayCoords1.x}
-                                                                        y1={displayCoords1.y}
-                                                                        x2={displayCoords2.x}
-                                                                        y2={displayCoords2.y}
-                                                                        stroke="#f59e0b"
-                                                                        strokeWidth="2"
-                                                                        strokeDasharray="5,5"
-                                                                    />
-                                                                </svg>
-                                                            )
-                                                        })()}
-                                                    </div>
-
-                                                    {/* 點選狀態顯示 */}
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        <div className="space-y-2">
-                                                            <div className="text-sm font-medium">{t('pages:uwbLocation.selectedPoints')}:</div>
-                                                            <div className="space-y-1 text-xs">
-                                                                <div className={`flex items-center ${scalePoints.point1 ? 'text-blue-600' : 'text-gray-400'}`}>
-                                                                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                                                                    {t('pages:uwbLocation.point1')}: {scalePoints.point1 ?
-                                                                        `(${scalePoints.point1.x.toFixed(0)}, ${scalePoints.point1.y.toFixed(0)})` :
-                                                                        t('pages:uwbLocation.clickMapSelect')}
-                                                                </div>
-                                                                <div className={`flex items-center ${scalePoints.point2 ? 'text-green-600' : 'text-gray-400'}`}>
-                                                                    <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                                                                    {t('pages:uwbLocation.point2')}: {scalePoints.point2 ?
-                                                                        `(${scalePoints.point2.x.toFixed(0)}, ${scalePoints.point2.y.toFixed(0)})` :
-                                                                        t('pages:uwbLocation.clickMapSelect')}
-                                                                </div>
-                                                                {scalePoints.point1 && scalePoints.point2 && (
-                                                                    <div className="text-amber-600 font-medium">
-                                                                        {t('pages:uwbLocation.pixelDistance')}: {Math.sqrt(
-                                                                            Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
-                                                                            Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
-                                                                        ).toFixed(1)} px
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                        <div>
-                                                            <label className="text-sm font-medium mb-2 block">
-                                                                {t('pages:uwbLocation.actualDistance')}
-                                                            </label>
-                                                            <Input
-                                                                type="number"
-                                                                value={realDistance}
-                                                                onChange={(e) => {
-                                                                    const value = parseFloat(e.target.value)
-                                                                    if (!isNaN(value) && value > 0) {
-                                                                        setRealDistance(value)
-                                                                    }
-                                                                }}
-                                                                placeholder="1.0"
-                                                                min="0.01"
-                                                                step="0.1"
-                                                                disabled={!scalePoints.point1 || !scalePoints.point2}
-                                                            />
-                                                            <p className="text-xs text-muted-foreground mt-1">
-                                                                {t('pages:uwbLocation.enterActualDistance')}
-                                                            </p>
-                                                            {scalePoints.point1 && scalePoints.point2 && realDistance > 0 && (
-                                                                <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
-                                                                    <div className="font-medium text-blue-800">{t('pages:uwbLocation.calculationResult')}:</div>
-                                                                    <div className="text-blue-700">
-                                                                        {t('pages:uwbLocation.ratio')}: {(Math.sqrt(
-                                                                            Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
-                                                                            Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
-                                                                        ) / realDistance).toFixed(2)} {t('pages:uwbLocation.pixelsPerMeter')}
-                                                                    </div>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                            variant="outline"
-                                                            onClick={() => setCalibrationStep('setOrigin')}
-                                                        >
-                                                            <RotateCcw className="h-4 w-4 mr-2" />
-                                                            {t('pages:uwbLocation.previousStep')}
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            onClick={() => setScalePoints({ point1: null, point2: null })}
-                                                            disabled={!scalePoints.point1 && !scalePoints.point2}
-                                                        >
-                                                            {t('pages:uwbLocation.reselectPoints')}
-                                                        </Button>
-                                                        <Button
-                                                            onClick={saveMapCalibration}
-                                                            disabled={!scalePoints.point1 || !scalePoints.point2 || realDistance <= 0}
-                                                        >
-                                                            <Save className="h-4 w-4 mr-2" />
-                                                            {t('pages:uwbLocation.saveCalibration')}
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )}
-
-                                    {/* 步驟4: 完成 */}
-                                    {calibrationStep === 'complete' && (
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle className="flex items-center text-green-600">
-                                                    <CheckCircle2 className="mr-2 h-5 w-5" />
-                                                    {t('pages:uwbLocation.calibrationComplete')}
-                                                </CardTitle>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="space-y-4">
-                                                    <div className="p-4 bg-green-50 rounded-lg">
-                                                        <h3 className="text-lg font-semibold text-green-800 mb-2">{t('pages:uwbLocation.calibrationInfo')}</h3>
-                                                        <div className="space-y-1 text-sm text-green-700">
-                                                            <div>{t('pages:uwbLocation.floor')}: {calibratingFloor.name}</div>
-                                                            {selectedOrigin && (
-                                                                <div>{t('pages:uwbLocation.originPixelPosition')}: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})</div>
-                                                            )}
-                                                            <div>{t('pages:uwbLocation.originActualCoordinates')}: ({originCoordinates.x}, {originCoordinates.y}) {t('pages:uwbLocation.meters')}</div>
-                                                            {scalePoints.point1 && scalePoints.point2 && (
-                                                                <>
-                                                                    <div>{t('pages:uwbLocation.calibrationPoint1')}: ({scalePoints.point1.x.toFixed(0)}, {scalePoints.point1.y.toFixed(0)}) {t('pages:uwbLocation.pixels')}</div>
-                                                                    <div>{t('pages:uwbLocation.calibrationPoint2')}: ({scalePoints.point2.x.toFixed(0)}, {scalePoints.point2.y.toFixed(0)}) {t('pages:uwbLocation.pixels')}</div>
-                                                                    <div>{t('pages:uwbLocation.actualDistance')}: {realDistance} {t('pages:uwbLocation.meters')}</div>
-                                                                    <div>{t('pages:uwbLocation.pixelDistance')}: {Math.sqrt(
-                                                                        Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
-                                                                        Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
-                                                                    ).toFixed(1)} {t('pages:uwbLocation.pixels')}</div>
-                                                                </>
-                                                            )}
-                                                            <div>{t('pages:uwbLocation.ratio')}: {pixelToMeterRatio.toFixed(2)} {t('pages:uwbLocation.pixelsPerMeter')}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="relative border rounded-lg overflow-hidden">
-                                                        <img
-                                                            src={uploadedImage}
-                                                            alt={t('pages:uwbLocation.calibratedMap')}
-                                                            className="w-full max-h-64 object-contain"
-                                                        />
-                                                        {selectedOrigin && (
-                                                            <div
-                                                                className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2"
-                                                                style={{
-                                                                    left: selectedOrigin.x,
-                                                                    top: selectedOrigin.y
-                                                                }}
-                                                            />
-                                                        )}
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <Button variant="outline" onClick={resetMapCalibration}>
-                                                            {t('pages:uwbLocation.complete')}
-                                                        </Button>
-                                                        <Button
-                                                            variant="outline"
-                                                            onClick={() => setCalibrationStep('setOrigin')}
-                                                        >
-                                                            {t('pages:uwbLocation.recalibrate')}
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )}
-                                </div>
+                                    )
+                                })}
                             </div>
-                        </div>
-                    )}
-                </TabsContent>
+                        )}
 
-                {/* 閘道器管理 */}
-                <TabsContent value="gateways" className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.gateways')}</h2>
-                        <div className="flex gap-2">
-                            <Button onClick={() => setShowGatewayModal(true)} disabled={currentFloors.length === 0}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                {t('pages:uwbLocation.manualAdd')}
-                            </Button>
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    if (cloudClientRef.current) {
-                                        console.log("手動重連雲端MQTT...")
-                                        setCloudConnectionStatus("手動重連中...")
-                                        cloudClientRef.current.reconnect()
-                                    }
-                                }}
-                                disabled={cloudConnected}
-                            >
-                                <RefreshIcon className="h-4 w-4 mr-2" />
-                                {t('pages:uwbLocation.reconnectCloud')}
-                            </Button>
-                        </div>
-                    </div>
 
-                    {/* 雲端 MQTT 連線狀態 */}
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg flex items-center">
-                                    <CloudIcon className="mr-3 h-5 w-5 text-blue-500" />
-                                    {t('pages:uwbLocation.cloudGatewayDiscovery')}
-                                </CardTitle>
-                                <div className="text-sm">
-                                    {cloudConnected ? (
-                                        <span className="text-green-600 flex items-center">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                                            {t('pages:uwbLocation.connectionNormal')}
-                                        </span>
-                                    ) : (
-                                        <span className="text-red-500 flex items-center">
-                                            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                                            {cloudConnectionStatus}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
-                                    <div className="font-semibold">{t('pages:uwbLocation.cloudMqttStatus')}</div>
-                                    <div className="flex items-center justify-between">
-                                        <span>{t('pages:uwbLocation.server')} ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
-                                        <span className={cloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
-                                            {cloudConnectionStatus}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span>{t('pages:uwbLocation.topic')} ({CLOUD_MQTT_TOPIC}):</span>
-                                        <span className="text-xs text-muted-foreground">
-                                            {t('pages:uwbLocation.waitingForGatewayTopic')}
-                                        </span>
-                                    </div>
-                                    {cloudError && (
-                                        <div className="text-xs text-red-500">
-                                            {t('pages:uwbLocation.error')}: {cloudError}
+                        {/* 地圖標定模態框 */}
+                        {showMapCalibration && calibratingFloor && (
+                            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-auto m-4">
+                                    <div className="p-6">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="text-2xl font-bold flex items-center">
+                                                <Map className="mr-3 h-6 w-6" />
+                                                {calibratingFloor.name} - {t('pages:uwbLocation.mapCalibration')}
+                                            </h2>
+                                            <Button variant="outline" onClick={resetMapCalibration}>
+                                                <Trash2 className="h-4 w-4 mr-1" />
+                                                {t('pages:uwbLocation.close')}
+                                            </Button>
                                         </div>
-                                    )}
-                                </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                    <div className="bg-blue-50 p-3 rounded-lg">
-                                        <div className="font-medium text-blue-800">{t('pages:uwbLocation.discoveredGateways')}</div>
-                                        <div className="text-2xl font-bold text-blue-600">{discoveredGateways.length}</div>
-                                    </div>
-                                    <div className="bg-green-50 p-3 rounded-lg">
-                                        <div className="font-medium text-green-800">{t('pages:uwbLocation.onlineGateways')}</div>
-                                        <div className="text-2xl font-bold text-green-600">
-                                            {discoveredGateways.filter(g => g.isOnline).length}
-                                        </div>
-                                    </div>
-                                    <div className="bg-purple-50 p-3 rounded-lg">
-                                        <div className="font-medium text-purple-800">{t('pages:uwbLocation.mqttMessages')}</div>
-                                        <div className="text-2xl font-bold text-purple-600">{cloudGatewayData.length}</div>
-                                    </div>
-                                </div>
-
-                                {/* 發現的閘道器列表 */}
-                                {discoveredGateways.length > 0 ? (
-                                    <div className="space-y-3">
-                                        <div className="font-medium">{t('pages:uwbLocation.discoveredCloudGateways')}:</div>
-                                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                                            {discoveredGateways.map(gateway => (
-                                                <div key={gateway.gateway_id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`p-2 rounded-full ${gateway.isOnline
-                                                            ? 'bg-green-100 text-green-600'
-                                                            : 'bg-gray-100 text-gray-600'
-                                                            }`}>
-                                                            <Wifi className="h-4 w-4" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-medium flex items-center gap-2">
-                                                                {gateway.name}
-                                                                <Badge
-                                                                    variant="secondary"
-                                                                    className={gateway.isOnline
-                                                                        ? "bg-green-100 text-green-700 border-green-200"
-                                                                        : "bg-gray-100 text-gray-700 border-gray-200"
-                                                                    }
-                                                                >
-                                                                    {gateway.isOnline ? t('pages:uwbLocation.status.online') : t('pages:uwbLocation.status.offline')}
-                                                                </Badge>
-                                                            </div>
-                                                            <div className="text-sm text-muted-foreground">
-                                                                {t('pages:uwbLocation.id')}: {gateway.gateway_id} | {t('pages:uwbLocation.firmware')}: {gateway.fw_ver} | {t('pages:uwbLocation.network')}: {gateway.uwb_network_id}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground">
-                                                                {t('pages:uwbLocation.ap')}: {gateway.connected_ap} | {t('pages:uwbLocation.voltage')}: {gateway.battery_voltage}V |
-                                                                {t('pages:uwbLocation.lastUpdate')}: {gateway.lastSeen instanceof Date ? gateway.lastSeen.toLocaleTimeString('zh-TW') : t('pages:uwbLocation.unknown')}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                setSelectedDiscoveredGateway(gateway.gateway_id)
-                                                                // 填入閘道器表單
-                                                                setGatewayForm({
-                                                                    name: gateway.name,
-                                                                    macAddress: `GW:${gateway.gateway_id.toString(16).toUpperCase()}`,
-                                                                    ipAddress: "192.168.1.100", // 預設IP
-                                                                    floorId: currentFloors[0]?.id || ""
-                                                                })
-                                                                setShowCloudGatewayModal(true)
-                                                            }}
-                                                            disabled={currentFloors.length === 0}
-                                                        >
-                                                            <Plus className="h-4 w-4 mr-1" />
-                                                            {t('pages:uwbLocation.addToSystem')}
-                                                        </Button>
-                                                    </div>
+                                        {/* 步驟指示器 */}
+                                        <div className="flex items-center mb-6">
+                                            <div className={`flex items-center ${calibrationStep === 'upload' ? 'text-blue-600' : 'text-green-600'}`}>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'upload' ? 'border-blue-600 bg-blue-50' : 'border-green-600 bg-green-50'
+                                                    }`}>
+                                                    {calibrationStep === 'upload' ? '1' : <CheckCircle2 className="h-5 w-5" />}
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <AlertCircle className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                                        <p className="font-medium">{t('pages:uwbLocation.noCloudGatewaysFound')}</p>
-                                        <div className="text-xs space-y-1 mt-2">
-                                            <p>{t('pages:uwbLocation.pleaseConfirm')}:</p>
-                                            <p>1. {t('pages:uwbLocation.cloudMqttSimulatorStarted')}</p>
-                                            <p>2. {t('pages:uwbLocation.simulatorSendsGatewayTopic')}</p>
-                                            <p>3. {t('pages:uwbLocation.dataContainsGatewayIdAndName')}</p>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* 原始數據檢視器 - 用於調試 */}
-                                <div className="mt-6">
-                                    <details className="group">
-                                        <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                                            🔍 {t('pages:uwbLocation.viewRawGatewayMqttData')}
-                                        </summary>
-                                        <div className="mt-2 space-y-2 text-xs">
-                                            <div className="text-muted-foreground">
-                                                {t('pages:uwbLocation.clickDataToExpand')}
+                                                <span className="ml-2">{t('pages:uwbLocation.calibrationSteps.upload')}</span>
                                             </div>
-                                            <div className="max-h-60 overflow-y-auto space-y-2">
-                                                {cloudGatewayData.slice(0, 5).map((data, index) => (
-                                                    <details key={index} className="border rounded p-2 bg-slate-50">
-                                                        <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
-                                                            [{index + 1}] {data.content} - Gateway ID: {data.gateway_id} - {data.receivedAt.toLocaleString('zh-TW')}
-                                                        </summary>
-                                                        <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
-                                                            {JSON.stringify(data, null, 2)}
-                                                        </pre>
-                                                    </details>
-                                                ))}
-                                            </div>
-                                            <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                                                <div className="font-semibold mb-1">{t('pages:uwbLocation.gatewayDiscoveryConditions')}:</div>
-                                                <div>• {t('pages:uwbLocation.mustHaveGatewayTopic')}</div>
-                                                <div>• {t('pages:uwbLocation.mustHaveGatewayIdAndName')}</div>
-                                                <div>• {t('pages:uwbLocation.uwbJoinedAnd5VPluggedOnline')}</div>
-                                            </div>
-                                        </div>
-                                    </details>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {currentFloors.length === 0 ? (
-                        <Card>
-                            <CardContent className="pt-6 text-center">
-                                <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                                <p className="text-muted-foreground">{t('pages:uwbLocation.messages.addFloorFirst')}</p>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {currentGateways.map(gateway => {
-                                const floor = floors.find(f => f.id === gateway.floorId)
-
-                                return (
-                                    <Card key={gateway.id}>
-                                        <CardHeader className="pb-3">
-                                            <div className="flex items-center justify-between">
-                                                <CardTitle className="flex items-center">
-                                                    <Wifi className="mr-2 h-5 w-5 text-purple-500" />
-                                                    {gateway.name}
-                                                </CardTitle>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge
-                                                        variant={
-                                                            gateway.status === 'error' ? 'destructive' : 'secondary'
-                                                        }
-                                                        className={
-                                                            gateway.status === 'online' ? 'bg-green-100 text-green-700 border-green-200' : ''
-                                                        }
-                                                    >
-                                                        {gateway.status === 'online' ? t('pages:uwbLocation.status.online') :
-                                                            gateway.status === 'error' ? t('pages:uwbLocation.status.error') : t('pages:uwbLocation.status.offline')}
-                                                    </Badge>
-                                                    <div className="flex gap-1">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                setEditingItem(gateway)
-                                                                setGatewayForm({
-                                                                    name: gateway.name,
-                                                                    macAddress: gateway.macAddress,
-                                                                    ipAddress: gateway.ipAddress,
-                                                                    floorId: gateway.floorId
-                                                                })
-                                                                setShowGatewayForm(true)
-                                                            }}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => deleteGateway(gateway.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
+                                            <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
+                                            <div className={`flex items-center ${calibrationStep === 'setOrigin' ? 'text-blue-600' :
+                                                ['setScale', 'complete'].includes(calibrationStep) ? 'text-green-600' : 'text-gray-400'
+                                                }`}>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'setOrigin' ? 'border-blue-600 bg-blue-50' :
+                                                    ['setScale', 'complete'].includes(calibrationStep) ? 'border-green-600 bg-green-50' : 'border-gray-300'
+                                                    }`}>
+                                                    {calibrationStep === 'setOrigin' ? '2' :
+                                                        ['setScale', 'complete'].includes(calibrationStep) ? <CheckCircle2 className="h-5 w-5" /> : '2'}
                                                 </div>
+                                                <span className="ml-2">{t('pages:uwbLocation.calibrationSteps.setOrigin')}</span>
                                             </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.belongingFloor')}</span>
-                                                    <span className="font-medium">{floor?.name}</span>
+                                            <div className="flex-1 h-0.5 bg-gray-200 mx-4" />
+                                            <div className={`flex items-center ${calibrationStep === 'setScale' ? 'text-blue-600' :
+                                                calibrationStep === 'complete' ? 'text-green-600' : 'text-gray-400'
+                                                }`}>
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${calibrationStep === 'setScale' ? 'border-blue-600 bg-blue-50' :
+                                                    calibrationStep === 'complete' ? 'border-green-600 bg-green-50' : 'border-gray-300'
+                                                    }`}>
+                                                    {calibrationStep === 'setScale' ? '3' :
+                                                        calibrationStep === 'complete' ? <CheckCircle2 className="h-5 w-5" /> : '3'}
                                                 </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.macAddress')}</span>
-                                                    <span className="font-mono text-sm">{gateway.macAddress}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.ipAddress')}</span>
-                                                    <span className="font-mono text-sm">{gateway.ipAddress}</span>
-                                                </div>
-                                                {gateway.lastSeen && (
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.lastConnection')}</span>
-                                                        <span className="text-sm">{gateway.lastSeen.toLocaleString('zh-TW')}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                )
-                            })}
-                        </div>
-                    )}
-
-                </TabsContent>
-
-                {/* 錨點配對管理 */}
-                <TabsContent value="anchors" className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">{t('pages:uwbLocation.anchorPairing.title')}</h2>
-                        <div className="flex items-center gap-4">
-                            {/* 三層巢狀選擇：養老院 -> 樓層 -> Gateway */}
-                            <div className="flex items-center gap-2">
-                                {/* 養老院選擇 */}
-                                <Select
-                                    value={selectedHomeForAnchors}
-                                    onValueChange={(value) => {
-                                        setSelectedHomeForAnchors(value)
-                                        setSelectedFloorForAnchors("")
-                                        setSelectedGatewayForAnchors("")
-                                    }}
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {homes.map(home => (
-                                            <SelectItem key={home.id} value={home.id}>
-                                                {home.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                {/* 樓層選擇 */}
-                                <Select
-                                    value={selectedFloorForAnchors}
-                                    onValueChange={(value) => {
-                                        setSelectedFloorForAnchors(value)
-                                        setSelectedGatewayForAnchors("")
-                                    }}
-                                    disabled={!selectedHomeForAnchors}
-                                >
-                                    <SelectTrigger className="w-[150px]">
-                                        <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {floors
-                                            .filter(floor => floor.homeId === selectedHomeForAnchors)
-                                            .map(floor => (
-                                                <SelectItem key={floor.id} value={floor.id}>
-                                                    {floor.name}
-                                                </SelectItem>
-                                            ))}
-                                    </SelectContent>
-                                </Select>
-
-                                {/* Gateway 選擇 */}
-                                <Select
-                                    value={selectedGatewayForAnchors}
-                                    onValueChange={setSelectedGatewayForAnchors}
-                                    disabled={!selectedFloorForAnchors}
-                                >
-                                    <SelectTrigger className="w-[200px]">
-                                        <SelectValue placeholder={t('pages:uwbLocation.selectGateway')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {/* 顯示該樓層下的系統閘道器 */}
-                                        {currentGateways
-                                            .filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online')
-                                            .map(gateway => {
-                                                // 提取 gateway ID（如果 MAC 地址包含 GW: 前綴）
-                                                const gatewayIdFromMac = gateway.macAddress.startsWith('GW:')
-                                                    ? parseInt(gateway.macAddress.replace('GW:', ''), 16)
-                                                    : null
-
-                                                return (
-                                                    <SelectItem key={`system-${gateway.id}`} value={gatewayIdFromMac?.toString() || gateway.id}>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                                                            {gateway.name} {gateway.cloudData ? '' : '(本地)'}
-                                                        </div>
-                                                    </SelectItem>
-                                                )
-                                            })}
-
-                                        {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
-                                        {currentGateways.filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online').length === 0 && (
-                                            <div className="px-2 py-1.5 text-sm text-gray-500">
-                                                {t('pages:uwbLocation.anchorPairing.noAvailableGateways')}
-                                            </div>
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    console.log("🔄 手動重連 Anchor MQTT...")
-                                    console.log("- 當前選擇的 Gateway:", selectedGatewayForAnchors)
-
-                                    // 強制清理現有連接
-                                    if (anchorCloudClientRef.current) {
-                                        console.log("- 清理現有連接")
-                                        anchorCloudClientRef.current.end()
-                                        anchorCloudClientRef.current = null
-                                    }
-
-                                    // 重置狀態
-                                    setAnchorCloudConnected(false)
-                                    setAnchorCloudConnectionStatus("手動重連中...")
-                                    setAnchorCloudError("")
-                                    setCloudAckData([])
-
-                                    // 觸發重新連接（通過重新設置選擇的 Gateway）
-                                    const currentGateway = selectedGatewayForAnchors
-                                    setSelectedGatewayForAnchors("")
-                                    setTimeout(() => {
-                                        console.log("- 恢復 Gateway 選擇，觸發重連")
-                                        setSelectedGatewayForAnchors(currentGateway)
-                                    }, 100)
-                                }}
-                            >
-                                <RefreshIcon className="h-4 w-4 mr-2" />
-                                {t('pages:uwbLocation.reconnectAnchors')}
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* 雲端錨點發現狀態 */}
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg flex items-center">
-                                    <Anchor className="mr-3 h-5 w-5 text-indigo-500" />
-                                    {t('pages:uwbLocation.cloudAnchorDiscovery')}
-                                </CardTitle>
-                                <div className="text-sm">
-                                    {anchorCloudConnected ? (
-                                        <span className="text-green-600 flex items-center">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                                            {t('pages:uwbLocation.connectionNormal')}
-                                        </span>
-                                    ) : (
-                                        <span className="text-red-500 flex items-center">
-                                            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                                            {anchorCloudConnectionStatus}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
-                                    <div className="font-semibold">{t('pages:uwbLocation.anchorMqttStatus')}</div>
-                                    <div className="flex items-center justify-between">
-                                        <span>{t('pages:uwbLocation.selectedGateway')}:</span>
-                                        <span className="font-medium">
-                                            {selectedGatewayForAnchors ? (() => {
-                                                // 先檢查雲端發現的閘道器
-                                                const discoveredGateway = discoveredGateways.find(gw => gw.gateway_id.toString() === selectedGatewayForAnchors)
-                                                if (discoveredGateway) {
-                                                    return `${discoveredGateway.name} (雲端)`
-                                                }
-
-                                                // 再檢查系統閘道器
-                                                const systemGateway = currentGateways.find(gw => {
-                                                    const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
-                                                        ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
-                                                        : null
-                                                    return gatewayIdFromMac === selectedGatewayForAnchors || gw.id === selectedGatewayForAnchors
-                                                })
-                                                if (systemGateway) {
-                                                    const hasCloudData = systemGateway.cloudData ? " (雲端數據)" : " (本地)"
-                                                    return `${systemGateway.name}${hasCloudData}`
-                                                }
-
-                                                return selectedGatewayForAnchors
-                                            })() : t('pages:uwbLocation.notSelected')}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span>{t('pages:uwbLocation.listeningTopic')}:</span>
-                                        <div className="text-xs font-mono text-muted-foreground text-right">
-                                            <div>Anchor: {currentAnchorTopic || t('pages:uwbLocation.none')}</div>
-                                            <div>Ack: {currentAckTopic || t('pages:uwbLocation.none')}</div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span>{t('pages:uwbLocation.connectionStatus')}:</span>
-                                        <span className={anchorCloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
-                                            {anchorCloudConnectionStatus}
-                                        </span>
-                                    </div>
-                                    {anchorCloudError && (
-                                        <div className="text-xs text-red-500">
-                                            {t('pages:uwbLocation.error')}: {anchorCloudError}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                    <div className="bg-indigo-50 p-3 rounded-lg">
-                                        <div className="font-medium text-indigo-800">{t('pages:uwbLocation.discoveredAnchors')}</div>
-                                        <div className="text-2xl font-bold text-indigo-600">{discoveredCloudAnchors.length}</div>
-                                    </div>
-                                    <div className="bg-green-50 p-3 rounded-lg">
-                                        <div className="font-medium text-green-800">{t('pages:uwbLocation.onlineAnchors')}</div>
-                                        <div className="text-2xl font-bold text-green-600">
-                                            {discoveredCloudAnchors.filter(a => a.isOnline).length}
-                                        </div>
-                                    </div>
-                                    <div className="bg-purple-50 p-3 rounded-lg">
-                                        <div className="font-medium text-purple-800">{t('pages:uwbLocation.mqttMessages')}</div>
-                                        <div className="text-2xl font-bold text-purple-600">{cloudAnchorData.length}</div>
-                                    </div>
-                                    <div className="bg-blue-50 p-3 rounded-lg">
-                                        <div className="font-medium text-blue-800">{t('pages:uwbLocation.ackMessages')}</div>
-                                        <div className="text-2xl font-bold text-blue-600">{cloudAckData.length}</div>
-                                    </div>
-                                </div>
-
-                                {/* 發現的錨點列表 */}
-                                {discoveredCloudAnchors.length > 0 ? (
-                                    <div className="space-y-3">
-                                        <div className="font-medium">{t('pages:uwbLocation.discoveredCloudAnchors')}:</div>
-                                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                                            {discoveredCloudAnchors.map(anchor => (
-                                                <div key={anchor.id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`p-2 rounded-full ${anchor.isOnline
-                                                            ? 'bg-green-100 text-green-600'
-                                                            : 'bg-gray-100 text-gray-600'
-                                                            }`}>
-                                                            <Anchor className="h-4 w-4" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-medium flex items-center gap-2">
-                                                                {anchor.name}
-                                                                <Badge
-                                                                    variant="secondary"
-                                                                    className={anchor.isOnline
-                                                                        ? "bg-green-100 text-green-700 border-green-200"
-                                                                        : "bg-gray-100 text-gray-700 border-gray-200"
-                                                                    }
-                                                                >
-                                                                    {anchor.isOnline ? t('pages:uwbLocation.status.online') : t('pages:uwbLocation.status.offline')}
-                                                                </Badge>
-                                                                {anchor.initiator === 1 && (
-                                                                    <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
-                                                                        {t('pages:uwbLocation.mainAnchor')}
-                                                                    </Badge>
-                                                                )}
-                                                            </div>
-                                                            <div className="text-sm text-muted-foreground">
-                                                                {t('pages:uwbLocation.id')}: {anchor.id} | {t('pages:uwbLocation.gateway')}: {anchor.gateway_id} | LED: {anchor.led ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')} | BLE: {anchor.ble ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground">
-                                                                {t('pages:uwbLocation.position')}: ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)}) |
-                                                                {t('pages:uwbLocation.lastUpdate')}: {anchor.lastSeen instanceof Date ? anchor.lastSeen.toLocaleTimeString('zh-TW') : t('pages:uwbLocation.unknown')}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                setSelectedCloudAnchor(anchor)
-                                                                setShowCloudAnchorModal(true)
-                                                            }}
-                                                            disabled={!anchor.isOnline}
-                                                        >
-                                                            <Plus className="h-4 w-4 mr-1" />
-                                                            {t('pages:uwbLocation.addToSystem')}
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                // TODO: 實現錨點配置功能
-                                                                console.log("配置錨點:", anchor)
-                                                            }}
-                                                            disabled={!anchor.isOnline}
-                                                        >
-                                                            <Settings className="h-4 w-4 mr-1" />
-                                                            {t('pages:uwbLocation.configure')}
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <Anchor className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                                        <p className="font-medium">
-                                            {selectedGatewayForAnchors ? t('pages:uwbLocation.messages.noAnchorsFound') : t('pages:uwbLocation.messages.selectGatewayFirst')}
-                                        </p>
-                                        {selectedGatewayForAnchors && (
-                                            <div className="text-xs space-y-1 mt-2">
-                                                <p>{t('pages:uwbLocation.pleaseConfirm')}:</p>
-                                                <p>1. {t('pages:uwbLocation.gatewayAnchorConfigTopicCorrect')}</p>
-                                                <p>2. {t('pages:uwbLocation.simulatorSendsAnchorConfigData')}</p>
-                                                <p>3. {t('pages:uwbLocation.dataContainsIdAndName')}</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* 原始數據檢視器 - 用於調試 */}
-                                <div className="mt-6 space-y-4">
-                                    {/* Anchor 數據 */}
-                                    <details className="group">
-                                        <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                                            🔍 {t('pages:uwbLocation.anchorPairing.debug.viewRawAnchorMqttData')}
-                                        </summary>
-                                        <div className="mt-2 space-y-2 text-xs">
-                                            <div className="text-muted-foreground">
-                                                {t('pages:uwbLocation.anchorPairing.debug.clickDataToExpand')}
-                                            </div>
-                                            <div className="max-h-60 overflow-y-auto space-y-2">
-                                                {cloudAnchorData.slice(0, 5).map((data, index) => (
-                                                    <details key={index} className="border rounded p-2 bg-slate-50">
-                                                        <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
-                                                            [{index + 1}] {data.content} - {data.name} (ID: {data.id}) - {data.receivedAt.toLocaleString('zh-TW')}
-                                                        </summary>
-                                                        <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
-                                                            {JSON.stringify(data, null, 2)}
-                                                        </pre>
-                                                    </details>
-                                                ))}
-                                            </div>
-                                            <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                                                <div className="font-semibold mb-1">{t('pages:uwbLocation.anchorPairing.debug.anchorDiscoveryConditions')}:</div>
-                                                <div>• {t('pages:uwbLocation.anchorPairing.debug.mustHaveConfig')}</div>
-                                                <div>• {t('pages:uwbLocation.anchorPairing.debug.mustHaveNodeAnchor')}</div>
-                                                <div>• {t('pages:uwbLocation.anchorPairing.debug.mustHaveIdAndName')}</div>
-                                                <div>• {t('pages:uwbLocation.anchorPairing.debug.initiatorMainAnchor')}</div>
-                                            </div>
-                                        </div>
-                                    </details>
-
-                                    {/* Ack 數據 */}
-                                    <details className="group">
-                                        <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                                            🔍 {t('pages:uwbLocation.anchorPairing.debug.viewRawAckData')}
-                                        </summary>
-                                        <div className="mt-2 space-y-2 text-xs">
-                                            <div className="text-muted-foreground">
-                                                {t('pages:uwbLocation.anchorPairing.debug.clickDataToExpand')}
-                                            </div>
-                                            <div className="max-h-60 overflow-y-auto space-y-2">
-                                                {cloudAckData.slice(0, 5).map((data, index) => (
-                                                    <details key={index} className="border rounded p-2 bg-blue-50">
-                                                        <summary className="cursor-pointer font-mono text-xs hover:bg-blue-100 p-1 rounded">
-                                                            [{index + 1}] Ack - {data.topic || 'Unknown'} - {data.receivedAt.toLocaleString('zh-TW')}
-                                                        </summary>
-                                                        <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
-                                                            {JSON.stringify(data, null, 2)}
-                                                        </pre>
-                                                    </details>
-                                                ))}
-                                            </div>
-                                            <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
-                                                <div className="font-semibold mb-1">Ack 數據說明：</div>
-                                                <div>• 來自 GWxxxx_Ack 主題的確認消息</div>
-                                                <div>• 包含錨點對配置的響應信息</div>
-                                                <div>• 用於調試錨點配對過程</div>
-                                            </div>
-                                        </div>
-                                    </details>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    {/* Anchor 位置地圖視圖 */}
-                    {selectedGatewayForAnchors && (() => {
-                        // 找到選擇的 Gateway
-                        const selectedGateway = gateways.find(gw => {
-                            const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
-                                ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
-                                : null
-                            return gatewayIdFromMac === selectedGatewayForAnchors || gw.id === selectedGatewayForAnchors
-                        })
-
-                        if (!selectedGateway) return null
-
-                        // 找到對應的樓層
-                        const floor = floors.find(f => f.id === selectedGateway.floorId)
-                        if (!floor || !floor.mapImage || !floor.calibration?.isCalibrated) return null
-
-                        // 獲取該樓層的 Anchor
-                        const floorAnchors = getAnchorsForFloor(floor.id)
-                        if (floorAnchors.length === 0) return null
-
-                        return (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-lg flex items-center">
-                                        <Map className="mr-3 h-5 w-5 text-green-500" />
-                                        {t('pages:uwbLocation.anchorLocationMap')} - {floor.name}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="text-lg font-medium text-muted-foreground">
-                                                {t('pages:uwbLocation.showAnchorsOnMap')}
-                                            </div>
-                                            {/* 模式切換按鈕 - 移到右邊 */}
-                                            <div className="flex items-center gap-3">
-                                                <Button
-                                                    size="lg"
-                                                    variant={anchorMapMode === 'calibration' ? 'default' : 'outline'}
-                                                    onClick={() => handleModeSwitch('calibration')}
-                                                    className="px-6 py-3"
-                                                >
-                                                    {t('pages:uwbLocation.calibrationMode')}
-                                                </Button>
-                                                <Button
-                                                    size="lg"
-                                                    variant={anchorMapMode === 'zoom' ? 'default' : 'outline'}
-                                                    onClick={() => handleModeSwitch('zoom')}
-                                                    className="px-6 py-3"
-                                                >
-                                                    {t('pages:uwbLocation.zoomMode')}
-                                                </Button>
+                                                <span className="ml-2">{t('pages:uwbLocation.calibrationSteps.setScale')}</span>
                                             </div>
                                         </div>
 
-                                        {anchorMapMode === 'calibration' ? (
-                                            // 校正模式：使用原始結構
-                                            <div className="relative border rounded-lg overflow-hidden" style={{ height: '400px' }}>
-                                                <img
-                                                    src={floor.mapImage}
-                                                    alt={`${floor.name} 地圖`}
-                                                    className={`w-full h-full object-contain bg-gray-50 anchor-map-image ${calibratingAnchor ? 'cursor-crosshair' : ''}`}
-                                                    onClick={calibratingAnchor ? handleMapClickCalibration : undefined}
-                                                    onLoad={(e) => {
-                                                        // 圖片加載完成後觸發重新渲染
-                                                        setImageLoaded(prev => !prev)
-                                                    }}
-                                                />
-
-                                                {/* 操作提示 */}
-                                                {calibratingAnchor ? (
-                                                    <div className="absolute top-2 left-2 bg-green-600 text-white text-sm px-3 py-1 rounded shadow-sm animate-pulse">
-                                                        {t('pages:uwbLocation.clickMapSetNewPosition', { name: calibratingAnchor.name })}
-                                                    </div>
-                                                ) : (
-                                                    <div className="absolute top-2 left-2 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm">
-                                                        {t('pages:uwbLocation.doubleClickAnchorToCalibrate')}
-                                                    </div>
-                                                )}
-
-                                                {/* 座標原點 */}
-                                                {floor.calibration?.originPixel && (() => {
-                                                    const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
-                                                    if (!imgElement || imgElement.naturalWidth === 0) return null
-
-                                                    // 將原點的自然座標轉換為當前圖片的顯示座標
-                                                    const displayCoords = convertNaturalToDisplayCoords(
-                                                        floor.calibration.originPixel.x,
-                                                        floor.calibration.originPixel.y,
-                                                        imgElement
-                                                    )
-
-                                                    return (
-                                                        <div
-                                                            className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
-                                                            style={{
-                                                                left: `${displayCoords.x}px`,
-                                                                top: `${displayCoords.y}px`
-                                                            }}
-                                                            title={t('pages:uwbLocation.coordinateOrigin', { x: floor.calibration.originCoordinates?.x || 0, y: floor.calibration.originCoordinates?.y || 0 })}
-                                                        />
-                                                    )
-                                                })()}
-
-                                                {/* Anchor 位置 */}
-                                                {floorAnchors.map(anchor => {
-                                                    if (!anchor.position) return null
-
-                                                    const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
-                                                    if (!imgElement || imgElement.naturalWidth === 0) return null
-
-                                                    const displayPos = convertRealToDisplayCoords(anchor.position.x, anchor.position.y, floor, imgElement)
-                                                    if (!displayPos) return null
-
-                                                    return (
-                                                        <div
-                                                            key={anchor.id}
-                                                            className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                                                            style={{
-                                                                left: `${displayPos.x}px`,
-                                                                top: `${displayPos.y}px`
-                                                            }}
-                                                        >
-                                                            {/* Anchor 圖標 */}
-                                                            <div
-                                                                className={`w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${calibratingAnchor?.id === anchor.id
-                                                                    ? 'border-yellow-400 bg-yellow-500 animate-pulse'
-                                                                    : anchor.cloudData?.initiator === 1
-                                                                        ? 'border-white bg-orange-500 hover:bg-orange-600'
-                                                                        : 'border-white bg-blue-500 hover:bg-blue-600'
-                                                                    }`}
-                                                                onDoubleClick={(e) => startAnchorMapCalibration(anchor, e)}
-                                                                title={calibratingAnchor?.id === anchor.id ? t('pages:uwbLocation.anchorPairing.actions.calibrate') + "..." : t('pages:uwbLocation.anchorPairing.doubleClickToCalibrate')}
-                                                            >
-                                                                <Anchor className="w-3 h-3 text-white" />
-                                                            </div>
-
-                                                            {/* Anchor 標籤 */}
-                                                            <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm border">
-                                                                <div className="font-medium">{anchor.name}</div>
-                                                                <div className="text-muted-foreground">
-                                                                    ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
-                                                                </div>
-                                                                {anchor.cloudData?.initiator === 1 && (
-                                                                    <div className="text-orange-600 text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}</div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        ) : (
-                                            // 縮放模式：使用縮放結構
-                                            <div className="relative border rounded-lg overflow-hidden bg-gray-50" style={{ height: '400px' }}>
-                                                <div
-                                                    ref={anchorMapContainerRef}
-                                                    className="relative select-none w-full h-full"
-                                                    style={{
-                                                        cursor: isAnchorDragging ? 'grabbing' : 'grab',
-                                                        touchAction: 'none',
-                                                        overscrollBehavior: 'none'
-                                                    }}
-                                                    onMouseDown={handleAnchorMouseDown}
-                                                    onMouseMove={handleAnchorMouseMove}
-                                                    onMouseUp={handleAnchorMouseUp}
-                                                    onMouseEnter={handleAnchorMapMouseEnter}
-                                                    onMouseLeave={() => {
-                                                        handleAnchorMouseUp()
-                                                        handleAnchorMapMouseLeave()
-                                                    }}
-                                                    onTouchStart={handleAnchorTouchStart}
-                                                    onTouchMove={handleAnchorTouchMove}
-                                                    onTouchEnd={handleAnchorTouchEnd}
-                                                >
-                                                    {/* 縮放變換容器 */}
-                                                    <div
-                                                        className="relative origin-top-left w-full h-full"
-                                                        style={{
-                                                            transform: `translate(${anchorMapTransform.translateX}px, ${anchorMapTransform.translateY}px) scale(${anchorMapTransform.scale})`,
-                                                            transformOrigin: '0 0',
-                                                            transition: isAnchorDragging ? 'none' : 'transform 0.1s ease-out'
-                                                        }}
-                                                    >
-                                                        <img
-                                                            ref={anchorMapImageRef}
-                                                            src={floor.mapImage}
-                                                            alt={`${floor.name} 地圖`}
-                                                            className="w-full h-full object-contain anchor-map-image"
-                                                            draggable={false}
-                                                        />
-
-                                                        {/* 座標原點 */}
-                                                        {floor.calibration?.originPixel && (() => {
-                                                            const imgElement = anchorMapImageRef.current
-                                                            if (!imgElement || imgElement.naturalWidth === 0) return null
-
-                                                            const displayCoords = convertNaturalToDisplayCoords(
-                                                                floor.calibration.originPixel.x,
-                                                                floor.calibration.originPixel.y,
-                                                                imgElement
-                                                            )
-
-                                                            return (
-                                                                <div
-                                                                    className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
-                                                                    style={{
-                                                                        left: `${displayCoords.x}px`,
-                                                                        top: `${displayCoords.y}px`
-                                                                    }}
-                                                                    title={t('pages:uwbLocation.coordinateOrigin', { x: floor.calibration.originCoordinates?.x || 0, y: floor.calibration.originCoordinates?.y || 0 })}
-                                                                />
-                                                            )
-                                                        })()}
-
-                                                        {/* Anchor 位置 */}
-                                                        {floorAnchors.map(anchor => {
-                                                            if (!anchor.position) return null
-
-                                                            const imgElement = anchorMapImageRef.current
-                                                            if (!imgElement || imgElement.naturalWidth === 0) return null
-
-                                                            // 在縮放模式下，使用基礎顯示座標，不應用變換
-                                                            // 因為錨點標記在變換容器內，會自動跟著地圖一起變換
-                                                            const displayPos = convertRealToDisplayCoords(anchor.position.x, anchor.position.y, floor, imgElement)
-                                                            if (!displayPos) return null
-
-                                                            return (
-                                                                <div
-                                                                    key={anchor.id}
-                                                                    className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                                                                    style={{
-                                                                        left: `${displayPos.x}px`,
-                                                                        top: `${displayPos.y}px`
-                                                                    }}
-                                                                >
-                                                                    {/* Anchor 圖標 */}
-                                                                    <div
-                                                                        className={`w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${anchor.cloudData?.initiator === 1
-                                                                            ? 'border-white bg-orange-500 hover:bg-orange-600'
-                                                                            : 'border-white bg-blue-500 hover:bg-blue-600'
-                                                                            }`}
-                                                                        title={anchor.name}
-                                                                    >
-                                                                        <Anchor className="w-3 h-3 text-white" />
-                                                                    </div>
-
-                                                                    {/* Anchor 標籤 */}
-                                                                    <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm border">
-                                                                        <div className="font-medium">{anchor.name}</div>
-                                                                        <div className="text-muted-foreground">
-                                                                            ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
-                                                                        </div>
-                                                                        {anchor.cloudData?.initiator === 1 && (
-                                                                            <div className="text-orange-600 text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}</div>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            )
-                                                        })}
-                                                    </div>
-
-                                                    {/* 縮放控制按鈕 */}
-                                                    <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-lg z-10">
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={handleAnchorZoomIn}
-                                                            disabled={anchorMapTransform.scale >= anchorMapTransform.maxScale}
-                                                            className="w-8 h-8 p-0"
-                                                            title="放大"
-                                                        >
-                                                            <ZoomIn className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={handleAnchorZoomOut}
-                                                            disabled={anchorMapTransform.scale <= anchorMapTransform.minScale}
-                                                            className="w-8 h-8 p-0"
-                                                            title="縮小"
-                                                        >
-                                                            <ZoomOut className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={resetAnchorMapView}
-                                                            className="w-8 h-8 p-0"
-                                                            title="重置視圖"
-                                                        >
-                                                            <RotateCcw className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-
-                                                    {/* 縮放比例顯示 */}
-                                                    <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-lg shadow-lg text-sm z-10">
-                                                        縮放: {(anchorMapTransform.scale * 100).toFixed(0)}%
-                                                    </div>
-
-                                                    {/* 操作提示 */}
-                                                    <div className="absolute top-4 left-4 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm z-10">
-                                                        滑鼠在地圖上滾動縮放，拖拽移動
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* 圖例 */}
-                                        <div className="flex items-center gap-6 text-sm">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 bg-red-500 rounded-full border border-white"></div>
-                                                <span>{t('pages:uwbLocation.anchorPairing.mapLegend.coordinateOrigin')}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 bg-blue-500 rounded-full border border-white"></div>
-                                                <span>{t('pages:uwbLocation.anchorPairing.mapLegend.generalAnchor')}</span>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-3 h-3 bg-orange-500 rounded-full border border-white"></div>
-                                                <span>{t('pages:uwbLocation.anchorPairing.mapLegend.mainAnchor')}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )
-                    })()}
-
-                    {/* 本地錨點管理（已加入的錨點） */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-lg flex items-center">
-                                <Radio className="mr-3 h-5 w-5 text-gray-500" />
-                                {t('pages:uwbLocation.anchorPairing.localAnchorManagement')}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {selectedGatewayForAnchors ? (
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-sm text-muted-foreground">
-                                            {t('pages:uwbLocation.anchorPairing.currentGateway')}: <span className="font-medium">{selectedGatewayForAnchors}</span>
-                                        </div>
-                                        <Button
-                                            onClick={startAnchorPairing}
-                                            disabled={pairingInProgress}
-                                            variant="outline"
-                                        >
-                                            {pairingInProgress ? (
-                                                <>
-                                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                                    {t('pages:uwbLocation.anchorPairing.pairingInProgress')}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Radio className="h-4 w-4 mr-2" />
-                                                    {t('pages:uwbLocation.anchorPairing.startSimulationPairing')}
-                                                </>
-                                            )}
-                                        </Button>
-                                    </div>
-                                ) : (
-                                    <div className="text-center py-4 text-muted-foreground">
-                                        <AlertCircle className="mx-auto h-6 w-6 mb-2 opacity-50" />
-                                        <p className="text-sm">{t('pages:uwbLocation.anchorPairing.selectGatewayFirst')}</p>
-                                    </div>
-                                )}
-
-                                {onlineGateways.length === 0 ? (
-                                    <div className="text-center py-4 text-muted-foreground">
-                                        <AlertCircle className="mx-auto h-6 w-6 mb-2 opacity-50" />
-                                        <p className="text-sm">{t('pages:uwbLocation.anchorPairing.noOnlineGateways')}</p>
-                                    </div>
-                                ) : (
-                                    <>
-                                        {/* 配對進度區域 */}
-                                        {(pairingInProgress || discoveredAnchors.length > 0) && (
+                                        {/* 步驟1: 上傳地圖 */}
+                                        {calibrationStep === 'upload' && (
                                             <Card>
                                                 <CardHeader>
                                                     <CardTitle className="flex items-center">
-                                                        <Radio className="mr-2 h-5 w-5" />
-                                                        {t('pages:uwbLocation.anchorPairing.simulationPairingProgress')}
+                                                        <Upload className="mr-2 h-5 w-5" />
+                                                        {t('pages:uwbLocation.uploadFloorMap')}
                                                     </CardTitle>
                                                 </CardHeader>
                                                 <CardContent>
-                                                    <div className="space-y-3">
-                                                        {pairingInProgress && (
-                                                            <div className="flex items-center gap-2 text-blue-600">
-                                                                <Loader2 className="h-4 w-4 animate-spin" />
-                                                                <span>{t('pages:uwbLocation.anchorPairing.scanningNearbyAnchors')}</span>
-                                                            </div>
-                                                        )}
-
-                                                        {discoveredAnchors.map((macAddress, index) => (
-                                                            <div key={macAddress} className="flex items-center justify-between p-3 border rounded-lg">
-                                                                <div className="flex items-center gap-3">
-                                                                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                                                                    <div>
-                                                                        <div className="font-medium">{t('pages:uwbLocation.anchorPairing.discoveredNewAnchor')}</div>
-                                                                        <div className="text-sm text-muted-foreground font-mono">{macAddress}</div>
-                                                                    </div>
-                                                                </div>
-                                                                <Button
-                                                                    size="sm"
-                                                                    onClick={() => addDiscoveredAnchor(macAddress)}
-                                                                >
-                                                                    <Plus className="h-4 w-4 mr-1" />
-                                                                    {t('pages:uwbLocation.anchorPairing.add')}
-                                                                </Button>
-                                                            </div>
-                                                        ))}
+                                                    <div className="space-y-4">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {t('pages:uwbLocation.uploadInstructions', { floorName: calibratingFloor.name })}
+                                                        </p>
+                                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                                            <Image className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                onChange={handleImageUpload}
+                                                                className="hidden"
+                                                                id="map-upload"
+                                                            />
+                                                            <label
+                                                                htmlFor="map-upload"
+                                                                className="cursor-pointer inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                                            >
+                                                                <Upload className="h-4 w-4 mr-2" />
+                                                                {t('pages:uwbLocation.selectMapFile')}
+                                                            </label>
+                                                            <p className="text-sm text-muted-foreground mt-2">
+                                                                {t('pages:uwbLocation.dragImageHint')}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </CardContent>
                                             </Card>
                                         )}
 
-                                        {/* 已配對錨點列表 */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {(() => {
-                                                // 根据选择的网关过滤锚点
-                                                const filteredAnchors = currentAnchors.filter(anchor =>
-                                                    anchor.gatewayId === selectedGatewayForAnchors ||
-                                                    anchor.cloudGatewayId?.toString() === selectedGatewayForAnchors
-                                                )
+                                        {/* 步驟2: 設定原點 */}
+                                        {calibrationStep === 'setOrigin' && uploadedImage && (
+                                            <Card>
+                                                <CardHeader>
+                                                    <CardTitle className="flex items-center">
+                                                        <Target className="mr-2 h-5 w-5" />
+                                                        {t('pages:uwbLocation.setCoordinateOrigin')}
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="space-y-4">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {t('pages:uwbLocation.originInstructions')}
+                                                        </p>
+                                                        <div className="relative border-2 border-blue-300 rounded-lg overflow-hidden bg-blue-50">
+                                                            <img
+                                                                ref={mapImageRef}
+                                                                src={uploadedImage}
+                                                                alt="樓層地圖"
+                                                                className="w-full max-h-96 object-contain cursor-crosshair hover:opacity-90 transition-opacity map-calibration-image"
+                                                                onClick={handleMapClick}
+                                                                onLoad={() => setImageLoaded(true)}
+                                                            />
+                                                            {/* 點擊提示 */}
+                                                            <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded shadow-sm">
+                                                                {t('pages:uwbLocation.clickMapSetOrigin')}
+                                                            </div>
+                                                            {selectedOrigin && imageLoaded && (() => {
+                                                                const imgElement = mapImageRef.current
 
-                                                if (filteredAnchors.length === 0) {
-                                                    return (
-                                                        <div className="col-span-2 text-center py-8 text-muted-foreground">
-                                                            <Anchor className="mx-auto h-12 w-12 mb-3 opacity-30" />
-                                                            <p className="text-sm">{t('pages:uwbLocation.anchorPairing.noPairedAnchors')}</p>
+                                                                if (!imgElement || imgElement.naturalWidth === 0) {
+                                                                    console.warn('圖片元素未找到或未加載完成')
+                                                                    return null
+                                                                }
+
+                                                                const displayCoords = convertNaturalToDisplayCoords(selectedOrigin.x, selectedOrigin.y, imgElement)
+
+                                                                return (
+                                                                    <div
+                                                                        className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse shadow-lg"
+                                                                        style={{
+                                                                            left: displayCoords.x,
+                                                                            top: displayCoords.y
+                                                                        }}
+                                                                        title={`原點: 自然座標(${selectedOrigin.x.toFixed(0)}, ${selectedOrigin.y.toFixed(0)}) 顯示座標(${displayCoords.x.toFixed(0)}, ${displayCoords.y.toFixed(0)})`}
+                                                                    />
+                                                                )
+                                                            })()}
                                                         </div>
-                                                    )
-                                                }
+                                                        {selectedOrigin && (
+                                                            <div className="space-y-4 p-4 bg-green-50 rounded-lg">
+                                                                <div className="flex items-center">
+                                                                    <Crosshair className="h-5 w-5 text-green-600 mr-2" />
+                                                                    <span className="text-sm font-medium">
+                                                                        {t('pages:uwbLocation.originPixelPosition')}: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})
+                                                                    </span>
+                                                                </div>
+                                                                <div className="grid grid-cols-2 gap-4">
+                                                                    <div>
+                                                                        <label className="text-sm font-medium mb-2 block">
+                                                                            {t('pages:uwbLocation.actualXCoordinate')}
+                                                                        </label>
+                                                                        <Input
+                                                                            type="number"
+                                                                            value={originCoordinates.x}
+                                                                            onChange={(e) => setOriginCoordinates(prev => ({
+                                                                                ...prev,
+                                                                                x: parseFloat(e.target.value) || 0
+                                                                            }))}
+                                                                            placeholder="0"
+                                                                            step="0.1"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <label className="text-sm font-medium mb-2 block">
+                                                                            {t('pages:uwbLocation.actualYCoordinate')}
+                                                                        </label>
+                                                                        <Input
+                                                                            type="number"
+                                                                            value={originCoordinates.y}
+                                                                            onChange={(e) => setOriginCoordinates(prev => ({
+                                                                                ...prev,
+                                                                                y: parseFloat(e.target.value) || 0
+                                                                            }))}
+                                                                            placeholder="0"
+                                                                            step="0.1"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex justify-between">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => {
+                                                                            setSelectedOrigin(null)
+                                                                            setOriginCoordinates({ x: 0, y: 0 })
+                                                                        }}
+                                                                    >
+                                                                        <RotateCcw className="h-4 w-4 mr-1" />
+                                                                        {t('pages:uwbLocation.reselectOrigin')}
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        onClick={() => setCalibrationStep('setScale')}
+                                                                    >
+                                                                        {t('pages:uwbLocation.nextStep')}
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        )}
 
-                                                return filteredAnchors.map(anchor => {
-                                                    const gateway = gateways.find(g => g.id === anchor.gatewayId)
+                                        {/* 步驟3: 設定比例 */}
+                                        {calibrationStep === 'setScale' && (
+                                            <Card>
+                                                <CardHeader>
+                                                    <CardTitle className="flex items-center">
+                                                        <Ruler className="mr-2 h-5 w-5" />
+                                                        {t('pages:uwbLocation.setCoordinateScale')}
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="space-y-4">
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {t('pages:uwbLocation.scaleInstructions')}
+                                                        </p>
+                                                        <div className="relative border-2 border-green-300 rounded-lg overflow-hidden bg-green-50">
+                                                            <img
+                                                                ref={scaleImageRef}
+                                                                src={uploadedImage}
+                                                                alt="樓層地圖"
+                                                                className="w-full max-h-96 object-contain cursor-crosshair hover:opacity-90 transition-opacity map-calibration-image"
+                                                                onClick={handleMapClick}
+                                                                onLoad={() => setImageLoaded(true)}
+                                                            />
+                                                            {/* 點擊提示 */}
+                                                            <div className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-1 rounded shadow-sm">
+                                                                {t('pages:uwbLocation.clickTwoPointsSetScale')}
+                                                            </div>
+                                                            {/* 顯示原點 */}
+                                                            {selectedOrigin && (() => {
+                                                                const imgElement = scaleImageRef.current
+                                                                if (!imgElement) return null
+
+                                                                const displayCoords = convertNaturalToDisplayCoords(selectedOrigin.x, selectedOrigin.y, imgElement)
+
+                                                                return (
+                                                                    <div
+                                                                        className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 shadow-lg"
+                                                                        style={{
+                                                                            left: displayCoords.x,
+                                                                            top: displayCoords.y
+                                                                        }}
+                                                                        title={`原點: 自然座標(${selectedOrigin.x.toFixed(0)}, ${selectedOrigin.y.toFixed(0)}) 實際(${originCoordinates.x}, ${originCoordinates.y})米`}
+                                                                    />
+                                                                )
+                                                            })()}
+                                                            {/* 顯示比例標定點 */}
+                                                            {scalePoints.point1 && (() => {
+                                                                const imgElement = scaleImageRef.current
+                                                                if (!imgElement) return null
+
+                                                                const displayCoords = convertNaturalToDisplayCoords(scalePoints.point1.x, scalePoints.point1.y, imgElement)
+
+                                                                return (
+                                                                    <div
+                                                                        className="absolute w-4 h-4 bg-blue-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
+                                                                        style={{
+                                                                            left: displayCoords.x,
+                                                                            top: displayCoords.y
+                                                                        }}
+                                                                        title="比例點1"
+                                                                    />
+                                                                )
+                                                            })()}
+                                                            {scalePoints.point2 && (() => {
+                                                                const imgElement = scaleImageRef.current
+                                                                if (!imgElement) return null
+
+                                                                const displayCoords = convertNaturalToDisplayCoords(scalePoints.point2.x, scalePoints.point2.y, imgElement)
+
+                                                                return (
+                                                                    <div
+                                                                        className="absolute w-4 h-4 bg-green-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse"
+                                                                        style={{
+                                                                            left: displayCoords.x,
+                                                                            top: displayCoords.y
+                                                                        }}
+                                                                        title="比例點2"
+                                                                    />
+                                                                )
+                                                            })()}
+                                                            {/* 顯示連線 */}
+                                                            {scalePoints.point1 && scalePoints.point2 && (() => {
+                                                                const imgElement = scaleImageRef.current
+                                                                if (!imgElement) return null
+
+                                                                const displayCoords1 = convertNaturalToDisplayCoords(scalePoints.point1.x, scalePoints.point1.y, imgElement)
+                                                                const displayCoords2 = convertNaturalToDisplayCoords(scalePoints.point2.x, scalePoints.point2.y, imgElement)
+
+                                                                return (
+                                                                    <svg
+                                                                        className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                                                                        style={{ zIndex: 10 }}
+                                                                    >
+                                                                        <line
+                                                                            x1={displayCoords1.x}
+                                                                            y1={displayCoords1.y}
+                                                                            x2={displayCoords2.x}
+                                                                            y2={displayCoords2.y}
+                                                                            stroke="#f59e0b"
+                                                                            strokeWidth="2"
+                                                                            strokeDasharray="5,5"
+                                                                        />
+                                                                    </svg>
+                                                                )
+                                                            })()}
+                                                        </div>
+
+                                                        {/* 點選狀態顯示 */}
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                            <div className="space-y-2">
+                                                                <div className="text-sm font-medium">{t('pages:uwbLocation.selectedPoints')}:</div>
+                                                                <div className="space-y-1 text-xs">
+                                                                    <div className={`flex items-center ${scalePoints.point1 ? 'text-blue-600' : 'text-gray-400'}`}>
+                                                                        <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                                                                        {t('pages:uwbLocation.point1')}: {scalePoints.point1 ?
+                                                                            `(${scalePoints.point1.x.toFixed(0)}, ${scalePoints.point1.y.toFixed(0)})` :
+                                                                            t('pages:uwbLocation.clickMapSelect')}
+                                                                    </div>
+                                                                    <div className={`flex items-center ${scalePoints.point2 ? 'text-green-600' : 'text-gray-400'}`}>
+                                                                        <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                                                        {t('pages:uwbLocation.point2')}: {scalePoints.point2 ?
+                                                                            `(${scalePoints.point2.x.toFixed(0)}, ${scalePoints.point2.y.toFixed(0)})` :
+                                                                            t('pages:uwbLocation.clickMapSelect')}
+                                                                    </div>
+                                                                    {scalePoints.point1 && scalePoints.point2 && (
+                                                                        <div className="text-amber-600 font-medium">
+                                                                            {t('pages:uwbLocation.pixelDistance')}: {Math.sqrt(
+                                                                                Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
+                                                                                Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
+                                                                            ).toFixed(1)} px
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-sm font-medium mb-2 block">
+                                                                    {t('pages:uwbLocation.actualDistance')}
+                                                                </label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={realDistance}
+                                                                    onChange={(e) => {
+                                                                        const value = parseFloat(e.target.value)
+                                                                        if (!isNaN(value) && value > 0) {
+                                                                            setRealDistance(value)
+                                                                        }
+                                                                    }}
+                                                                    placeholder="1.0"
+                                                                    min="0.01"
+                                                                    step="0.1"
+                                                                    disabled={!scalePoints.point1 || !scalePoints.point2}
+                                                                />
+                                                                <p className="text-xs text-muted-foreground mt-1">
+                                                                    {t('pages:uwbLocation.enterActualDistance')}
+                                                                </p>
+                                                                {scalePoints.point1 && scalePoints.point2 && realDistance > 0 && (
+                                                                    <div className="mt-2 p-2 bg-blue-50 rounded text-xs">
+                                                                        <div className="font-medium text-blue-800">{t('pages:uwbLocation.calculationResult')}:</div>
+                                                                        <div className="text-blue-700">
+                                                                            {t('pages:uwbLocation.ratio')}: {(Math.sqrt(
+                                                                                Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
+                                                                                Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
+                                                                            ) / realDistance).toFixed(2)} {t('pages:uwbLocation.pixelsPerMeter')}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() => setCalibrationStep('setOrigin')}
+                                                            >
+                                                                <RotateCcw className="h-4 w-4 mr-2" />
+                                                                {t('pages:uwbLocation.previousStep')}
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() => setScalePoints({ point1: null, point2: null })}
+                                                                disabled={!scalePoints.point1 && !scalePoints.point2}
+                                                            >
+                                                                {t('pages:uwbLocation.reselectPoints')}
+                                                            </Button>
+                                                            <Button
+                                                                onClick={saveMapCalibration}
+                                                                disabled={!scalePoints.point1 || !scalePoints.point2 || realDistance <= 0}
+                                                            >
+                                                                <Save className="h-4 w-4 mr-2" />
+                                                                {t('pages:uwbLocation.saveCalibration')}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        )}
+
+                                        {/* 步驟4: 完成 */}
+                                        {calibrationStep === 'complete' && (
+                                            <Card>
+                                                <CardHeader>
+                                                    <CardTitle className="flex items-center text-green-600">
+                                                        <CheckCircle2 className="mr-2 h-5 w-5" />
+                                                        {t('pages:uwbLocation.calibrationComplete')}
+                                                    </CardTitle>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="space-y-4">
+                                                        <div className="p-4 bg-green-50 rounded-lg">
+                                                            <h3 className="text-lg font-semibold text-green-800 mb-2">{t('pages:uwbLocation.calibrationInfo')}</h3>
+                                                            <div className="space-y-1 text-sm text-green-700">
+                                                                <div>{t('pages:uwbLocation.floor')}: {calibratingFloor.name}</div>
+                                                                {selectedOrigin && (
+                                                                    <div>{t('pages:uwbLocation.originPixelPosition')}: ({selectedOrigin.x.toFixed(0)}, {selectedOrigin.y.toFixed(0)})</div>
+                                                                )}
+                                                                <div>{t('pages:uwbLocation.originActualCoordinates')}: ({originCoordinates.x}, {originCoordinates.y}) {t('pages:uwbLocation.meters')}</div>
+                                                                {scalePoints.point1 && scalePoints.point2 && (
+                                                                    <>
+                                                                        <div>{t('pages:uwbLocation.calibrationPoint1')}: ({scalePoints.point1.x.toFixed(0)}, {scalePoints.point1.y.toFixed(0)}) {t('pages:uwbLocation.pixels')}</div>
+                                                                        <div>{t('pages:uwbLocation.calibrationPoint2')}: ({scalePoints.point2.x.toFixed(0)}, {scalePoints.point2.y.toFixed(0)}) {t('pages:uwbLocation.pixels')}</div>
+                                                                        <div>{t('pages:uwbLocation.actualDistance')}: {realDistance} {t('pages:uwbLocation.meters')}</div>
+                                                                        <div>{t('pages:uwbLocation.pixelDistance')}: {Math.sqrt(
+                                                                            Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
+                                                                            Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
+                                                                        ).toFixed(1)} {t('pages:uwbLocation.pixels')}</div>
+                                                                    </>
+                                                                )}
+                                                                <div>{t('pages:uwbLocation.ratio')}: {pixelToMeterRatio.toFixed(2)} {t('pages:uwbLocation.pixelsPerMeter')}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="relative border rounded-lg overflow-hidden">
+                                                            <img
+                                                                src={uploadedImage}
+                                                                alt={t('pages:uwbLocation.calibratedMap')}
+                                                                className="w-full max-h-64 object-contain"
+                                                            />
+                                                            {selectedOrigin && (
+                                                                <div
+                                                                    className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2"
+                                                                    style={{
+                                                                        left: selectedOrigin.x,
+                                                                        top: selectedOrigin.y
+                                                                    }}
+                                                                />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex gap-2">
+                                                            <Button variant="outline" onClick={resetMapCalibration}>
+                                                                {t('pages:uwbLocation.complete')}
+                                                            </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() => setCalibrationStep('setOrigin')}
+                                                            >
+                                                                {t('pages:uwbLocation.recalibrate')}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    {/* 閘道器管理 */}
+                    <TabsContent value="gateways" className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.gateways')}</h2>
+                            <div className="flex gap-2">
+                                <Button onClick={() => setShowGatewayModal(true)} disabled={currentFloors.length === 0}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    {t('pages:uwbLocation.manualAdd')}
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        if (cloudClientRef.current) {
+                                            console.log("手動重連雲端MQTT...")
+                                            setCloudConnectionStatus("手動重連中...")
+                                            cloudClientRef.current.reconnect()
+                                        }
+                                    }}
+                                    disabled={cloudConnected}
+                                >
+                                    <RefreshIcon className="h-4 w-4 mr-2" />
+                                    {t('pages:uwbLocation.reconnectCloud')}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* 雲端 MQTT 連線狀態 */}
+                        <Card>
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-lg flex items-center">
+                                        <CloudIcon className="mr-3 h-5 w-5 text-blue-500" />
+                                        {t('pages:uwbLocation.cloudGatewayDiscovery')}
+                                    </CardTitle>
+                                    <div className="text-sm">
+                                        {cloudConnected ? (
+                                            <span className="text-green-600 flex items-center">
+                                                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                                {t('pages:uwbLocation.connectionNormal')}
+                                            </span>
+                                        ) : (
+                                            <span className="text-red-500 flex items-center">
+                                                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                                                {cloudConnectionStatus}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
+                                        <div className="font-semibold">{t('pages:uwbLocation.cloudMqttStatus')}</div>
+                                        <div className="flex items-center justify-between">
+                                            <span>{t('pages:uwbLocation.server')} ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
+                                            <span className={cloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
+                                                {cloudConnectionStatus}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span>{t('pages:uwbLocation.topic')} ({CLOUD_MQTT_TOPIC}):</span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {t('pages:uwbLocation.waitingForGatewayTopic')}
+                                            </span>
+                                        </div>
+                                        {cloudError && (
+                                            <div className="text-xs text-red-500">
+                                                {t('pages:uwbLocation.error')}: {cloudError}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div className="bg-blue-50 p-3 rounded-lg">
+                                            <div className="font-medium text-blue-800">{t('pages:uwbLocation.discoveredGateways')}</div>
+                                            <div className="text-2xl font-bold text-blue-600">{discoveredGateways.length}</div>
+                                        </div>
+                                        <div className="bg-green-50 p-3 rounded-lg">
+                                            <div className="font-medium text-green-800">{t('pages:uwbLocation.onlineGateways')}</div>
+                                            <div className="text-2xl font-bold text-green-600">
+                                                {discoveredGateways.filter(g => g.isOnline).length}
+                                            </div>
+                                        </div>
+                                        <div className="bg-purple-50 p-3 rounded-lg">
+                                            <div className="font-medium text-purple-800">{t('pages:uwbLocation.mqttMessages')}</div>
+                                            <div className="text-2xl font-bold text-purple-600">{cloudGatewayData.length}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* 發現的閘道器列表 */}
+                                    {discoveredGateways.length > 0 ? (
+                                        <div className="space-y-3">
+                                            <div className="font-medium">{t('pages:uwbLocation.discoveredCloudGateways')}:</div>
+                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                {discoveredGateways.map(gateway => (
+                                                    <div key={gateway.gateway_id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`p-2 rounded-full ${gateway.isOnline
+                                                                ? 'bg-green-100 text-green-600'
+                                                                : 'bg-gray-100 text-gray-600'
+                                                                }`}>
+                                                                <Wifi className="h-4 w-4" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-medium flex items-center gap-2">
+                                                                    {gateway.name}
+                                                                    <Badge
+                                                                        variant="secondary"
+                                                                        className={gateway.isOnline
+                                                                            ? "bg-green-100 text-green-700 border-green-200"
+                                                                            : "bg-gray-100 text-gray-700 border-gray-200"
+                                                                        }
+                                                                    >
+                                                                        {gateway.isOnline ? t('pages:uwbLocation.status.online') : t('pages:uwbLocation.status.offline')}
+                                                                    </Badge>
+                                                                </div>
+                                                                <div className="text-sm text-muted-foreground">
+                                                                    {t('pages:uwbLocation.id')}: {gateway.gateway_id} | {t('pages:uwbLocation.firmware')}: {gateway.fw_ver} | {t('pages:uwbLocation.network')}: {gateway.uwb_network_id}
+                                                                </div>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    {t('pages:uwbLocation.ap')}: {gateway.connected_ap} | {t('pages:uwbLocation.voltage')}: {gateway.battery_voltage}V |
+                                                                    {t('pages:uwbLocation.lastUpdate')}: {gateway.lastSeen instanceof Date ? gateway.lastSeen.toLocaleTimeString('zh-TW') : t('pages:uwbLocation.unknown')}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    setSelectedDiscoveredGateway(gateway.gateway_id)
+                                                                    // 填入閘道器表單
+                                                                    setGatewayForm({
+                                                                        name: gateway.name,
+                                                                        macAddress: `GW:${gateway.gateway_id.toString(16).toUpperCase()}`,
+                                                                        ipAddress: "192.168.1.100", // 預設IP
+                                                                        floorId: currentFloors[0]?.id || ""
+                                                                    })
+                                                                    setShowCloudGatewayModal(true)
+                                                                }}
+                                                                disabled={currentFloors.length === 0}
+                                                            >
+                                                                <Plus className="h-4 w-4 mr-1" />
+                                                                {t('pages:uwbLocation.addToSystem')}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-muted-foreground">
+                                            <AlertCircle className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                                            <p className="font-medium">{t('pages:uwbLocation.noCloudGatewaysFound')}</p>
+                                            <div className="text-xs space-y-1 mt-2">
+                                                <p>{t('pages:uwbLocation.pleaseConfirm')}:</p>
+                                                <p>1. {t('pages:uwbLocation.cloudMqttSimulatorStarted')}</p>
+                                                <p>2. {t('pages:uwbLocation.simulatorSendsGatewayTopic')}</p>
+                                                <p>3. {t('pages:uwbLocation.dataContainsGatewayIdAndName')}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 原始數據檢視器 - 用於調試 */}
+                                    <div className="mt-6">
+                                        <details className="group">
+                                            <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
+                                                🔍 {t('pages:uwbLocation.viewRawGatewayMqttData')}
+                                            </summary>
+                                            <div className="mt-2 space-y-2 text-xs">
+                                                <div className="text-muted-foreground">
+                                                    {t('pages:uwbLocation.clickDataToExpand')}
+                                                </div>
+                                                <div className="max-h-60 overflow-y-auto space-y-2">
+                                                    {cloudGatewayData.slice(0, 5).map((data, index) => (
+                                                        <details key={index} className="border rounded p-2 bg-slate-50">
+                                                            <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
+                                                                [{index + 1}] {data.content} - Gateway ID: {data.gateway_id} - {data.receivedAt.toLocaleString('zh-TW')}
+                                                            </summary>
+                                                            <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
+                                                                {JSON.stringify(data, null, 2)}
+                                                            </pre>
+                                                        </details>
+                                                    ))}
+                                                </div>
+                                                <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                                                    <div className="font-semibold mb-1">{t('pages:uwbLocation.gatewayDiscoveryConditions')}:</div>
+                                                    <div>• {t('pages:uwbLocation.mustHaveGatewayTopic')}</div>
+                                                    <div>• {t('pages:uwbLocation.mustHaveGatewayIdAndName')}</div>
+                                                    <div>• {t('pages:uwbLocation.uwbJoinedAnd5VPluggedOnline')}</div>
+                                                </div>
+                                            </div>
+                                        </details>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {currentFloors.length === 0 ? (
+                            <Card>
+                                <CardContent className="pt-6 text-center">
+                                    <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                    <p className="text-muted-foreground">{t('pages:uwbLocation.messages.addFloorFirst')}</p>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {currentGateways.map(gateway => {
+                                    const floor = floors.find(f => f.id === gateway.floorId)
+
+                                    return (
+                                        <Card key={gateway.id}>
+                                            <CardHeader className="pb-3">
+                                                <div className="flex items-center justify-between">
+                                                    <CardTitle className="flex items-center">
+                                                        <Wifi className="mr-2 h-5 w-5 text-purple-500" />
+                                                        {gateway.name}
+                                                    </CardTitle>
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge
+                                                            variant={
+                                                                gateway.status === 'error' ? 'destructive' : 'secondary'
+                                                            }
+                                                            className={
+                                                                gateway.status === 'online' ? 'bg-green-100 text-green-700 border-green-200' : ''
+                                                            }
+                                                        >
+                                                            {gateway.status === 'online' ? t('pages:uwbLocation.status.online') :
+                                                                gateway.status === 'error' ? t('pages:uwbLocation.status.error') : t('pages:uwbLocation.status.offline')}
+                                                        </Badge>
+                                                        <div className="flex gap-1">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    setEditingItem(gateway)
+                                                                    setGatewayForm({
+                                                                        name: gateway.name,
+                                                                        macAddress: gateway.macAddress,
+                                                                        ipAddress: gateway.ipAddress,
+                                                                        floorId: gateway.floorId
+                                                                    })
+                                                                    setShowGatewayForm(true)
+                                                                }}
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => deleteGateway(gateway.id)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.belongingFloor')}</span>
+                                                        <span className="font-medium">{floor?.name}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.macAddress')}</span>
+                                                        <span className="font-mono text-sm">{gateway.macAddress}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.ipAddress')}</span>
+                                                        <span className="font-mono text-sm">{gateway.ipAddress}</span>
+                                                    </div>
+                                                    {gateway.lastSeen && (
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.lastConnection')}</span>
+                                                            <span className="text-sm">{gateway.lastSeen.toLocaleString('zh-TW')}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
+                            </div>
+                        )}
+
+                    </TabsContent>
+
+                    {/* 錨點配對管理 */}
+                    <TabsContent value="anchors" className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-semibold">{t('pages:uwbLocation.anchorPairing.title')}</h2>
+                            <div className="flex items-center gap-4">
+                                {/* 三層巢狀選擇：養老院 -> 樓層 -> Gateway */}
+                                <div className="flex items-center gap-2">
+                                    {/* 養老院選擇 */}
+                                    <Select
+                                        value={selectedHomeForAnchors}
+                                        onValueChange={(value) => {
+                                            setSelectedHomeForAnchors(value)
+                                            setSelectedFloorForAnchors("")
+                                            setSelectedGatewayForAnchors("")
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {homes.map(home => (
+                                                <SelectItem key={home.id} value={home.id}>
+                                                    {home.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+
+                                    {/* 樓層選擇 */}
+                                    <Select
+                                        value={selectedFloorForAnchors}
+                                        onValueChange={(value) => {
+                                            setSelectedFloorForAnchors(value)
+                                            setSelectedGatewayForAnchors("")
+                                        }}
+                                        disabled={!selectedHomeForAnchors}
+                                    >
+                                        <SelectTrigger className="w-[150px]">
+                                            <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {floors
+                                                .filter(floor => floor.homeId === selectedHomeForAnchors)
+                                                .map(floor => (
+                                                    <SelectItem key={floor.id} value={floor.id}>
+                                                        {floor.name}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+
+                                    {/* Gateway 選擇 */}
+                                    <Select
+                                        value={selectedGatewayForAnchors}
+                                        onValueChange={setSelectedGatewayForAnchors}
+                                        disabled={!selectedFloorForAnchors}
+                                    >
+                                        <SelectTrigger className="w-[200px]">
+                                            <SelectValue placeholder={t('pages:uwbLocation.selectGateway')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {/* 顯示該樓層下的系統閘道器 */}
+                                            {currentGateways
+                                                .filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online')
+                                                .map(gateway => {
+                                                    // 提取 gateway ID（如果 MAC 地址包含 GW: 前綴）
+                                                    const gatewayIdFromMac = gateway.macAddress.startsWith('GW:')
+                                                        ? parseInt(gateway.macAddress.replace('GW:', ''), 16)
+                                                        : null
 
                                                     return (
-                                                        <Card key={anchor.id}>
-                                                            <CardHeader className="pb-3">
-                                                                <div className="flex items-center justify-between">
-                                                                    <CardTitle className="flex items-center">
-                                                                        <Anchor className="mr-2 h-5 w-5 text-indigo-500" />
-                                                                        {anchor.name}
-                                                                    </CardTitle>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Badge
-                                                                            variant={
-                                                                                anchor.status === 'active' ? 'default' :
-                                                                                    anchor.status === 'error' ? 'destructive' : 'secondary'
-                                                                            }
-                                                                            className={
-                                                                                anchor.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                                                    anchor.status === 'calibrating' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : ''
-                                                                            }
-                                                                        >
-                                                                            {anchor.status === 'active' ? t('pages:uwbLocation.anchorPairing.anchorStatus.running') :
-                                                                                anchor.status === 'paired' ? t('pages:uwbLocation.anchorPairing.anchorStatus.paired') :
-                                                                                    anchor.status === 'calibrating' ? t('pages:uwbLocation.anchorPairing.anchorStatus.calibrating') :
-                                                                                        anchor.status === 'unpaired' ? t('pages:uwbLocation.anchorPairing.anchorStatus.unpaired') : t('pages:uwbLocation.anchorPairing.anchorStatus.error')}
+                                                        <SelectItem key={`system-${gateway.id}`} value={gatewayIdFromMac?.toString() || gateway.id}>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                                                                {gateway.name} {gateway.cloudData ? '' : '(本地)'}
+                                                            </div>
+                                                        </SelectItem>
+                                                    )
+                                                })}
+
+                                            {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
+                                            {currentGateways.filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online').length === 0 && (
+                                                <div className="px-2 py-1.5 text-sm text-gray-500">
+                                                    {t('pages:uwbLocation.anchorPairing.noAvailableGateways')}
+                                                </div>
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        console.log("🔄 手動重連 Anchor MQTT...")
+                                        console.log("- 當前選擇的 Gateway:", selectedGatewayForAnchors)
+
+                                        // 強制清理現有連接
+                                        if (anchorCloudClientRef.current) {
+                                            console.log("- 清理現有連接")
+                                            anchorCloudClientRef.current.end()
+                                            anchorCloudClientRef.current = null
+                                        }
+
+                                        // 重置狀態
+                                        setAnchorCloudConnected(false)
+                                        setAnchorCloudConnectionStatus("手動重連中...")
+                                        setAnchorCloudError("")
+                                        setCloudAckData([])
+
+                                        // 觸發重新連接（通過重新設置選擇的 Gateway）
+                                        const currentGateway = selectedGatewayForAnchors
+                                        setSelectedGatewayForAnchors("")
+                                        setTimeout(() => {
+                                            console.log("- 恢復 Gateway 選擇，觸發重連")
+                                            setSelectedGatewayForAnchors(currentGateway)
+                                        }, 100)
+                                    }}
+                                >
+                                    <RefreshIcon className="h-4 w-4 mr-2" />
+                                    {t('pages:uwbLocation.reconnectAnchors')}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* 雲端錨點發現狀態 */}
+                        <Card>
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-lg flex items-center">
+                                        <Anchor className="mr-3 h-5 w-5 text-indigo-500" />
+                                        {t('pages:uwbLocation.cloudAnchorDiscovery')}
+                                    </CardTitle>
+                                    <div className="text-sm">
+                                        {anchorCloudConnected ? (
+                                            <span className="text-green-600 flex items-center">
+                                                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                                {t('pages:uwbLocation.connectionNormal')}
+                                            </span>
+                                        ) : (
+                                            <span className="text-red-500 flex items-center">
+                                                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                                                {anchorCloudConnectionStatus}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
+                                        <div className="font-semibold">{t('pages:uwbLocation.anchorMqttStatus')}</div>
+                                        <div className="flex items-center justify-between">
+                                            <span>{t('pages:uwbLocation.selectedGateway')}:</span>
+                                            <span className="font-medium">
+                                                {selectedGatewayForAnchors ? (() => {
+                                                    // 先檢查雲端發現的閘道器
+                                                    const discoveredGateway = discoveredGateways.find(gw => gw.gateway_id.toString() === selectedGatewayForAnchors)
+                                                    if (discoveredGateway) {
+                                                        return `${discoveredGateway.name} (雲端)`
+                                                    }
+
+                                                    // 再檢查系統閘道器
+                                                    const systemGateway = currentGateways.find(gw => {
+                                                        const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
+                                                            ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
+                                                            : null
+                                                        return gatewayIdFromMac === selectedGatewayForAnchors || gw.id === selectedGatewayForAnchors
+                                                    })
+                                                    if (systemGateway) {
+                                                        const hasCloudData = systemGateway.cloudData ? " (雲端數據)" : " (本地)"
+                                                        return `${systemGateway.name}${hasCloudData}`
+                                                    }
+
+                                                    return selectedGatewayForAnchors
+                                                })() : t('pages:uwbLocation.notSelected')}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span>{t('pages:uwbLocation.listeningTopic')}:</span>
+                                            <div className="text-xs font-mono text-muted-foreground text-right">
+                                                <div>Anchor: {currentAnchorTopic || t('pages:uwbLocation.none')}</div>
+                                                <div>Ack: {currentAckTopic || t('pages:uwbLocation.none')}</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span>{t('pages:uwbLocation.connectionStatus')}:</span>
+                                            <span className={anchorCloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
+                                                {anchorCloudConnectionStatus}
+                                            </span>
+                                        </div>
+                                        {anchorCloudError && (
+                                            <div className="text-xs text-red-500">
+                                                {t('pages:uwbLocation.error')}: {anchorCloudError}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div className="bg-indigo-50 p-3 rounded-lg">
+                                            <div className="font-medium text-indigo-800">{t('pages:uwbLocation.discoveredAnchors')}</div>
+                                            <div className="text-2xl font-bold text-indigo-600">{discoveredCloudAnchors.length}</div>
+                                        </div>
+                                        <div className="bg-green-50 p-3 rounded-lg">
+                                            <div className="font-medium text-green-800">{t('pages:uwbLocation.onlineAnchors')}</div>
+                                            <div className="text-2xl font-bold text-green-600">
+                                                {discoveredCloudAnchors.filter(a => a.isOnline).length}
+                                            </div>
+                                        </div>
+                                        <div className="bg-purple-50 p-3 rounded-lg">
+                                            <div className="font-medium text-purple-800">{t('pages:uwbLocation.mqttMessages')}</div>
+                                            <div className="text-2xl font-bold text-purple-600">{cloudAnchorData.length}</div>
+                                        </div>
+                                        <div className="bg-blue-50 p-3 rounded-lg">
+                                            <div className="font-medium text-blue-800">{t('pages:uwbLocation.ackMessages')}</div>
+                                            <div className="text-2xl font-bold text-blue-600">{cloudAckData.length}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* 發現的錨點列表 */}
+                                    {discoveredCloudAnchors.length > 0 ? (
+                                        <div className="space-y-3">
+                                            <div className="font-medium">{t('pages:uwbLocation.discoveredCloudAnchors')}:</div>
+                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                {discoveredCloudAnchors.map(anchor => (
+                                                    <div key={anchor.id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`p-2 rounded-full ${anchor.isOnline
+                                                                ? 'bg-green-100 text-green-600'
+                                                                : 'bg-gray-100 text-gray-600'
+                                                                }`}>
+                                                                <Anchor className="h-4 w-4" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-medium flex items-center gap-2">
+                                                                    {anchor.name}
+                                                                    <Badge
+                                                                        variant="secondary"
+                                                                        className={anchor.isOnline
+                                                                            ? "bg-green-100 text-green-700 border-green-200"
+                                                                            : "bg-gray-100 text-gray-700 border-gray-200"
+                                                                        }
+                                                                    >
+                                                                        {anchor.isOnline ? t('pages:uwbLocation.status.online') : t('pages:uwbLocation.status.offline')}
+                                                                    </Badge>
+                                                                    {anchor.initiator === 1 && (
+                                                                        <Badge variant="secondary" className="bg-blue-100 text-blue-700 border-blue-200">
+                                                                            {t('pages:uwbLocation.mainAnchor')}
                                                                         </Badge>
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant="outline"
-                                                                            onClick={() => startAnchorCalibration(anchor)}
-                                                                            disabled={calibratingAnchor !== null}
-                                                                            title={t('pages:uwbLocation.anchorPairing.actions.calibrate')}
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-sm text-muted-foreground">
+                                                                    {t('pages:uwbLocation.id')}: {anchor.id} | {t('pages:uwbLocation.gateway')}: {anchor.gateway_id} | LED: {anchor.led ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')} | BLE: {anchor.ble ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')}
+                                                                </div>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    {t('pages:uwbLocation.position')}: ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)}) |
+                                                                    {t('pages:uwbLocation.lastUpdate')}: {anchor.lastSeen instanceof Date ? anchor.lastSeen.toLocaleTimeString('zh-TW') : t('pages:uwbLocation.unknown')}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    setSelectedCloudAnchor(anchor)
+                                                                    setShowCloudAnchorModal(true)
+                                                                }}
+                                                                disabled={!anchor.isOnline}
+                                                            >
+                                                                <Plus className="h-4 w-4 mr-1" />
+                                                                {t('pages:uwbLocation.addToSystem')}
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    // TODO: 實現錨點配置功能
+                                                                    console.log("配置錨點:", anchor)
+                                                                }}
+                                                                disabled={!anchor.isOnline}
+                                                            >
+                                                                <Settings className="h-4 w-4 mr-1" />
+                                                                {t('pages:uwbLocation.configure')}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 text-muted-foreground">
+                                            <Anchor className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                                            <p className="font-medium">
+                                                {selectedGatewayForAnchors ? t('pages:uwbLocation.messages.noAnchorsFound') : t('pages:uwbLocation.messages.selectGatewayFirst')}
+                                            </p>
+                                            {selectedGatewayForAnchors && (
+                                                <div className="text-xs space-y-1 mt-2">
+                                                    <p>{t('pages:uwbLocation.pleaseConfirm')}:</p>
+                                                    <p>1. {t('pages:uwbLocation.gatewayAnchorConfigTopicCorrect')}</p>
+                                                    <p>2. {t('pages:uwbLocation.simulatorSendsAnchorConfigData')}</p>
+                                                    <p>3. {t('pages:uwbLocation.dataContainsIdAndName')}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* 原始數據檢視器 - 用於調試 */}
+                                    <div className="mt-6 space-y-4">
+                                        {/* Anchor 數據 */}
+                                        <details className="group">
+                                            <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
+                                                🔍 {t('pages:uwbLocation.anchorPairing.debug.viewRawAnchorMqttData')}
+                                            </summary>
+                                            <div className="mt-2 space-y-2 text-xs">
+                                                <div className="text-muted-foreground">
+                                                    {t('pages:uwbLocation.anchorPairing.debug.clickDataToExpand')}
+                                                </div>
+                                                <div className="max-h-60 overflow-y-auto space-y-2">
+                                                    {cloudAnchorData.slice(0, 5).map((data, index) => (
+                                                        <details key={index} className="border rounded p-2 bg-slate-50">
+                                                            <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
+                                                                [{index + 1}] {data.content} - {data.name} (ID: {data.id}) - {data.receivedAt.toLocaleString('zh-TW')}
+                                                            </summary>
+                                                            <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
+                                                                {JSON.stringify(data, null, 2)}
+                                                            </pre>
+                                                        </details>
+                                                    ))}
+                                                </div>
+                                                <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                                                    <div className="font-semibold mb-1">{t('pages:uwbLocation.anchorPairing.debug.anchorDiscoveryConditions')}:</div>
+                                                    <div>• {t('pages:uwbLocation.anchorPairing.debug.mustHaveConfig')}</div>
+                                                    <div>• {t('pages:uwbLocation.anchorPairing.debug.mustHaveNodeAnchor')}</div>
+                                                    <div>• {t('pages:uwbLocation.anchorPairing.debug.mustHaveIdAndName')}</div>
+                                                    <div>• {t('pages:uwbLocation.anchorPairing.debug.initiatorMainAnchor')}</div>
+                                                </div>
+                                            </div>
+                                        </details>
+
+                                        {/* Ack 數據 */}
+                                        <details className="group">
+                                            <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
+                                                🔍 {t('pages:uwbLocation.anchorPairing.debug.viewRawAckData')}
+                                            </summary>
+                                            <div className="mt-2 space-y-2 text-xs">
+                                                <div className="text-muted-foreground">
+                                                    {t('pages:uwbLocation.anchorPairing.debug.clickDataToExpand')}
+                                                </div>
+                                                <div className="max-h-60 overflow-y-auto space-y-2">
+                                                    {cloudAckData.slice(0, 5).map((data, index) => (
+                                                        <details key={index} className="border rounded p-2 bg-blue-50">
+                                                            <summary className="cursor-pointer font-mono text-xs hover:bg-blue-100 p-1 rounded">
+                                                                [{index + 1}] Ack - {data.topic || 'Unknown'} - {data.receivedAt.toLocaleString('zh-TW')}
+                                                            </summary>
+                                                            <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
+                                                                {JSON.stringify(data, null, 2)}
+                                                            </pre>
+                                                        </details>
+                                                    ))}
+                                                </div>
+                                                <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded border border-blue-200">
+                                                    <div className="font-semibold mb-1">Ack 數據說明：</div>
+                                                    <div>• 來自 GWxxxx_Ack 主題的確認消息</div>
+                                                    <div>• 包含錨點對配置的響應信息</div>
+                                                    <div>• 用於調試錨點配對過程</div>
+                                                </div>
+                                            </div>
+                                        </details>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* Anchor 位置地圖視圖 */}
+                        {selectedGatewayForAnchors && (() => {
+                            // 找到選擇的 Gateway
+                            const selectedGateway = gateways.find(gw => {
+                                const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
+                                    ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
+                                    : null
+                                return gatewayIdFromMac === selectedGatewayForAnchors || gw.id === selectedGatewayForAnchors
+                            })
+
+                            if (!selectedGateway) return null
+
+                            // 找到對應的樓層
+                            const floor = floors.find(f => f.id === selectedGateway.floorId)
+                            if (!floor || !floor.mapImage || !floor.calibration?.isCalibrated) return null
+
+                            // 獲取該樓層的 Anchor
+                            const floorAnchors = getAnchorsForFloor(floor.id)
+                            if (floorAnchors.length === 0) return null
+
+                            return (
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle className="text-lg flex items-center">
+                                            <Map className="mr-3 h-5 w-5 text-green-500" />
+                                            {t('pages:uwbLocation.anchorLocationMap')} - {floor.name}
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="text-lg font-medium text-muted-foreground">
+                                                    {t('pages:uwbLocation.showAnchorsOnMap')}
+                                                </div>
+                                                {/* 模式切換按鈕 - 移到右邊 */}
+                                                <div className="flex items-center gap-3">
+                                                    <Button
+                                                        size="lg"
+                                                        variant={anchorMapMode === 'calibration' ? 'default' : 'outline'}
+                                                        onClick={() => handleModeSwitch('calibration')}
+                                                        className="px-6 py-3"
+                                                    >
+                                                        {t('pages:uwbLocation.calibrationMode')}
+                                                    </Button>
+                                                    <Button
+                                                        size="lg"
+                                                        variant={anchorMapMode === 'zoom' ? 'default' : 'outline'}
+                                                        onClick={() => handleModeSwitch('zoom')}
+                                                        className="px-6 py-3"
+                                                    >
+                                                        {t('pages:uwbLocation.zoomMode')}
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            {anchorMapMode === 'calibration' ? (
+                                                // 校正模式：使用原始結構
+                                                <div className="relative border rounded-lg overflow-hidden" style={{ height: '400px' }}>
+                                                    <img
+                                                        src={floor.mapImage}
+                                                        alt={`${floor.name} 地圖`}
+                                                        className={`w-full h-full object-contain bg-gray-50 anchor-map-image ${calibratingAnchor ? 'cursor-crosshair' : ''}`}
+                                                        onClick={calibratingAnchor ? handleMapClickCalibration : undefined}
+                                                        onLoad={(e) => {
+                                                            // 圖片加載完成後觸發重新渲染
+                                                            setImageLoaded(prev => !prev)
+                                                        }}
+                                                    />
+
+                                                    {/* 操作提示 */}
+                                                    {calibratingAnchor ? (
+                                                        <div className="absolute top-2 left-2 bg-green-600 text-white text-sm px-3 py-1 rounded shadow-sm animate-pulse">
+                                                            {t('pages:uwbLocation.clickMapSetNewPosition', { name: calibratingAnchor.name })}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="absolute top-2 left-2 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm">
+                                                            {t('pages:uwbLocation.doubleClickAnchorToCalibrate')}
+                                                        </div>
+                                                    )}
+
+                                                    {/* 座標原點 */}
+                                                    {floor.calibration?.originPixel && (() => {
+                                                        const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
+                                                        if (!imgElement || imgElement.naturalWidth === 0) return null
+
+                                                        // 將原點的自然座標轉換為當前圖片的顯示座標
+                                                        const displayCoords = convertNaturalToDisplayCoords(
+                                                            floor.calibration.originPixel.x,
+                                                            floor.calibration.originPixel.y,
+                                                            imgElement
+                                                        )
+
+                                                        return (
+                                                            <div
+                                                                className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
+                                                                style={{
+                                                                    left: `${displayCoords.x}px`,
+                                                                    top: `${displayCoords.y}px`
+                                                                }}
+                                                                title={t('pages:uwbLocation.coordinateOrigin', { x: floor.calibration.originCoordinates?.x || 0, y: floor.calibration.originCoordinates?.y || 0 })}
+                                                            />
+                                                        )
+                                                    })()}
+
+                                                    {/* Anchor 位置 */}
+                                                    {floorAnchors.map(anchor => {
+                                                        if (!anchor.position) return null
+
+                                                        const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
+                                                        if (!imgElement || imgElement.naturalWidth === 0) return null
+
+                                                        const displayPos = convertRealToDisplayCoords(anchor.position.x, anchor.position.y, floor, imgElement)
+                                                        if (!displayPos) return null
+
+                                                        return (
+                                                            <div
+                                                                key={anchor.id}
+                                                                className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                                                                style={{
+                                                                    left: `${displayPos.x}px`,
+                                                                    top: `${displayPos.y}px`
+                                                                }}
+                                                            >
+                                                                {/* Anchor 圖標 */}
+                                                                <div
+                                                                    className={`w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${calibratingAnchor?.id === anchor.id
+                                                                        ? 'border-yellow-400 bg-yellow-500 animate-pulse'
+                                                                        : anchor.cloudData?.initiator === 1
+                                                                            ? 'border-white bg-orange-500 hover:bg-orange-600'
+                                                                            : 'border-white bg-blue-500 hover:bg-blue-600'
+                                                                        }`}
+                                                                    onDoubleClick={(e) => startAnchorMapCalibration(anchor, e)}
+                                                                    title={calibratingAnchor?.id === anchor.id ? t('pages:uwbLocation.anchorPairing.actions.calibrate') + "..." : t('pages:uwbLocation.anchorPairing.doubleClickToCalibrate')}
+                                                                >
+                                                                    <Anchor className="w-3 h-3 text-white" />
+                                                                </div>
+
+                                                                {/* Anchor 標籤 */}
+                                                                <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm border">
+                                                                    <div className="font-medium">{anchor.name}</div>
+                                                                    <div className="text-muted-foreground">
+                                                                        ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
+                                                                    </div>
+                                                                    {anchor.cloudData?.initiator === 1 && (
+                                                                        <div className="text-orange-600 text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}</div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                // 縮放模式：使用縮放結構
+                                                <div className="relative border rounded-lg overflow-hidden bg-gray-50" style={{ height: '400px' }}>
+                                                    <div
+                                                        ref={anchorMapContainerRef}
+                                                        className="relative select-none w-full h-full"
+                                                        style={{
+                                                            cursor: isAnchorDragging ? 'grabbing' : 'grab',
+                                                            touchAction: 'none',
+                                                            overscrollBehavior: 'none'
+                                                        }}
+                                                        onMouseDown={handleAnchorMouseDown}
+                                                        onMouseMove={handleAnchorMouseMove}
+                                                        onMouseUp={handleAnchorMouseUp}
+                                                        onMouseEnter={handleAnchorMapMouseEnter}
+                                                        onMouseLeave={() => {
+                                                            handleAnchorMouseUp()
+                                                            handleAnchorMapMouseLeave()
+                                                        }}
+                                                        onTouchStart={handleAnchorTouchStart}
+                                                        onTouchMove={handleAnchorTouchMove}
+                                                        onTouchEnd={handleAnchorTouchEnd}
+                                                    >
+                                                        {/* 縮放變換容器 */}
+                                                        <div
+                                                            className="relative origin-top-left w-full h-full"
+                                                            style={{
+                                                                transform: `translate(${anchorMapTransform.translateX}px, ${anchorMapTransform.translateY}px) scale(${anchorMapTransform.scale})`,
+                                                                transformOrigin: '0 0',
+                                                                transition: isAnchorDragging ? 'none' : 'transform 0.1s ease-out'
+                                                            }}
+                                                        >
+                                                            <img
+                                                                ref={anchorMapImageRef}
+                                                                src={floor.mapImage}
+                                                                alt={`${floor.name} 地圖`}
+                                                                className="w-full h-full object-contain anchor-map-image"
+                                                                draggable={false}
+                                                            />
+
+                                                            {/* 座標原點 */}
+                                                            {floor.calibration?.originPixel && (() => {
+                                                                const imgElement = anchorMapImageRef.current
+                                                                if (!imgElement || imgElement.naturalWidth === 0) return null
+
+                                                                const displayCoords = convertNaturalToDisplayCoords(
+                                                                    floor.calibration.originPixel.x,
+                                                                    floor.calibration.originPixel.y,
+                                                                    imgElement
+                                                                )
+
+                                                                return (
+                                                                    <div
+                                                                        className="absolute w-3 h-3 bg-red-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-lg"
+                                                                        style={{
+                                                                            left: `${displayCoords.x}px`,
+                                                                            top: `${displayCoords.y}px`
+                                                                        }}
+                                                                        title={t('pages:uwbLocation.coordinateOrigin', { x: floor.calibration.originCoordinates?.x || 0, y: floor.calibration.originCoordinates?.y || 0 })}
+                                                                    />
+                                                                )
+                                                            })()}
+
+                                                            {/* Anchor 位置 */}
+                                                            {floorAnchors.map(anchor => {
+                                                                if (!anchor.position) return null
+
+                                                                const imgElement = anchorMapImageRef.current
+                                                                if (!imgElement || imgElement.naturalWidth === 0) return null
+
+                                                                // 在縮放模式下，使用基礎顯示座標，不應用變換
+                                                                // 因為錨點標記在變換容器內，會自動跟著地圖一起變換
+                                                                const displayPos = convertRealToDisplayCoords(anchor.position.x, anchor.position.y, floor, imgElement)
+                                                                if (!displayPos) return null
+
+                                                                return (
+                                                                    <div
+                                                                        key={anchor.id}
+                                                                        className="absolute transform -translate-x-1/2 -translate-y-1/2"
+                                                                        style={{
+                                                                            left: `${displayPos.x}px`,
+                                                                            top: `${displayPos.y}px`
+                                                                        }}
+                                                                    >
+                                                                        {/* Anchor 圖標 */}
+                                                                        <div
+                                                                            className={`w-6 h-6 rounded-full border-2 shadow-lg flex items-center justify-center cursor-pointer hover:scale-110 transition-all duration-200 ${anchor.cloudData?.initiator === 1
+                                                                                ? 'border-white bg-orange-500 hover:bg-orange-600'
+                                                                                : 'border-white bg-blue-500 hover:bg-blue-600'
+                                                                                }`}
+                                                                            title={anchor.name}
                                                                         >
-                                                                            <Target className="h-4 w-4" />
-                                                                        </Button>
-                                                                        {anchor.position && (
+                                                                            <Anchor className="w-3 h-3 text-white" />
+                                                                        </div>
+
+                                                                        {/* Anchor 標籤 */}
+                                                                        <div className="absolute top-7 left-1/2 transform -translate-x-1/2 bg-white/90 px-2 py-1 rounded text-xs whitespace-nowrap shadow-sm border">
+                                                                            <div className="font-medium">{anchor.name}</div>
+                                                                            <div className="text-muted-foreground">
+                                                                                ({anchor.position.x.toFixed(1)}, {anchor.position.y.toFixed(1)}, {anchor.position.z.toFixed(1)})
+                                                                            </div>
+                                                                            {anchor.cloudData?.initiator === 1 && (
+                                                                                <div className="text-orange-600 text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}</div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                )
+                                                            })}
+                                                        </div>
+
+                                                        {/* 縮放控制按鈕 */}
+                                                        <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-lg z-10">
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={handleAnchorZoomIn}
+                                                                disabled={anchorMapTransform.scale >= anchorMapTransform.maxScale}
+                                                                className="w-8 h-8 p-0"
+                                                                title="放大"
+                                                            >
+                                                                <ZoomIn className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={handleAnchorZoomOut}
+                                                                disabled={anchorMapTransform.scale <= anchorMapTransform.minScale}
+                                                                className="w-8 h-8 p-0"
+                                                                title="縮小"
+                                                            >
+                                                                <ZoomOut className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={resetAnchorMapView}
+                                                                className="w-8 h-8 p-0"
+                                                                title="重置視圖"
+                                                            >
+                                                                <RotateCcw className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+
+                                                        {/* 縮放比例顯示 */}
+                                                        <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-lg shadow-lg text-sm z-10">
+                                                            縮放: {(anchorMapTransform.scale * 100).toFixed(0)}%
+                                                        </div>
+
+                                                        {/* 操作提示 */}
+                                                        <div className="absolute top-4 left-4 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm z-10">
+                                                            滑鼠在地圖上滾動縮放，拖拽移動
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* 圖例 */}
+                                            <div className="flex items-center gap-6 text-sm">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-3 h-3 bg-red-500 rounded-full border border-white"></div>
+                                                    <span>{t('pages:uwbLocation.anchorPairing.mapLegend.coordinateOrigin')}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-3 h-3 bg-blue-500 rounded-full border border-white"></div>
+                                                    <span>{t('pages:uwbLocation.anchorPairing.mapLegend.generalAnchor')}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-3 h-3 bg-orange-500 rounded-full border border-white"></div>
+                                                    <span>{t('pages:uwbLocation.anchorPairing.mapLegend.mainAnchor')}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )
+                        })()}
+
+                        {/* 本地錨點管理（已加入的錨點） */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="text-lg flex items-center">
+                                    <Radio className="mr-3 h-5 w-5 text-gray-500" />
+                                    {t('pages:uwbLocation.anchorPairing.localAnchorManagement')}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    {selectedGatewayForAnchors ? (
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-sm text-muted-foreground">
+                                                {t('pages:uwbLocation.anchorPairing.currentGateway')}: <span className="font-medium">{selectedGatewayForAnchors}</span>
+                                            </div>
+                                            <Button
+                                                onClick={startAnchorPairing}
+                                                disabled={pairingInProgress}
+                                                variant="outline"
+                                            >
+                                                {pairingInProgress ? (
+                                                    <>
+                                                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                        {t('pages:uwbLocation.anchorPairing.pairingInProgress')}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Radio className="h-4 w-4 mr-2" />
+                                                        {t('pages:uwbLocation.anchorPairing.startSimulationPairing')}
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-4 text-muted-foreground">
+                                            <AlertCircle className="mx-auto h-6 w-6 mb-2 opacity-50" />
+                                            <p className="text-sm">{t('pages:uwbLocation.anchorPairing.selectGatewayFirst')}</p>
+                                        </div>
+                                    )}
+
+                                    {onlineGateways.length === 0 ? (
+                                        <div className="text-center py-4 text-muted-foreground">
+                                            <AlertCircle className="mx-auto h-6 w-6 mb-2 opacity-50" />
+                                            <p className="text-sm">{t('pages:uwbLocation.anchorPairing.noOnlineGateways')}</p>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {/* 配對進度區域 */}
+                                            {(pairingInProgress || discoveredAnchors.length > 0) && (
+                                                <Card>
+                                                    <CardHeader>
+                                                        <CardTitle className="flex items-center">
+                                                            <Radio className="mr-2 h-5 w-5" />
+                                                            {t('pages:uwbLocation.anchorPairing.simulationPairingProgress')}
+                                                        </CardTitle>
+                                                    </CardHeader>
+                                                    <CardContent>
+                                                        <div className="space-y-3">
+                                                            {pairingInProgress && (
+                                                                <div className="flex items-center gap-2 text-blue-600">
+                                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                                    <span>{t('pages:uwbLocation.anchorPairing.scanningNearbyAnchors')}</span>
+                                                                </div>
+                                                            )}
+
+                                                            {discoveredAnchors.map((macAddress, index) => (
+                                                                <div key={macAddress} className="flex items-center justify-between p-3 border rounded-lg">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                                                        <div>
+                                                                            <div className="font-medium">{t('pages:uwbLocation.anchorPairing.discoveredNewAnchor')}</div>
+                                                                            <div className="text-sm text-muted-foreground font-mono">{macAddress}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        onClick={() => addDiscoveredAnchor(macAddress)}
+                                                                    >
+                                                                        <Plus className="h-4 w-4 mr-1" />
+                                                                        {t('pages:uwbLocation.anchorPairing.add')}
+                                                                    </Button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </CardContent>
+                                                </Card>
+                                            )}
+
+                                            {/* 已配對錨點列表 */}
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {(() => {
+                                                    // 根据选择的网关过滤锚点
+                                                    const filteredAnchors = currentAnchors.filter(anchor =>
+                                                        anchor.gatewayId === selectedGatewayForAnchors ||
+                                                        anchor.cloudGatewayId?.toString() === selectedGatewayForAnchors
+                                                    )
+
+                                                    if (filteredAnchors.length === 0) {
+                                                        return (
+                                                            <div className="col-span-2 text-center py-8 text-muted-foreground">
+                                                                <Anchor className="mx-auto h-12 w-12 mb-3 opacity-30" />
+                                                                <p className="text-sm">{t('pages:uwbLocation.anchorPairing.noPairedAnchors')}</p>
+                                                            </div>
+                                                        )
+                                                    }
+
+                                                    return filteredAnchors.map(anchor => {
+                                                        const gateway = gateways.find(g => g.id === anchor.gatewayId)
+
+                                                        return (
+                                                            <Card key={anchor.id}>
+                                                                <CardHeader className="pb-3">
+                                                                    <div className="flex items-center justify-between">
+                                                                        <CardTitle className="flex items-center">
+                                                                            <Anchor className="mr-2 h-5 w-5 text-indigo-500" />
+                                                                            {anchor.name}
+                                                                        </CardTitle>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <Badge
+                                                                                variant={
+                                                                                    anchor.status === 'active' ? 'default' :
+                                                                                        anchor.status === 'error' ? 'destructive' : 'secondary'
+                                                                                }
+                                                                                className={
+                                                                                    anchor.status === 'active' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                                                        anchor.status === 'calibrating' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' : ''
+                                                                                }
+                                                                            >
+                                                                                {anchor.status === 'active' ? t('pages:uwbLocation.anchorPairing.anchorStatus.running') :
+                                                                                    anchor.status === 'paired' ? t('pages:uwbLocation.anchorPairing.anchorStatus.paired') :
+                                                                                        anchor.status === 'calibrating' ? t('pages:uwbLocation.anchorPairing.anchorStatus.calibrating') :
+                                                                                            anchor.status === 'unpaired' ? t('pages:uwbLocation.anchorPairing.anchorStatus.unpaired') : t('pages:uwbLocation.anchorPairing.anchorStatus.error')}
+                                                                            </Badge>
                                                                             <Button
                                                                                 size="sm"
                                                                                 variant="outline"
-                                                                                onClick={() => openConfigDialog(anchor, anchor.position!)}
-                                                                                disabled={sendingConfig}
-                                                                                title={t('pages:uwbLocation.anchorPairing.actions.sendConfigToCloud')}
+                                                                                onClick={() => startAnchorCalibration(anchor)}
+                                                                                disabled={calibratingAnchor !== null}
+                                                                                title={t('pages:uwbLocation.anchorPairing.actions.calibrate')}
                                                                             >
-                                                                                <Upload className="h-4 w-4" />
+                                                                                <Target className="h-4 w-4" />
                                                                             </Button>
+                                                                            {anchor.position && (
+                                                                                <Button
+                                                                                    size="sm"
+                                                                                    variant="outline"
+                                                                                    onClick={() => openConfigDialog(anchor, anchor.position!)}
+                                                                                    disabled={sendingConfig}
+                                                                                    title={t('pages:uwbLocation.anchorPairing.actions.sendConfigToCloud')}
+                                                                                >
+                                                                                    <Upload className="h-4 w-4" />
+                                                                                </Button>
+                                                                            )}
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline"
+                                                                                onClick={() => deleteAnchor(anchor.id)}
+                                                                                title={t('pages:uwbLocation.anchorPairing.actions.deleteAnchor')}
+                                                                            >
+                                                                                <Trash2 className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
+                                                                </CardHeader>
+                                                                <CardContent>
+                                                                    <div className="space-y-2">
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.belongingGateway')}</span>
+                                                                            <span className="font-medium">{gateway?.name}</span>
+                                                                        </div>
+                                                                        <div className="flex items-center justify-between">
+                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.macAddress')}</span>
+                                                                            <span className="font-mono text-sm">{anchor.macAddress}</span>
+                                                                        </div>
+                                                                        {anchor.cloudData && (
+                                                                            <div className="flex items-center justify-between">
+                                                                                <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.cloudId')}</span>
+                                                                                <span className="text-sm">{anchor.cloudData.id}</span>
+                                                                            </div>
                                                                         )}
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant="outline"
-                                                                            onClick={() => deleteAnchor(anchor.id)}
-                                                                            title={t('pages:uwbLocation.anchorPairing.actions.deleteAnchor')}
-                                                                        >
-                                                                            <Trash2 className="h-4 w-4" />
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            </CardHeader>
-                                                            <CardContent>
-                                                                <div className="space-y-2">
-                                                                    <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.belongingGateway')}</span>
-                                                                        <span className="font-medium">{gateway?.name}</span>
-                                                                    </div>
-                                                                    <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.macAddress')}</span>
-                                                                        <span className="font-mono text-sm">{anchor.macAddress}</span>
-                                                                    </div>
-                                                                    {anchor.cloudData && (
+                                                                        {anchor.position && (
+                                                                            <div className="flex items-center justify-between">
+                                                                                <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.position')}</span>
+                                                                                <span className="text-sm">
+                                                                                    ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)})
+                                                                                </span>
+                                                                            </div>
+                                                                        )}
+                                                                        {anchor.cloudData && (
+                                                                            <div className="flex items-center justify-between">
+                                                                                <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.functionStatus')}</span>
+                                                                                <div className="flex items-center gap-2">
+                                                                                    <span className="text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.led')}: {anchor.cloudData.led ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')}</span>
+                                                                                    <span className="text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.ble')}: {anchor.cloudData.ble ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')}</span>
+                                                                                    {anchor.cloudData.initiator === 1 && (
+                                                                                        <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
+                                                                                            {t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}
+                                                                                        </Badge>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                        )}
                                                                         <div className="flex items-center justify-between">
-                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.cloudId')}</span>
-                                                                            <span className="text-sm">{anchor.cloudData.id}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {anchor.position && (
-                                                                        <div className="flex items-center justify-between">
-                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.position')}</span>
-                                                                            <span className="text-sm">
-                                                                                ({anchor.position.x.toFixed(2)}, {anchor.position.y.toFixed(2)}, {anchor.position.z.toFixed(2)})
-                                                                            </span>
-                                                                        </div>
-                                                                    )}
-                                                                    {anchor.cloudData && (
-                                                                        <div className="flex items-center justify-between">
-                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.functionStatus')}</span>
+                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.signalStrength')}</span>
                                                                             <div className="flex items-center gap-2">
-                                                                                <span className="text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.led')}: {anchor.cloudData.led ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')}</span>
-                                                                                <span className="text-xs">{t('pages:uwbLocation.anchorPairing.functionStatus.ble')}: {anchor.cloudData.ble ? t('pages:uwbLocation.on') : t('pages:uwbLocation.off')}</span>
-                                                                                {anchor.cloudData.initiator === 1 && (
-                                                                                    <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700">
-                                                                                        {t('pages:uwbLocation.anchorPairing.functionStatus.mainAnchor')}
-                                                                                    </Badge>
-                                                                                )}
+                                                                                <Signal className="h-4 w-4" />
+                                                                                <span className="text-sm">{anchor.signalStrength || 0}%</span>
                                                                             </div>
                                                                         </div>
-                                                                    )}
-                                                                    <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.signalStrength')}</span>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <Signal className="h-4 w-4" />
-                                                                            <span className="text-sm">{anchor.signalStrength || 0}%</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="flex items-center justify-between">
-                                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.batteryLevel')}</span>
-                                                                        <div className="flex items-center gap-2">
-                                                                            <Battery className="h-4 w-4" />
-                                                                            <span className="text-sm">{anchor.batteryLevel || 0}%</span>
-                                                                        </div>
-                                                                    </div>
-                                                                    {anchor.lastSeen && (
                                                                         <div className="flex items-center justify-between">
-                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.lastConnection')}</span>
-                                                                            <span className="text-sm">{anchor.lastSeen.toLocaleString('zh-TW')}</span>
+                                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.batteryLevel')}</span>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <Battery className="h-4 w-4" />
+                                                                                <span className="text-sm">{anchor.batteryLevel || 0}%</span>
+                                                                            </div>
                                                                         </div>
-                                                                    )}
-                                                                </div>
-                                                            </CardContent>
-                                                        </Card>
-                                                    )
-                                                })
-                                            })()}
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                                                                        {anchor.lastSeen && (
+                                                                            <div className="flex items-center justify-between">
+                                                                                <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.anchorPairing.anchorInfo.lastConnection')}</span>
+                                                                                <span className="text-sm">{anchor.lastSeen.toLocaleString('zh-TW')}</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </CardContent>
+                                                            </Card>
+                                                        )
+                                                    })
+                                                })()}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
 
-                {/* 標籤管理 */}
-                <TabsContent value="tags" className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-xl font-semibold">標籤設備管理</h2>
-                        <div className="flex items-center gap-4">
-                            {/* 三層巢狀選擇：養老院 -> 樓層 -> Gateway */}
-                            <div className="flex items-center gap-2">
-                                {/* 養老院選擇 */}
-                                <Select
-                                    value={selectedHomeForTags}
-                                    onValueChange={(value) => {
-                                        setSelectedHomeForTags(value)
-                                        setSelectedFloorForTags("")
-                                        setSelectedGatewayForTags("")
-                                    }}
-                                >
-                                    <SelectTrigger className="w-[180px]">
-                                        <SelectValue placeholder="選擇養老院" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {homes.map(home => (
-                                            <SelectItem key={home.id} value={home.id}>
-                                                {home.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-
-                                {/* 樓層選擇 */}
-                                <Select
-                                    value={selectedFloorForTags}
-                                    onValueChange={(value) => {
-                                        setSelectedFloorForTags(value)
-                                        setSelectedGatewayForTags("")
-                                    }}
-                                    disabled={!selectedHomeForTags}
-                                >
-                                    <SelectTrigger className="w-[150px]">
-                                        <SelectValue placeholder="選擇樓層" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {floors
-                                            .filter(floor => floor.homeId === selectedHomeForTags)
-                                            .map(floor => (
-                                                <SelectItem key={floor.id} value={floor.id}>
-                                                    {floor.name}
+                    {/* 標籤管理 */}
+                    <TabsContent value="tags" className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-semibold">標籤設備管理</h2>
+                            <div className="flex items-center gap-4">
+                                {/* 三層巢狀選擇：養老院 -> 樓層 -> Gateway */}
+                                <div className="flex items-center gap-2">
+                                    {/* 養老院選擇 */}
+                                    <Select
+                                        value={selectedHomeForTags}
+                                        onValueChange={(value) => {
+                                            setSelectedHomeForTags(value)
+                                            setSelectedFloorForTags("")
+                                            setSelectedGatewayForTags("")
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="選擇養老院" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {homes.map(home => (
+                                                <SelectItem key={home.id} value={home.id}>
+                                                    {home.name}
                                                 </SelectItem>
                                             ))}
-                                    </SelectContent>
-                                </Select>
+                                        </SelectContent>
+                                    </Select>
 
-                                {/* Gateway 選擇 */}
-                                <Select
-                                    value={selectedGatewayForTags}
-                                    onValueChange={setSelectedGatewayForTags}
-                                    disabled={!selectedFloorForTags}
-                                >
-                                    <SelectTrigger className="w-[200px]">
-                                        <SelectValue placeholder="選擇閘道器" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {/* 顯示該樓層下的系統閘道器 */}
-                                        {currentGateways
-                                            .filter(gw => gw.floorId === selectedFloorForTags && gw.status === 'online')
-                                            .map(gateway => {
-                                                // 提取 gateway ID（如果 MAC 地址包含 GW: 前綴）
-                                                const gatewayIdFromMac = gateway.macAddress.startsWith('GW:')
-                                                    ? parseInt(gateway.macAddress.replace('GW:', ''), 16)
-                                                    : null
-
-                                                return (
-                                                    <SelectItem key={`system-${gateway.id}`} value={gatewayIdFromMac?.toString() || gateway.id}>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                                                            {gateway.name} {gateway.cloudData ? '' : '(本地)'}
-                                                        </div>
+                                    {/* 樓層選擇 */}
+                                    <Select
+                                        value={selectedFloorForTags}
+                                        onValueChange={(value) => {
+                                            setSelectedFloorForTags(value)
+                                            setSelectedGatewayForTags("")
+                                        }}
+                                        disabled={!selectedHomeForTags}
+                                    >
+                                        <SelectTrigger className="w-[150px]">
+                                            <SelectValue placeholder="選擇樓層" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {floors
+                                                .filter(floor => floor.homeId === selectedHomeForTags)
+                                                .map(floor => (
+                                                    <SelectItem key={floor.id} value={floor.id}>
+                                                        {floor.name}
                                                     </SelectItem>
-                                                )
-                                            })}
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
 
-                                        {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
-                                        {currentGateways.filter(gw => gw.floorId === selectedFloorForTags && gw.status === 'online').length === 0 && (
-                                            <div className="px-2 py-1.5 text-sm text-gray-500">
-                                                {t('pages:uwbLocation.anchorPairing.noAvailableGateways')}
-                                            </div>
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    console.log("🔄 手動重連 Tag MQTT...")
-                                    console.log("- 當前選擇的 Gateway:", selectedGatewayForTags)
-
-                                    // 強制清理現有連接
-                                    if (tagCloudClientRef.current) {
-                                        console.log("- 清理現有連接")
-                                        tagCloudClientRef.current.end()
-                                        tagCloudClientRef.current = null
-                                    }
-
-                                    // 重置狀態
-                                    setTagCloudConnected(false)
-                                    setTagCloudConnectionStatus(t('pages:uwbLocation.tagManagement.messages.manualReconnecting'))
-                                    setTagCloudError("")
-
-                                    // 觸發重新連接（通過重新設置選擇的 Gateway）
-                                    const currentGateway = selectedGatewayForTags
-                                    setSelectedGatewayForTags("")
-                                    setTimeout(() => {
-                                        console.log("- 恢復 Gateway 選擇，觸發重連")
-                                        setSelectedGatewayForTags(currentGateway)
-                                    }, 100)
-                                }}
-                                disabled={!selectedGatewayForTags}
-                            >
-                                <RefreshIcon className="h-4 w-4 mr-2" />
-                                {t('pages:uwbLocation.tagManagement.controls.reconnectTags')}
-                            </Button>
-                            <Button onClick={() => setShowTagForm(true)}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                {t('pages:uwbLocation.tagManagement.controls.addTag')}
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* 標籤統計 */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Tag className="h-6 w-6 text-green-500" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.stats.personnelTags')}</p>
-                                        <p className="text-xl font-bold">{tags.filter(t => t.type === 'person').length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <Activity className="h-6 w-6 text-orange-500" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.stats.activeTags')}</p>
-                                        <p className="text-xl font-bold text-green-600">{tags.filter(t => t.status === 'active').length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardContent className="pt-6">
-                                <div className="flex items-center gap-3">
-                                    <CloudIcon className="h-6 w-6 text-blue-500" />
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.stats.cloudTags')}</p>
-                                        <p className="text-xl font-bold text-blue-600">{discoveredCloudTags.length}</p>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* 雲端標籤發現狀態 */}
-                    <Card>
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg flex items-center">
-                                    <Tag className="mr-3 h-5 w-5 text-teal-500" />
-                                    {t('pages:uwbLocation.tagManagement.cloudDiscovery.title')}
-                                </CardTitle>
-                                <div className="text-sm">
-                                    {tagCloudConnected ? (
-                                        <span className="text-green-600 flex items-center">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                                            {t('pages:uwbLocation.tagManagement.messages.connectionNormal')}
-                                        </span>
-                                    ) : (
-                                        <span className="text-red-500 flex items-center">
-                                            <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                                            {tagCloudConnectionStatus}
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
-                                    <div className="font-semibold">{t('pages:uwbLocation.tagManagement.cloudDiscovery.mqttStatus')}</div>
-                                    <div className="flex items-center justify-between">
-                                        <span>{t('pages:uwbLocation.tagManagement.cloudDiscovery.selectedGateway')}:</span>
-                                        <span className="font-medium">
-                                            {selectedGatewayForTags ? (() => {
-                                                // 先檢查雲端發現的閘道器
-                                                const discoveredGateway = discoveredGateways.find(gw => gw.gateway_id.toString() === selectedGatewayForTags)
-                                                if (discoveredGateway) {
-                                                    return `${discoveredGateway.name} (雲端)`
-                                                }
-
-                                                // 再檢查系統閘道器
-                                                const systemGateway = currentGateways.find(gw => {
-                                                    const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
-                                                        ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
+                                    {/* Gateway 選擇 */}
+                                    <Select
+                                        value={selectedGatewayForTags}
+                                        onValueChange={setSelectedGatewayForTags}
+                                        disabled={!selectedFloorForTags}
+                                    >
+                                        <SelectTrigger className="w-[200px]">
+                                            <SelectValue placeholder="選擇閘道器" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {/* 顯示該樓層下的系統閘道器 */}
+                                            {currentGateways
+                                                .filter(gw => gw.floorId === selectedFloorForTags && gw.status === 'online')
+                                                .map(gateway => {
+                                                    // 提取 gateway ID（如果 MAC 地址包含 GW: 前綴）
+                                                    const gatewayIdFromMac = gateway.macAddress.startsWith('GW:')
+                                                        ? parseInt(gateway.macAddress.replace('GW:', ''), 16)
                                                         : null
-                                                    return gatewayIdFromMac === selectedGatewayForTags || gw.id === selectedGatewayForTags
-                                                })
-                                                if (systemGateway) {
-                                                    const hasCloudData = systemGateway.cloudData ? " (雲端數據)" : " (本地)"
-                                                    return `${systemGateway.name}${hasCloudData}`
-                                                }
 
-                                                return selectedGatewayForTags
-                                            })() : t('pages:uwbLocation.tagManagement.cloudDiscovery.notSelected')}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span>{t('pages:uwbLocation.tagManagement.cloudDiscovery.listeningTopic')}:</span>
-                                        <span className="text-xs font-mono text-muted-foreground">
-                                            {currentTagTopic || t('pages:uwbLocation.tagManagement.cloudDiscovery.none')}
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span>{t('pages:uwbLocation.tagManagement.cloudDiscovery.connectionStatus')}:</span>
-                                        <span className={tagCloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
-                                            {tagCloudConnectionStatus}
-                                        </span>
-                                    </div>
-                                    {tagCloudError && (
-                                        <div className="text-xs text-red-500">
-                                            {t('pages:uwbLocation.tagManagement.messages.connectionError')}: {tagCloudError}
-                                        </div>
-                                    )}
-                                </div>
+                                                    return (
+                                                        <SelectItem key={`system-${gateway.id}`} value={gatewayIdFromMac?.toString() || gateway.id}>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                                                                {gateway.name} {gateway.cloudData ? '' : '(本地)'}
+                                                            </div>
+                                                        </SelectItem>
+                                                    )
+                                                })}
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                    <div className="bg-teal-50 p-3 rounded-lg">
-                                        <div className="font-medium text-teal-800">{t('pages:uwbLocation.tagManagement.cloudDiscovery.discoveredTags')}</div>
-                                        <div className="text-2xl font-bold text-teal-600">{discoveredCloudTags.length}</div>
-                                    </div>
-                                    <div className="bg-green-50 p-3 rounded-lg">
-                                        <div className="font-medium text-green-800">{t('pages:uwbLocation.tagManagement.cloudDiscovery.onlineTags')}</div>
-                                        <div className="text-2xl font-bold text-green-600">
-                                            {discoveredCloudTags.filter(t => t.isOnline).length}
-                                        </div>
-                                    </div>
-                                    <div className="bg-purple-50 p-3 rounded-lg">
-                                        <div className="font-medium text-purple-800">{t('pages:uwbLocation.tagManagement.cloudDiscovery.mqttMessages')}</div>
-                                        <div className="text-2xl font-bold text-purple-600">{cloudTagData.length}</div>
-                                    </div>
-                                </div>
-
-                                {/* 發現的標籤列表 */}
-                                {discoveredCloudTags.length > 0 ? (
-                                    <div className="space-y-3">
-                                        <div className="font-medium">{t('pages:uwbLocation.tagManagement.cloudDiscovery.discoveredCloudTags')}：</div>
-                                        <div className="space-y-2 max-h-60 overflow-y-auto">
-                                            {discoveredCloudTags.map(tag => (
-                                                <div key={tag.id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className={`p-2 rounded-full ${tag.isOnline
-                                                            ? 'bg-green-100 text-green-600'
-                                                            : 'bg-gray-100 text-gray-600'
-                                                            }`}>
-                                                            <Tag className="h-4 w-4" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-medium flex items-center gap-2">
-                                                                ID: {tag.id}
-                                                                {tag.id_hex && (
-                                                                    <span className="text-xs text-muted-foreground font-mono">
-                                                                        ({tag.id_hex})
-                                                                    </span>
-                                                                )}
-                                                                <Badge
-                                                                    variant="secondary"
-                                                                    className={tag.isOnline
-                                                                        ? "bg-green-100 text-green-700 border-green-200"
-                                                                        : "bg-gray-100 text-gray-700 border-gray-200"
-                                                                    }
-                                                                >
-                                                                    {tag.isOnline ? t('pages:uwbLocation.tagManagement.tagStatus.online') : t('pages:uwbLocation.tagManagement.tagStatus.offline')}
-                                                                </Badge>
-                                                            </div>
-                                                            <div className="text-sm text-muted-foreground">
-                                                                {t('pages:uwbLocation.gateway')}: {tag.gateway_id} | {t('pages:uwbLocation.firmware')}: {tag.fw_ver || t('pages:uwbLocation.unknown')}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground">
-                                                                {tag.battery_level !== undefined && (
-                                                                    <>{t('pages:uwbLocation.tagManagement.tagCard.batteryLevel')}: {tag.battery_level}% | </>
-                                                                )}
-                                                                {tag.position && (
-                                                                    <>{t('pages:uwbLocation.position')}: ({tag.position.x.toFixed(2)}, {tag.position.y.toFixed(2)}, {tag.position.z.toFixed(2)}) | </>
-                                                                )}
-                                                                {tag.time && (
-                                                                    <>{t('pages:uwbLocation.time')}: {tag.time} | </>
-                                                                )}
-                                                                {t('pages:uwbLocation.lastUpdate')}: {tag.lastSeen instanceof Date ? tag.lastSeen.toLocaleTimeString('zh-TW') : t('pages:uwbLocation.unknown')}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className="text-sm text-gray-500">
-                                                        {t('pages:uwbLocation.tagManagement.cloudDiscovery.autoAddedToSystem')}
-                                                    </div>
+                                            {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
+                                            {currentGateways.filter(gw => gw.floorId === selectedFloorForTags && gw.status === 'online').length === 0 && (
+                                                <div className="px-2 py-1.5 text-sm text-gray-500">
+                                                    {t('pages:uwbLocation.anchorPairing.noAvailableGateways')}
                                                 </div>
-                                            ))}
+                                            )}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        console.log("🔄 手動重連 Tag MQTT...")
+                                        console.log("- 當前選擇的 Gateway:", selectedGatewayForTags)
+
+                                        // 強制清理現有連接
+                                        if (tagCloudClientRef.current) {
+                                            console.log("- 清理現有連接")
+                                            tagCloudClientRef.current.end()
+                                            tagCloudClientRef.current = null
+                                        }
+
+                                        // 重置狀態
+                                        setTagCloudConnected(false)
+                                        setTagCloudConnectionStatus(t('pages:uwbLocation.tagManagement.messages.manualReconnecting'))
+                                        setTagCloudError("")
+
+                                        // 觸發重新連接（通過重新設置選擇的 Gateway）
+                                        const currentGateway = selectedGatewayForTags
+                                        setSelectedGatewayForTags("")
+                                        setTimeout(() => {
+                                            console.log("- 恢復 Gateway 選擇，觸發重連")
+                                            setSelectedGatewayForTags(currentGateway)
+                                        }, 100)
+                                    }}
+                                    disabled={!selectedGatewayForTags}
+                                >
+                                    <RefreshIcon className="h-4 w-4 mr-2" />
+                                    {t('pages:uwbLocation.tagManagement.controls.reconnectTags')}
+                                </Button>
+                                <Button onClick={() => setShowTagForm(true)}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    {t('pages:uwbLocation.tagManagement.controls.addTag')}
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* 標籤統計 */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <Card>
+                                <CardContent className="pt-6">
+                                    <div className="flex items-center gap-3">
+                                        <Tag className="h-6 w-6 text-green-500" />
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.stats.personnelTags')}</p>
+                                            <p className="text-xl font-bold">{tags.filter(t => t.type === 'person').length}</p>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="text-center py-8 text-muted-foreground">
-                                        <Tag className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                                        <p className="font-medium">
-                                            {selectedGatewayForTags ? t('pages:uwbLocation.tagManagement.messages.noTagsFound') : t('pages:uwbLocation.tagManagement.messages.selectGatewayFirst')}
-                                        </p>
-                                        {selectedGatewayForTags && (
-                                            <div className="text-xs space-y-1 mt-2">
-                                                <p>{t('pages:uwbLocation.tagManagement.tagList.pleaseConfirm')}</p>
-                                                <p>1. {t('pages:uwbLocation.tagManagement.tagList.gatewayMessageLocationTopics')}</p>
-                                                <p>2. {t('pages:uwbLocation.tagManagement.tagList.simulatorSendsInfoLocation')}</p>
-                                                <p>3. {t('pages:uwbLocation.tagManagement.tagList.dataContainsFields')}</p>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardContent className="pt-6">
+                                    <div className="flex items-center gap-3">
+                                        <Activity className="h-6 w-6 text-orange-500" />
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.stats.activeTags')}</p>
+                                            <p className="text-xl font-bold text-green-600">{tags.filter(t => t.status === 'active').length}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardContent className="pt-6">
+                                    <div className="flex items-center gap-3">
+                                        <CloudIcon className="h-6 w-6 text-blue-500" />
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.stats.cloudTags')}</p>
+                                            <p className="text-xl font-bold text-blue-600">{discoveredCloudTags.length}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* 雲端標籤發現狀態 */}
+                        <Card>
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="text-lg flex items-center">
+                                        <Tag className="mr-3 h-5 w-5 text-teal-500" />
+                                        {t('pages:uwbLocation.tagManagement.cloudDiscovery.title')}
+                                    </CardTitle>
+                                    <div className="text-sm">
+                                        {tagCloudConnected ? (
+                                            <span className="text-green-600 flex items-center">
+                                                <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                                                {t('pages:uwbLocation.tagManagement.messages.connectionNormal')}
+                                            </span>
+                                        ) : (
+                                            <span className="text-red-500 flex items-center">
+                                                <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                                                {tagCloudConnectionStatus}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-4">
+                                    <div className="text-sm space-y-2 bg-gray-50 p-4 rounded-lg">
+                                        <div className="font-semibold">{t('pages:uwbLocation.tagManagement.cloudDiscovery.mqttStatus')}</div>
+                                        <div className="flex items-center justify-between">
+                                            <span>{t('pages:uwbLocation.tagManagement.cloudDiscovery.selectedGateway')}:</span>
+                                            <span className="font-medium">
+                                                {selectedGatewayForTags ? (() => {
+                                                    // 先檢查雲端發現的閘道器
+                                                    const discoveredGateway = discoveredGateways.find(gw => gw.gateway_id.toString() === selectedGatewayForTags)
+                                                    if (discoveredGateway) {
+                                                        return `${discoveredGateway.name} (雲端)`
+                                                    }
+
+                                                    // 再檢查系統閘道器
+                                                    const systemGateway = currentGateways.find(gw => {
+                                                        const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
+                                                            ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
+                                                            : null
+                                                        return gatewayIdFromMac === selectedGatewayForTags || gw.id === selectedGatewayForTags
+                                                    })
+                                                    if (systemGateway) {
+                                                        const hasCloudData = systemGateway.cloudData ? " (雲端數據)" : " (本地)"
+                                                        return `${systemGateway.name}${hasCloudData}`
+                                                    }
+
+                                                    return selectedGatewayForTags
+                                                })() : t('pages:uwbLocation.tagManagement.cloudDiscovery.notSelected')}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span>{t('pages:uwbLocation.tagManagement.cloudDiscovery.listeningTopic')}:</span>
+                                            <span className="text-xs font-mono text-muted-foreground">
+                                                {currentTagTopic || t('pages:uwbLocation.tagManagement.cloudDiscovery.none')}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span>{t('pages:uwbLocation.tagManagement.cloudDiscovery.connectionStatus')}:</span>
+                                            <span className={tagCloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
+                                                {tagCloudConnectionStatus}
+                                            </span>
+                                        </div>
+                                        {tagCloudError && (
+                                            <div className="text-xs text-red-500">
+                                                {t('pages:uwbLocation.tagManagement.messages.connectionError')}: {tagCloudError}
                                             </div>
                                         )}
                                     </div>
-                                )}
 
-                                {/* 原始數據檢視器 - 用於調試 */}
-                                <div className="mt-6">
-                                    <details className="group">
-                                        <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                                            🔍 {t('pages:uwbLocation.tagManagement.tagList.viewRawTagMqttData')}
-                                        </summary>
-                                        <div className="mt-2 space-y-2 text-xs">
-                                            <div className="text-muted-foreground">
-                                                {t('pages:uwbLocation.tagManagement.tagList.clickDataToExpand')}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div className="bg-teal-50 p-3 rounded-lg">
+                                            <div className="font-medium text-teal-800">{t('pages:uwbLocation.tagManagement.cloudDiscovery.discoveredTags')}</div>
+                                            <div className="text-2xl font-bold text-teal-600">{discoveredCloudTags.length}</div>
+                                        </div>
+                                        <div className="bg-green-50 p-3 rounded-lg">
+                                            <div className="font-medium text-green-800">{t('pages:uwbLocation.tagManagement.cloudDiscovery.onlineTags')}</div>
+                                            <div className="text-2xl font-bold text-green-600">
+                                                {discoveredCloudTags.filter(t => t.isOnline).length}
                                             </div>
-                                            <div className="max-h-60 overflow-y-auto space-y-2">
-                                                {cloudTagData.slice(0, 5).map((data, index) => (
-                                                    <details key={index} className="border rounded p-2 bg-slate-50">
-                                                        <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
-                                                            [{index + 1}] {data.content} - ID: {data.id} - {data.topic} - {data.receivedAt.toLocaleString('zh-TW')}
-                                                        </summary>
-                                                        <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
-                                                            {JSON.stringify(data, null, 2)}
-                                                        </pre>
-                                                    </details>
+                                        </div>
+                                        <div className="bg-purple-50 p-3 rounded-lg">
+                                            <div className="font-medium text-purple-800">{t('pages:uwbLocation.tagManagement.cloudDiscovery.mqttMessages')}</div>
+                                            <div className="text-2xl font-bold text-purple-600">{cloudTagData.length}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* 發現的標籤列表 */}
+                                    {discoveredCloudTags.length > 0 ? (
+                                        <div className="space-y-3">
+                                            <div className="font-medium">{t('pages:uwbLocation.tagManagement.cloudDiscovery.discoveredCloudTags')}：</div>
+                                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                                                {discoveredCloudTags.map(tag => (
+                                                    <div key={tag.id} className="flex items-center justify-between p-3 border rounded-lg bg-white">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`p-2 rounded-full ${tag.isOnline
+                                                                ? 'bg-green-100 text-green-600'
+                                                                : 'bg-gray-100 text-gray-600'
+                                                                }`}>
+                                                                <Tag className="h-4 w-4" />
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-medium flex items-center gap-2">
+                                                                    ID: {tag.id}
+                                                                    {tag.id_hex && (
+                                                                        <span className="text-xs text-muted-foreground font-mono">
+                                                                            ({tag.id_hex})
+                                                                        </span>
+                                                                    )}
+                                                                    <Badge
+                                                                        variant="secondary"
+                                                                        className={tag.isOnline
+                                                                            ? "bg-green-100 text-green-700 border-green-200"
+                                                                            : "bg-gray-100 text-gray-700 border-gray-200"
+                                                                        }
+                                                                    >
+                                                                        {tag.isOnline ? t('pages:uwbLocation.tagManagement.tagStatus.online') : t('pages:uwbLocation.tagManagement.tagStatus.offline')}
+                                                                    </Badge>
+                                                                </div>
+                                                                <div className="text-sm text-muted-foreground">
+                                                                    {t('pages:uwbLocation.gateway')}: {tag.gateway_id} | {t('pages:uwbLocation.firmware')}: {tag.fw_ver || t('pages:uwbLocation.unknown')}
+                                                                </div>
+                                                                <div className="text-xs text-muted-foreground">
+                                                                    {tag.battery_level !== undefined && (
+                                                                        <>{t('pages:uwbLocation.tagManagement.tagCard.batteryLevel')}: {tag.battery_level}% | </>
+                                                                    )}
+                                                                    {tag.position && (
+                                                                        <>{t('pages:uwbLocation.position')}: ({tag.position.x.toFixed(2)}, {tag.position.y.toFixed(2)}, {tag.position.z.toFixed(2)}) | </>
+                                                                    )}
+                                                                    {tag.time && (
+                                                                        <>{t('pages:uwbLocation.time')}: {tag.time} | </>
+                                                                    )}
+                                                                    {t('pages:uwbLocation.lastUpdate')}: {tag.lastSeen instanceof Date ? tag.lastSeen.toLocaleTimeString('zh-TW') : t('pages:uwbLocation.unknown')}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-sm text-gray-500">
+                                                            {t('pages:uwbLocation.tagManagement.cloudDiscovery.autoAddedToSystem')}
+                                                        </div>
+                                                    </div>
                                                 ))}
                                             </div>
-                                            <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                                                <div className="font-semibold mb-1">{t('pages:uwbLocation.tagManagement.tagList.tagDiscoveryConditions')}</div>
-                                                <div>{t('pages:uwbLocation.tagManagement.tagList.messageTopic')}</div>
-                                                <div>{t('pages:uwbLocation.tagManagement.tagList.locationTopic')}</div>
-                                                <div>{t('pages:uwbLocation.tagManagement.tagList.mustHaveId')}</div>
-                                                <div>{t('pages:uwbLocation.tagManagement.tagList.messageContainsBattery')}</div>
-                                                <div>{t('pages:uwbLocation.tagManagement.tagList.locationContainsPosition')}</div>
-                                            </div>
                                         </div>
-                                    </details>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                                    ) : (
+                                        <div className="text-center py-8 text-muted-foreground">
+                                            <Tag className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                                            <p className="font-medium">
+                                                {selectedGatewayForTags ? t('pages:uwbLocation.tagManagement.messages.noTagsFound') : t('pages:uwbLocation.tagManagement.messages.selectGatewayFirst')}
+                                            </p>
+                                            {selectedGatewayForTags && (
+                                                <div className="text-xs space-y-1 mt-2">
+                                                    <p>{t('pages:uwbLocation.tagManagement.tagList.pleaseConfirm')}</p>
+                                                    <p>1. {t('pages:uwbLocation.tagManagement.tagList.gatewayMessageLocationTopics')}</p>
+                                                    <p>2. {t('pages:uwbLocation.tagManagement.tagList.simulatorSendsInfoLocation')}</p>
+                                                    <p>3. {t('pages:uwbLocation.tagManagement.tagList.dataContainsFields')}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
 
-                    {/* 標籤列表 */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(() => {
-                            // 根据选择的网关过滤标签，参考锚点配对的过滤逻辑
-                            console.log("🔍 標籤過濾調試:")
-                            console.log("- 選擇的閘道器:", selectedGatewayForTags, "類型:", typeof selectedGatewayForTags)
-                            console.log("- 總標籤數量:", tags.length)
-                            console.log("- 所有標籤:", tags.map(t => ({
-                                id: t.id,
-                                name: t.name,
-                                gatewayId: t.gatewayId,
-                                gatewayIdType: typeof t.gatewayId,
-                                cloudGatewayId: t.cloudGatewayId,
-                                cloudGatewayIdType: typeof t.cloudGatewayId
-                            })))
-
-                            const filteredTags = tags.filter(tag => {
-                                // 確保 selectedGatewayForTags 是字符串類型進行比較
-                                const selectedGatewayStr = selectedGatewayForTags?.toString()
-
-                                const match1 = tag.gatewayId === selectedGatewayForTags
-                                const match2 = tag.cloudGatewayId?.toString() === selectedGatewayStr
-                                const match3 = tag.cloudGatewayId === parseInt(selectedGatewayStr || "0")
-
-                                console.log(`標籤 ${tag.id}: gatewayId="${tag.gatewayId}" vs selected="${selectedGatewayForTags}" => match1:${match1}, match2:${match2}, match3:${match3}`)
-
-                                return match1 || match2 || match3
-                            })
-
-                            console.log("🔍 過濾結果:")
-                            console.log("- 過濾後的標籤數量:", filteredTags.length)
-                            console.log("- 過濾後的標籤:", filteredTags.map(t => ({ id: t.id, name: t.name })))
-
-                            if (filteredTags.length === 0) {
-                                console.log("⚠️ 沒有標籤匹配，顯示空狀態")
-                                return (
-                                    <div className="col-span-2 text-center py-8 text-muted-foreground">
-                                        <Tag className="mx-auto h-12 w-12 mb-3 opacity-30" />
-                                        <p className="text-sm">{t('pages:uwbLocation.tagManagement.tagList.noTagsUnderGateway')}</p>
+                                    {/* 原始數據檢視器 - 用於調試 */}
+                                    <div className="mt-6">
+                                        <details className="group">
+                                            <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
+                                                🔍 {t('pages:uwbLocation.tagManagement.tagList.viewRawTagMqttData')}
+                                            </summary>
+                                            <div className="mt-2 space-y-2 text-xs">
+                                                <div className="text-muted-foreground">
+                                                    {t('pages:uwbLocation.tagManagement.tagList.clickDataToExpand')}
+                                                </div>
+                                                <div className="max-h-60 overflow-y-auto space-y-2">
+                                                    {cloudTagData.slice(0, 5).map((data, index) => (
+                                                        <details key={index} className="border rounded p-2 bg-slate-50">
+                                                            <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
+                                                                [{index + 1}] {data.content} - ID: {data.id} - {data.topic} - {data.receivedAt.toLocaleString('zh-TW')}
+                                                            </summary>
+                                                            <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
+                                                                {JSON.stringify(data, null, 2)}
+                                                            </pre>
+                                                        </details>
+                                                    ))}
+                                                </div>
+                                                <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                                                    <div className="font-semibold mb-1">{t('pages:uwbLocation.tagManagement.tagList.tagDiscoveryConditions')}</div>
+                                                    <div>{t('pages:uwbLocation.tagManagement.tagList.messageTopic')}</div>
+                                                    <div>{t('pages:uwbLocation.tagManagement.tagList.locationTopic')}</div>
+                                                    <div>{t('pages:uwbLocation.tagManagement.tagList.mustHaveId')}</div>
+                                                    <div>{t('pages:uwbLocation.tagManagement.tagList.messageContainsBattery')}</div>
+                                                    <div>{t('pages:uwbLocation.tagManagement.tagList.locationContainsPosition')}</div>
+                                                </div>
+                                            </div>
+                                        </details>
                                     </div>
-                                )
-                            }
+                                </div>
+                            </CardContent>
+                        </Card>
 
-                            console.log("🎨 開始渲染標籤列表...")
-                            console.log("- 即將渲染的標籤數量:", filteredTags.length)
+                        {/* 標籤列表 */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {(() => {
+                                // 根据选择的网关过滤标签，参考锚点配对的过滤逻辑
+                                console.log("🔍 標籤過濾調試:")
+                                console.log("- 選擇的閘道器:", selectedGatewayForTags, "類型:", typeof selectedGatewayForTags)
+                                console.log("- 總標籤數量:", tags.length)
+                                console.log("- 所有標籤:", tags.map(t => ({
+                                    id: t.id,
+                                    name: t.name,
+                                    gatewayId: t.gatewayId,
+                                    gatewayIdType: typeof t.gatewayId,
+                                    cloudGatewayId: t.cloudGatewayId,
+                                    cloudGatewayIdType: typeof t.cloudGatewayId
+                                })))
 
-                            return filteredTags.map(tag => {
-                                console.log(`🎨 渲染標籤: ${tag.id} - ${tag.name}`)
+                                const filteredTags = tags.filter(tag => {
+                                    // 確保 selectedGatewayForTags 是字符串類型進行比較
+                                    const selectedGatewayStr = selectedGatewayForTags?.toString()
 
-                                const getTypeIcon = (type: TagDevice['type']) => {
-                                    return <Tag className="h-5 w-5 text-green-500" />
+                                    const match1 = tag.gatewayId === selectedGatewayForTags
+                                    const match2 = tag.cloudGatewayId?.toString() === selectedGatewayStr
+                                    const match3 = tag.cloudGatewayId === parseInt(selectedGatewayStr || "0")
+
+                                    console.log(`標籤 ${tag.id}: gatewayId="${tag.gatewayId}" vs selected="${selectedGatewayForTags}" => match1:${match1}, match2:${match2}, match3:${match3}`)
+
+                                    return match1 || match2 || match3
+                                })
+
+                                console.log("🔍 過濾結果:")
+                                console.log("- 過濾後的標籤數量:", filteredTags.length)
+                                console.log("- 過濾後的標籤:", filteredTags.map(t => ({ id: t.id, name: t.name })))
+
+                                if (filteredTags.length === 0) {
+                                    console.log("⚠️ 沒有標籤匹配，顯示空狀態")
+                                    return (
+                                        <div className="col-span-2 text-center py-8 text-muted-foreground">
+                                            <Tag className="mx-auto h-12 w-12 mb-3 opacity-30" />
+                                            <p className="text-sm">{t('pages:uwbLocation.tagManagement.tagList.noTagsUnderGateway')}</p>
+                                        </div>
+                                    )
                                 }
 
-                                const getStatusColor = (status: TagDevice['status']) => {
-                                    switch (status) {
-                                        case 'active': return 'bg-green-100 text-green-700 border-green-200'
-                                        case 'low_battery': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                                        case 'lost': return 'bg-red-100 text-red-700 border-red-200'
-                                        default: return ''
+                                console.log("🎨 開始渲染標籤列表...")
+                                console.log("- 即將渲染的標籤數量:", filteredTags.length)
+
+                                return filteredTags.map(tag => {
+                                    console.log(`🎨 渲染標籤: ${tag.id} - ${tag.name}`)
+
+                                    const getTypeIcon = (type: TagDevice['type']) => {
+                                        return <Tag className="h-5 w-5 text-green-500" />
                                     }
-                                }
 
-                                const getStatusText = (status: TagDevice['status']) => {
-                                    switch (status) {
-                                        case 'active': return t('pages:uwbLocation.tagManagement.tagStatus.running')
-                                        case 'inactive': return t('pages:uwbLocation.tagManagement.tagStatus.inactive')
-                                        case 'low_battery': return t('pages:uwbLocation.tagManagement.tagStatus.lowBattery')
-                                        case 'lost': return t('pages:uwbLocation.tagManagement.tagStatus.lost')
-                                        default: return status
+                                    const getStatusColor = (status: TagDevice['status']) => {
+                                        switch (status) {
+                                            case 'active': return 'bg-green-100 text-green-700 border-green-200'
+                                            case 'low_battery': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                                            case 'lost': return 'bg-red-100 text-red-700 border-red-200'
+                                            default: return ''
+                                        }
                                     }
-                                }
 
-                                return (
-                                    <Card key={tag.id}>
-                                        <CardHeader className="pb-3">
-                                            <div className="flex items-center justify-between">
-                                                <CardTitle className="flex items-center">
-                                                    {getTypeIcon(tag.type)}
-                                                    <span className="ml-2">{tag.name}</span>
-                                                </CardTitle>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge
-                                                        variant="secondary"
-                                                        className={getStatusColor(tag.status)}
-                                                    >
-                                                        {getStatusText(tag.status)}
-                                                    </Badge>
-                                                    {/* 顯示標籤來源 */}
-                                                    {discoveredCloudTags.some(cloudTag => cloudTag.id.toString() === tag.id) && (
-                                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                                            <CloudIcon className="h-3 w-3 mr-1" />
-                                                            {t('pages:uwbLocation.tagManagement.tagCard.cloud')}
-                                                        </Badge>
-                                                    )}
-                                                    <div className="flex gap-1">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                setEditingTag(tag)
-                                                                setTagForm({
-                                                                    name: tag.name,
-                                                                    macAddress: tag.macAddress,
-                                                                    type: tag.type,
-                                                                    assignedTo: tag.assignedTo || ""
-                                                                })
-                                                                setShowTagForm(true)
-                                                            }}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => deleteTag(tag.id)}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <div className="space-y-2">
+                                    const getStatusText = (status: TagDevice['status']) => {
+                                        switch (status) {
+                                            case 'active': return t('pages:uwbLocation.tagManagement.tagStatus.running')
+                                            case 'inactive': return t('pages:uwbLocation.tagManagement.tagStatus.inactive')
+                                            case 'low_battery': return t('pages:uwbLocation.tagManagement.tagStatus.lowBattery')
+                                            case 'lost': return t('pages:uwbLocation.tagManagement.tagStatus.lost')
+                                            default: return status
+                                        }
+                                    }
+
+                                    return (
+                                        <Card key={tag.id}>
+                                            <CardHeader className="pb-3">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.macAddress')}</span>
-                                                    <span className="font-mono text-sm">{tag.macAddress}</span>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.type')}</span>
-                                                    <span className="text-sm">{t('pages:uwbLocation.tagManagement.tagCard.personnel')}</span>
-                                                </div>
-                                                {tag.assignedTo && (
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.assignedTo')}</span>
-                                                        <span className="text-sm">{tag.assignedTo}</span>
-                                                    </div>
-                                                )}
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.batteryLevel')}</span>
+                                                    <CardTitle className="flex items-center">
+                                                        {getTypeIcon(tag.type)}
+                                                        <span className="ml-2">{tag.name}</span>
+                                                    </CardTitle>
                                                     <div className="flex items-center gap-2">
-                                                        <Battery className="h-4 w-4" />
-                                                        <span className="text-sm">{tag.batteryLevel || 0}%</span>
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className={getStatusColor(tag.status)}
+                                                        >
+                                                            {getStatusText(tag.status)}
+                                                        </Badge>
+                                                        {/* 顯示標籤來源 */}
+                                                        {discoveredCloudTags.some(cloudTag => cloudTag.id.toString() === tag.id) && (
+                                                            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                                                <CloudIcon className="h-3 w-3 mr-1" />
+                                                                {t('pages:uwbLocation.tagManagement.tagCard.cloud')}
+                                                            </Badge>
+                                                        )}
+                                                        <div className="flex gap-1">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    setEditingTag(tag)
+                                                                    setTagForm({
+                                                                        name: tag.name,
+                                                                        macAddress: tag.macAddress,
+                                                                        type: tag.type,
+                                                                        assignedTo: tag.assignedTo || ""
+                                                                    })
+                                                                    setShowTagForm(true)
+                                                                }}
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => deleteTag(tag.id)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                                {tag.lastPosition && (
-                                                    <div className="space-y-1">
+                                            </CardHeader>
+                                            <CardContent>
+                                                <div className="space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.macAddress')}</span>
+                                                        <span className="font-mono text-sm">{tag.macAddress}</span>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.type')}</span>
+                                                        <span className="text-sm">{t('pages:uwbLocation.tagManagement.tagCard.personnel')}</span>
+                                                    </div>
+                                                    {tag.assignedTo && (
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.lastPosition')}</span>
-                                                            <span className="text-sm">
-                                                                ({tag.lastPosition.x.toFixed(1)}, {tag.lastPosition.y.toFixed(1)})
-                                                            </span>
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.assignedTo')}</span>
+                                                            <span className="text-sm">{tag.assignedTo}</span>
                                                         </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.updateTime')}</span>
-                                                            <span className="text-sm">
-                                                                {tag.lastPosition.timestamp.toLocaleString('zh-TW')}
-                                                            </span>
+                                                    )}
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.batteryLevel')}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <Battery className="h-4 w-4" />
+                                                            <span className="text-sm">{tag.batteryLevel || 0}%</span>
                                                         </div>
                                                     </div>
-                                                )}
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                )
-                            })
-                        })()}
-                    </div>
+                                                    {tag.lastPosition && (
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.lastPosition')}</span>
+                                                                <span className="text-sm">
+                                                                    ({tag.lastPosition.x.toFixed(1)}, {tag.lastPosition.y.toFixed(1)})
+                                                                </span>
+                                                            </div>
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.tagManagement.tagCard.updateTime')}</span>
+                                                                <span className="text-sm">
+                                                                    {tag.lastPosition.timestamp.toLocaleString('zh-TW')}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })
+                            })()}
+                        </div>
 
-                    {/* 新增/編輯標籤表單 */}
-                    {showTagForm && (
-                        <Card>
+                        {/* 新增/編輯標籤表單 */}
+                        {showTagForm && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>{editingTag ? t('pages:uwbLocation.tagManagement.tagForm.editTag') : t('pages:uwbLocation.tagManagement.tagForm.addTag')}</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.tagName')}</label>
+                                            <Input
+                                                value={tagForm.name}
+                                                onChange={(e) => setTagForm(prev => ({ ...prev, name: e.target.value }))}
+                                                placeholder={t('pages:uwbLocation.tagManagement.tagForm.tagNamePlaceholder')}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.macAddress')}</label>
+                                            <Input
+                                                value={tagForm.macAddress}
+                                                onChange={(e) => setTagForm(prev => ({ ...prev, macAddress: e.target.value }))}
+                                                placeholder={t('pages:uwbLocation.tagManagement.tagForm.macAddressPlaceholder')}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.tagType')}</label>
+                                            <Select
+                                                value={tagForm.type}
+                                                onValueChange={(value) => setTagForm(prev => ({ ...prev, type: value as TagDevice['type'] }))}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={t('pages:uwbLocation.tagManagement.tagForm.selectType')} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="person">{t('pages:uwbLocation.tagManagement.tagForm.person')}</SelectItem>
+                                                    <SelectItem value="equipment">{t('pages:uwbLocation.tagManagement.tagForm.equipment')}</SelectItem>
+                                                    <SelectItem value="asset">{t('pages:uwbLocation.tagManagement.tagForm.asset')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.assignedTo')}</label>
+                                            <Input
+                                                value={tagForm.assignedTo}
+                                                onChange={(e) => setTagForm(prev => ({ ...prev, assignedTo: e.target.value }))}
+                                                placeholder={t('pages:uwbLocation.tagManagement.tagForm.assignedToPlaceholder')}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button onClick={handleTagSubmit}>
+                                            {editingTag ? t('pages:uwbLocation.tagManagement.tagForm.save') : t('pages:uwbLocation.tagManagement.controls.addTag')}
+                                        </Button>
+                                        <Button variant="outline" onClick={resetTagForm}>
+                                            {t('pages:uwbLocation.tagManagement.tagForm.cancel')}
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </TabsContent>
+                </Tabs>
+
+                {/* Anchor 座標校正彈窗 */}
+                {calibratingAnchor && !showConfigDialog && (
+                    <div className="fixed top-4 right-4 z-50 w-80">
+                        <Card className="w-full shadow-2xl border-2 border-green-200">
+                            <CardHeader className="pb-3">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="flex items-center">
+                                        <Target className="mr-2 h-5 w-5 text-green-500" />
+                                        校正 {calibratingAnchor.name}
+                                    </CardTitle>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={cancelAnchorCalibration}
+                                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                                    >
+                                        ✕
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {/* 說明文字 */}
+                                <div className="text-sm bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
+                                    <div className="font-medium mb-2 text-green-800 flex items-center">
+                                        🎯 地圖點擊校正模式
+                                        <span className="ml-2 inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                    </div>
+                                    <div className="mb-3 text-green-700">
+                                        <strong>👆 直接點擊左側地圖</strong> 來設定 <span className="font-medium bg-yellow-100 px-1 rounded">{calibratingAnchor.name}</span> 的新位置
+                                    </div>
+                                    <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded border-l-2 border-blue-300">
+                                        💡 或者在下方手動輸入精確座標值
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="text-sm font-medium">座標類型</label>
+                                        <Select
+                                            value={anchorPositionInput.coordinateType}
+                                            onValueChange={(value: 'real' | 'pixel') =>
+                                                setAnchorPositionInput(prev => ({ ...prev, coordinateType: value as 'real' | 'pixel' }))
+                                            }
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="real">真實座標 (米)</SelectItem>
+                                                <SelectItem value="pixel">像素座標 (px)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                            <label className="text-sm font-medium">X 座標</label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                value={anchorPositionInput.x}
+                                                onChange={(e) => setAnchorPositionInput(prev => ({ ...prev, x: e.target.value }))}
+                                                placeholder="X"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">Y 座標</label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                value={anchorPositionInput.y}
+                                                onChange={(e) => setAnchorPositionInput(prev => ({ ...prev, y: e.target.value }))}
+                                                placeholder="Y"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-sm font-medium">Z 座標 (米)</label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                value={anchorPositionInput.z}
+                                                onChange={(e) => setAnchorPositionInput(prev => ({ ...prev, z: e.target.value }))}
+                                                placeholder="Z"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
+                                        {anchorPositionInput.coordinateType === 'real' ?
+                                            '💡 輸入真實世界的座標（單位：米）' :
+                                            '💡 輸入圖片上的像素座標，系統會自動轉換為真實座標'
+                                        }
+                                    </div>
+                                </div>
+
+                                {/* 按鈕 */}
+                                <div className="flex gap-2 pt-2">
+                                    <Button onClick={saveAnchorCalibration} className="flex-1">
+                                        <Save className="h-4 w-4 mr-2" />
+                                        保存手動輸入座標
+                                    </Button>
+                                    <Button variant="outline" onClick={cancelAnchorCalibration}>
+                                        {t('pages:uwbLocation.anchorPairing.cancelCalibration')}
+                                    </Button>
+                                </div>
+
+                                {/* 快速操作提示 */}
+                                <div className="text-xs text-center bg-gradient-to-r from-yellow-50 to-orange-50 p-3 rounded border border-yellow-200">
+                                    <div className="font-medium text-orange-700 mb-1">⚡ 快速操作</div>
+                                    <div className="text-orange-600">
+                                        點擊左側地圖 = 快速設定 | 手動輸入 = 精確座標
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* Anchor 配置發送對話框 */}
+                {showConfigDialog && configAnchor && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <Card className="w-full max-w-lg mx-4">
                             <CardHeader>
-                                <CardTitle>{editingTag ? t('pages:uwbLocation.tagManagement.tagForm.editTag') : t('pages:uwbLocation.tagManagement.tagForm.addTag')}</CardTitle>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="flex items-center">
+                                        <Upload className="mr-2 h-5 w-5 text-blue-500" />
+                                        {t('pages:uwbLocation.anchorPairing.sendConfigToCloud')} - {configAnchor.name}
+                                    </CardTitle>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={closeConfigDialog}
+                                        className="h-8 w-8 p-0 hover:bg-gray-100"
+                                    >
+                                        ✕
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {/* 座標預覽 */}
+                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                    <div className="font-medium text-blue-800 mb-2">📍 新座標位置</div>
+                                    <div className="grid grid-cols-3 gap-4 text-sm">
+                                        <div className="text-center">
+                                            <div className="text-blue-600 font-medium">X 座標</div>
+                                            <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.x).toFixed(3)}</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-blue-600 font-medium">Y 座標</div>
+                                            <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.y).toFixed(3)}</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-blue-600 font-medium">Z 座標</div>
+                                            <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.z).toFixed(3)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 配置參數 */}
+                                <div className="space-y-3">
+                                    <div className="font-medium text-gray-800">🔧 Anchor 配置參數</div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-sm font-medium">韌體更新</label>
+                                            <Select
+                                                value={anchorConfigForm.fw_update.toString()}
+                                                onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, fw_update: parseInt(value) }))}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="0">關閉</SelectItem>
+                                                    <SelectItem value="1">開啟</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium">LED 狀態</label>
+                                            <Select
+                                                value={anchorConfigForm.led.toString()}
+                                                onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, led: parseInt(value) }))}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="0">關閉</SelectItem>
+                                                    <SelectItem value="1">開啟</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium">BLE 狀態</label>
+                                            <Select
+                                                value={anchorConfigForm.ble.toString()}
+                                                onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, ble: parseInt(value) }))}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="0">關閉</SelectItem>
+                                                    <SelectItem value="1">開啟</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium">發起者</label>
+                                            <Select
+                                                value={anchorConfigForm.initiator.toString()}
+                                                onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, initiator: parseInt(value) }))}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="0">{t('pages:uwbLocation.anchorPairing.generalAnchorOption')}</SelectItem>
+                                                    <SelectItem value="1">{t('pages:uwbLocation.anchorPairing.mainAnchorOption')}</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-sm font-medium">Serial No</label>
+                                            <Input
+                                                type="number"
+                                                min="1306"
+                                                max="9999"
+                                                value={anchorConfigForm.serial_no}
+                                                onChange={(e) => {
+                                                    const value = parseInt(e.target.value) || 1306
+                                                    const clampedValue = Math.min(Math.max(value, 1306), 9999)
+                                                    setAnchorConfigForm(prev => ({ ...prev, serial_no: clampedValue }))
+                                                }}
+                                                className="mt-1"
+                                                placeholder="1306-9999"
+                                            />
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                範圍: 1306-9999，每次發送後會自動遞增
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Anchor 信息顯示 */}
+                                <div className="bg-yellow-50 p-3 rounded border border-yellow-200 text-xs">
+                                    <div className="font-medium mb-2 text-yellow-800">🏷️ {t('pages:uwbLocation.anchorPairing.anchorDeviceInfo')}:</div>
+                                    <div className="grid grid-cols-2 gap-2 text-yellow-700">
+                                        <div>
+                                            <span className="font-medium">{t('pages:uwbLocation.anchorPairing.deviceName')}:</span> {configAnchor.cloudData?.name || configAnchor.name}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">{t('pages:uwbLocation.anchorPairing.deviceId')}:</span> {configAnchor.cloudData?.id || parseInt(configAnchor.macAddress.replace(/[^0-9]/g, '')) || t('common:status.unknown')}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">{t('pages:uwbLocation.anchorPairing.anchorInfo.macAddress')}:</span> {configAnchor.macAddress}
+                                        </div>
+                                        <div>
+                                            <span className="font-medium">{t('pages:uwbLocation.anchorPairing.currentStatus')}:</span> {configAnchor.cloudData?.initiator === 1 ? t('pages:uwbLocation.anchorPairing.mainAnchorOption') : t('pages:uwbLocation.anchorPairing.generalAnchorOption')}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* 發送信息預覽 */}
+                                <div className="bg-gray-50 p-3 rounded border text-xs">
+                                    <div className="font-medium mb-2">📤 {t('pages:uwbLocation.anchorPairing.sendConfigPreview')}:</div>
+                                    <div className="text-gray-600">
+                                        主題: {(() => {
+                                            const gateway = gateways.find(g => g.id === configAnchor.gatewayId)
+                                            const downlinkValue = gateway?.cloudData?.sub_topic?.downlink || '未知'
+                                            return downlinkValue === '未知' ? 'UWB/未知' :
+                                                downlinkValue.startsWith('UWB/') ? downlinkValue : `UWB/${downlinkValue}`
+                                        })()}
+                                    </div>
+                                    <div className="text-gray-600">
+                                        Gateway ID: {gateways.find(g => g.id === configAnchor.gatewayId)?.cloudData?.gateway_id || '未知'}
+                                    </div>
+                                </div>
+
+                                {/* 按鈕 */}
+                                <div className="flex gap-2 pt-2">
+                                    <Button
+                                        onClick={async () => {
+                                            if (!configAnchor) return
+
+                                            const position = {
+                                                x: parseFloat(anchorPositionInput.x),
+                                                y: parseFloat(anchorPositionInput.y),
+                                                z: parseFloat(anchorPositionInput.z)
+                                            }
+                                            const success = await sendAnchorConfigToCloud(configAnchor, position)
+                                            if (success) {
+                                                closeConfigDialog()
+                                            }
+                                        }}
+                                        className="flex-1"
+                                        disabled={sendingConfig}
+                                    >
+                                        {sendingConfig ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                                發送中...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Upload className="h-4 w-4 mr-2" />
+                                                發送到雲端硬體
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button variant="outline" onClick={closeConfigDialog} disabled={sendingConfig}>
+                                        {t('pages:uwbLocation.anchorPairing.cancel')}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* 新增場域彈窗 */}
+                {showHomeModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle>{t('pages:uwbLocation.actions.addHome')}</CardTitle>
+                                <Button variant="ghost" size="sm" onClick={() => setShowHomeModal(false)}>
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeName')}</label>
+                                    <Input
+                                        value={homeForm.name}
+                                        onChange={(e) => setHomeForm(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.forms.homeNamePlaceholder')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeDescription')}</label>
+                                    <Textarea
+                                        value={homeForm.description}
+                                        onChange={(e) => setHomeForm(prev => ({ ...prev, description: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.forms.homeDescriptionPlaceholder')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeAddress')}</label>
+                                    <Input
+                                        value={homeForm.address}
+                                        onChange={(e) => setHomeForm(prev => ({ ...prev, address: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.forms.homeAddressPlaceholder')}
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowHomeModal(false)}
+                                        className="flex-1"
+                                    >
+                                        {t('common:actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        onClick={handleHomeSubmit}
+                                        className="flex-1"
+                                        disabled={!homeForm.name || !homeForm.description || !homeForm.address}
+                                    >
+                                        {t('pages:uwbLocation.actions.addHome')}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* 新增樓層彈窗 */}
+                {showFloorModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle>{t('pages:uwbLocation.actions.addFloor')}</CardTitle>
+                                <Button variant="ghost" size="sm" onClick={() => setShowFloorModal(false)}>
+                                    <X className="h-5 w-5" />
+                                </Button>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.tagName')}</label>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.name')}</label>
                                         <Input
-                                            value={tagForm.name}
-                                            onChange={(e) => setTagForm(prev => ({ ...prev, name: e.target.value }))}
-                                            placeholder={t('pages:uwbLocation.tagManagement.tagForm.tagNamePlaceholder')}
+                                            value={floorForm.name}
+                                            onChange={(e) => setFloorForm(prev => ({ ...prev, name: e.target.value }))}
+                                            placeholder={t('pages:uwbLocation.floorForm.namePlaceholder')}
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.macAddress')}</label>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.level')}</label>
                                         <Input
-                                            value={tagForm.macAddress}
-                                            onChange={(e) => setTagForm(prev => ({ ...prev, macAddress: e.target.value }))}
-                                            placeholder={t('pages:uwbLocation.tagManagement.tagForm.macAddressPlaceholder')}
+                                            type="number"
+                                            value={floorForm.level}
+                                            onChange={(e) => setFloorForm(prev => ({ ...prev, level: parseInt(e.target.value) }))}
                                         />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.tagType')}</label>
-                                        <Select
-                                            value={tagForm.type}
-                                            onValueChange={(value) => setTagForm(prev => ({ ...prev, type: value as TagDevice['type'] }))}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue placeholder={t('pages:uwbLocation.tagManagement.tagForm.selectType')} />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="person">{t('pages:uwbLocation.tagManagement.tagForm.person')}</SelectItem>
-                                                <SelectItem value="equipment">{t('pages:uwbLocation.tagManagement.tagForm.equipment')}</SelectItem>
-                                                <SelectItem value="asset">{t('pages:uwbLocation.tagManagement.tagForm.asset')}</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.realWidth')}</label>
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            value={floorForm.realWidth}
+                                            onChange={(e) => setFloorForm(prev => ({ ...prev, realWidth: parseFloat(e.target.value) }))}
+                                            placeholder="0.0"
+                                        />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium">{t('pages:uwbLocation.tagManagement.tagForm.assignedTo')}</label>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.realHeight')}</label>
                                         <Input
-                                            value={tagForm.assignedTo}
-                                            onChange={(e) => setTagForm(prev => ({ ...prev, assignedTo: e.target.value }))}
-                                            placeholder={t('pages:uwbLocation.tagManagement.tagForm.assignedToPlaceholder')}
+                                            type="number"
+                                            step="0.1"
+                                            value={floorForm.realHeight}
+                                            onChange={(e) => setFloorForm(prev => ({ ...prev, realHeight: parseFloat(e.target.value) }))}
+                                            placeholder="0.0"
                                         />
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Button onClick={handleTagSubmit}>
-                                        {editingTag ? t('pages:uwbLocation.tagManagement.tagForm.save') : t('pages:uwbLocation.tagManagement.controls.addTag')}
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setShowFloorModal(false)}
+                                        className="flex-1"
+                                    >
+                                        {t('common:actions.cancel')}
                                     </Button>
-                                    <Button variant="outline" onClick={resetTagForm}>
-                                        {t('pages:uwbLocation.tagManagement.tagForm.cancel')}
+                                    <Button
+                                        onClick={handleFloorSubmit}
+                                        className="flex-1"
+                                        disabled={!floorForm.name || !selectedHome}
+                                    >
+                                        {t('pages:uwbLocation.actions.addFloor')}
                                     </Button>
                                 </div>
                             </CardContent>
                         </Card>
-                    )}
-                </TabsContent>
-            </Tabs>
+                    </div>
+                )}
 
-            {/* Anchor 座標校正彈窗 */}
-            {calibratingAnchor && !showConfigDialog && (
-                <div className="fixed top-4 right-4 z-50 w-80">
-                    <Card className="w-full shadow-2xl border-2 border-green-200">
-                        <CardHeader className="pb-3">
-                            <div className="flex items-center justify-between">
+                {/* 新增閘道器彈窗 */}
+                {showGatewayModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle className="flex items-center">
-                                    <Target className="mr-2 h-5 w-5 text-green-500" />
-                                    校正 {calibratingAnchor.name}
+                                    <Plus className="mr-2 h-5 w-5" />
+                                    {t('pages:uwbLocation.manualAddGateway')}
                                 </CardTitle>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={cancelAnchorCalibration}
-                                    className="h-8 w-8 p-0 hover:bg-gray-100"
-                                >
-                                    ✕
+                                <Button variant="ghost" size="sm" onClick={() => setShowGatewayModal(false)}>
+                                    <X className="h-5 w-5" />
                                 </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {/* 說明文字 */}
-                            <div className="text-sm bg-gradient-to-r from-green-50 to-blue-50 p-4 rounded-lg border border-green-200">
-                                <div className="font-medium mb-2 text-green-800 flex items-center">
-                                    🎯 地圖點擊校正模式
-                                    <span className="ml-2 inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                </div>
-                                <div className="mb-3 text-green-700">
-                                    <strong>👆 直接點擊左側地圖</strong> 來設定 <span className="font-medium bg-yellow-100 px-1 rounded">{calibratingAnchor.name}</span> 的新位置
-                                </div>
-                                <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded border-l-2 border-blue-300">
-                                    💡 或者在下方手動輸入精確座標值
-                                </div>
-                            </div>
-                            <div className="space-y-3">
+                            </CardHeader>
+                            <CardContent className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-medium">座標類型</label>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.gatewayName')}</label>
+                                    <Input
+                                        value={gatewayForm.name}
+                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.enterGatewayName')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.belongingFloor')}</label>
                                     <Select
-                                        value={anchorPositionInput.coordinateType}
-                                        onValueChange={(value: 'real' | 'pixel') =>
-                                            setAnchorPositionInput(prev => ({ ...prev, coordinateType: value as 'real' | 'pixel' }))
-                                        }
+                                        value={gatewayForm.floorId}
+                                        onValueChange={(value) => setGatewayForm(prev => ({ ...prev, floorId: value }))}
                                     >
                                         <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="real">真實座標 (米)</SelectItem>
-                                            <SelectItem value="pixel">像素座標 (px)</SelectItem>
+                                            {currentFloors.map(floor => (
+                                                <SelectItem key={floor.id} value={floor.id}>
+                                                    {floor.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.macAddress')}</label>
+                                        <Input
+                                            value={gatewayForm.macAddress}
+                                            onChange={(e) => setGatewayForm(prev => ({ ...prev, macAddress: e.target.value }))}
+                                            placeholder="AA:BB:CC:DD:EE:FF"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.ipAddress')}</label>
+                                        <Input
+                                            value={gatewayForm.ipAddress}
+                                            onChange={(e) => setGatewayForm(prev => ({ ...prev, ipAddress: e.target.value }))}
+                                            placeholder="192.168.1.100"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() => {
+                                            setShowGatewayModal(false)
+                                            resetGatewayForm()
+                                        }}
+                                    >
+                                        {t('common:actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        className="flex-1"
+                                        onClick={() => {
+                                            handleGatewaySubmit()
+                                            setShowGatewayModal(false)
+                                        }}
+                                        disabled={!gatewayForm.name || !gatewayForm.floorId}
+                                    >
+                                        {t('common:actions.add')}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* 雲端閘道器加入系統彈窗 */}
+                {showCloudGatewayModal && selectedDiscoveredGateway && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="flex items-center">
+                                    <CloudIcon className="mr-2 h-5 w-5 text-blue-500" />
+                                    {t('pages:uwbLocation.addCloudGatewayToSystem')}
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={() => setShowCloudGatewayModal(false)}>
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {/* 雲端閘道器資訊顯示 */}
+                                {(() => {
+                                    const cloudGateway = cloudGatewayData.find(gw => gw.gateway_id === selectedDiscoveredGateway)
+                                    return cloudGateway ? (
+                                        <div className="bg-blue-50 p-3 rounded-lg border">
+                                            <div className="text-sm font-medium text-blue-900 mb-2">雲端閘道器資訊</div>
+                                            <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
+                                                <div>ID: {cloudGateway.gateway_id}</div>
+                                                <div>韌體: {cloudGateway.fw_ver}</div>
+                                                <div>網路: {cloudGateway.uwb_network_id}</div>
+                                                <div>AP: {cloudGateway.connected_ap}</div>
+                                                <div>電壓: {cloudGateway.battery_voltage}V</div>
+                                                <div>狀態: {cloudGateway.uwb_joined === "yes" ? "已加入" : "未加入"}</div>
+                                            </div>
+                                        </div>
+                                    ) : null
+                                })()}
+
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.gatewayName')}</label>
+                                    <Input
+                                        value={gatewayForm.name}
+                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.enterGatewayName')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.belongingFloor')}</label>
+                                    <Select
+                                        value={gatewayForm.floorId}
+                                        onValueChange={(value) => setGatewayForm(prev => ({ ...prev, floorId: value }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {currentFloors.map(floor => (
+                                                <SelectItem key={floor.id} value={floor.id}>
+                                                    {floor.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.macAddress')}</label>
+                                        <Input
+                                            value={gatewayForm.macAddress}
+                                            onChange={(e) => setGatewayForm(prev => ({ ...prev, macAddress: e.target.value }))}
+                                            placeholder="AA:BB:CC:DD:EE:FF"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.ipAddress')}</label>
+                                        <Input
+                                            value={gatewayForm.ipAddress}
+                                            onChange={(e) => setGatewayForm(prev => ({ ...prev, ipAddress: e.target.value }))}
+                                            placeholder="192.168.1.100"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() => {
+                                            setShowCloudGatewayModal(false)
+                                            resetGatewayForm()
+                                        }}
+                                    >
+                                        {t('common:actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        className="flex-1"
+                                        onClick={() => {
+                                            handleGatewaySubmit()
+                                            setShowCloudGatewayModal(false)
+                                        }}
+                                        disabled={!gatewayForm.name || !gatewayForm.floorId}
+                                    >
+                                        {t('pages:uwbLocation.addToSystem')}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* 雲端錨點加入系統彈窗 */}
+                {showCloudAnchorModal && selectedCloudAnchor && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="flex items-center">
+                                    <CloudIcon className="mr-2 h-5 w-5 text-blue-500" />
+                                    加入雲端錨點到系統
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={() => setShowCloudAnchorModal(false)}>
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {/* 雲端錨點資訊顯示 */}
+                                <div className="bg-blue-50 p-3 rounded-lg border">
+                                    <div className="text-sm font-medium text-blue-900 mb-2">雲端錨點資訊</div>
+                                    <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
+                                        <div>ID: {selectedCloudAnchor.id}</div>
+                                        <div>名稱: {selectedCloudAnchor.name}</div>
+                                        <div>閘道器: {selectedCloudAnchor.gateway_id}</div>
+                                        <div>韌體: {selectedCloudAnchor.fw_update}</div>
+                                        <div>位置: ({selectedCloudAnchor.position.x}, {selectedCloudAnchor.position.y}, {selectedCloudAnchor.position.z})</div>
+                                        <div>LED: {selectedCloudAnchor.led ? '開啟' : '關閉'}</div>
+                                        <div>BLE: {selectedCloudAnchor.ble ? '開啟' : '關閉'}</div>
+                                        <div>發起者: {selectedCloudAnchor.initiator ? '是' : '否'}</div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">錨點名稱</label>
+                                    <Input
+                                        value={selectedCloudAnchor.name}
+                                        onChange={(e) => setSelectedCloudAnchor(prev => prev ? { ...prev, name: e.target.value } : null)}
+                                        placeholder="輸入錨點名稱"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">所屬閘道器</label>
+                                    <Select
+                                        value={(() => {
+                                            // 找到對應的閘道器ID
+                                            const relatedGateway = gateways.find(gw => {
+                                                if (gw.cloudData && gw.cloudData.gateway_id === selectedCloudAnchor.gateway_id) {
+                                                    return true
+                                                }
+                                                if (gw.macAddress.startsWith('GW:')) {
+                                                    const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
+                                                    return gatewayIdFromMac === selectedCloudAnchor.gateway_id
+                                                }
+                                                return false
+                                            })
+                                            return relatedGateway?.id || ""
+                                        })()}
+                                        onValueChange={(value) => {
+                                            // 這裡可以更新選中的閘道器，但通常錨點已經綁定到特定閘道器
+                                            console.log("選擇閘道器:", value)
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="選擇閘道器" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {gateways.map(gateway => (
+                                                <SelectItem key={gateway.id} value={gateway.id}>
+                                                    {gateway.name} ({gateway.macAddress})
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-2">
-                                    <div>
-                                        <label className="text-sm font-medium">X 座標</label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={anchorPositionInput.x}
-                                            onChange={(e) => setAnchorPositionInput(prev => ({ ...prev, x: e.target.value }))}
-                                            placeholder="X"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium">Y 座標</label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={anchorPositionInput.y}
-                                            onChange={(e) => setAnchorPositionInput(prev => ({ ...prev, y: e.target.value }))}
-                                            placeholder="Y"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium">Z 座標 (米)</label>
-                                        <Input
-                                            type="number"
-                                            step="0.01"
-                                            value={anchorPositionInput.z}
-                                            onChange={(e) => setAnchorPositionInput(prev => ({ ...prev, z: e.target.value }))}
-                                            placeholder="Z"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="text-xs text-muted-foreground bg-gray-50 p-2 rounded">
-                                    {anchorPositionInput.coordinateType === 'real' ?
-                                        '💡 輸入真實世界的座標（單位：米）' :
-                                        '💡 輸入圖片上的像素座標，系統會自動轉換為真實座標'
-                                    }
-                                </div>
-                            </div>
-
-                            {/* 按鈕 */}
-                            <div className="flex gap-2 pt-2">
-                                <Button onClick={saveAnchorCalibration} className="flex-1">
-                                    <Save className="h-4 w-4 mr-2" />
-                                    保存手動輸入座標
-                                </Button>
-                                <Button variant="outline" onClick={cancelAnchorCalibration}>
-                                    {t('pages:uwbLocation.anchorPairing.cancelCalibration')}
-                                </Button>
-                            </div>
-
-                            {/* 快速操作提示 */}
-                            <div className="text-xs text-center bg-gradient-to-r from-yellow-50 to-orange-50 p-3 rounded border border-yellow-200">
-                                <div className="font-medium text-orange-700 mb-1">⚡ 快速操作</div>
-                                <div className="text-orange-600">
-                                    點擊左側地圖 = 快速設定 | 手動輸入 = 精確座標
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {/* Anchor 配置發送對話框 */}
-            {showConfigDialog && configAnchor && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <Card className="w-full max-w-lg mx-4">
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center">
-                                    <Upload className="mr-2 h-5 w-5 text-blue-500" />
-                                    {t('pages:uwbLocation.anchorPairing.sendConfigToCloud')} - {configAnchor.name}
-                                </CardTitle>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={closeConfigDialog}
-                                    className="h-8 w-8 p-0 hover:bg-gray-100"
-                                >
-                                    ✕
-                                </Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {/* 座標預覽 */}
-                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                                <div className="font-medium text-blue-800 mb-2">📍 新座標位置</div>
-                                <div className="grid grid-cols-3 gap-4 text-sm">
-                                    <div className="text-center">
-                                        <div className="text-blue-600 font-medium">X 座標</div>
-                                        <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.x).toFixed(3)}</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-blue-600 font-medium">Y 座標</div>
-                                        <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.y).toFixed(3)}</div>
-                                    </div>
-                                    <div className="text-center">
-                                        <div className="text-blue-600 font-medium">Z 座標</div>
-                                        <div className="text-lg font-bold text-blue-800">{parseFloat(anchorPositionInput.z).toFixed(3)}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 配置參數 */}
-                            <div className="space-y-3">
-                                <div className="font-medium text-gray-800">🔧 Anchor 配置參數</div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm font-medium">韌體更新</label>
-                                        <Select
-                                            value={anchorConfigForm.fw_update.toString()}
-                                            onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, fw_update: parseInt(value) }))}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="0">關閉</SelectItem>
-                                                <SelectItem value="1">開啟</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium">LED 狀態</label>
-                                        <Select
-                                            value={anchorConfigForm.led.toString()}
-                                            onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, led: parseInt(value) }))}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="0">關閉</SelectItem>
-                                                <SelectItem value="1">開啟</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium">BLE 狀態</label>
-                                        <Select
-                                            value={anchorConfigForm.ble.toString()}
-                                            onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, ble: parseInt(value) }))}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="0">關閉</SelectItem>
-                                                <SelectItem value="1">開啟</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium">發起者</label>
-                                        <Select
-                                            value={anchorConfigForm.initiator.toString()}
-                                            onValueChange={(value) => setAnchorConfigForm(prev => ({ ...prev, initiator: parseInt(value) }))}
-                                        >
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="0">{t('pages:uwbLocation.anchorPairing.generalAnchorOption')}</SelectItem>
-                                                <SelectItem value="1">{t('pages:uwbLocation.anchorPairing.mainAnchorOption')}</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-sm font-medium">Serial No</label>
-                                        <Input
-                                            type="number"
-                                            min="1306"
-                                            max="9999"
-                                            value={anchorConfigForm.serial_no}
-                                            onChange={(e) => {
-                                                const value = parseInt(e.target.value) || 1306
-                                                const clampedValue = Math.min(Math.max(value, 1306), 9999)
-                                                setAnchorConfigForm(prev => ({ ...prev, serial_no: clampedValue }))
-                                            }}
-                                            className="mt-1"
-                                            placeholder="1306-9999"
-                                        />
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            範圍: 1306-9999，每次發送後會自動遞增
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Anchor 信息顯示 */}
-                            <div className="bg-yellow-50 p-3 rounded border border-yellow-200 text-xs">
-                                <div className="font-medium mb-2 text-yellow-800">🏷️ {t('pages:uwbLocation.anchorPairing.anchorDeviceInfo')}:</div>
-                                <div className="grid grid-cols-2 gap-2 text-yellow-700">
-                                    <div>
-                                        <span className="font-medium">{t('pages:uwbLocation.anchorPairing.deviceName')}:</span> {configAnchor.cloudData?.name || configAnchor.name}
-                                    </div>
-                                    <div>
-                                        <span className="font-medium">{t('pages:uwbLocation.anchorPairing.deviceId')}:</span> {configAnchor.cloudData?.id || parseInt(configAnchor.macAddress.replace(/[^0-9]/g, '')) || t('common:status.unknown')}
-                                    </div>
-                                    <div>
-                                        <span className="font-medium">{t('pages:uwbLocation.anchorPairing.anchorInfo.macAddress')}:</span> {configAnchor.macAddress}
-                                    </div>
-                                    <div>
-                                        <span className="font-medium">{t('pages:uwbLocation.anchorPairing.currentStatus')}:</span> {configAnchor.cloudData?.initiator === 1 ? t('pages:uwbLocation.anchorPairing.mainAnchorOption') : t('pages:uwbLocation.anchorPairing.generalAnchorOption')}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* 發送信息預覽 */}
-                            <div className="bg-gray-50 p-3 rounded border text-xs">
-                                <div className="font-medium mb-2">📤 {t('pages:uwbLocation.anchorPairing.sendConfigPreview')}:</div>
-                                <div className="text-gray-600">
-                                    主題: {(() => {
-                                        const gateway = gateways.find(g => g.id === configAnchor.gatewayId)
-                                        const downlinkValue = gateway?.cloudData?.sub_topic?.downlink || '未知'
-                                        return downlinkValue === '未知' ? 'UWB/未知' :
-                                            downlinkValue.startsWith('UWB/') ? downlinkValue : `UWB/${downlinkValue}`
-                                    })()}
-                                </div>
-                                <div className="text-gray-600">
-                                    Gateway ID: {gateways.find(g => g.id === configAnchor.gatewayId)?.cloudData?.gateway_id || '未知'}
-                                </div>
-                            </div>
-
-                            {/* 按鈕 */}
-                            <div className="flex gap-2 pt-2">
-                                <Button
-                                    onClick={async () => {
-                                        if (!configAnchor) return
-
-                                        const position = {
-                                            x: parseFloat(anchorPositionInput.x),
-                                            y: parseFloat(anchorPositionInput.y),
-                                            z: parseFloat(anchorPositionInput.z)
-                                        }
-                                        const success = await sendAnchorConfigToCloud(configAnchor, position)
-                                        if (success) {
-                                            closeConfigDialog()
-                                        }
-                                    }}
-                                    className="flex-1"
-                                    disabled={sendingConfig}
-                                >
-                                    {sendingConfig ? (
-                                        <>
-                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                            發送中...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Upload className="h-4 w-4 mr-2" />
-                                            發送到雲端硬體
-                                        </>
-                                    )}
-                                </Button>
-                                <Button variant="outline" onClick={closeConfigDialog} disabled={sendingConfig}>
-                                    {t('pages:uwbLocation.anchorPairing.cancel')}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {/* 新增場域彈窗 */}
-            {showHomeModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <Card className="w-full max-w-md">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>{t('pages:uwbLocation.actions.addHome')}</CardTitle>
-                            <Button variant="ghost" size="sm" onClick={() => setShowHomeModal(false)}>
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeName')}</label>
-                                <Input
-                                    value={homeForm.name}
-                                    onChange={(e) => setHomeForm(prev => ({ ...prev, name: e.target.value }))}
-                                    placeholder={t('pages:uwbLocation.forms.homeNamePlaceholder')}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeDescription')}</label>
-                                <Textarea
-                                    value={homeForm.description}
-                                    onChange={(e) => setHomeForm(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder={t('pages:uwbLocation.forms.homeDescriptionPlaceholder')}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeAddress')}</label>
-                                <Input
-                                    value={homeForm.address}
-                                    onChange={(e) => setHomeForm(prev => ({ ...prev, address: e.target.value }))}
-                                    placeholder={t('pages:uwbLocation.forms.homeAddressPlaceholder')}
-                                />
-                            </div>
-                            <div className="flex gap-3 pt-4">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setShowHomeModal(false)}
-                                    className="flex-1"
-                                >
-                                    {t('common:actions.cancel')}
-                                </Button>
-                                <Button
-                                    onClick={handleHomeSubmit}
-                                    className="flex-1"
-                                    disabled={!homeForm.name || !homeForm.description || !homeForm.address}
-                                >
-                                    {t('pages:uwbLocation.actions.addHome')}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {/* 新增樓層彈窗 */}
-            {showFloorModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <Card className="w-full max-w-md">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>{t('pages:uwbLocation.actions.addFloor')}</CardTitle>
-                            <Button variant="ghost" size="sm" onClick={() => setShowFloorModal(false)}>
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.name')}</label>
-                                    <Input
-                                        value={floorForm.name}
-                                        onChange={(e) => setFloorForm(prev => ({ ...prev, name: e.target.value }))}
-                                        placeholder={t('pages:uwbLocation.floorForm.namePlaceholder')}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.level')}</label>
-                                    <Input
-                                        type="number"
-                                        value={floorForm.level}
-                                        onChange={(e) => setFloorForm(prev => ({ ...prev, level: parseInt(e.target.value) }))}
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.realWidth')}</label>
-                                    <Input
-                                        type="number"
-                                        step="0.1"
-                                        value={floorForm.realWidth}
-                                        onChange={(e) => setFloorForm(prev => ({ ...prev, realWidth: parseFloat(e.target.value) }))}
-                                        placeholder="0.0"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.realHeight')}</label>
-                                    <Input
-                                        type="number"
-                                        step="0.1"
-                                        value={floorForm.realHeight}
-                                        onChange={(e) => setFloorForm(prev => ({ ...prev, realHeight: parseFloat(e.target.value) }))}
-                                        placeholder="0.0"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex gap-3 pt-4">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setShowFloorModal(false)}
-                                    className="flex-1"
-                                >
-                                    {t('common:actions.cancel')}
-                                </Button>
-                                <Button
-                                    onClick={handleFloorSubmit}
-                                    className="flex-1"
-                                    disabled={!floorForm.name || !selectedHome}
-                                >
-                                    {t('pages:uwbLocation.actions.addFloor')}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {/* 新增閘道器彈窗 */}
-            {showGatewayModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <Card className="w-full max-w-md">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="flex items-center">
-                                <Plus className="mr-2 h-5 w-5" />
-                                {t('pages:uwbLocation.manualAddGateway')}
-                            </CardTitle>
-                            <Button variant="ghost" size="sm" onClick={() => setShowGatewayModal(false)}>
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.gatewayName')}</label>
-                                <Input
-                                    value={gatewayForm.name}
-                                    onChange={(e) => setGatewayForm(prev => ({ ...prev, name: e.target.value }))}
-                                    placeholder={t('pages:uwbLocation.enterGatewayName')}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.belongingFloor')}</label>
-                                <Select
-                                    value={gatewayForm.floorId}
-                                    onValueChange={(value) => setGatewayForm(prev => ({ ...prev, floorId: value }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {currentFloors.map(floor => (
-                                            <SelectItem key={floor.id} value={floor.id}>
-                                                {floor.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.macAddress')}</label>
-                                    <Input
-                                        value={gatewayForm.macAddress}
-                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, macAddress: e.target.value }))}
-                                        placeholder="AA:BB:CC:DD:EE:FF"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.ipAddress')}</label>
-                                    <Input
-                                        value={gatewayForm.ipAddress}
-                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, ipAddress: e.target.value }))}
-                                        placeholder="192.168.1.100"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    className="flex-1"
-                                    onClick={() => {
-                                        setShowGatewayModal(false)
-                                        resetGatewayForm()
-                                    }}
-                                >
-                                    {t('common:actions.cancel')}
-                                </Button>
-                                <Button
-                                    className="flex-1"
-                                    onClick={() => {
-                                        handleGatewaySubmit()
-                                        setShowGatewayModal(false)
-                                    }}
-                                    disabled={!gatewayForm.name || !gatewayForm.floorId}
-                                >
-                                    {t('common:actions.add')}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {/* 雲端閘道器加入系統彈窗 */}
-            {showCloudGatewayModal && selectedDiscoveredGateway && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <Card className="w-full max-w-md">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="flex items-center">
-                                <CloudIcon className="mr-2 h-5 w-5 text-blue-500" />
-                                {t('pages:uwbLocation.addCloudGatewayToSystem')}
-                            </CardTitle>
-                            <Button variant="ghost" size="sm" onClick={() => setShowCloudGatewayModal(false)}>
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {/* 雲端閘道器資訊顯示 */}
-                            {(() => {
-                                const cloudGateway = cloudGatewayData.find(gw => gw.gateway_id === selectedDiscoveredGateway)
-                                return cloudGateway ? (
-                                    <div className="bg-blue-50 p-3 rounded-lg border">
-                                        <div className="text-sm font-medium text-blue-900 mb-2">雲端閘道器資訊</div>
-                                        <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
-                                            <div>ID: {cloudGateway.gateway_id}</div>
-                                            <div>韌體: {cloudGateway.fw_ver}</div>
-                                            <div>網路: {cloudGateway.uwb_network_id}</div>
-                                            <div>AP: {cloudGateway.connected_ap}</div>
-                                            <div>電壓: {cloudGateway.battery_voltage}V</div>
-                                            <div>狀態: {cloudGateway.uwb_joined === "yes" ? "已加入" : "未加入"}</div>
-                                        </div>
-                                    </div>
-                                ) : null
-                            })()}
-
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.gatewayName')}</label>
-                                <Input
-                                    value={gatewayForm.name}
-                                    onChange={(e) => setGatewayForm(prev => ({ ...prev, name: e.target.value }))}
-                                    placeholder={t('pages:uwbLocation.enterGatewayName')}
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.belongingFloor')}</label>
-                                <Select
-                                    value={gatewayForm.floorId}
-                                    onValueChange={(value) => setGatewayForm(prev => ({ ...prev, floorId: value }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {currentFloors.map(floor => (
-                                            <SelectItem key={floor.id} value={floor.id}>
-                                                {floor.name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.macAddress')}</label>
-                                    <Input
-                                        value={gatewayForm.macAddress}
-                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, macAddress: e.target.value }))}
-                                        placeholder="AA:BB:CC:DD:EE:FF"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.ipAddress')}</label>
-                                    <Input
-                                        value={gatewayForm.ipAddress}
-                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, ipAddress: e.target.value }))}
-                                        placeholder="192.168.1.100"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    className="flex-1"
-                                    onClick={() => {
-                                        setShowCloudGatewayModal(false)
-                                        resetGatewayForm()
-                                    }}
-                                >
-                                    {t('common:actions.cancel')}
-                                </Button>
-                                <Button
-                                    className="flex-1"
-                                    onClick={() => {
-                                        handleGatewaySubmit()
-                                        setShowCloudGatewayModal(false)
-                                    }}
-                                    disabled={!gatewayForm.name || !gatewayForm.floorId}
-                                >
-                                    {t('pages:uwbLocation.addToSystem')}
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            {/* 雲端錨點加入系統彈窗 */}
-            {showCloudAnchorModal && selectedCloudAnchor && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <Card className="w-full max-w-md">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="flex items-center">
-                                <CloudIcon className="mr-2 h-5 w-5 text-blue-500" />
-                                加入雲端錨點到系統
-                            </CardTitle>
-                            <Button variant="ghost" size="sm" onClick={() => setShowCloudAnchorModal(false)}>
-                                <X className="h-5 w-5" />
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {/* 雲端錨點資訊顯示 */}
-                            <div className="bg-blue-50 p-3 rounded-lg border">
-                                <div className="text-sm font-medium text-blue-900 mb-2">雲端錨點資訊</div>
-                                <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
-                                    <div>ID: {selectedCloudAnchor.id}</div>
-                                    <div>名稱: {selectedCloudAnchor.name}</div>
-                                    <div>閘道器: {selectedCloudAnchor.gateway_id}</div>
-                                    <div>韌體: {selectedCloudAnchor.fw_update}</div>
-                                    <div>位置: ({selectedCloudAnchor.position.x}, {selectedCloudAnchor.position.y}, {selectedCloudAnchor.position.z})</div>
-                                    <div>LED: {selectedCloudAnchor.led ? '開啟' : '關閉'}</div>
-                                    <div>BLE: {selectedCloudAnchor.ble ? '開啟' : '關閉'}</div>
-                                    <div>發起者: {selectedCloudAnchor.initiator ? '是' : '否'}</div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">錨點名稱</label>
-                                <Input
-                                    value={selectedCloudAnchor.name}
-                                    onChange={(e) => setSelectedCloudAnchor(prev => prev ? { ...prev, name: e.target.value } : null)}
-                                    placeholder="輸入錨點名稱"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-sm font-medium mb-2 block">所屬閘道器</label>
-                                <Select
-                                    value={(() => {
-                                        // 找到對應的閘道器ID
-                                        const relatedGateway = gateways.find(gw => {
-                                            if (gw.cloudData && gw.cloudData.gateway_id === selectedCloudAnchor.gateway_id) {
-                                                return true
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={resetAnchorForm}
+                                    >
+                                        取消
+                                    </Button>
+                                    <Button
+                                        className="flex-1"
+                                        onClick={() => {
+                                            if (selectedCloudAnchor) {
+                                                handleAddAnchorFromCloud(selectedCloudAnchor)
+                                                resetAnchorForm()
                                             }
-                                            if (gw.macAddress.startsWith('GW:')) {
-                                                const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
-                                                return gatewayIdFromMac === selectedCloudAnchor.gateway_id
-                                            }
-                                            return false
-                                        })
-                                        return relatedGateway?.id || ""
-                                    })()}
-                                    onValueChange={(value) => {
-                                        // 這裡可以更新選中的閘道器，但通常錨點已經綁定到特定閘道器
-                                        console.log("選擇閘道器:", value)
-                                    }}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="選擇閘道器" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {gateways.map(gateway => (
-                                            <SelectItem key={gateway.id} value={gateway.id}>
-                                                {gateway.name} ({gateway.macAddress})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                                        }}
+                                        disabled={!selectedCloudAnchor}
+                                    >
+                                        加入系統
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
 
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    className="flex-1"
-                                    onClick={resetAnchorForm}
-                                >
-                                    取消
-                                </Button>
-                                <Button
-                                    className="flex-1"
-                                    onClick={() => {
-                                        if (selectedCloudAnchor) {
-                                            handleAddAnchorFromCloud(selectedCloudAnchor)
-                                            resetAnchorForm()
-                                        }
-                                    }}
-                                    disabled={!selectedCloudAnchor}
-                                >
-                                    加入系統
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-        </div >
+            </div >
+            <Toaster />
+        </>
     )
 }

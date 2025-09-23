@@ -521,6 +521,17 @@
                 "connectionNormal": "接続正常",
                 "manualReconnecting": "手動再接続中..."
             }
+        },
+        "notifications": {
+            "ackReceived": "Ack メッセージ受信",
+            "gatewayId": "Gateway ID",
+            "command": "コマンド",
+            "nodeType": "ノードタイプ",
+            "deviceId": "デバイスID",
+            "topic": "トピック",
+            "receivedAt": "受信時間",
+            "messageType": "メッセージタイプ",
+            "ackMessage": "Ack メッセージ"
         }
     }
 }

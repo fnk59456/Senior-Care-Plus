@@ -1186,6 +1186,17 @@
             "cancel": "Cancel",
             "confirm": "Confirm"
         },
+        "notifications": {
+            "ackReceived": "Ack Message Received",
+            "gatewayId": "Gateway ID",
+            "command": "Command",
+            "nodeType": "Node Type",
+            "deviceId": "Device ID",
+            "topic": "Topic",
+            "receivedAt": "Received At",
+            "messageType": "Message Type",
+            "ackMessage": "Ack Message"
+        },
         "tagManagement": {
             "title": "Tag Device Management",
             "subtitle": "Manage UWB positioning tag devices, including personnel tags, equipment tags, and asset tags",
