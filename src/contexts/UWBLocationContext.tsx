@@ -123,16 +123,80 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
         console.log('🔄 正在刷新UWBLocationContext數據...')
 
         try {
-            // 載入數據
+            // 載入數據，如果沒有數據則使用默認值
             const loadedHomes = loadFromStorage<Home[]>('uwb_homes', [])
             const loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
             const loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
             const loadedSelectedHome = loadFromStorage<string>('uwb_selectedHome', '')
 
+            // 如果沒有數據，使用默認數據
+            if (loadedHomes.length === 0) {
+                console.log('🔄 沒有找到UWB數據，使用默認數據')
+                // 這裡可以添加默認的Gateway數據
+                const defaultGateways: Gateway[] = [
+                    {
+                        id: "gw_1755790261215",
+                        floorId: "floor_1",
+                        name: "GwF9E516B8_142",
+                        macAddress: "GW:F9E516B8",
+                        ipAddress: "192.168.1.100",
+                        status: "online",
+                        createdAt: new Date(),
+                        cloudData: {
+                            gateway_id: 4192540344,
+                            pub_topic: {
+                                health: "UWB/GwF9E516B8_142_Health",
+                                location: "UWB/GwF9E516B8_142_Loca",
+                                message: "UWB/GwF9E516B8_142_Message",
+                                ack_from_node: "UWB/GwF9E516B8_142_Ack",
+                                anchor_config: "",
+                                tag_config: ""
+                            },
+                            sub_topic: {
+                                downlink: ""
+                            },
+                            content: "",
+                            name: "GwF9E516B8_142",
+                            fw_ver: "",
+                            fw_serial: 0,
+                            uwb_hw_com_ok: "",
+                            uwb_joined: "",
+                            uwb_network_id: 0,
+                            connected_ap: "",
+                            wifi_tx_power: 0,
+                            set_wifi_max_tx_power: 0,
+                            ble_scan_time: 0,
+                            ble_scan_pause_time: 0,
+                            battery_voltage: 0,
+                            five_v_plugged: "",
+                            uwb_tx_power_changed: "",
+                            uwb_tx_power: {
+                                boost_norm: 0,
+                                boost_500: 0,
+                                boost_250: 0,
+                                boost_125: 0
+                            },
+                            discard_iot_data_time: 0,
+                            discarded_iot_data: 0,
+                            total_discarded_data: 0,
+                            first_sync: "",
+                            last_sync: "",
+                            current: "",
+                            receivedAt: new Date()
+                        }
+                    }
+                ]
+
+                setGateways(defaultGateways)
+                console.log('✅ 已設置默認Gateway數據')
+            } else {
+                setGateways(loadedGateways)
+            }
+
             // 更新狀態
             setHomes(loadedHomes)
             setFloors(loadedFloors)
-            setGateways(loadedGateways)
+            // setGateways 已經在上面設置了
 
             // 驗證並設置selectedHome
             if (loadedSelectedHome && loadedHomes.find((h: Home) => h.id === loadedSelectedHome)) {
