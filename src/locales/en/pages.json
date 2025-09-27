@@ -853,6 +853,22 @@
             "selectValidDevice": "and select a valid cloud device",
             "localSimulatorCheck": "Please confirm local MQTT simulator is running"
         },
+        "temperatureChart": {
+            "title": "Temperature Trend Chart",
+            "cloudDevice": "Cloud Device",
+            "localPatient": "Local Patient",
+            "yAxisLabel": "Temperature (°C)",
+            "time": "Time",
+            "temperature": "Temperature",
+            "highTempLine": "High Temp Alert: 40°C",
+            "warmLine": "Warm Line: 35°C",
+            "normalLine": "Normal Line: 30°C",
+            "coolLine": "Cool Line: 25°C",
+            "noData": "No temperature data for {{date}}",
+            "cloudSimulatorCheck": "Please confirm cloud MQTT simulator is running",
+            "selectValidDevice": "and select a valid cloud device",
+            "localSimulatorCheck": "Please confirm local MQTT simulator is running"
+        },
         "currentDiaperStatus": {
             "title": "Current Diaper Status",
             "autoNotification": "Auto Notification",

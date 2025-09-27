@@ -853,6 +853,22 @@
             "selectValidDevice": "並選擇有效的雲端設備",
             "localSimulatorCheck": "請確認本地MQTT模擬器已啟動"
         },
+        "temperatureChart": {
+            "title": "溫度趨勢圖",
+            "cloudDevice": "雲端設備",
+            "localPatient": "本地患者",
+            "yAxisLabel": "溫度 (°C)",
+            "time": "時間",
+            "temperature": "溫度",
+            "highTempLine": "高溫警戒線: 40°C",
+            "warmLine": "溫暖線: 35°C",
+            "normalLine": "正常線: 30°C",
+            "coolLine": "涼爽線: 25°C",
+            "noData": "暫無{{date}}的溫度數據",
+            "cloudSimulatorCheck": "請確認雲端MQTT模擬器已啟動",
+            "selectValidDevice": "並選擇有效的雲端設備",
+            "localSimulatorCheck": "請確認本地MQTT模擬器已啟動"
+        },
         "currentDiaperStatus": {
             "title": "當前尿布狀態",
             "autoNotification": "自動通知",

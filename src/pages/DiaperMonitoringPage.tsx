@@ -150,6 +150,14 @@ type HumidityChartDataPoint = {
   isAbnormal: boolean
 }
 
+// 溫度趨勢圖數據點類型
+type TemperatureChartDataPoint = {
+  time: string
+  hour: string
+  temperature: number
+  isAbnormal: boolean
+}
+
 interface Patient {
   id: string
   name: string
@@ -838,6 +846,40 @@ export default function DiaperMonitoringPage() {
       isAbnormal: record.humidity > 75
     }))
 
+  // 獲取當前雲端設備的溫度記錄，轉換為圖表格式
+  const currentCloudTemperatureRecords: TemperatureChartDataPoint[] = selectedCloudDevice && cloudDiaperRecords.length > 0
+    ? cloudDiaperRecords
+      .filter(record => record.MAC === selectedCloudDevice)
+      .map(record => ({
+        time: record.time,
+        hour: record.datetime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+        temperature: record.temp || 0,
+        isAbnormal: record.temp > 40 || record.temp < 30 // 溫度異常範圍：30-40°C
+      }))
+    : []
+
+  // 獲取當前患者的溫度記錄（本地MQTT）
+  const currentPatientTemperatureRecords: TemperatureChartDataPoint[] = currentPatient.records.map(record => ({
+    time: record.timestamp,
+    hour: new Date(record.timestamp).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
+    temperature: currentPatient.temperature, // 本地數據使用患者當前溫度（因為本地記錄沒有溫度字段）
+    isAbnormal: currentPatient.temperature > 40 || currentPatient.temperature < 30
+  }))
+
+  // 根據當前MQTT標籤頁選擇溫度數據源
+  const currentTemperatureRecords = currentMqttTab === "cloud" ? currentCloudTemperatureRecords : currentPatientTemperatureRecords
+
+  // 準備溫度趨勢圖數據
+  const temperatureChartData: TemperatureChartDataPoint[] = currentTemperatureRecords
+    .slice(0, 144) // 24小時 * 6個點/小時 = 144個數據點
+    .reverse()
+    .map(record => ({
+      time: record.time,
+      hour: record.hour,
+      temperature: record.temperature,
+      isAbnormal: record.temperature > 40 || record.temperature < 30
+    }))
+
 
 
   // 處理記錄尿布更換
@@ -1513,6 +1555,86 @@ export default function DiaperMonitoringPage() {
                       </div>
                     ) : (
                       <p className="text-sm">{t('pages:diaperMonitoring.humidityChart.localSimulatorCheck')}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 溫度趨勢圖 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center">
+                  <Thermometer className="mr-2 h-5 w-5" />
+                  {t('pages:diaperMonitoring.temperatureChart.title')}
+                  {currentMqttTab === "cloud" && selectedCloudDevice && (
+                    <span className="ml-2 text-sm font-normal text-orange-600">
+                      - {(() => {
+                        const device = cloudDiaperDevices.find(d => d.MAC === selectedCloudDevice)
+                        return device?.residentName
+                          ? `${device.residentName} (${device.residentRoom})`
+                          : device?.deviceName || t('pages:diaperMonitoring.temperatureChart.cloudDevice')
+                      })()}
+                    </span>
+                  )}
+                  {currentMqttTab === "local" && (
+                    <span className="ml-2 text-sm font-normal text-green-600">
+                      - {currentPatient.name || t('pages:diaperMonitoring.temperatureChart.localPatient')}
+                    </span>
+                  )}
+                </span>
+                <span className="text-sm text-muted-foreground">{getDateString()}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {temperatureChartData.length > 0 ? (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={temperatureChartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="hour"
+                        tick={{ fontSize: 12 }}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis
+                        domain={[20, 50]}
+                        tick={{ fontSize: 12 }}
+                        label={{ value: t('pages:diaperMonitoring.temperatureChart.yAxisLabel'), angle: -90, position: 'insideLeft' }}
+                      />
+                      <Tooltip
+                        labelFormatter={(value) => `${t('pages:diaperMonitoring.temperatureChart.time')}: ${value}`}
+                        formatter={(value) => [`${value}°C`, t('pages:diaperMonitoring.temperatureChart.temperature')]}
+                      />
+                      <ReferenceLine y={40} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.highTempLine')} />
+                      <ReferenceLine y={35} stroke="#f59e0b" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.warmLine')} />
+                      <ReferenceLine y={30} stroke="#10b981" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.normalLine')} />
+                      <ReferenceLine y={25} stroke="#3b82f6" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.coolLine')} />
+                      <Line
+                        type="monotone"
+                        dataKey="temperature"
+                        stroke="#f97316"
+                        strokeWidth={2}
+                        dot={{ fill: '#f97316', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-80 flex items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <Thermometer className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                    <p>{t('pages:diaperMonitoring.temperatureChart.noData', { date: getDateString() })}</p>
+                    {currentMqttTab === "cloud" ? (
+                      <div className="text-sm space-y-1">
+                        <p>{t('pages:diaperMonitoring.temperatureChart.cloudSimulatorCheck')}</p>
+                        <p>{t('pages:diaperMonitoring.temperatureChart.selectValidDevice')}</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm">{t('pages:diaperMonitoring.temperatureChart.localSimulatorCheck')}</p>
                     )}
                   </div>
                 </div>
