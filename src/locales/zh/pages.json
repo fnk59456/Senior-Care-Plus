@@ -377,7 +377,7 @@
             "offline": "離線",
             "unknown": "未知",
             "deviceInfo": "設備資訊",
-            "user": "用戶",
+            "bindDevice": "綁定設備",
             "removeDevice": "移除設備",
             "unbind": "解除綁定",
             "battery": "電量",

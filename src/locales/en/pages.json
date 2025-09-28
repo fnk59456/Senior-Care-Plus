@@ -377,7 +377,7 @@
             "offline": "Offline",
             "unknown": "Unknown",
             "deviceInfo": "Device Info",
-            "user": "User",
+            "bindDevice": "Bind Device",
             "removeDevice": "Remove Device",
             "unbind": "Unbind",
             "battery": "Battery",

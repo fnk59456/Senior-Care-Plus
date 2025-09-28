@@ -377,7 +377,7 @@
             "offline": "オフライン",
             "unknown": "不明",
             "deviceInfo": "デバイス情報",
-            "user": "ユーザー",
+            "bindDevice": "デバイスバインド",
             "removeDevice": "デバイス削除",
             "unbind": "バインド解除",
             "battery": "バッテリー",

@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
     Info,
-    User,
+    Link,
     Trash2,
     Unlink,
     CheckCircle2,
@@ -55,11 +55,11 @@ export default function DeviceActionHandler({ deviceId, deviceName, onAction }: 
             description: t('pages:deviceManagement.deviceCard.deviceInfo')
         },
         {
-            key: 'user',
-            label: t('pages:deviceManagement.deviceCard.user'),
-            icon: User,
+            key: 'bindDevice',
+            label: t('pages:deviceManagement.deviceCard.bindDevice'),
+            icon: Link,
             color: 'text-green-600 hover:text-green-700',
-            description: t('pages:deviceManagement.deviceCard.user')
+            description: t('pages:deviceManagement.deviceCard.bindDevice')
         },
         {
             key: 'remove',

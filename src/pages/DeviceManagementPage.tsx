@@ -484,9 +484,15 @@ export default function DeviceManagementPage() {
           alert('找不到設備資訊')
         }
         break
-      case 'user':
-        // 實現用戶管理邏輯
-        alert('用戶管理功能開發中...')
+      case 'bindDevice':
+        // 實現設備綁定邏輯
+        const deviceToBind = devices.find(d => d.id === deviceId)
+        if (deviceToBind) {
+          setBindingDevice(deviceToBind)
+          setShowBindingModal(true)
+        } else {
+          alert('找不到設備資訊')
+        }
         break
       case 'deviceData':
         // 實現設備數據查看邏輯
