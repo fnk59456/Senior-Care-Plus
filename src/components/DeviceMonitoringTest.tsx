@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next'
 
 export default function DeviceMonitoringTest() {
     const { t } = useTranslation()
-    const { updateDeviceData, getDeviceStatus } = useDeviceMonitoring()
+    const { realTimeDevices, isMonitoring } = useDeviceMonitoring()
 
     const [isTesting, setIsTesting] = useState(false)
     const [testResults, setTestResults] = useState<string[]>([])

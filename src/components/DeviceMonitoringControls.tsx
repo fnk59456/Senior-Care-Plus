@@ -27,40 +27,32 @@ export default function DeviceMonitoringControls() {
         connectionStatus,
         startMonitoring,
         stopMonitoring,
-        getMonitoringStats
+        stats
     } = useDeviceMonitoring()
 
-    const { gateways } = useUWBLocation()
+    const { gateways, selectedGateway, setSelectedGateway } = useUWBLocation()
 
     // 狀態管理
-    const [selectedGateways, setSelectedGateways] = useState<string[]>([])
     const [isStarting, setIsStarting] = useState(false)
 
-    // 統計數據
-    const stats = getMonitoringStats()
-
     // 可用的Gateway列表
-    const availableGateways = gateways.filter(gateway => gateway.status === 'online')
+    const availableGateways = (gateways || []).filter(gateway => gateway.status === 'online')
 
     // 處理Gateway選擇
     const handleGatewaySelect = (gatewayId: string) => {
-        if (selectedGateways.includes(gatewayId)) {
-            setSelectedGateways(prev => prev.filter(id => id !== gatewayId))
-        } else {
-            setSelectedGateways(prev => [...prev, gatewayId])
-        }
+        setSelectedGateway(gatewayId)
     }
 
     // 啟動監控
     const handleStartMonitoring = async () => {
-        if (selectedGateways.length === 0) {
-            alert('請選擇至少一個Gateway')
+        if (!selectedGateway) {
+            alert('請選擇一個Gateway')
             return
         }
 
         setIsStarting(true)
         try {
-            await startMonitoring(selectedGateways)
+            startMonitoring(selectedGateway)
         } catch (error) {
             console.error('啟動監控失敗:', error)
         } finally {
@@ -71,7 +63,6 @@ export default function DeviceMonitoringControls() {
     // 停止監控
     const handleStopMonitoring = () => {
         stopMonitoring()
-        setSelectedGateways([])
     }
 
     // 獲取連接狀態圖標
@@ -88,7 +79,7 @@ export default function DeviceMonitoringControls() {
     // 獲取連接狀態文字
     const getConnectionText = () => {
         if (isMonitoring && connectionStatus.isConnected) {
-            return `已連接 (${connectionStatus.connectedGateways.length} 個Gateway)`
+            return `已連接 (${connectionStatus.connectedGateways?.length || 0} 個Gateway)`
         } else if (isMonitoring && !connectionStatus.isConnected) {
             return '連接中...'
         } else {
@@ -148,30 +139,23 @@ export default function DeviceMonitoringControls() {
                     {/* Gateway選擇 */}
                     <div>
                         <label className="text-sm font-medium mb-2 block">選擇Gateway</label>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {availableGateways.map(gateway => (
-                                <div
-                                    key={gateway.id}
-                                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedGateways.includes(gateway.id)
-                                        ? 'border-blue-500 bg-blue-50'
-                                        : 'border-gray-200 hover:bg-gray-50'
-                                        }`}
-                                    onClick={() => handleGatewaySelect(gateway.id)}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${selectedGateways.includes(gateway.id) ? 'bg-blue-500' : 'bg-gray-300'
-                                            }`} />
-                                        <div className="flex-1">
-                                            <p className="font-medium text-sm">{gateway.name}</p>
-                                            <p className="text-xs text-gray-500">{gateway.macAddress}</p>
+                        <Select value={selectedGateway} onValueChange={handleGatewaySelect}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="選擇一個Gateway" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {availableGateways.map(gateway => (
+                                    <SelectItem key={gateway.id} value={gateway.id}>
+                                        <div className="flex items-center justify-between w-full">
+                                            <span>{gateway.name}</span>
+                                            <Badge variant={gateway.status === 'online' ? 'default' : 'secondary'} className="ml-2">
+                                                {gateway.status}
+                                            </Badge>
                                         </div>
-                                        <Badge variant="outline" className="text-xs">
-                                            {gateway.status}
-                                        </Badge>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
 
                     {/* 控制按鈕 */}
@@ -179,7 +163,7 @@ export default function DeviceMonitoringControls() {
                         {!isMonitoring ? (
                             <Button
                                 onClick={handleStartMonitoring}
-                                disabled={isStarting || selectedGateways.length === 0}
+                                disabled={isStarting || !selectedGateway}
                                 className="gap-2"
                             >
                                 <Play className="h-4 w-4" />
@@ -206,26 +190,22 @@ export default function DeviceMonitoringControls() {
                         <CardTitle className="text-lg">監控統計</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-blue-600">{stats.totalDevices}</div>
-                                <div className="text-sm text-gray-600">總設備</div>
+                                <div className="text-2xl font-bold text-blue-600">{stats.totalMessages}</div>
+                                <div className="text-sm text-gray-600">總消息</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-green-600">{stats.onlineDevices}</div>
-                                <div className="text-sm text-gray-600">線上</div>
+                                <div className="text-2xl font-bold text-green-600">{stats.healthMessages}</div>
+                                <div className="text-sm text-gray-600">健康數據</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-yellow-600">{stats.offlineDevices}</div>
-                                <div className="text-sm text-gray-600">離線</div>
+                                <div className="text-2xl font-bold text-yellow-600">{stats.locationMessages}</div>
+                                <div className="text-sm text-gray-600">位置數據</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-red-600">{stats.errorDevices}</div>
-                                <div className="text-sm text-gray-600">錯誤</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-purple-600">{stats.averageBatteryLevel}%</div>
-                                <div className="text-sm text-gray-600">平均電量</div>
+                                <div className="text-2xl font-bold text-purple-600">{stats.ackMessages}</div>
+                                <div className="text-sm text-gray-600">ACK消息</div>
                             </div>
                         </div>
                     </CardContent>

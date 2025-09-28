@@ -3,7 +3,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
-    Battery,
     CheckCircle2,
     QrCode,
     User,
@@ -15,6 +14,7 @@ import {
 } from 'lucide-react'
 import { Device, Resident, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
 import DeviceActionHandler from './DeviceActionHandler'
+import BatteryIcon from '@/components/ui/battery-icon'
 import { useTranslation } from 'react-i18next'
 
 interface DeviceMonitorCardProps {
@@ -37,19 +37,8 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
         }
     }
 
-    // 獲取電池顏色
-    const getBatteryColor = (level: number) => {
-        if (level > 50) return 'text-green-500'
-        if (level > 20) return 'text-yellow-500'
-        return 'text-red-500'
-    }
-
-    // 獲取電池填充顏色
-    const getBatteryFillColor = (level: number) => {
-        if (level > 50) return 'fill-green-500'
-        if (level > 20) return 'fill-yellow-500'
-        return 'fill-red-500'
-    }
+    // 電池顏色邏輯已移至BatteryIcon組件中
+    // 25%以下：紅色，50%以下：黃色，其他：綠色
 
     // 獲取設備狀態（優先使用實時數據）
     const getDeviceStatus = () => {
@@ -75,14 +64,18 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
         const deviceLevel = device.batteryLevel || 0
         const finalLevel = realTimeLevel !== undefined ? realTimeLevel : deviceLevel
 
+        // 確保電量在有效範圍內
+        const normalizedLevel = Math.max(0, Math.min(100, finalLevel))
+
         console.log(`🔋 DeviceMonitorCard ${device.name} 電量:`, {
             realTime: realTimeLevel,
             device: deviceLevel,
             final: finalLevel,
+            normalized: normalizedLevel,
             hasRealTimeData: !!device.realTimeData
         })
 
-        return finalLevel
+        return normalizedLevel
     }
 
     // 獲取最後活動時間
@@ -116,12 +109,11 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
 
             {/* 電池電量 */}
             <div className="flex items-center gap-2 mb-3">
-                <Battery
-                    className={`h-4 w-4 ${getBatteryColor(getBatteryLevel())}`}
+                <BatteryIcon
+                    level={getBatteryLevel()}
+                    size="md"
+                    className="flex-shrink-0"
                 />
-                <span className="text-sm font-medium">
-                    {getBatteryLevel()}%
-                </span>
                 {device.realTimeData && (
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="實時數據" />
                 )}

@@ -25,8 +25,7 @@ export default function DeviceMonitoringView({ onAction }: DeviceMonitoringViewP
     const {
         realTimeDevices,
         isMonitoring,
-        getDeviceStatus,
-        getMonitoringStats
+        connectionStatus
     } = useDeviceMonitoring()
 
     // 狀態管理
@@ -43,7 +42,7 @@ export default function DeviceMonitoringView({ onAction }: DeviceMonitoringViewP
 
     // 獲取實時數據
     const getDeviceWithRealTimeData = (device: any) => {
-        const realTimeData = getDeviceStatus(device.id)
+        const realTimeData = realTimeDevices.get(device.id)
         return {
             ...device,
             realTimeData
@@ -75,10 +74,29 @@ export default function DeviceMonitoringView({ onAction }: DeviceMonitoringViewP
 
     // 統計數據
     const deviceStatusSummary = getDeviceStatusSummary()
-    const monitoringStats = getMonitoringStats()
-    const activeDevices = isMonitoring ? monitoringStats.onlineDevices : deviceStatusSummary[DeviceStatus.ACTIVE]
-    const offlineDevices = isMonitoring ? monitoringStats.offlineDevices : deviceStatusSummary[DeviceStatus.OFFLINE]
-    const errorDevices = isMonitoring ? monitoringStats.errorDevices : deviceStatusSummary[DeviceStatus.ERROR]
+    const monitoringStats = {
+        total: boundDevices.length,
+        online: boundDevices.filter(device => {
+            const realTimeData = realTimeDevices.get(device.id)
+            return realTimeData && realTimeData.status === 'online'
+        }).length,
+        offline: boundDevices.filter(device => {
+            const realTimeData = realTimeDevices.get(device.id)
+            return !realTimeData || realTimeData.status === 'offline'
+        }).length,
+        error: boundDevices.filter(device => {
+            const realTimeData = realTimeDevices.get(device.id)
+            return realTimeData && realTimeData.status === 'error'
+        }).length,
+        averageBattery: boundDevices.length > 0 ?
+            Math.round(boundDevices.reduce((sum, device) => {
+                const realTimeData = realTimeDevices.get(device.id)
+                return sum + (realTimeData?.batteryLevel || device.batteryLevel || 0)
+            }, 0) / boundDevices.length) : 0
+    }
+    const activeDevices = isMonitoring ? monitoringStats.online : deviceStatusSummary[DeviceStatus.ACTIVE]
+    const offlineDevices = isMonitoring ? monitoringStats.offline : deviceStatusSummary[DeviceStatus.OFFLINE]
+    const errorDevices = isMonitoring ? monitoringStats.error : deviceStatusSummary[DeviceStatus.ERROR]
 
     // 刷新數據
     const handleRefresh = async () => {

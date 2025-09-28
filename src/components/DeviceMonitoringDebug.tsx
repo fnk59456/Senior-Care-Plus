@@ -260,27 +260,6 @@ export default function DeviceMonitoringDebug() {
                                         </summary>
 
                                         <div className="mt-3 space-y-3">
-                                            {/* 原始數據 */}
-                                            <div>
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <h4 className="font-semibold text-sm">原始MQTT數據</h4>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => copyToClipboard(JSON.stringify(msg.rawData, null, 2), msg.id)}
-                                                    >
-                                                        {copiedId === msg.id ? (
-                                                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                                                        ) : (
-                                                            <Copy className="h-4 w-4" />
-                                                        )}
-                                                    </Button>
-                                                </div>
-                                                <pre className="text-xs bg-white p-3 rounded border overflow-x-auto whitespace-pre-wrap">
-                                                    {JSON.stringify(msg.rawData, null, 2)}
-                                                </pre>
-                                            </div>
-
                                             {/* 解析後數據 */}
                                             <div>
                                                 <div className="flex items-center justify-between mb-2">

@@ -21,11 +21,9 @@ export default function DeviceMonitoringStatus() {
     const {
         isMonitoring,
         connectionStatus,
-        getMonitoringStats,
+        stats,
         stopMonitoring
     } = useDeviceMonitoring()
-
-    const stats = getMonitoringStats()
 
     // 獲取連接狀態圖標
     const getConnectionIcon = () => {
@@ -41,7 +39,7 @@ export default function DeviceMonitoringStatus() {
     // 獲取連接狀態文字
     const getConnectionText = () => {
         if (isMonitoring && connectionStatus.isConnected) {
-            return `已連接 (${connectionStatus.connectedGateways.length} 個Gateway)`
+            return `已連接 (${connectionStatus.connectedGateways?.length || 0} 個Gateway)`
         } else if (isMonitoring && !connectionStatus.isConnected) {
             return '連接中...'
         } else {
@@ -150,20 +148,20 @@ export default function DeviceMonitoringStatus() {
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="text-center">
-                                <div className="text-lg font-bold text-blue-600">{stats.totalDevices}</div>
-                                <div className="text-xs text-gray-600">總設備</div>
+                                <div className="text-lg font-bold text-blue-600">{stats.totalMessages}</div>
+                                <div className="text-xs text-gray-600">總消息</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-lg font-bold text-green-600">{stats.onlineDevices}</div>
-                                <div className="text-xs text-gray-600">線上</div>
+                                <div className="text-lg font-bold text-green-600">{stats.healthMessages}</div>
+                                <div className="text-xs text-gray-600">健康數據</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-lg font-bold text-yellow-600">{stats.offlineDevices}</div>
-                                <div className="text-xs text-gray-600">離線</div>
+                                <div className="text-lg font-bold text-yellow-600">{stats.locationMessages}</div>
+                                <div className="text-xs text-gray-600">位置數據</div>
                             </div>
                             <div className="text-center">
-                                <div className="text-lg font-bold text-purple-600">{stats.averageBatteryLevel}%</div>
-                                <div className="text-xs text-gray-600">平均電量</div>
+                                <div className="text-lg font-bold text-purple-600">{stats.ackMessages}</div>
+                                <div className="text-xs text-gray-600">ACK消息</div>
                             </div>
                         </div>
                     </CardContent>

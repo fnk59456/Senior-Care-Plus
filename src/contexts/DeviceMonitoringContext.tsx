@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import mqtt from 'mqtt'
-import { Device, DeviceStatus, DeviceUIDGenerator } from '@/types/device-types'
+import { DeviceStatus } from '@/types/device-types'
 import { useDeviceManagement } from './DeviceManagementContext'
 import { useUWBLocation } from './UWBLocationContext'
 
@@ -18,21 +18,9 @@ export interface RealTimeDeviceData {
         z: number
         quality: number
     }
-    healthData?: {
-        hr?: number
-        spO2?: number
-        temperature?: number
-        steps?: number
-    }
-    locationData?: {
-        homeName: string
-        floor: number
-        room: string
-        roomNumber: string
-    }
 }
 
-// MQTT連接狀態
+// MQTT 連接狀態
 interface MQTTConnectionStatus {
     isConnected: boolean
     connectedGateways: string[]
@@ -40,66 +28,59 @@ interface MQTTConnectionStatus {
     error: string | null
 }
 
-// 調試消息類型
-export interface MQTTDebugMessage {
+// MQTT 調試消息
+interface MQTTDebugMessage {
     id: string
     timestamp: Date
     topic: string
-    gatewayId: string
-    rawData: any
-    parsedData: any
+    message: string
+    type: 'health' | 'location' | 'ack' | 'message' | 'other'
+    rawData?: any
+    parsedData?: any
     deviceId?: string
     deviceName?: string
 }
 
-// 監控管理Context類型
+// 設備監控上下文類型
 interface DeviceMonitoringContextType {
-    // 實時數據
+    // 實時設備數據
     realTimeDevices: Map<string, RealTimeDeviceData>
 
     // 監控狀態
     isMonitoring: boolean
     connectionStatus: MQTTConnectionStatus
 
-    // 調試數據
+    // 調試面板
     debugMessages: MQTTDebugMessage[]
-
-    // 監控管理
-    startMonitoring: (gatewayIds: string[]) => Promise<void>
-    stopMonitoring: () => void
-    updateDeviceData: (deviceId: string, data: Partial<RealTimeDeviceData>) => void
-
-    // 設備狀態查詢
-    getDeviceStatus: (deviceId: string) => RealTimeDeviceData | undefined
-    getDevicesByGateway: (gatewayId: string) => RealTimeDeviceData[]
-    getOnlineDevices: () => RealTimeDeviceData[]
-    getOfflineDevices: () => RealTimeDeviceData[]
+    maxMessages: number
+    topicFilter: string
+    deviceFilter: string
+    showDebugPanel: boolean
 
     // 統計數據
-    getMonitoringStats: () => {
-        totalDevices: number
-        onlineDevices: number
-        offlineDevices: number
-        errorDevices: number
-        averageBatteryLevel: number
+    stats: {
+        totalMessages: number
+        healthMessages: number
+        locationMessages: number
+        ackMessages: number
     }
+
+    // 操作方法
+    startMonitoring: (gatewayId: string) => void
+    stopMonitoring: () => void
+    clearDebugMessages: () => void
+    setMaxMessages: (count: number) => void
+    setTopicFilter: (filter: string) => void
+    setDeviceFilter: (filter: string) => void
+    setShowDebugPanel: (show: boolean) => void
+    exportDebugData: () => void
 }
 
 const DeviceMonitoringContext = createContext<DeviceMonitoringContextType | undefined>(undefined)
 
-// MQTT配置
-const CLOUD_MQTT_URL = `${import.meta.env.VITE_MQTT_PROTOCOL}://${import.meta.env.VITE_MQTT_BROKER}:${import.meta.env.VITE_MQTT_PORT}/mqtt`
-const CLOUD_MQTT_OPTIONS = {
-    username: import.meta.env.VITE_MQTT_USERNAME,
-    password: import.meta.env.VITE_MQTT_PASSWORD,
-    keepalive: 60,
-    reconnectPeriod: 5000,
-    connectTimeout: 30 * 1000,
-}
-
 export function DeviceMonitoringProvider({ children }: { children: React.ReactNode }) {
-    const { devices, getResidentForDevice } = useDeviceManagement()
-    const { gateways, refreshData } = useUWBLocation()
+    const { devices } = useDeviceManagement()
+    const { gateways } = useUWBLocation()
 
     // 狀態管理
     const [realTimeDevices, setRealTimeDevices] = useState<Map<string, RealTimeDeviceData>>(new Map())
@@ -111,392 +92,312 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
         error: null
     })
     const [debugMessages, setDebugMessages] = useState<MQTTDebugMessage[]>([])
+    const [maxMessages, setMaxMessages] = useState(50)
+    const [topicFilter, setTopicFilter] = useState('')
+    const [deviceFilter, setDeviceFilter] = useState('')
+    const [showDebugPanel, setShowDebugPanel] = useState(false)
+    const [stats, setStats] = useState({
+        totalMessages: 0,
+        healthMessages: 0,
+        locationMessages: 0,
+        ackMessages: 0
+    })
 
     // MQTT客戶端管理
-    const mqttClients = useRef<Map<string, mqtt.MqttClient>>(new Map())
-    const reconnectTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map())
+    const mqttClientRef = useRef<mqtt.MqttClient | null>(null)
+    const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-    // 初始化時刷新Gateway數據
-    useEffect(() => {
-        console.log('🔄 DeviceMonitoringContext 初始化，刷新Gateway數據...')
-        refreshData()
-    }, [refreshData])
-
-    // 生成設備監控Topics - 與DiaperMonitoringPage保持一致的邏輯
+    // 生成設備監控Topics - 參考DiaperMonitoringPage的簡單邏輯
     const generateDeviceTopics = useCallback((gatewayId: string) => {
-        // 查找對應的Gateway（與DiaperMonitoringPage的getHealthTopic邏輯一致）
-        const gateway = gateways.find(gw => gw.id === gatewayId)
-        console.log(`🔍 查找Gateway ${gatewayId}:`, gateway)
+        console.log(`🔍 開始查找Gateway ${gatewayId}`)
 
-        if (!gateway) {
-            console.log(`❌ Gateway ${gatewayId} 未找到`)
+        if (!gatewayId) {
+            console.log('❌ 沒有選擇Gateway')
             return []
         }
 
-        // 優先使用雲端數據的pub_topic配置（與DiaperMonitoringPage一致）
+        // 查找Gateway
+        const gateway = gateways.find(gw => gw.id === gatewayId)
+        console.log(`🔍 找到Gateway:`, gateway)
+
+        if (!gateway) {
+            console.log('❌ 找不到Gateway')
+            return []
+        }
+
+        // 優先使用雲端數據的pub_topic配置
         if (gateway.cloudData?.pub_topic) {
-            console.log(`✅ 使用Gateway ${gatewayId} 的雲端主題配置:`, gateway.cloudData.pub_topic)
+            console.log('✅ 使用雲端Topic配置:', gateway.cloudData.pub_topic)
             return [
                 gateway.cloudData.pub_topic.health,
                 gateway.cloudData.pub_topic.location,
                 gateway.cloudData.pub_topic.message,
                 gateway.cloudData.pub_topic.ack_from_node,
-            ].filter(Boolean) // 過濾掉空字符串
+            ].filter(Boolean)
         }
 
-        // 如果沒有雲端數據，使用Gateway名稱構建主題（與DiaperMonitoringPage一致）
+        // 如果沒有雲端數據，構建主題名稱
         const gatewayName = gateway.name.replace(/\s+/g, '')
-        console.log(`🔧 構建Gateway ${gatewayId} 的主題格式，Gateway名稱: ${gatewayName}`)
-        return [
+        const topics = [
             `UWB/GW${gatewayName}_Health`,
             `UWB/GW${gatewayName}_Loca`,
             `UWB/GW${gatewayName}_Message`,
             `UWB/GW${gatewayName}_Ack`
         ]
+
+        console.log('🔧 構建本地Topic:', topics)
+        return topics
     }, [gateways])
 
-    // 處理MQTT訊息
-    const handleMQTTMessage = useCallback((gatewayId: string, topic: string, payload: Uint8Array) => {
-        try {
-            const rawMessage = new TextDecoder().decode(payload)
-            const data = JSON.parse(rawMessage)
-
-            console.log(`📨 收到MQTT訊息 [${gatewayId}]:`, { topic, data })
-
-            // 更新連接狀態
-            setConnectionStatus(prev => ({
-                ...prev,
-                lastMessageTime: new Date(),
-                error: null
-            }))
-
-            // 創建調試消息
-            const debugMessage: MQTTDebugMessage = {
-                id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                timestamp: new Date(),
-                topic,
-                gatewayId,
-                rawData: data,
-                parsedData: {
-                    type: topic.includes('/health') ? 'health' :
-                        topic.includes('/location') ? 'location' :
-                            topic.includes('/ack') ? 'ack' : 'message',
-                    gateway: gatewayId,
-                    timestamp: new Date().toISOString(),
-                    ...data
-                },
-                deviceId: data.id || data.MAC || data.device_id,
-                deviceName: data.name || data.device_name
-            }
-
-            // 添加到調試消息列表（保留最新的50條）
-            setDebugMessages(prev => {
-                const newMessages = [debugMessage, ...prev].slice(0, 50)
-                return newMessages
-            })
-
-            // 根據Topic類型處理數據
-            if (topic.includes('/health')) {
-                handleHealthData(gatewayId, data)
-            } else if (topic.includes('/location')) {
-                handleLocationData(gatewayId, data)
-            } else if (topic.includes('/ack_from_node')) {
-                handleAckData(gatewayId, data)
-            } else if (topic.includes('/message')) {
-                handleMessageData(gatewayId, data)
-            }
-        } catch (error) {
-            console.error('❌ MQTT訊息解析錯誤:', error)
-            setConnectionStatus(prev => ({
-                ...prev,
-                error: `訊息解析錯誤: ${error instanceof Error ? error.message : '未知錯誤'}`
-            }))
+    // 添加調試消息
+    const addDebugMessage = useCallback((topic: string, message: string, type: MQTTDebugMessage['type'] = 'other', rawData?: any, parsedData?: any, deviceId?: string, deviceName?: string) => {
+        const debugMessage: MQTTDebugMessage = {
+            id: Date.now().toString(),
+            timestamp: new Date(),
+            topic,
+            message,
+            type,
+            rawData,
+            parsedData,
+            deviceId,
+            deviceName
         }
-    }, [])
 
-    // 處理健康數據
-    const handleHealthData = useCallback((gatewayId: string, data: any) => {
-        console.log(`🔋 處理健康數據 [${gatewayId}]:`, data)
-        console.log(`🔍 當前設備列表:`, devices.map(d => ({
-            id: d.id,
-            name: d.name,
-            hardwareId: d.hardwareId,
-            deviceUid: d.deviceUid,
-            gatewayId: d.gatewayId,
-            deviceType: d.deviceType
-        })))
-        console.log(`🔍 MQTT數據:`, {
-            MAC: data.MAC,
-            serial_no: data.serial_no,
-            name: data.name,
-            id: data.id,
-            'battery level': data['battery level']
+        setDebugMessages(prev => {
+            const newMessages = [debugMessage, ...prev].slice(0, maxMessages)
+            return newMessages
         })
 
-        // 改進設備查找邏輯 - 支持多種ID匹配方式
+        // 更新統計
+        setStats(prev => ({
+            ...prev,
+            totalMessages: prev.totalMessages + 1,
+            healthMessages: type === 'health' ? prev.healthMessages + 1 : prev.healthMessages,
+            locationMessages: type === 'location' ? prev.locationMessages + 1 : prev.locationMessages,
+            ackMessages: type === 'ack' ? prev.ackMessages + 1 : prev.ackMessages,
+        }))
+    }, [maxMessages])
+
+    // 處理健康數據
+    const handleHealthData = useCallback((_gatewayId: string, data: any) => {
+        console.log(`📊 處理健康數據:`, data)
+
+        // 提取可能的設備識別信息
+        const deviceId = data['device id'] || data.device_id || data.deviceId
+        const deviceUid = data['device uid'] || data.device_uid || data.deviceUid
+        const hardwareId = data['hardware id'] || data.hardware_id || data.hardwareId
+        const macAddress = data['mac address'] || data.mac_address || data.macAddress || data.MAC
+        const name = data.name || data.device_name
+
+        console.log(`🔍 查找設備 - 提取的識別信息:`, {
+            deviceId,
+            deviceUid,
+            hardwareId,
+            macAddress,
+            name
+        })
+
+        console.log(`🔍 可用設備列表:`, devices.map(d => ({
+            id: d.id,
+            name: d.name,
+            deviceUid: d.deviceUid,
+            hardwareId: d.hardwareId
+        })))
+
+        // 查找對應的設備
         const device = devices.find(d => {
-            console.log(`🔍 檢查設備 ${d.name}:`)
-            console.log(`  - Gateway ID: ${d.gatewayId} vs ${gatewayId}`)
-            console.log(`  - MAC地址: ${d.hardwareId} vs ${data.MAC}`)
-            console.log(`  - 設備UID: ${d.deviceUid}`)
-            console.log(`  - 數據ID: ${data.id}`)
-            console.log(`  - 序列號: ${data.serial_no}`)
-
-            // 1. 通過Gateway ID匹配
-            if (d.gatewayId === gatewayId) {
-                console.log(`  ✅ 通過Gateway ID匹配`)
-                return true
+            // 嘗試多種匹配方式
+            const matches = {
+                byId: d.id === deviceId,
+                byUid: d.deviceUid === deviceUid,
+                byHardwareId: d.hardwareId === hardwareId,
+                byMacAddress: d.hardwareId === macAddress,
+                byName: d.name === deviceId || d.name === name,
+                // 新增：匹配deviceUid中的MAC地址部分
+                byUidMac: d.deviceUid && macAddress && d.deviceUid.includes(macAddress),
+                // 新增：匹配MAC地址與deviceUid的後半部分
+                byMacInUid: d.deviceUid && macAddress && d.deviceUid.split(':').slice(1).join(':') === macAddress
             }
 
-            // 2. 通過MAC地址匹配
-            if (data.MAC && d.hardwareId === data.MAC) {
-                console.log(`  ✅ 通過MAC地址匹配`)
-                return true
-            }
+            console.log(`🔍 檢查設備 ${d.name}:`, {
+                ...matches,
+                deviceUid: d.deviceUid,
+                macAddress,
+                uidMacPart: d.deviceUid ? d.deviceUid.split(':').slice(1).join(':') : null
+            })
 
-            // 3. 通過設備UID中的ID匹配
-            if (data.id) {
-                const { identifier } = DeviceUIDGenerator.parse(d.deviceUid)
-                if (identifier === String(data.id)) {
-                    console.log(`  ✅ 通過設備UID ID匹配`)
-                    return true
-                }
-            }
-
-            // 4. 通過序列號匹配
-            if (data.serial_no && d.hardwareId === String(data.serial_no)) {
-                console.log(`  ✅ 通過序列號匹配`)
-                return true
-            }
-
-            // 5. 通過設備名稱匹配（300B設備的特殊情況）
-            if (data.name && d.name.includes(data.name)) {
-                console.log(`  ✅ 通過設備名稱匹配`)
-                return true
-            }
-
-            console.log(`  ❌ 未匹配`)
-            return false
+            return matches.byId || matches.byUid || matches.byHardwareId || matches.byMacAddress || matches.byName || matches.byUidMac || matches.byMacInUid
         })
 
         if (!device) {
-            console.log(`⚠️ 未找到對應設備，數據:`, data)
-            console.log(`🔍 嘗試的匹配條件:`)
-            console.log(`  - Gateway ID: ${gatewayId}`)
-            console.log(`  - MAC: ${data.MAC}`)
-            console.log(`  - ID: ${data.id}`)
-            console.log(`  - Serial: ${data.serial_no}`)
-            console.log(`  - Name: ${data.name}`)
+            console.log('❌ 找不到對應的設備:', {
+                extractedInfo: { deviceId, deviceUid, hardwareId, macAddress, name },
+                availableDevices: devices.map(d => ({ id: d.id, name: d.name, deviceUid: d.deviceUid, hardwareId: d.hardwareId }))
+            })
             return
         }
 
-        console.log(`✅ 找到設備: ${device.name} (${device.deviceUid})`)
+        // 提取電池電量並正規化
+        const extractedBatteryLevel = data['battery level'] || data.battery_level || data.battery || device.batteryLevel || 0
+        const normalizedBatteryLevel = Math.max(0, Math.min(100, Number(extractedBatteryLevel) || 0))
 
         const realTimeData: RealTimeDeviceData = {
             deviceId: device.id,
             deviceUid: device.deviceUid,
-            batteryLevel: data['battery level'] || data.battery_level || data.battery || device.batteryLevel || 0,
-            status: determineDeviceStatus(data, device),
+            batteryLevel: normalizedBatteryLevel,
+            status: 'online' as DeviceStatus,
             lastSeen: new Date(),
-            signalStrength: data.signal_strength || data.signalStrength,
-            healthData: {
-                hr: data.hr,
-                spO2: data.spO2 || data.SpO2,
-                temperature: data.temperature || data['skin temp'] || data.skin_temp,
-                steps: data.steps
-            }
+            signalStrength: data['signal strength'] || data.signal_strength || data.signalStrength,
+            position: data.position ? {
+                x: data.position.x || 0,
+                y: data.position.y || 0,
+                z: data.position.z || 0,
+                quality: data.position.quality || 0
+            } : undefined
         }
 
-        console.log(`🔋 更新設備電量: ${device.name} = ${realTimeData.batteryLevel}%`)
-        console.log(`🔋 電量數據來源:`, {
-            'battery level': data['battery level'],
-            battery_level: data.battery_level,
-            battery: data.battery,
-            deviceBattery: device.batteryLevel,
-            final: realTimeData.batteryLevel
-        })
         setRealTimeDevices(prev => new Map(prev.set(device.id, realTimeData)))
+        console.log(`✅ 更新設備 ${device.name} 實時數據:`, realTimeData)
     }, [devices])
 
     // 處理位置數據
-    const handleLocationData = useCallback((gatewayId: string, data: any) => {
-        if (data.content === "location" && data.id && data.position) {
-            const deviceId = String(data.id)
-
-            // 查找對應的設備
-            const device = devices.find(d => {
-                if (d.deviceUid.startsWith('TAG:')) {
-                    const tagId = d.deviceUid.split(':')[1]
-                    return tagId === deviceId || d.hardwareId === deviceId
-                }
-                return d.deviceUid === deviceId || d.hardwareId === deviceId
-            })
-
-            if (!device) return
-
-            const resident = getResidentForDevice(device.id)
-
-            const realTimeData: RealTimeDeviceData = {
-                deviceId: device.id,
-                deviceUid: device.deviceUid,
-                batteryLevel: device.batteryLevel || 0,
-                status: DeviceStatus.ACTIVE,
-                lastSeen: new Date(),
-                position: {
-                    x: data.position.x,
-                    y: data.position.y,
-                    z: data.position.z,
-                    quality: data.position.quality || 0
-                },
-                locationData: resident ? {
-                    homeName: '群仁仁群',
-                    floor: parseInt(resident.room?.split('/')[0]) || 0,
-                    room: resident.room || '',
-                    roomNumber: resident.room?.split('/')[1] || ''
-                } : undefined
-            }
-
-            setRealTimeDevices(prev => new Map(prev.set(device.id, realTimeData)))
-        }
-    }, [devices, getResidentForDevice])
+    const handleLocationData = useCallback((_gatewayId: string, data: any) => {
+        console.log(`📍 處理位置數據:`, data)
+        // 位置數據的調試消息已在主消息處理中添加
+    }, [])
 
     // 處理ACK數據
-    const handleAckData = useCallback((gatewayId: string, data: any) => {
-        console.log(`📋 收到ACK確認 [${gatewayId}]:`, data)
-        // 可以根據需要處理ACK數據
+    const handleAckData = useCallback((_gatewayId: string, data: any) => {
+        console.log(`✅ 處理ACK數據:`, data)
+        // ACK數據的調試消息已在主消息處理中添加
     }, [])
 
-    // 處理訊息數據
-    const handleMessageData = useCallback((gatewayId: string, data: any) => {
-        console.log(`💬 收到設備訊息 [${gatewayId}]:`, data)
-        // 可以根據需要處理訊息數據
+    // 處理消息數據
+    const handleMessageData = useCallback((_gatewayId: string, data: any) => {
+        console.log(`💬 處理消息數據:`, data)
+        // 消息數據的調試消息已在主消息處理中添加
     }, [])
 
-    // 判斷設備狀態
-    const determineDeviceStatus = (data: any, device: Device): DeviceStatus => {
-        if (data.battery && data.battery < 10) return DeviceStatus.ERROR
-        if (data.signal_strength && data.signal_strength < -80) return DeviceStatus.OFFLINE
-        if (data.last_seen && Date.now() - new Date(data.last_seen).getTime() > 300000) {
-            return DeviceStatus.OFFLINE
-        }
-        return DeviceStatus.ACTIVE
-    }
+    // 開始監控
+    const startMonitoring = useCallback((gatewayId: string) => {
+        console.log(`🚀 開始監控Gateway: ${gatewayId}`)
 
-    // 連接到Gateway
-    const connectToGateway = useCallback(async (gatewayId: string): Promise<void> => {
-        return new Promise((resolve, reject) => {
-            try {
-                const clientId = `monitor_${gatewayId}_${Date.now()}`
-                const client = mqtt.connect(CLOUD_MQTT_URL, {
-                    ...CLOUD_MQTT_OPTIONS,
-                    clientId
-                })
-
-                client.on('connect', () => {
-                    console.log(`✅ 已連接到Gateway ${gatewayId}`)
-
-                    // 訂閱相關Topics
-                    const topics = generateDeviceTopics(gatewayId)
-                    topics.forEach(topic => {
-                        client.subscribe(topic, (err) => {
-                            if (err) {
-                                console.error(`❌ 訂閱失敗 ${topic}:`, err)
-                            } else {
-                                console.log(`📡 已訂閱 ${topic}`)
-                            }
-                        })
-                    })
-
-                    mqttClients.current.set(gatewayId, client)
-
-                    setConnectionStatus(prev => ({
-                        ...prev,
-                        isConnected: true,
-                        connectedGateways: [...prev.connectedGateways, gatewayId],
-                        error: null
-                    }))
-
-                    resolve()
-                })
-
-                client.on('message', (topic: string, payload: Uint8Array) => {
-                    handleMQTTMessage(gatewayId, topic, payload)
-                })
-
-                client.on('error', (error) => {
-                    console.error(`❌ MQTT連接錯誤 [${gatewayId}]:`, error)
-                    setConnectionStatus(prev => ({
-                        ...prev,
-                        error: `連接錯誤: ${error.message}`
-                    }))
-                    reject(error)
-                })
-
-                client.on('close', () => {
-                    console.log(`🔌 連接已關閉 [${gatewayId}]`)
-                    setConnectionStatus(prev => ({
-                        ...prev,
-                        connectedGateways: prev.connectedGateways.filter(id => id !== gatewayId),
-                        isConnected: prev.connectedGateways.length > 1
-                    }))
-                })
-
-                client.on('reconnect', () => {
-                    console.log(`🔄 重新連接中 [${gatewayId}]`)
-                })
-
-            } catch (error) {
-                console.error(`❌ 創建MQTT連接失敗 [${gatewayId}]:`, error)
-                reject(error)
-            }
-        })
-    }, [handleMQTTMessage])
-
-    // 啟動監控
-    const startMonitoring = useCallback(async (gatewayIds: string[]) => {
         if (isMonitoring) {
-            console.log('⚠️ 監控已啟動，先停止現有監控')
+            console.log('⚠️ 已在監控中，先停止當前監控')
             stopMonitoring()
         }
 
-        setIsMonitoring(true)
-        setConnectionStatus(prev => ({
-            ...prev,
-            connectedGateways: [],
-            error: null
-        }))
+        const topics = generateDeviceTopics(gatewayId)
+        if (topics.length === 0) {
+            console.log('❌ 沒有可用的Topic')
+            setConnectionStatus(prev => ({ ...prev, error: '沒有可用的Topic' }))
+            return
+        }
 
-        try {
-            // 並行連接到所有Gateway
-            const connectionPromises = gatewayIds.map(gatewayId => connectToGateway(gatewayId))
-            await Promise.all(connectionPromises)
+        // MQTT連接配置
+        const MQTT_URL = `${import.meta.env.VITE_MQTT_PROTOCOL}://${import.meta.env.VITE_MQTT_BROKER}:${import.meta.env.VITE_MQTT_PORT}/mqtt`
+        const MQTT_OPTIONS = {
+            username: import.meta.env.VITE_MQTT_USERNAME,
+            password: import.meta.env.VITE_MQTT_PASSWORD,
+            clientId: `device_monitoring_${Date.now()}`,
+            clean: true,
+            reconnectPeriod: 5000,
+            connectTimeout: 30 * 1000,
+        }
 
-            console.log(`🚀 監控已啟動，連接了 ${gatewayIds.length} 個Gateway`)
-        } catch (error) {
-            console.error('❌ 啟動監控失敗:', error)
+        console.log('🔌 連接到MQTT Broker:', MQTT_URL)
+
+        const client = mqtt.connect(MQTT_URL, MQTT_OPTIONS)
+
+        client.on('connect', () => {
+            console.log('✅ MQTT連接成功')
+            setIsMonitoring(true)
+            setConnectionStatus({
+                isConnected: true,
+                connectedGateways: [gatewayId],
+                lastMessageTime: new Date(),
+                error: null
+            })
+
+            // 訂閱所有Topic
+            topics.forEach(topic => {
+                client.subscribe(topic, (err) => {
+                    if (err) {
+                        console.error(`❌ 訂閱Topic失敗 ${topic}:`, err)
+                    } else {
+                        console.log(`✅ 已訂閱 ${topic}`)
+                    }
+                })
+            })
+        })
+
+        client.on('message', (topic: string, payload: Buffer) => {
+            try {
+                const message = JSON.parse(payload.toString())
+                console.log(`📨 收到消息 [${topic}]:`, message)
+
+                // 根據Topic類型處理數據
+                if (topic.includes('Health')) {
+                    handleHealthData(gatewayId, message)
+                    addDebugMessage(topic, JSON.stringify(message), 'health', payload.toString(), message)
+                } else if (topic.includes('Loca')) {
+                    handleLocationData(gatewayId, message)
+                    addDebugMessage(topic, JSON.stringify(message), 'location', payload.toString(), message)
+                } else if (topic.includes('Ack')) {
+                    handleAckData(gatewayId, message)
+                    addDebugMessage(topic, JSON.stringify(message), 'ack', payload.toString(), message)
+                } else if (topic.includes('Message')) {
+                    handleMessageData(gatewayId, message)
+                    addDebugMessage(topic, JSON.stringify(message), 'message', payload.toString(), message)
+                } else {
+                    addDebugMessage(topic, JSON.stringify(message), 'other', payload.toString(), message)
+                }
+
+                setConnectionStatus(prev => ({
+                    ...prev,
+                    lastMessageTime: new Date()
+                }))
+            } catch (error) {
+                console.error('❌ 解析MQTT消息失敗:', error)
+                addDebugMessage(topic, payload.toString(), 'other', payload.toString(), null)
+            }
+        })
+
+        client.on('error', (error) => {
+            console.error('❌ MQTT連接錯誤:', error)
             setConnectionStatus(prev => ({
                 ...prev,
-                error: `啟動監控失敗: ${error instanceof Error ? error.message : '未知錯誤'}`
+                error: error.message
             }))
-        }
-    }, [isMonitoring, connectToGateway])
+        })
+
+        client.on('close', () => {
+            console.log('🔌 MQTT連接關閉')
+            setIsMonitoring(false)
+            setConnectionStatus(prev => ({
+                ...prev,
+                isConnected: false,
+                connectedGateways: []
+            }))
+        })
+
+        mqttClientRef.current = client
+    }, [isMonitoring, generateDeviceTopics, handleHealthData, handleLocationData, handleAckData, handleMessageData, addDebugMessage])
 
     // 停止監控
     const stopMonitoring = useCallback(() => {
         console.log('🛑 停止監控')
 
-        // 關閉所有MQTT連接
-        mqttClients.current.forEach((client, gatewayId) => {
-            client.end(true)
-            console.log(`🔌 已斷開Gateway ${gatewayId}`)
-        })
+        if (mqttClientRef.current) {
+            mqttClientRef.current.end()
+            mqttClientRef.current = null
+        }
 
-        // 清除重連定時器
-        reconnectTimeouts.current.forEach(timeout => clearTimeout(timeout))
+        if (reconnectTimeoutRef.current) {
+            clearTimeout(reconnectTimeoutRef.current)
+            reconnectTimeoutRef.current = null
+        }
 
-        // 重置狀態
-        mqttClients.current.clear()
-        reconnectTimeouts.current.clear()
         setIsMonitoring(false)
         setConnectionStatus({
             isConnected: false,
@@ -506,58 +407,37 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
         })
     }, [])
 
-    // 更新設備數據
-    const updateDeviceData = useCallback((deviceId: string, data: Partial<RealTimeDeviceData>) => {
-        setRealTimeDevices(prev => {
-            const current = prev.get(deviceId)
-            if (current) {
-                return new Map(prev.set(deviceId, { ...current, ...data }))
-            }
-            return prev
+    // 清除調試消息
+    const clearDebugMessages = useCallback(() => {
+        setDebugMessages([])
+        setStats({
+            totalMessages: 0,
+            healthMessages: 0,
+            locationMessages: 0,
+            ackMessages: 0
         })
     }, [])
 
-    // 查詢方法
-    const getDeviceStatus = useCallback((deviceId: string) => {
-        return realTimeDevices.get(deviceId)
-    }, [realTimeDevices])
-
-    const getDevicesByGateway = useCallback((gatewayId: string) => {
-        return Array.from(realTimeDevices.values()).filter(device => {
-            const originalDevice = devices.find(d => d.id === device.deviceId)
-            return originalDevice?.gatewayId === gatewayId
-        })
-    }, [realTimeDevices, devices])
-
-    const getOnlineDevices = useCallback(() => {
-        return Array.from(realTimeDevices.values()).filter(device => device.status === DeviceStatus.ACTIVE)
-    }, [realTimeDevices])
-
-    const getOfflineDevices = useCallback(() => {
-        return Array.from(realTimeDevices.values()).filter(device => device.status === DeviceStatus.OFFLINE)
-    }, [realTimeDevices])
-
-    // 統計數據
-    const getMonitoringStats = useCallback(() => {
-        const devices = Array.from(realTimeDevices.values())
-        const totalDevices = devices.length
-        const onlineDevices = devices.filter(d => d.status === DeviceStatus.ACTIVE).length
-        const offlineDevices = devices.filter(d => d.status === DeviceStatus.OFFLINE).length
-        const errorDevices = devices.filter(d => d.status === DeviceStatus.ERROR).length
-        const averageBatteryLevel = devices.length > 0
-            ? devices.reduce((sum, d) => sum + d.batteryLevel, 0) / devices.length
-            : 0
-
-        return {
-            totalDevices,
-            onlineDevices,
-            offlineDevices,
-            errorDevices,
-            averageBatteryLevel: Math.round(averageBatteryLevel)
+    // 導出調試數據
+    const exportDebugData = useCallback(() => {
+        const data = {
+            timestamp: new Date().toISOString(),
+            messages: debugMessages,
+            stats: stats
         }
-    }, [realTimeDevices])
 
-    // 清理函數
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `mqtt_debug_${Date.now()}.json`
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+    }, [debugMessages, stats])
+
+    // 組件卸載時清理
     useEffect(() => {
         return () => {
             stopMonitoring()
@@ -569,14 +449,19 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
         isMonitoring,
         connectionStatus,
         debugMessages,
+        maxMessages,
+        topicFilter,
+        deviceFilter,
+        showDebugPanel,
+        stats,
         startMonitoring,
         stopMonitoring,
-        updateDeviceData,
-        getDeviceStatus,
-        getDevicesByGateway,
-        getOnlineDevices,
-        getOfflineDevices,
-        getMonitoringStats
+        clearDebugMessages,
+        setMaxMessages,
+        setTopicFilter,
+        setDeviceFilter,
+        setShowDebugPanel,
+        exportDebugData
     }
 
     return (
@@ -586,10 +471,12 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
     )
 }
 
-export function useDeviceMonitoring() {
+export const useDeviceMonitoring = () => {
     const context = useContext(DeviceMonitoringContext)
-    if (context === undefined) {
-        throw new Error('useDeviceMonitoring must be used within a DeviceMonitoringProvider')
+    if (!context) {
+        throw new Error('useDeviceMonitoring must be used within DeviceMonitoringProvider')
     }
     return context
 }
+
+export default DeviceMonitoringContext
