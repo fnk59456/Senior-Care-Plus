@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Search,
   Watch,
-  Activity,
   AlertCircle,
   Settings,
   Plus,
@@ -29,7 +28,6 @@ import { useDeviceDiscovery } from "@/contexts/DeviceDiscoveryContext"
 import { useDeviceMonitoring } from "@/contexts/DeviceMonitoringContext"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { DeviceType, DeviceStatus, DeviceUIDGenerator } from "@/types/device-types"
-import DeviceMonitoringView from "@/components/DeviceMonitoringView"
 import DeviceBindingModal from "@/components/DeviceBindingModal"
 import DeviceDiscoveryModal from "@/components/DeviceDiscoveryModal"
 import DeviceMonitoringControls from "@/components/DeviceMonitoringControls"
@@ -65,8 +63,6 @@ export default function DeviceManagementPage() {
   const [selectedDevice, setSelectedDevice] = useState<any>(null)
   const [newHardwareId, setNewHardwareId] = useState("")
 
-  // 新增：視圖模式狀態
-  const [viewMode, setViewMode] = useState<'management' | 'monitoring'>('management')
 
   // 新增：綁定模態框狀態
   const [showBindingModal, setShowBindingModal] = useState(false)
@@ -359,7 +355,7 @@ export default function DeviceManagementPage() {
     switch (deviceType) {
       case DeviceType.SMARTWATCH_300B: return Watch
       case DeviceType.DIAPER_SENSOR: return Baby
-      case DeviceType.PEDOMETER: return Activity
+      case DeviceType.PEDOMETER: return Settings
       case DeviceType.UWB_TAG: return MapPin
       default: return Settings
     }
@@ -618,25 +614,6 @@ export default function DeviceManagementPage() {
             </p>
           </div>
 
-          {/* 模式切換按鈕 */}
-          <div className="flex gap-2">
-            <Button
-              variant={viewMode === 'management' ? 'default' : 'outline'}
-              onClick={() => setViewMode('management')}
-              className="gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              管理模式
-            </Button>
-            <Button
-              variant={viewMode === 'monitoring' ? 'default' : 'outline'}
-              onClick={() => setViewMode('monitoring')}
-              className="gap-2"
-            >
-              <Activity className="h-4 w-4" />
-              監控模式
-            </Button>
-          </div>
         </div>
 
         {/* 🚀 持久化狀態顯示 */}
@@ -715,445 +692,441 @@ export default function DeviceManagementPage() {
         </div>
       </div>
 
-      {/* 根據模式顯示不同內容 */}
-      {viewMode === 'monitoring' ? (
-        <DeviceMonitoringView onAction={handleDeviceAction} />
-      ) : (
-        <>
-          {/* 監控控制面板 */}
-          <div className="space-y-6">
-            {/* 監控狀態和控制按鈕 */}
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">設備監控</h3>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowControls(!showControls)}
-                  className="gap-2"
-                >
-                  <Filter className="h-4 w-4" />
-                  {showControls ? '隱藏控制' : '顯示控制'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowTest(!showTest)}
-                  className="gap-2"
-                >
-                  <TestTube className="h-4 w-4" />
-                  {showTest ? '隱藏測試' : '顯示測試'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDebug(!showDebug)}
-                  className="gap-2"
-                >
-                  <Bug className="h-4 w-4" />
-                  {showDebug ? '隱藏調試' : '顯示調試'}
-                </Button>
-              </div>
-            </div>
-
-            {/* 監控狀態 */}
-            <DeviceMonitoringStatus />
-
-            {/* 監控控制面板 */}
-            {showControls && <DeviceMonitoringControls />}
-
-            {/* 測試面板 */}
-            {showTest && <DeviceMonitoringTest />}
-
-            {/* 調試面板 */}
-            {showDebug && <DeviceMonitoringDebug />}
-
-            {/* 監控統計概覽 */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-blue-600">{getMonitoringStats().total}</p>
-                    <p className="text-sm text-muted-foreground">已綁定設備</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">{getMonitoringStats().online}</p>
-                    <p className="text-sm text-muted-foreground">線上設備</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-yellow-600">{getMonitoringStats().offline}</p>
-                    <p className="text-sm text-muted-foreground">離線設備</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-red-600">{getMonitoringStats().error}</p>
-                    <p className="text-sm text-muted-foreground">錯誤設備</p>
-                  </div>
-                </CardContent>
-              </Card>
+      {/* 設備管理內容 */}
+      <>
+        {/* 監控控制面板 */}
+        <div className="space-y-6">
+          {/* 監控狀態和控制按鈕 */}
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">{t('pages:deviceManagement.monitoring.title')}</h3>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowControls(!showControls)}
+                className="gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                {showControls ? t('pages:deviceManagement.monitoring.hideControls') : t('pages:deviceManagement.monitoring.showControls')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowTest(!showTest)}
+                className="gap-2"
+              >
+                <TestTube className="h-4 w-4" />
+                {showTest ? t('pages:deviceManagement.monitoring.hideTest') : t('pages:deviceManagement.monitoring.showTest')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowDebug(!showDebug)}
+                className="gap-2"
+              >
+                <Bug className="h-4 w-4" />
+                {showDebug ? t('pages:deviceManagement.monitoring.hideDebug') : t('pages:deviceManagement.monitoring.showDebug')}
+              </Button>
             </div>
           </div>
 
-          {/* 搜尋框 */}
+          {/* 監控狀態 */}
+          <DeviceMonitoringStatus />
+
+          {/* 監控控制面板 */}
+          {showControls && <DeviceMonitoringControls />}
+
+          {/* 測試面板 */}
+          {showTest && <DeviceMonitoringTest />}
+
+          {/* 調試面板 */}
+          {showDebug && <DeviceMonitoringDebug />}
+
+          {/* 監控統計概覽 */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">{getMonitoringStats().total}</p>
+                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.monitoring.boundDevices')}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{getMonitoringStats().online}</p>
+                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.monitoring.onlineDevices')}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-yellow-600">{getMonitoringStats().offline}</p>
+                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.monitoring.offlineDevices')}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-red-600">{getMonitoringStats().error}</p>
+                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.monitoring.errorDevices')}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* 搜尋框 */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t('pages:deviceManagement.searchPlaceholder')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 篩選標籤 */}
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant={selectedFilter === "all" ? "default" : "outline"}
+            onClick={() => setSelectedFilter("all")}
+            className="gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            {t('pages:deviceManagement.filters.all')}
+          </Button>
+          <Button
+            variant={selectedFilter === DeviceType.SMARTWATCH_300B ? "default" : "outline"}
+            onClick={() => setSelectedFilter(DeviceType.SMARTWATCH_300B)}
+            className="gap-2"
+          >
+            <Watch className="h-4 w-4" />
+            {t('pages:deviceManagement.filters.smartwatch300B')}
+          </Button>
+          <Button
+            variant={selectedFilter === DeviceType.DIAPER_SENSOR ? "default" : "outline"}
+            onClick={() => setSelectedFilter(DeviceType.DIAPER_SENSOR)}
+            className="gap-2"
+          >
+            <Baby className="h-4 w-4" />
+            {t('pages:deviceManagement.filters.diaperSensor')}
+          </Button>
+          <Button
+            variant={selectedFilter === DeviceType.PEDOMETER ? "default" : "outline"}
+            onClick={() => setSelectedFilter(DeviceType.PEDOMETER)}
+            className="gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            {t('pages:deviceManagement.filters.pedometer')}
+          </Button>
+          <Button
+            variant={selectedFilter === DeviceType.UWB_TAG ? "default" : "outline"}
+            onClick={() => setSelectedFilter(DeviceType.UWB_TAG)}
+            className="gap-2"
+          >
+            <MapPin className="h-4 w-4" />
+            {t('pages:deviceManagement.filters.uwbTag')}
+          </Button>
+        </div>
+
+        {/* 新增設備按鈕 */}
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={async () => {
+              if (!selectedGateway) {
+                alert('請先選擇一個Gateway')
+                return
+              }
+              try {
+                // 同時啟動監控和設備發現
+                await handleStartMonitoring()
+                startDiscovery(selectedGateway)
+              } catch (error) {
+                console.error('啟動失敗:', error)
+              }
+            }}
+            disabled={!selectedGateway}
+          >
+            <Wifi className="h-4 w-4 mr-2" />
+            {t('pages:deviceManagement.actions.autoDiscovery')}
+          </Button>
+          <Button onClick={() => setShowAddModal(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            {t('pages:deviceManagement.actions.addDevice')}
+          </Button>
+        </div>
+
+        {/* 統計資訊 */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t('pages:deviceManagement.searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+              <div className="text-center">
+                <p className="text-2xl font-bold">{totalDevices}</p>
+                <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.totalDevices')}</p>
               </div>
             </CardContent>
           </Card>
-
-          {/* 篩選標籤 */}
-          <div className="flex gap-2 flex-wrap">
-            <Button
-              variant={selectedFilter === "all" ? "default" : "outline"}
-              onClick={() => setSelectedFilter("all")}
-              className="gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              {t('pages:deviceManagement.filters.all')}
-            </Button>
-            <Button
-              variant={selectedFilter === DeviceType.SMARTWATCH_300B ? "default" : "outline"}
-              onClick={() => setSelectedFilter(DeviceType.SMARTWATCH_300B)}
-              className="gap-2"
-            >
-              <Watch className="h-4 w-4" />
-              {t('pages:deviceManagement.filters.smartwatch300B')}
-            </Button>
-            <Button
-              variant={selectedFilter === DeviceType.DIAPER_SENSOR ? "default" : "outline"}
-              onClick={() => setSelectedFilter(DeviceType.DIAPER_SENSOR)}
-              className="gap-2"
-            >
-              <Baby className="h-4 w-4" />
-              {t('pages:deviceManagement.filters.diaperSensor')}
-            </Button>
-            <Button
-              variant={selectedFilter === DeviceType.PEDOMETER ? "default" : "outline"}
-              onClick={() => setSelectedFilter(DeviceType.PEDOMETER)}
-              className="gap-2"
-            >
-              <Activity className="h-4 w-4" />
-              {t('pages:deviceManagement.filters.pedometer')}
-            </Button>
-            <Button
-              variant={selectedFilter === DeviceType.UWB_TAG ? "default" : "outline"}
-              onClick={() => setSelectedFilter(DeviceType.UWB_TAG)}
-              className="gap-2"
-            >
-              <MapPin className="h-4 w-4" />
-              {t('pages:deviceManagement.filters.uwbTag')}
-            </Button>
-          </div>
-
-          {/* 新增設備按鈕 */}
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={async () => {
-                if (!selectedGateway) {
-                  alert('請先選擇一個Gateway')
-                  return
-                }
-                try {
-                  // 同時啟動監控和設備發現
-                  await handleStartMonitoring()
-                  startDiscovery(selectedGateway)
-                } catch (error) {
-                  console.error('啟動失敗:', error)
-                }
-              }}
-              disabled={!selectedGateway}
-            >
-              <Wifi className="h-4 w-4 mr-2" />
-              自動發現設備
-            </Button>
-            <Button onClick={() => setShowAddModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('pages:deviceManagement.actions.addDevice')}
-            </Button>
-          </div>
-
-          {/* 統計資訊 */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold">{totalDevices}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.totalDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{activeDevices}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.activeDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{deviceTypeSummary[DeviceType.SMARTWATCH_300B]}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.smartwatch300B')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-purple-600">{deviceTypeSummary[DeviceType.DIAPER_SENSOR]}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.diaperSensor')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-orange-600">{deviceTypeSummary[DeviceType.UWB_TAG] + deviceTypeSummary[DeviceType.PEDOMETER]}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.otherDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* 設備監控卡片網格 */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">設備監控</h3>
-              <Badge variant="outline" className="gap-1">
-                <Filter className="h-3 w-3" />
-                {filteredDevices.length} 個設備
-              </Badge>
-            </div>
-
-            {filteredDevices.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    {devices.length === 0
-                      ? '沒有設備'
-                      : '沒有符合篩選條件的設備'
-                    }
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredDevices.map(device => {
-                  const resident = getResidentForDevice(device.id)
-                  const deviceWithRealTime = getDeviceWithRealTimeData(device)
-                  return (
-                    <DeviceMonitorCard
-                      key={device.id}
-                      device={deviceWithRealTime}
-                      resident={resident}
-                      onAction={handleDeviceAction}
-                    />
-                  )
-                })}
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600">{activeDevices}</p>
+                <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.activeDevices')}</p>
               </div>
-            )}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-600">{deviceTypeSummary[DeviceType.SMARTWATCH_300B]}</p>
+                <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.smartwatch300B')}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-600">{deviceTypeSummary[DeviceType.DIAPER_SENSOR]}</p>
+                <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.diaperSensor')}</p>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold text-orange-600">{deviceTypeSummary[DeviceType.UWB_TAG] + deviceTypeSummary[DeviceType.PEDOMETER]}</p>
+                <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.otherDevices')}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 設備監控卡片網格 */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">{t('pages:deviceManagement.monitoring.title')}</h3>
+            <Badge variant="outline" className="gap-1">
+              <Filter className="h-3 w-3" />
+              {filteredDevices.length} {t('pages:deviceManagement.monitoring.deviceCount')}
+            </Badge>
           </div>
 
-          {/* 新增設備彈出視窗 */}
-          {showAddModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <Card className="w-full max-w-md">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle>{t('pages:deviceManagement.addModal.title')}</CardTitle>
-                  <Button variant="ghost" size="sm" onClick={() => setShowAddModal(false)}>
-                    <X className="h-5 w-5" />
+          {filteredDevices.length === 0 ? (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  {devices.length === 0
+                    ? t('pages:deviceManagement.monitoring.noDevices')
+                    : t('pages:deviceManagement.monitoring.noMatchingDevices')
+                  }
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredDevices.map(device => {
+                const resident = getResidentForDevice(device.id)
+                const deviceWithRealTime = getDeviceWithRealTimeData(device)
+                return (
+                  <DeviceMonitorCard
+                    key={device.id}
+                    device={deviceWithRealTime}
+                    resident={resident}
+                    onAction={handleDeviceAction}
+                  />
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* 新增設備彈出視窗 */}
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-md">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>{t('pages:deviceManagement.addModal.title')}</CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setShowAddModal(false)}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.deviceType')}</label>
+                  <Select
+                    value={newDevice.deviceType}
+                    onValueChange={(value: DeviceType) => setNewDevice({ ...newDevice, deviceType: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={DeviceType.SMARTWATCH_300B}>{t('pages:deviceManagement.addModal.deviceTypes.smartwatch300B')}</SelectItem>
+                      <SelectItem value={DeviceType.DIAPER_SENSOR}>{t('pages:deviceManagement.addModal.deviceTypes.diaperSensor')}</SelectItem>
+                      <SelectItem value={DeviceType.PEDOMETER}>{t('pages:deviceManagement.addModal.deviceTypes.pedometer')}</SelectItem>
+                      <SelectItem value={DeviceType.UWB_TAG}>{t('pages:deviceManagement.addModal.deviceTypes.uwbTag')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.deviceName')}</label>
+                  <Input
+                    placeholder={t('pages:deviceManagement.addModal.placeholders.deviceName')}
+                    value={newDevice.name}
+                    onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.hardwareId')}</label>
+                  <Input
+                    placeholder={t('pages:deviceManagement.addModal.placeholders.hardwareId')}
+                    value={newDevice.hardwareId}
+                    onChange={(e) => setNewDevice({ ...newDevice, hardwareId: e.target.value })}
+                  />
+                </div>
+
+                {/* 根據設備類型顯示不同的識別欄位 */}
+                {(newDevice.deviceType === DeviceType.SMARTWATCH_300B || newDevice.deviceType === DeviceType.DIAPER_SENSOR) && (
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.macAddress')}</label>
+                    <Input
+                      placeholder={t('pages:deviceManagement.addModal.placeholders.macAddress')}
+                      value={newDevice.mac}
+                      onChange={(e) => setNewDevice({ ...newDevice, mac: e.target.value })}
+                    />
+                  </div>
+                )}
+
+                {(newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG) && (
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.deviceId')}</label>
+                    <Input
+                      placeholder={t('pages:deviceManagement.addModal.placeholders.deviceId')}
+                      value={newDevice.deviceId}
+                      onChange={(e) => setNewDevice({ ...newDevice, deviceId: e.target.value })}
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.gatewayId')}</label>
+                  <Input
+                    placeholder={t('pages:deviceManagement.addModal.placeholders.gatewayId')}
+                    value={newDevice.gatewayId}
+                    onChange={(e) => setNewDevice({ ...newDevice, gatewayId: e.target.value })}
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddModal(false)}
+                    className="flex-1"
+                  >
+                    {t('common:actions.cancel')}
                   </Button>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.deviceType')}</label>
-                    <Select
-                      value={newDevice.deviceType}
-                      onValueChange={(value: DeviceType) => setNewDevice({ ...newDevice, deviceType: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={DeviceType.SMARTWATCH_300B}>{t('pages:deviceManagement.addModal.deviceTypes.smartwatch300B')}</SelectItem>
-                        <SelectItem value={DeviceType.DIAPER_SENSOR}>{t('pages:deviceManagement.addModal.deviceTypes.diaperSensor')}</SelectItem>
-                        <SelectItem value={DeviceType.PEDOMETER}>{t('pages:deviceManagement.addModal.deviceTypes.pedometer')}</SelectItem>
-                        <SelectItem value={DeviceType.UWB_TAG}>{t('pages:deviceManagement.addModal.deviceTypes.uwbTag')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Button
+                    onClick={handleAddDevice}
+                    className="flex-1"
+                    disabled={!newDevice.name || !newDevice.hardwareId ||
+                      ((newDevice.deviceType === DeviceType.SMARTWATCH_300B || newDevice.deviceType === DeviceType.DIAPER_SENSOR) && !newDevice.mac) ||
+                      ((newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG) && !newDevice.deviceId)
+                    }
+                  >
+                    {t('pages:deviceManagement.actions.addDevice')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.deviceName')}</label>
-                    <Input
-                      placeholder={t('pages:deviceManagement.addModal.placeholders.deviceName')}
-                      value={newDevice.name}
-                      onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
-                    />
-                  </div>
+        {/* 替換設備彈出視窗 */}
+        {showReplaceModal && selectedDevice && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle>{t('pages:deviceManagement.replaceModal.title')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-center space-y-2">
+                  <h3 className="font-semibold">{selectedDevice.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {t('pages:deviceManagement.replaceModal.currentHardwareId')}: {selectedDevice.hardwareId}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('pages:deviceManagement.replaceModal.deviceUid')}: {selectedDevice.deviceUid}
+                  </p>
+                </div>
 
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.hardwareId')}</label>
-                    <Input
-                      placeholder={t('pages:deviceManagement.addModal.placeholders.hardwareId')}
-                      value={newDevice.hardwareId}
-                      onChange={(e) => setNewDevice({ ...newDevice, hardwareId: e.target.value })}
-                    />
-                  </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    {t('pages:deviceManagement.replaceModal.newHardwareId')}
+                  </label>
+                  <Input
+                    value={newHardwareId}
+                    onChange={(e) => setNewHardwareId(e.target.value)}
+                    placeholder={t('pages:deviceManagement.replaceModal.placeholders.newHardwareId')}
+                  />
+                </div>
 
-                  {/* 根據設備類型顯示不同的識別欄位 */}
-                  {(newDevice.deviceType === DeviceType.SMARTWATCH_300B || newDevice.deviceType === DeviceType.DIAPER_SENSOR) && (
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.macAddress')}</label>
-                      <Input
-                        placeholder={t('pages:deviceManagement.addModal.placeholders.macAddress')}
-                        value={newDevice.mac}
-                        onChange={(e) => setNewDevice({ ...newDevice, mac: e.target.value })}
-                      />
-                    </div>
-                  )}
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowReplaceModal(false)
+                      setSelectedDevice(null)
+                      setNewHardwareId("")
+                    }}
+                    className="flex-1"
+                  >
+                    {t('common:actions.cancel')}
+                  </Button>
+                  <Button
+                    onClick={confirmReplaceDevice}
+                    className="flex-1"
+                    disabled={!newHardwareId.trim() || newHardwareId === selectedDevice.hardwareId}
+                  >
+                    {t('pages:deviceManagement.replaceModal.confirmReplace')}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
-                  {(newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG) && (
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.deviceId')}</label>
-                      <Input
-                        placeholder={t('pages:deviceManagement.addModal.placeholders.deviceId')}
-                        value={newDevice.deviceId}
-                        onChange={(e) => setNewDevice({ ...newDevice, deviceId: e.target.value })}
-                      />
-                    </div>
-                  )}
+        {/* 設備綁定模態框 */}
+        <DeviceBindingModal
+          isOpen={showBindingModal}
+          onClose={() => {
+            setShowBindingModal(false)
+            setBindingDevice(null)
+          }}
+          device={bindingDevice || undefined}
+        />
 
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.gatewayId')}</label>
-                    <Input
-                      placeholder={t('pages:deviceManagement.addModal.placeholders.gatewayId')}
-                      value={newDevice.gatewayId}
-                      onChange={(e) => setNewDevice({ ...newDevice, gatewayId: e.target.value })}
-                    />
-                  </div>
+        {/* 設備發現模態框 */}
+        <DeviceDiscoveryModal />
 
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowAddModal(false)}
-                      className="flex-1"
-                    >
-                      {t('common:actions.cancel')}
-                    </Button>
-                    <Button
-                      onClick={handleAddDevice}
-                      className="flex-1"
-                      disabled={!newDevice.name || !newDevice.hardwareId ||
-                        ((newDevice.deviceType === DeviceType.SMARTWATCH_300B || newDevice.deviceType === DeviceType.DIAPER_SENSOR) && !newDevice.mac) ||
-                        ((newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG) && !newDevice.deviceId)
-                      }
-                    >
-                      {t('pages:deviceManagement.actions.addDevice')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* 替換設備彈出視窗 */}
-          {showReplaceModal && selectedDevice && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <Card className="w-full max-w-md">
-                <CardHeader>
-                  <CardTitle>{t('pages:deviceManagement.replaceModal.title')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="text-center space-y-2">
-                    <h3 className="font-semibold">{selectedDevice.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {t('pages:deviceManagement.replaceModal.currentHardwareId')}: {selectedDevice.hardwareId}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('pages:deviceManagement.replaceModal.deviceUid')}: {selectedDevice.deviceUid}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      {t('pages:deviceManagement.replaceModal.newHardwareId')}
-                    </label>
-                    <Input
-                      value={newHardwareId}
-                      onChange={(e) => setNewHardwareId(e.target.value)}
-                      placeholder={t('pages:deviceManagement.replaceModal.placeholders.newHardwareId')}
-                    />
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setShowReplaceModal(false)
-                        setSelectedDevice(null)
-                        setNewHardwareId("")
-                      }}
-                      className="flex-1"
-                    >
-                      {t('common:actions.cancel')}
-                    </Button>
-                    <Button
-                      onClick={confirmReplaceDevice}
-                      className="flex-1"
-                      disabled={!newHardwareId.trim() || newHardwareId === selectedDevice.hardwareId}
-                    >
-                      {t('pages:deviceManagement.replaceModal.confirmReplace')}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          {/* 設備綁定模態框 */}
-          <DeviceBindingModal
-            isOpen={showBindingModal}
-            onClose={() => {
-              setShowBindingModal(false)
-              setBindingDevice(null)
-            }}
-            device={bindingDevice || undefined}
-          />
-
-          {/* 設備發現模態框 */}
-          <DeviceDiscoveryModal />
-
-          {/* 設備資訊模態框 */}
-          <DeviceInfoModal
-            isOpen={showDeviceInfoModal}
-            onClose={() => {
-              setShowDeviceInfoModal(false)
-              setSelectedDeviceInfo(null)
-            }}
-            device={selectedDeviceInfo}
-          />
-        </>
-      )}
+        {/* 設備資訊模態框 */}
+        <DeviceInfoModal
+          isOpen={showDeviceInfoModal}
+          onClose={() => {
+            setShowDeviceInfoModal(false)
+            setSelectedDeviceInfo(null)
+          }}
+          device={selectedDeviceInfo}
+        />
+      </>
     </div>
   )
 }

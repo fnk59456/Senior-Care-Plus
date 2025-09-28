@@ -46,15 +46,15 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
 
         switch (status) {
             case DeviceStatus.ACTIVE:
-                return { text: '線上', color: 'text-green-600', icon: CheckCircle2 }
+                return { text: t('pages:deviceManagement.deviceCard.online'), color: 'text-green-600', icon: CheckCircle2 }
             case DeviceStatus.INACTIVE:
-                return { text: '非活躍', color: 'text-yellow-600', icon: CheckCircle2 }
+                return { text: t('pages:deviceManagement.deviceCard.offline'), color: 'text-yellow-600', icon: CheckCircle2 }
             case DeviceStatus.OFFLINE:
-                return { text: '離線', color: 'text-gray-600', icon: CheckCircle2 }
+                return { text: t('pages:deviceManagement.deviceCard.offline'), color: 'text-gray-600', icon: CheckCircle2 }
             case DeviceStatus.ERROR:
-                return { text: '錯誤', color: 'text-red-600', icon: CheckCircle2 }
+                return { text: t('pages:deviceManagement.deviceCard.offline'), color: 'text-red-600', icon: CheckCircle2 }
             default:
-                return { text: '未知', color: 'text-gray-600', icon: CheckCircle2 }
+                return { text: t('pages:deviceManagement.deviceCard.unknown'), color: 'text-gray-600', icon: CheckCircle2 }
         }
     }
 
@@ -167,7 +167,7 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
                     </div>
                 ) : (
                     <div className="flex-1 min-w-0">
-                        <div className="text-base text-gray-500">未綁定用戶</div>
+                        <div className="text-base text-gray-500">{t('pages:deviceManagement.deviceInfo.unbound')}</div>
                     </div>
                 )}
             </div>

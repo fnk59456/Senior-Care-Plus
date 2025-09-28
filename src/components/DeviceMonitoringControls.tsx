@@ -46,7 +46,7 @@ export default function DeviceMonitoringControls() {
     // 啟動監控
     const handleStartMonitoring = async () => {
         if (!selectedGateway) {
-            alert('請選擇一個Gateway')
+            alert(t('pages:deviceManagement.monitoringControls.selectGateway'))
             return
         }
 
@@ -79,11 +79,11 @@ export default function DeviceMonitoringControls() {
     // 獲取連接狀態文字
     const getConnectionText = () => {
         if (isMonitoring && connectionStatus.isConnected) {
-            return `已連接 (${connectionStatus.connectedGateways?.length || 0} 個Gateway)`
+            return t('pages:deviceManagement.monitoringStatus.connected') + ' (' + t('pages:deviceManagement.monitoringStatus.gatewayCount', { count: connectionStatus.connectedGateways?.length || 0 }) + ')'
         } else if (isMonitoring && !connectionStatus.isConnected) {
-            return '連接中...'
+            return t('pages:deviceManagement.monitoringStatus.connected') + '...'
         } else {
-            return '未連接'
+            return t('pages:deviceManagement.monitoringStatus.disconnected')
         }
     }
 
@@ -105,7 +105,7 @@ export default function DeviceMonitoringControls() {
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Activity className="h-5 w-5" />
-                        設備監控控制
+                        {t('pages:deviceManagement.monitoringControls.title')}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -121,7 +121,7 @@ export default function DeviceMonitoringControls() {
                         {connectionStatus.lastMessageTime && (
                             <div className="flex items-center gap-1 text-sm text-gray-500">
                                 <Clock className="h-3 w-3" />
-                                最後更新: {connectionStatus.lastMessageTime.toLocaleTimeString()}
+                                {t('pages:deviceManagement.monitoringStatus.lastUpdate')}: {connectionStatus.lastMessageTime.toLocaleTimeString()}
                             </div>
                         )}
                     </div>
@@ -138,10 +138,10 @@ export default function DeviceMonitoringControls() {
 
                     {/* Gateway選擇 */}
                     <div>
-                        <label className="text-sm font-medium mb-2 block">選擇Gateway</label>
+                        <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.monitoringControls.selectGateway')}</label>
                         <Select value={selectedGateway} onValueChange={handleGatewaySelect}>
                             <SelectTrigger>
-                                <SelectValue placeholder="選擇一個Gateway" />
+                                <SelectValue placeholder={t('pages:deviceManagement.monitoringControls.selectGateway')} />
                             </SelectTrigger>
                             <SelectContent>
                                 {availableGateways.map(gateway => (
@@ -167,7 +167,7 @@ export default function DeviceMonitoringControls() {
                                 className="gap-2"
                             >
                                 <Play className="h-4 w-4" />
-                                {isStarting ? '啟動中...' : '啟動監控'}
+                                {isStarting ? t('pages:deviceManagement.monitoringStatus.start') + '...' : t('pages:deviceManagement.monitoringStatus.start') + ' ' + t('pages:deviceManagement.monitoringStatus.monitoring')}
                             </Button>
                         ) : (
                             <Button
@@ -176,7 +176,7 @@ export default function DeviceMonitoringControls() {
                                 className="gap-2"
                             >
                                 <Square className="h-4 w-4" />
-                                停止監控
+                                {t('pages:deviceManagement.monitoringControls.stopMonitoring')}
                             </Button>
                         )}
                     </div>

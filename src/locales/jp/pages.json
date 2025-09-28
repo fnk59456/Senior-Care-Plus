@@ -173,6 +173,193 @@
             "removeResident": "この居住者を削除してもよろしいですか？この操作は元に戻せません。"
         }
     },
+    "deviceManagement": {
+        "title": "デバイス管理",
+        "subtitle": "すべてのタイプのケアデバイスを管理、300Bウォッチ、おむつセンサー、モーションセンサー、位置タグをサポート",
+        "searchPlaceholder": "デバイス名、ハードウェアID、デバイスUIDで検索...",
+        "filters": {
+            "all": "すべて",
+            "smartwatch300B": "300Bウォッチ",
+            "diaperSensor": "おむつセンサー",
+            "pedometer": "モーションセンサー",
+            "uwbTag": "位置タグ"
+        },
+        "actions": {
+            "addDevice": "デバイス追加",
+            "autoDiscovery": "自動発見",
+            "forceSave": "強制保存",
+            "exportSettings": "設定エクスポート",
+            "importSettings": "設定インポート",
+            "debugStorage": "ストレージデバッグ"
+        },
+        "stats": {
+            "totalDevices": "総デバイス数",
+            "activeDevices": "アクティブデバイス",
+            "smartwatch300B": "300Bウォッチ",
+            "diaperSensor": "おむつセンサー",
+            "otherDevices": "その他のデバイス"
+        },
+        "deviceList": {
+            "title": "デバイスリスト",
+            "count": "{{count}}個のデバイス",
+            "noDevices": "条件に一致するデバイスが見つかりません",
+            "hardwareId": "ハードウェアID",
+            "type": "タイプ",
+            "gateway": "ゲートウェイ",
+            "replace": "置換",
+            "remove": "削除"
+        },
+        "addModal": {
+            "title": "デバイス追加",
+            "deviceType": "デバイスタイプ",
+            "deviceName": "デバイス名",
+            "hardwareId": "ハードウェアID",
+            "macAddress": "MACアドレス",
+            "deviceId": "デバイスID",
+            "gatewayId": "ゲートウェイID（オプション）",
+            "deviceTypes": {
+                "smartwatch300B": "300B健康監視ウォッチ",
+                "diaperSensor": "スマートおむつセンサー",
+                "pedometer": "モーションセンサー",
+                "uwbTag": "UWB位置タグ"
+            },
+            "placeholders": {
+                "deviceName": "デバイス名を入力",
+                "hardwareId": "ハードウェアIDを入力",
+                "macAddress": "MACアドレスを入力（例：E0:0E:08:36:93:F8）",
+                "deviceId": "デバイスIDを入力（例：5345）",
+                "gatewayId": "ゲートウェイIDを入力"
+            }
+        },
+        "replaceModal": {
+            "title": "デバイス置換",
+            "currentHardwareId": "現在のハードウェアID",
+            "deviceUid": "デバイスUID",
+            "newHardwareId": "新しいハードウェアID",
+            "confirmReplace": "置換確認",
+            "placeholders": {
+                "newHardwareId": "新しいハードウェアIDを入力"
+            }
+        },
+        "alerts": {
+            "importSuccess": "✅ データインポート成功！注意：デバイスデータはシステム管理を通じて更新する必要があります",
+            "invalidFormat": "❌ 無効なデータ形式",
+            "importFailed": "❌ データインポート失敗"
+        },
+        "confirms": {
+            "resetSettings": "すべてのデバイス管理設定をリセットしてもよろしいですか？この操作は元に戻せません！",
+            "removeDevice": "このデバイスを削除してもよろしいですか？"
+        },
+        "monitoring": {
+            "title": "デバイス監視",
+            "hideControls": "コントロール非表示",
+            "showControls": "コントロール表示",
+            "hideTest": "テスト非表示",
+            "showTest": "テスト表示",
+            "hideDebug": "デバッグ非表示",
+            "showDebug": "デバッグ表示",
+            "boundDevices": "バインド済みデバイス",
+            "onlineDevices": "オンラインデバイス",
+            "offlineDevices": "オフラインデバイス",
+            "errorDevices": "エラーデバイス",
+            "deviceCount": "個のデバイス",
+            "noDevices": "デバイスなし",
+            "noMatchingDevices": "フィルター条件に一致するデバイスがありません"
+        },
+        "deviceInfo": {
+            "title": "デバイス情報",
+            "basicInfo": "基本情報",
+            "deviceName": "デバイス名",
+            "deviceType": "デバイスタイプ",
+            "hardwareId": "ハードウェアID",
+            "macAddress": "MACアドレス",
+            "deviceUid": "デバイスUID",
+            "gatewayId": "ゲートウェイID",
+            "firmwareVersion": "ファームウェアバージョン",
+            "batteryLevel": "バッテリーレベル",
+            "status": "ステータス",
+            "bindingInfo": "バインディング情報",
+            "residentId": "バインド済み居住者",
+            "unbound": "未バインド",
+            "dataInfo": "データ情報",
+            "lastData": "最新データ",
+            "lastSeen": "最終確認",
+            "systemInfo": "システム情報",
+            "createdAt": "作成日時",
+            "updatedAt": "更新日時",
+            "close": "閉じる"
+        },
+        "monitoringStatus": {
+            "title": "監視ステータス",
+            "connected": "接続済み",
+            "disconnected": "未接続",
+            "gatewayCount": "{{count}}個のゲートウェイ",
+            "lastUpdate": "最終更新",
+            "monitoring": "監視中",
+            "stopped": "停止済み",
+            "start": "開始",
+            "stop": "停止"
+        },
+        "monitoringControls": {
+            "title": "デバイス監視制御",
+            "selectGateway": "ゲートウェイ選択",
+            "stopMonitoring": "監視停止",
+            "online": "オンライン",
+            "offline": "オフライン"
+        },
+        "monitoringDebug": {
+            "title": "MQTTデバッグパネル",
+            "monitoring": "監視中",
+            "stopped": "停止済み",
+            "hide": "非表示",
+            "show": "表示",
+            "maxMessages": "最大メッセージ数",
+            "filterByTopic": "トピックでフィルター",
+            "filterByDevice": "デバイスでフィルター",
+            "topicPlaceholder": "例: Health, Loc",
+            "devicePlaceholder": "デバイス名またはID",
+            "export": "エクスポート",
+            "clear": "クリア",
+            "totalMessages": "総メッセージ",
+            "displaying": "表示中",
+            "healthData": "ヘルスデータ",
+            "locationData": "位置データ",
+            "ackMessages": "ACKメッセージ",
+            "noMessages": "デバッグメッセージがありません",
+            "usageInstructions": "使用説明",
+            "instruction1": "このデバッグパネルはリアルタイムMQTTメッセージを表示します",
+            "instruction2": "トピックまたはデバイス名でメッセージをフィルターできます",
+            "instruction3": "コピーボタンをクリックしてデータをクリップボードにコピー",
+            "instruction4": "デバッグデータをJSONファイルとしてエクスポートをサポート",
+            "instruction5": "メッセージは自動更新され、指定された最大数量を保持します"
+        },
+        "deviceDiscovery": {
+            "title": "デバイス発見",
+            "discovering": "発見中...",
+            "existingDevices": "既存のデバイス",
+            "newlyDiscovered": "新しく発見されたデバイス",
+            "scanning": "デバイスをスキャン中...",
+            "remove": "削除",
+            "add": "追加",
+            "confirm": "確認",
+            "cancel": "キャンセル",
+            "stopDiscovery": "発見停止",
+            "deviceCount": "個のデバイス",
+            "existingCount": "既存",
+            "discoveredCount": "発見済み"
+        },
+        "deviceCard": {
+            "online": "オンライン",
+            "offline": "オフライン",
+            "unknown": "不明",
+            "deviceInfo": "デバイス情報",
+            "user": "ユーザー",
+            "removeDevice": "デバイス削除",
+            "unbind": "バインド解除",
+            "battery": "バッテリー",
+            "room": "部屋"
+        }
+    },
     "uwbLocation": {
         "title": "高齢者施設管理",
         "subtitle": "UWB位置システムのフィールド、フロア、ゲートウェイ設定管理",

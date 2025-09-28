@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Device, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
+import { useTranslation } from 'react-i18next'
 import {
     Watch,
     MapPin,
@@ -25,6 +26,7 @@ interface DeviceInfoModalProps {
 }
 
 export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoModalProps) {
+    const { t } = useTranslation()
     if (!device) return null
 
     // 獲取設備圖標
@@ -67,7 +69,7 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                         <div className={`p-2 rounded-full ${config?.color || 'bg-gray-100'}`}>
                             <DeviceIcon className="h-5 w-5" />
                         </div>
-                        設備詳細資訊
+                        {t('pages:deviceManagement.deviceInfo.title')}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -77,17 +79,17 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <Hash className="h-4 w-4" />
-                                基本資訊
+                                {t('pages:deviceManagement.deviceInfo.basicInfo')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">設備名稱</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.deviceName')}</label>
                                     <p className="text-sm font-semibold">{device.name}</p>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">設備狀態</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.status')}</label>
                                     <div className="mt-1">
                                         <Badge className={getStatusColor(device.status)}>
                                             {device.status}
@@ -97,16 +99,16 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">設備UID</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.deviceUid')}</label>
                                     <p className="text-sm font-mono bg-gray-100 p-2 rounded">{device.deviceUid}</p>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">設備類型</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.deviceType')}</label>
                                     <p className="text-sm">{config?.label || device.deviceType}</p>
                                 </div>
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-gray-600">硬體ID</label>
+                                <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.hardwareId')}</label>
                                 <p className="text-sm font-mono bg-gray-100 p-2 rounded">{device.hardwareId}</p>
                             </div>
                         </CardContent>
@@ -117,22 +119,22 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <Wifi className="h-4 w-4" />
-                                關聯資訊
+                                {t('pages:deviceManagement.deviceInfo.bindingInfo')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">閘道器ID</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.gatewayId')}</label>
                                     <p className="text-sm">{device.gatewayId || '未設定'}</p>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">韌體版本</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.firmwareVersion')}</label>
                                     <p className="text-sm">{device.firmwareVersion || '未知'}</p>
                                 </div>
                             </div>
                             <div>
-                                <label className="text-sm font-medium text-gray-600">綁定院友</label>
+                                <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.residentId')}</label>
                                 <p className="text-sm">{device.residentId || '未綁定'}</p>
                             </div>
                         </CardContent>
@@ -143,19 +145,19 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <Battery className="h-4 w-4" />
-                                數據資訊
+                                {t('pages:deviceManagement.deviceInfo.dataInfo')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">電量</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.batteryLevel')}</label>
                                     <p className={`text-sm font-semibold ${getBatteryColor(device.batteryLevel || 0)}`}>
                                         {device.batteryLevel || 0}%
                                     </p>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">最後活動</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.lastSeen')}</label>
                                     <p className="text-sm">
                                         {device.lastSeen ? new Date(device.lastSeen).toLocaleString() : '未知'}
                                     </p>
@@ -163,7 +165,7 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                             </div>
                             {device.lastData && Object.keys(device.lastData).length > 0 && (
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">最後數據</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.lastData')}</label>
                                     <pre className="text-xs bg-gray-100 p-2 rounded overflow-x-auto">
                                         {JSON.stringify(device.lastData, null, 2)}
                                     </pre>
@@ -177,17 +179,17 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                         <CardHeader>
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
-                                系統資訊
+                                {t('pages:deviceManagement.deviceInfo.systemInfo')}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">創建時間</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.createdAt')}</label>
                                     <p className="text-sm">{new Date(device.createdAt).toLocaleString()}</p>
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">更新時間</label>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.updatedAt')}</label>
                                     <p className="text-sm">{new Date(device.updatedAt).toLocaleString()}</p>
                                 </div>
                             </div>
@@ -197,7 +199,7 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
 
                 <div className="flex justify-end pt-4">
                     <Button onClick={onClose}>
-                        關閉
+                        {t('pages:deviceManagement.deviceInfo.close')}
                     </Button>
                 </div>
             </DialogContent>

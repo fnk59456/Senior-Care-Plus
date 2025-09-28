@@ -17,8 +17,10 @@ import {
 import { useDeviceDiscovery } from '@/contexts/DeviceDiscoveryContext'
 import { useDeviceManagement } from '@/contexts/DeviceManagementContext'
 import { DeviceType, DEVICE_TYPE_CONFIG } from '@/types/device-types'
+import { useTranslation } from 'react-i18next'
 
 export default function DeviceDiscoveryModal() {
+    const { t } = useTranslation()
     const {
         discoveredDevices,
         isDiscovering,
@@ -100,10 +102,10 @@ export default function DeviceDiscoveryModal() {
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Wifi className="h-5 w-5" />
-                        設備發現
+                        {t('pages:deviceManagement.deviceDiscovery.title')}
                         {isDiscovering && (
                             <Badge variant="default" className="animate-pulse">
-                                發現中...
+                                {t('pages:deviceManagement.deviceDiscovery.discovering')}
                             </Badge>
                         )}
                     </DialogTitle>
@@ -113,7 +115,7 @@ export default function DeviceDiscoveryModal() {
                     {/* 已存在的設備 */}
                     {devices.length > 0 && (
                         <div>
-                            <h3 className="text-lg font-semibold mb-3 text-gray-700">已存在的設備</h3>
+                            <h3 className="text-lg font-semibold mb-3 text-gray-700">{t('pages:deviceManagement.deviceDiscovery.existingDevices')}</h3>
                             <div className="grid gap-3">
                                 {devices.map((device) => {
                                     const DeviceIcon = getDeviceIcon(device.deviceType)
@@ -136,14 +138,14 @@ export default function DeviceDiscoveryModal() {
                                                         size="sm"
                                                         variant="outline"
                                                         onClick={() => {
-                                                            if (confirm('確定要移除這個設備嗎？')) {
+                                                            if (confirm(t('pages:deviceManagement.confirms.removeDevice'))) {
                                                                 removeDeviceFromSystem(device.id)
                                                             }
                                                         }}
                                                         className="text-red-600 hover:text-red-700"
                                                     >
                                                         <XCircle className="h-4 w-4 mr-1" />
-                                                        移除
+                                                        {t('pages:deviceManagement.deviceDiscovery.remove')}
                                                     </Button>
                                                 </div>
                                             </CardContent>
@@ -156,16 +158,16 @@ export default function DeviceDiscoveryModal() {
 
                     {/* 新發現的設備 */}
                     <div>
-                        <h3 className="text-lg font-semibold mb-3 text-gray-700">新發現的設備</h3>
+                        <h3 className="text-lg font-semibold mb-3 text-gray-700">{t('pages:deviceManagement.deviceDiscovery.newlyDiscovered')}</h3>
                         {discoveredDevices.length === 0 ? (
                             <div className="text-center py-8 text-gray-500">
                                 {isDiscovering ? (
                                     <div className="space-y-2">
                                         <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
-                                        <p>正在掃描設備...</p>
+                                        <p>{t('pages:deviceManagement.deviceDiscovery.scanning')}</p>
                                     </div>
                                 ) : (
-                                    <p>暫無新發現的設備</p>
+                                    <p>{t('pages:deviceManagement.deviceDiscovery.newlyDiscovered')}</p>
                                 )}
                             </div>
                         ) : (
@@ -199,11 +201,11 @@ export default function DeviceDiscoveryModal() {
 
                                                             {/* 設備名稱輸入 */}
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-sm text-gray-600">設備名稱:</span>
+                                                                <span className="text-sm text-gray-600">{t('pages:deviceManagement.deviceInfo.deviceName')}:</span>
                                                                 <Input
                                                                     value={currentName}
                                                                     onChange={(e) => handleNameChange(device.id, e.target.value)}
-                                                                    placeholder="輸入設備名稱"
+                                                                    placeholder={t('pages:deviceManagement.deviceInfo.deviceName')}
                                                                     className="w-48"
                                                                 />
                                                             </div>
@@ -236,7 +238,7 @@ export default function DeviceDiscoveryModal() {
                                                             className="bg-green-600 hover:bg-green-700"
                                                         >
                                                             <CheckCircle2 className="h-4 w-4 mr-1" />
-                                                            添加
+                                                            {t('pages:deviceManagement.deviceDiscovery.add')}
                                                         </Button>
                                                         <Button
                                                             size="sm"
@@ -245,7 +247,7 @@ export default function DeviceDiscoveryModal() {
                                                             className="text-red-600 hover:text-red-700"
                                                         >
                                                             <XCircle className="h-4 w-4 mr-1" />
-                                                            拒絕
+                                                            {t('pages:deviceManagement.deviceDiscovery.cancel')}
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -259,15 +261,15 @@ export default function DeviceDiscoveryModal() {
                         {/* 操作按鈕 */}
                         <div className="flex justify-between pt-4 border-t">
                             <div className="text-sm text-gray-600">
-                                已存在 {devices.length} 個設備 | 新發現 {discoveredDevices.length} 個設備
+                                {t('pages:deviceManagement.deviceDiscovery.existingCount')} {devices.length} {t('pages:deviceManagement.deviceDiscovery.deviceCount')} | {t('pages:deviceManagement.deviceDiscovery.discoveredCount')} {discoveredDevices.length} {t('pages:deviceManagement.deviceDiscovery.deviceCount')}
                             </div>
                             <div className="flex gap-2">
                                 <Button variant="outline" onClick={handleClose}>
-                                    關閉
+                                    {t('pages:deviceManagement.deviceDiscovery.cancel')}
                                 </Button>
                                 {isDiscovering && (
                                     <Button onClick={stopDiscovery}>
-                                        停止發現
+                                        {t('pages:deviceManagement.deviceDiscovery.stopDiscovery')}
                                     </Button>
                                 )}
                             </div>

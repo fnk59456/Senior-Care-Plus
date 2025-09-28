@@ -49,31 +49,31 @@ export default function DeviceActionHandler({ deviceId, deviceName, onAction }: 
     const actionButtons = [
         {
             key: 'deviceInfo',
-            label: '設備資訊',
+            label: t('pages:deviceManagement.deviceCard.deviceInfo'),
             icon: Info,
             color: 'text-blue-600 hover:text-blue-700',
-            description: '查看設備詳細資訊'
+            description: t('pages:deviceManagement.deviceCard.deviceInfo')
         },
         {
             key: 'user',
-            label: '用戶',
+            label: t('pages:deviceManagement.deviceCard.user'),
             icon: User,
             color: 'text-green-600 hover:text-green-700',
-            description: '管理用戶資訊'
+            description: t('pages:deviceManagement.deviceCard.user')
         },
         {
             key: 'remove',
-            label: '移除設備',
+            label: t('pages:deviceManagement.deviceCard.removeDevice'),
             icon: Trash2,
             color: 'text-red-600 hover:text-red-700',
-            description: '從系統中移除設備'
+            description: t('pages:deviceManagement.deviceCard.removeDevice')
         },
         {
             key: 'unbind',
-            label: '解除綁定',
+            label: t('pages:deviceManagement.deviceCard.unbind'),
             icon: Unlink,
             color: 'text-red-600 hover:text-red-700',
-            description: '解除設備綁定'
+            description: t('pages:deviceManagement.deviceCard.unbind')
         }
     ]
 

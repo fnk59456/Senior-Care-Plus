@@ -39,11 +39,11 @@ export default function DeviceMonitoringStatus() {
     // 獲取連接狀態文字
     const getConnectionText = () => {
         if (isMonitoring && connectionStatus.isConnected) {
-            return `已連接 (${connectionStatus.connectedGateways?.length || 0} 個Gateway)`
+            return t('pages:deviceManagement.monitoringStatus.connected') + ' (' + t('pages:deviceManagement.monitoringStatus.gatewayCount', { count: connectionStatus.connectedGateways?.length || 0 }) + ')'
         } else if (isMonitoring && !connectionStatus.isConnected) {
-            return '連接中...'
+            return t('pages:deviceManagement.monitoringStatus.connected') + '...'
         } else {
-            return '未連接'
+            return t('pages:deviceManagement.monitoringStatus.disconnected')
         }
     }
 
@@ -64,21 +64,21 @@ export default function DeviceMonitoringStatus() {
             return (
                 <Badge className="bg-green-100 text-green-800 border-green-200">
                     <CheckCircle2 className="h-3 w-3 mr-1" />
-                    監控中
+                    {t('pages:deviceManagement.monitoringStatus.monitoring')}
                 </Badge>
             )
         } else if (isMonitoring && !connectionStatus.isConnected) {
             return (
                 <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
                     <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                    連接中
+                    {t('pages:deviceManagement.monitoringStatus.connected') + '...'}
                 </Badge>
             )
         } else {
             return (
                 <Badge variant="outline" className="text-gray-600">
                     <WifiOff className="h-3 w-3 mr-1" />
-                    未啟動
+                    {t('pages:deviceManagement.monitoringStatus.stopped')}
                 </Badge>
             )
         }
@@ -93,7 +93,7 @@ export default function DeviceMonitoringStatus() {
                         <div className="flex items-center gap-3">
                             {getConnectionIcon()}
                             <div>
-                                <h3 className="font-semibold text-sm">監控狀態</h3>
+                                <h3 className="font-semibold text-sm">{t('pages:deviceManagement.monitoringStatus.title')}</h3>
                                 <p className={`text-sm ${getConnectionColor()}`}>
                                     {getConnectionText()}
                                 </p>
@@ -109,7 +109,7 @@ export default function DeviceMonitoringStatus() {
                                     onClick={stopMonitoring}
                                     className="text-red-600 hover:text-red-700"
                                 >
-                                    停止
+                                    {t('pages:deviceManagement.monitoringStatus.stop')}
                                 </Button>
                             )}
                         </div>
@@ -120,7 +120,7 @@ export default function DeviceMonitoringStatus() {
                         <div className="mt-3 pt-3 border-t border-gray-100">
                             <div className="flex items-center gap-2 text-xs text-gray-500">
                                 <Clock className="h-3 w-3" />
-                                <span>最後更新: {connectionStatus.lastMessageTime.toLocaleTimeString()}</span>
+                                <span>{t('pages:deviceManagement.monitoringStatus.lastUpdate')}: {connectionStatus.lastMessageTime.toLocaleTimeString()}</span>
                             </div>
                         </div>
                     )}
@@ -143,25 +143,25 @@ export default function DeviceMonitoringStatus() {
                     <CardContent className="p-4">
                         <div className="flex items-center gap-2 mb-3">
                             <Activity className="h-4 w-4 text-blue-500" />
-                            <h3 className="font-semibold text-sm">實時統計</h3>
+                            <h3 className="font-semibold text-sm">{t('pages:deviceManagement.monitoringDebug.totalMessages')}</h3>
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="text-center">
                                 <div className="text-lg font-bold text-blue-600">{stats.totalMessages}</div>
-                                <div className="text-xs text-gray-600">總消息</div>
+                                <div className="text-xs text-gray-600">{t('pages:deviceManagement.monitoringDebug.totalMessages')}</div>
                             </div>
                             <div className="text-center">
                                 <div className="text-lg font-bold text-green-600">{stats.healthMessages}</div>
-                                <div className="text-xs text-gray-600">健康數據</div>
+                                <div className="text-xs text-gray-600">{t('pages:deviceManagement.monitoringDebug.healthData')}</div>
                             </div>
                             <div className="text-center">
                                 <div className="text-lg font-bold text-yellow-600">{stats.locationMessages}</div>
-                                <div className="text-xs text-gray-600">位置數據</div>
+                                <div className="text-xs text-gray-600">{t('pages:deviceManagement.monitoringDebug.locationData')}</div>
                             </div>
                             <div className="text-center">
                                 <div className="text-lg font-bold text-purple-600">{stats.ackMessages}</div>
-                                <div className="text-xs text-gray-600">ACK消息</div>
+                                <div className="text-xs text-gray-600">{t('pages:deviceManagement.monitoringDebug.ackMessages')}</div>
                             </div>
                         </div>
                     </CardContent>

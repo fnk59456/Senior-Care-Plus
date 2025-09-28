@@ -23,7 +23,6 @@ interface MQTTDebugMessage {
     id: string
     timestamp: Date
     topic: string
-    gatewayId: string
     rawData: any
     parsedData: any
     deviceId?: string
@@ -73,7 +72,6 @@ export default function DeviceMonitoringDebug() {
                 id: msg.id,
                 timestamp: msg.timestamp.toISOString(),
                 topic: msg.topic,
-                gatewayId: msg.gatewayId,
                 deviceId: msg.deviceId,
                 deviceName: msg.deviceName,
                 rawData: msg.rawData,
@@ -94,7 +92,9 @@ export default function DeviceMonitoringDebug() {
 
     // 清除所有消息
     const clearMessages = () => {
-        setDebugMessages([])
+        // 注意：這裡需要從 DeviceMonitoringContext 獲取清除方法
+        // 目前只是清空本地過濾，實際清除需要通過 context
+        console.log('清除調試消息')
     }
 
     // 獲取消息類型圖標
@@ -121,19 +121,19 @@ export default function DeviceMonitoringDebug() {
                 <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Bug className="h-5 w-5" />
-                        MQTT調試面板
+                        {t('pages:deviceManagement.monitoringDebug.title')}
                     </div>
                     <div className="flex items-center gap-2">
                         <Badge variant={isMonitoring ? "default" : "secondary"}>
                             {isMonitoring ? (
                                 <>
                                     <Wifi className="h-3 w-3 mr-1" />
-                                    監控中
+                                    {t('pages:deviceManagement.monitoringDebug.monitoring')}
                                 </>
                             ) : (
                                 <>
                                     <WifiOff className="h-3 w-3 mr-1" />
-                                    未監控
+                                    {t('pages:deviceManagement.monitoringDebug.stopped')}
                                 </>
                             )}
                         </Badge>
@@ -143,7 +143,7 @@ export default function DeviceMonitoringDebug() {
                             onClick={() => setShowDebug(!showDebug)}
                         >
                             {showDebug ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            {showDebug ? '隱藏' : '顯示'}
+                            {showDebug ? t('pages:deviceManagement.monitoringDebug.hide') : t('pages:deviceManagement.monitoringDebug.show')}
                         </Button>
                     </div>
                 </CardTitle>
@@ -154,7 +154,7 @@ export default function DeviceMonitoringDebug() {
                     {/* 控制面板 */}
                     <div className="flex flex-wrap gap-2 items-center">
                         <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium">最大消息數:</label>
+                            <label className="text-sm font-medium">{t('pages:deviceManagement.monitoringDebug.maxMessages')}:</label>
                             <select
                                 value={maxMessages}
                                 onChange={(e) => setMaxMessages(Number(e.target.value))}
@@ -168,23 +168,23 @@ export default function DeviceMonitoringDebug() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium">過濾主題:</label>
+                            <label className="text-sm font-medium">{t('pages:deviceManagement.monitoringDebug.filterByTopic')}:</label>
                             <input
                                 type="text"
                                 value={filterTopic}
                                 onChange={(e) => setFilterTopic(e.target.value)}
-                                placeholder="例如: Health, Loca"
+                                placeholder={t('pages:deviceManagement.monitoringDebug.topicPlaceholder')}
                                 className="px-2 py-1 border rounded text-sm w-32"
                             />
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <label className="text-sm font-medium">過濾設備:</label>
+                            <label className="text-sm font-medium">{t('pages:deviceManagement.monitoringDebug.filterByDevice')}:</label>
                             <input
                                 type="text"
                                 value={filterDevice}
                                 onChange={(e) => setFilterDevice(e.target.value)}
-                                placeholder="設備名稱或ID"
+                                placeholder={t('pages:deviceManagement.monitoringDebug.devicePlaceholder')}
                                 className="px-2 py-1 border rounded text-sm w-32"
                             />
                         </div>
@@ -197,7 +197,7 @@ export default function DeviceMonitoringDebug() {
                                 disabled={filteredMessages.length === 0}
                             >
                                 <Download className="h-4 w-4 mr-1" />
-                                導出
+                                {t('pages:deviceManagement.monitoringDebug.export')}
                             </Button>
                             <Button
                                 variant="outline"
@@ -206,7 +206,7 @@ export default function DeviceMonitoringDebug() {
                                 disabled={debugMessages.length === 0}
                             >
                                 <Trash2 className="h-4 w-4 mr-1" />
-                                清除
+                                {t('pages:deviceManagement.monitoringDebug.clear')}
                             </Button>
                         </div>
                     </div>
@@ -214,19 +214,19 @@ export default function DeviceMonitoringDebug() {
                     {/* 統計信息 */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div className="bg-blue-50 p-2 rounded">
-                            <div className="font-semibold text-blue-600">總消息</div>
+                            <div className="font-semibold text-blue-600">{t('pages:deviceManagement.monitoringDebug.totalMessages')}</div>
                             <div className="text-lg">{debugMessages.length}</div>
                         </div>
                         <div className="bg-green-50 p-2 rounded">
-                            <div className="font-semibold text-green-600">顯示中</div>
+                            <div className="font-semibold text-green-600">{t('pages:deviceManagement.monitoringDebug.displaying')}</div>
                             <div className="text-lg">{filteredMessages.length}</div>
                         </div>
                         <div className="bg-orange-50 p-2 rounded">
-                            <div className="font-semibold text-orange-600">健康數據</div>
+                            <div className="font-semibold text-orange-600">{t('pages:deviceManagement.monitoringDebug.healthData')}</div>
                             <div className="text-lg">{filteredMessages.filter(m => m.topic.includes('Health')).length}</div>
                         </div>
                         <div className="bg-purple-50 p-2 rounded">
-                            <div className="font-semibold text-purple-600">位置數據</div>
+                            <div className="font-semibold text-purple-600">{t('pages:deviceManagement.monitoringDebug.locationData')}</div>
                             <div className="text-lg">{filteredMessages.filter(m => m.topic.includes('Loca')).length}</div>
                         </div>
                     </div>
@@ -236,7 +236,7 @@ export default function DeviceMonitoringDebug() {
                         <div className="p-4 space-y-2">
                             {filteredMessages.length === 0 ? (
                                 <div className="text-center text-gray-500 py-8">
-                                    {debugMessages.length === 0 ? '暫無調試消息' : '沒有符合過濾條件的消息'}
+                                    {debugMessages.length === 0 ? t('pages:deviceManagement.monitoringDebug.noMessages') : t('pages:deviceManagement.monitoringDebug.noMessages')}
                                 </div>
                             ) : (
                                 filteredMessages.map((msg, index) => (
@@ -263,7 +263,7 @@ export default function DeviceMonitoringDebug() {
                                             {/* 解析後數據 */}
                                             <div>
                                                 <div className="flex items-center justify-between mb-2">
-                                                    <h4 className="font-semibold text-sm">解析後數據</h4>
+                                                    <h4 className="font-semibold text-sm">{t('pages:deviceManagement.monitoringDebug.parsedData')}</h4>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -289,12 +289,12 @@ export default function DeviceMonitoringDebug() {
 
                     {/* 使用說明 */}
                     <div className="text-xs text-gray-500 space-y-1 bg-yellow-50 p-3 rounded">
-                        <p><strong>使用說明:</strong></p>
-                        <p>• 此調試面板顯示實時接收的MQTT消息</p>
-                        <p>• 可以按主題或設備名稱過濾消息</p>
-                        <p>• 點擊複製按鈕可複製數據到剪貼板</p>
-                        <p>• 支持導出調試數據為JSON文件</p>
-                        <p>• 消息會自動更新，最多保留指定數量</p>
+                        <p><strong>{t('pages:deviceManagement.monitoringDebug.usageInstructions')}:</strong></p>
+                        <p>• {t('pages:deviceManagement.monitoringDebug.instruction1')}</p>
+                        <p>• {t('pages:deviceManagement.monitoringDebug.instruction2')}</p>
+                        <p>• {t('pages:deviceManagement.monitoringDebug.instruction3')}</p>
+                        <p>• {t('pages:deviceManagement.monitoringDebug.instruction4')}</p>
+                        <p>• {t('pages:deviceManagement.monitoringDebug.instruction5')}</p>
                     </div>
                 </CardContent>
             )}
