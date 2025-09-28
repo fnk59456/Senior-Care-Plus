@@ -115,6 +115,19 @@
             "info": "詳情",
             "unbindDevice": "解除綁定"
         },
+        "monitoring": {
+            "title": "設備監控",
+            "showControls": "顯示控制面板",
+            "hideControls": "隱藏控制面板",
+            "showTest": "顯示測試面板",
+            "hideTest": "隱藏測試面板",
+            "showDebug": "顯示調試面板",
+            "hideDebug": "隱藏調試面板",
+            "boundDevices": "綁定設備",
+            "onlineDevices": "線上設備",
+            "offlineDevices": "離線設備",
+            "errorDevices": "異常設備"
+        },
         "modal": {
             "addResident": "新增院友",
             "name": "姓名",

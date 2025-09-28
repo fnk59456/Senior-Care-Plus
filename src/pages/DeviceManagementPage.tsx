@@ -41,6 +41,7 @@ export default function DeviceManagementPage() {
   const { t } = useTranslation()
   const {
     devices,
+    residents,
     addDevice,
     updateDevice,
     removeDevice,
@@ -578,21 +579,20 @@ export default function DeviceManagementPage() {
     const device = devices.find(d => d.id === deviceId)
     if (!device || !device.residentId) return undefined
 
-    // 這裡需要從院友管理系統獲取院友信息
-    // 暫時返回模擬數據
+    // 從院友列表中獲取院友信息
+    const resident = residents.find(r => r.id === device.residentId)
+
+    if (!resident) return undefined
+
     return {
-      id: device.residentId,
-      name: 'Jane',
-      age: 75,
-      gender: '女',
-      room: 'Room/202',
-      status: 'good' as const,
-      emergencyContact: {
-        name: '張三',
-        relationship: '兒子',
-        phone: '0912-345-678'
-      },
-      careNotes: '無特殊需求'
+      id: resident.id,
+      name: resident.name,
+      age: resident.age,
+      gender: resident.gender,
+      room: resident.room,
+      status: resident.status,
+      emergencyContact: resident.emergencyContact,
+      careNotes: resident.careNotes
     }
   }
 

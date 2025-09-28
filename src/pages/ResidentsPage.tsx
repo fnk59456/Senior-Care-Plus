@@ -14,28 +14,31 @@ import {
   Heart,
   AlertTriangle,
   AlertCircle,
-  Info,
   Users,
   Watch,
   Baby,
   Activity,
-  Link,
   Unlink,
   Plus,
   Settings,
-  Battery,
-  User,
-  Calendar,
   X,
   Database,
   Save,
   Download,
-  Upload
+  Upload,
+  Filter,
+  TestTube,
+  Bug
 } from 'lucide-react'
 import { useDeviceManagement } from '@/contexts/DeviceManagementContext'
 import { useDeviceMonitoring } from '@/contexts/DeviceMonitoringContext'
+import { useUWBLocation } from '@/contexts/UWBLocationContext'
 import DeviceBindingModal from '@/components/DeviceBindingModal'
 import ResidentCard from '@/components/ResidentCard'
+import DeviceMonitoringControls from '@/components/DeviceMonitoringControls'
+import DeviceMonitoringStatus from '@/components/DeviceMonitoringStatus'
+import DeviceMonitoringTest from '@/components/DeviceMonitoringTest'
+import DeviceMonitoringDebug from '@/components/DeviceMonitoringDebug'
 import { Device, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
 
 // 使用統一的Resident接口
@@ -55,7 +58,8 @@ export default function ResidentsPage() {
   } = useDeviceManagement()
 
   // 整合設備監控數據
-  const { realTimeDevices } = useDeviceMonitoring()
+  const { realTimeDevices, startMonitoring, stopMonitoring } = useDeviceMonitoring()
+  const { selectedGateway } = useUWBLocation()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'good' | 'attention' | 'critical'>('all')
@@ -65,6 +69,11 @@ export default function ResidentsPage() {
   const [showDeviceBinding, setShowDeviceBinding] = useState(false)
   const [selectedDevice, setSelectedDevice] = useState<Device | null>(null)
   const [showDeviceManagement, setShowDeviceManagement] = useState(false)
+
+  // 新增：監控控制面板狀態
+  const [showControls, setShowControls] = useState(false)
+  const [showTest, setShowTest] = useState(false)
+  const [showDebug, setShowDebug] = useState(false)
 
   // 新增病患相關狀態
   const [showAddResident, setShowAddResident] = useState(false)
@@ -480,6 +489,60 @@ export default function ResidentsPage() {
     }
   }
 
+  // 新增：監控相關函數
+  const handleStartMonitoring = async () => {
+    if (!selectedGateway) {
+      alert('請先選擇一個Gateway')
+      return
+    }
+    try {
+      await startMonitoring(selectedGateway)
+      console.log('監控已啟動')
+    } catch (error) {
+      console.error('啟動監控失敗:', error)
+      alert('啟動監控失敗')
+    }
+  }
+
+  const handleStopMonitoring = () => {
+    stopMonitoring()
+    console.log('監控已停止')
+  }
+
+  // 獲取實時數據
+  const getDeviceWithRealTimeData = (device: Device) => {
+    const realTimeData = realTimeDevices.get(device.id)
+    return {
+      ...device,
+      realTimeData
+    }
+  }
+
+  // 計算監控統計數據
+  const getMonitoringStats = () => {
+    const boundDevices = devices.filter(device => device.residentId)
+    return {
+      total: boundDevices.length,
+      online: boundDevices.filter(device => {
+        const realTimeData = realTimeDevices.get(device.id)
+        return realTimeData && realTimeData.status === DeviceStatus.ACTIVE
+      }).length,
+      offline: boundDevices.filter(device => {
+        const realTimeData = realTimeDevices.get(device.id)
+        return !realTimeData || realTimeData.status === DeviceStatus.OFFLINE
+      }).length,
+      error: boundDevices.filter(device => {
+        const realTimeData = realTimeDevices.get(device.id)
+        return realTimeData && realTimeData.status === DeviceStatus.ERROR
+      }).length,
+      averageBattery: boundDevices.length > 0 ?
+        Math.round(boundDevices.reduce((sum, device) => {
+          const realTimeData = realTimeDevices.get(device.id)
+          return sum + (realTimeData?.batteryLevel || device.batteryLevel || 0)
+        }, 0) / boundDevices.length) : 0
+    }
+  }
+
   const getDeviceTypeIcon = (deviceType: DeviceType) => {
     switch (deviceType) {
       case DeviceType.SMARTWATCH_300B: return Watch
@@ -656,6 +719,88 @@ export default function ResidentsPage() {
           </Button>
         </div>
 
+        {/* 監控控制面板 */}
+        <div className="space-y-6">
+          {/* 監控狀態和控制按鈕 */}
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">{t('pages:residents.monitoring.title')}</h3>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowControls(!showControls)}
+                className="gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                {showControls ? t('pages:residents.monitoring.hideControls') : t('pages:residents.monitoring.showControls')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowTest(!showTest)}
+                className="gap-2"
+              >
+                <TestTube className="h-4 w-4" />
+                {showTest ? t('pages:residents.monitoring.hideTest') : t('pages:residents.monitoring.showTest')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowDebug(!showDebug)}
+                className="gap-2"
+              >
+                <Bug className="h-4 w-4" />
+                {showDebug ? t('pages:residents.monitoring.hideDebug') : t('pages:residents.monitoring.showDebug')}
+              </Button>
+            </div>
+          </div>
+
+          {/* 監控狀態 */}
+          <DeviceMonitoringStatus />
+
+          {/* 監控控制面板 */}
+          {showControls && <DeviceMonitoringControls />}
+
+          {/* 測試面板 */}
+          {showTest && <DeviceMonitoringTest />}
+
+          {/* 調試面板 */}
+          {showDebug && <DeviceMonitoringDebug />}
+
+          {/* 監控統計概覽 */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-blue-600">{getMonitoringStats().total}</p>
+                  <p className="text-sm text-muted-foreground">{t('pages:residents.monitoring.boundDevices')}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-green-600">{getMonitoringStats().online}</p>
+                  <p className="text-sm text-muted-foreground">{t('pages:residents.monitoring.onlineDevices')}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-yellow-600">{getMonitoringStats().offline}</p>
+                  <p className="text-sm text-muted-foreground">{t('pages:residents.monitoring.offlineDevices')}</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-red-600">{getMonitoringStats().error}</p>
+                  <p className="text-sm text-muted-foreground">{t('pages:residents.monitoring.errorDevices')}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
         {/* 系統概覽統計 */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
@@ -755,12 +900,14 @@ export default function ResidentsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredResidents.map((resident) => {
               const residentDevices = getDevicesForResident(resident.id)
+              // 為每個設備添加實時數據
+              const devicesWithRealTime = residentDevices.map(device => getDeviceWithRealTimeData(device))
 
               return (
                 <ResidentCard
                   key={resident.id}
                   resident={resident}
-                  devices={residentDevices}
+                  devices={devicesWithRealTime}
                   realTimeData={realTimeDevices}
                   onAction={handleResidentCardAction}
                 />

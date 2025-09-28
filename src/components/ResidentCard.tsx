@@ -41,28 +41,22 @@ export default function ResidentCard({ resident, devices, realTimeData, onAction
         }
     }
 
-    // 獲取設備狀態
-    const getDeviceStatus = (device: Device) => {
-        const realTimeDevice = realTimeData?.get(device.id)
-        const status = realTimeDevice?.status || device.status
-        switch (status) {
-            case DeviceStatus.ACTIVE:
-                return { text: t('pages:deviceManagement.deviceCard.online'), color: 'text-green-600' }
-            case DeviceStatus.INACTIVE:
-                return { text: t('pages:deviceManagement.deviceCard.offline'), color: 'text-yellow-600' }
-            case DeviceStatus.OFFLINE:
-                return { text: t('pages:deviceManagement.deviceCard.offline'), color: 'text-gray-600' }
-            case DeviceStatus.ERROR:
-                return { text: t('pages:deviceManagement.deviceCard.offline'), color: 'text-red-600' }
-            default:
-                return { text: t('pages:deviceManagement.deviceCard.unknown'), color: 'text-gray-600' }
-        }
-    }
 
     // 獲取設備電量
     const getDeviceBattery = (device: Device) => {
         const realTimeDevice = realTimeData?.get(device.id)
         return realTimeDevice?.batteryLevel || device.batteryLevel || 0
+    }
+
+    // 獲取設備實時狀態
+    const getDeviceRealTimeStatus = (device: Device) => {
+        const realTimeDevice = realTimeData?.get(device.id)
+        return {
+            isOnline: realTimeDevice?.status === DeviceStatus.ACTIVE,
+            lastSeen: realTimeDevice?.lastSeen || device.lastSeen,
+            signalStrength: realTimeDevice?.signalStrength,
+            hasRealTimeData: !!realTimeDevice
+        }
     }
 
     // 獲取院友狀態信息
@@ -141,8 +135,8 @@ export default function ResidentCard({ resident, devices, realTimeData, onAction
                     <div className="space-y-2 max-h-36 overflow-y-auto">
                         {devices.map((device) => {
                             const DeviceIcon = getDeviceIcon(device.deviceType)
-                            const deviceStatus = getDeviceStatus(device)
                             const batteryLevel = getDeviceBattery(device)
+                            const realTimeStatus = getDeviceRealTimeStatus(device)
 
                             return (
                                 <div key={device.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
@@ -155,11 +149,13 @@ export default function ResidentCard({ resident, devices, realTimeData, onAction
                                         {/* 設備信息 */}
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium text-sm">{device.name}</p>
-                                            <div className="flex items-center gap-2">
-                                                <span className={`text-sm ${deviceStatus.color}`}>
-                                                    {deviceStatus.text}
-                                                </span>
-                                            </div>
+                                            {realTimeStatus.hasRealTimeData && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-green-600 font-medium">
+                                                        ● 即時
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* 電量顯示 */}
@@ -168,7 +164,9 @@ export default function ResidentCard({ resident, devices, realTimeData, onAction
                                                 level={batteryLevel}
                                                 size="sm"
                                             />
-                                            <span className="text-sm font-medium">
+                                            <span className={`text-sm font-medium ${batteryLevel > 50 ? 'text-green-600' :
+                                                batteryLevel > 20 ? 'text-yellow-600' : 'text-red-600'
+                                                }`}>
                                                 {batteryLevel}%
                                             </span>
                                         </div>

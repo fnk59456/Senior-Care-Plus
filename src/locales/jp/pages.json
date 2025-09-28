@@ -115,6 +115,19 @@
             "info": "詳細",
             "unbindDevice": "バインド解除"
         },
+        "monitoring": {
+            "title": "デバイス監視",
+            "showControls": "コントロール表示",
+            "hideControls": "コントロール非表示",
+            "showTest": "テストパネル表示",
+            "hideTest": "テストパネル非表示",
+            "showDebug": "デバッグパネル表示",
+            "hideDebug": "デバッグパネル非表示",
+            "boundDevices": "バインドデバイス",
+            "onlineDevices": "オンラインデバイス",
+            "offlineDevices": "オフラインデバイス",
+            "errorDevices": "エラーデバイス"
+        },
         "modal": {
             "addResident": "居住者追加",
             "name": "名前",

@@ -115,6 +115,19 @@
             "info": "Info",
             "unbindDevice": "Unbind Device"
         },
+        "monitoring": {
+            "title": "Device Monitoring",
+            "showControls": "Show Controls",
+            "hideControls": "Hide Controls",
+            "showTest": "Show Test Panel",
+            "hideTest": "Hide Test Panel",
+            "showDebug": "Show Debug Panel",
+            "hideDebug": "Hide Debug Panel",
+            "boundDevices": "Bound Devices",
+            "onlineDevices": "Online Devices",
+            "offlineDevices": "Offline Devices",
+            "errorDevices": "Error Devices"
+        },
         "modal": {
             "addResident": "Add Resident",
             "name": "Name",
