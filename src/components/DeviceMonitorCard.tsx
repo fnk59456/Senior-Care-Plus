@@ -88,12 +88,12 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
 
     // 格式化位置資訊
     const formatLocation = (resident: Resident) => {
-        const homeName = '群仁仁群'
+        const homeName = 'Room'
         const floor = resident.room?.split('/')[0] || 'X'
         const roomInfo = resident.room?.split('/')[1] || 'Y'
         const roomNumber = resident.room || 'Z'
 
-        return `${homeName}/${floor}/寢室${roomInfo}/${roomNumber}`
+        return `${homeName}/${floor}`
     }
 
     const DeviceIcon = getDeviceIcon(device.deviceType)
