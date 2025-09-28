@@ -113,9 +113,9 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
                     {/* 設備名稱 */}
                     <span className="font-bold text-1xl text-gray-900 truncate">{device.name}</span>
 
-                    {/* 重要ID信息 */}
+                    {/* 重要ID信息 - 顯示MQTT識別資訊 */}
                     <span className="text-sm font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                        {device.hardwareId}
+                        {device.deviceUid || device.hardwareId || device.id}
                     </span>
                 </div>
 
