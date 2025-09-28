@@ -2,7 +2,7 @@ import React from 'react'
 
 interface BatteryIconProps {
     level: number // 0-100
-    size?: 'sm' | 'md' | 'lg'
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl'
     className?: string
 }
 
@@ -28,7 +28,10 @@ export default function BatteryIcon({ level, size = 'md', className = '' }: Batt
     const sizeConfig = {
         sm: { width: 16, height: 10, strokeWidth: 1.5 },
         md: { width: 20, height: 12, strokeWidth: 2 },
-        lg: { width: 24, height: 14, strokeWidth: 2.5 }
+        lg: { width: 24, height: 14, strokeWidth: 2.5 },
+        xl: { width: 32, height: 18, strokeWidth: 3 },
+        '2xl': { width: 40, height: 22, strokeWidth: 3.5 },
+        '4xl': { width: 56, height: 32, strokeWidth: 4 }
     }
 
     const config = sizeConfig[size]
@@ -39,7 +42,7 @@ export default function BatteryIcon({ level, size = 'md', className = '' }: Batt
     const fillWidth = Math.max(0, (normalizedLevel / 100) * (config.width - 4)) // 留2px邊距
 
     return (
-        <div className={`inline-flex items-center ${className}`}>
+        <div className={`flex items-center justify-center ${className}`}>
             <svg
                 width={config.width}
                 height={config.height}
@@ -85,11 +88,6 @@ export default function BatteryIcon({ level, size = 'md', className = '' }: Batt
                     />
                 )}
             </svg>
-
-            {/* 電量百分比文字 */}
-            <span className={`ml-1 text-xs font-medium ${colorClass}`}>
-                {Math.round(normalizedLevel)}%
-            </span>
         </div>
     )
 }

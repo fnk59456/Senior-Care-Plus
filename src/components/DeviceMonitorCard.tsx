@@ -101,61 +101,75 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
     const StatusIcon = statusInfo.icon
 
     return (
-        <Card className="relative p-4 hover:shadow-md transition-shadow">
-            {/* QR碼圖標 */}
-            <div className="absolute top-3 right-3">
-                <QrCode className="h-4 w-4 text-gray-400" />
+        <Card className="relative p-3 hover:shadow-md transition-shadow h-full flex flex-col">
+            {/* 頂部區域：設備名稱 + ID信息 + QR碼 */}
+            <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {/* 設備圖標 */}
+                    <div className={`p-1.5 rounded ${DEVICE_TYPE_CONFIG[device.deviceType].color}`}>
+                        <DeviceIcon className="h-5 w-5" />
+                    </div>
+
+                    {/* 設備名稱 */}
+                    <span className="font-bold text-1xl text-gray-900 truncate">{device.name}</span>
+
+                    {/* 重要ID信息 */}
+                    <span className="text-sm font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        {device.hardwareId}
+                    </span>
+                </div>
+
+                {/* QR碼圖標 */}
+                <div className="ml-2 flex-shrink-0">
+                    <QrCode className="h-4 w-4 text-gray-400" />
+                </div>
             </div>
 
-            {/* 電池電量 */}
-            <div className="flex items-center gap-2 mb-3">
-                <BatteryIcon
-                    level={getBatteryLevel()}
-                    size="md"
-                    className="flex-shrink-0"
-                />
-                {device.realTimeData && (
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="實時數據" />
-                )}
-            </div>
+            {/* 中部區域：電量 + 用戶信息並排 */}
+            <div className="flex items-start mb-2 flex-1">
+                {/* 左側：電量信息 - 垂直布局，上緣對齐用戶名稱 */}
+                <div className="flex flex-col items-center mr-4 pt-6">
+                    <div className="rotate-[270deg] mb-1">
+                        <BatteryIcon
+                            level={getBatteryLevel()}
+                            size="4xl"
+                        />
+                    </div>
+                    {/* 數字在圖標下方 */}
+                    <div className="mt-1">
+                        <span className={`text-xs font-medium ${getBatteryLevel() <= 25 ? 'text-red-500' : getBatteryLevel() <= 50 ? 'text-yellow-500' : 'text-green-500'}`}>
+                            {getBatteryLevel()}%
+                        </span>
+                    </div>
+                </div>
 
-            {/* 設備ID */}
-            <div className="text-xs text-gray-500 mb-2 font-mono">
-                {device.hardwareId}
-            </div>
-
-            {/* 院友資訊 */}
-            {resident && (
-                <div className="mb-3">
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${resident.gender === '男' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'
-                            }`}>
-                            {resident.gender === '男' ? '👨' : '👩'}
+                {/* 右側：用戶信息 - 垂直布局 */}
+                {resident ? (
+                    <div className="flex flex-col flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${resident.gender === '男' ? 'bg-blue-100 text-blue-600' : 'bg-pink-100 text-pink-600'
+                                }`}>
+                                {resident.gender === '男' ? '👨' : '👩'}
+                            </div>
+                            <div className="font-medium text-base text-gray-900">{resident.name}</div>
                         </div>
-                        <span className="font-medium text-sm">{resident.name}</span>
+                        {/* 位置資訊 */}
+                        <div className="text-sm text-gray-600 mb-2">
+                            {formatLocation(resident)}
+                        </div>
+                        {/* 狀態指示器 - 在用戶資訊下方 */}
+                        <div className="flex items-center gap-2">
+                            <StatusIcon className={`h-5 w-5 ${statusInfo.color}`} />
+                            <span className={`text-base font-medium ${statusInfo.color}`}>
+                                {statusInfo.text}
+                            </span>
+                        </div>
                     </div>
-
-                    {/* 位置資訊 */}
-                    <div className="text-xs text-gray-600 ml-8">
-                        {formatLocation(resident)}
+                ) : (
+                    <div className="flex-1 min-w-0">
+                        <div className="text-base text-gray-500">未綁定用戶</div>
                     </div>
-                </div>
-            )}
-
-            {/* 設備資訊 */}
-            <div className="flex items-center gap-2 mb-3">
-                <div className={`p-1.5 rounded ${DEVICE_TYPE_CONFIG[device.deviceType].color}`}>
-                    <DeviceIcon className="h-3 w-3" />
-                </div>
-                <span className="text-sm font-medium">{device.name}</span>
-            </div>
-
-            {/* 狀態指示器 */}
-            <div className="flex items-center gap-2 mb-4">
-                <StatusIcon className={`h-4 w-4 ${statusInfo.color}`} />
-                <span className={`text-sm ${statusInfo.color}`}>
-                    {statusInfo.text}
-                </span>
+                )}
             </div>
 
             {/* 操作按鈕 */}
