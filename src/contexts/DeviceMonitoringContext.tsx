@@ -122,86 +122,36 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
         refreshData()
     }, [refreshData])
 
-    // 生成設備監控Topics - 使用Gateway的實際pub_topic配置
+    // 生成設備監控Topics - 與DiaperMonitoringPage保持一致的邏輯
     const generateDeviceTopics = useCallback((gatewayId: string) => {
-        // 參考UWBLocationPage的查找邏輯，先檢查雲端發現的Gateway
-        let selectedGatewayData = null
-        let systemGateway = null
+        // 查找對應的Gateway（與DiaperMonitoringPage的getHealthTopic邏輯一致）
+        const gateway = gateways.find(gw => gw.id === gatewayId)
+        console.log(`🔍 查找Gateway ${gatewayId}:`, gateway)
 
-        // 先檢查雲端發現的閘道器（需要從UWBLocationContext獲取cloudGatewayData）
-        // 這裡我們先檢查系統Gateway
-        systemGateway = gateways.find(gw => {
-            console.log(`🔍 檢查Gateway ${gw.name}:`, {
-                gwId: gw.id,
-                macAddress: gw.macAddress,
-                targetGatewayId: gatewayId,
-                hasCloudData: !!gw.cloudData
-            })
+        if (!gateway) {
+            console.log(`❌ Gateway ${gatewayId} 未找到`)
+            return []
+        }
 
-            // 直接ID匹配
-            if (gw.id === gatewayId) {
-                console.log(`  ✅ 直接ID匹配`)
-                return true
-            }
-
-            // MAC地址轉換匹配
-            if (gw.macAddress.startsWith('GW:')) {
-                const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
-                if (gatewayIdFromMac === gatewayId) {
-                    console.log(`  ✅ MAC地址轉換匹配: ${gw.macAddress} -> ${gatewayIdFromMac}`)
-                    return true
-                }
-            }
-
-            // 檢查cloudData中的gateway_id
-            if (gw.cloudData && gw.cloudData.gateway_id) {
-                if (gw.cloudData.gateway_id.toString() === gatewayId) {
-                    console.log(`  ✅ CloudData gateway_id匹配: ${gw.cloudData.gateway_id}`)
-                    return true
-                }
-            }
-
-            console.log(`  ❌ 未匹配`)
-            return false
-        })
-
-        console.log(`🔍 查找Gateway ${gatewayId}:`, {
-            systemGateway,
-            allGateways: gateways.map(g => ({ id: g.id, name: g.name, macAddress: g.macAddress }))
-        })
-
-        if (systemGateway && systemGateway.cloudData && systemGateway.cloudData.pub_topic) {
-            console.log(`✅ 使用Gateway ${gatewayId} 的雲端主題配置:`, systemGateway.cloudData.pub_topic)
+        // 優先使用雲端數據的pub_topic配置（與DiaperMonitoringPage一致）
+        if (gateway.cloudData?.pub_topic) {
+            console.log(`✅ 使用Gateway ${gatewayId} 的雲端主題配置:`, gateway.cloudData.pub_topic)
             return [
-                systemGateway.cloudData.pub_topic.health,
-                systemGateway.cloudData.pub_topic.location,
-                systemGateway.cloudData.pub_topic.message,
-                systemGateway.cloudData.pub_topic.ack_from_node,
+                gateway.cloudData.pub_topic.health,
+                gateway.cloudData.pub_topic.location,
+                gateway.cloudData.pub_topic.message,
+                gateway.cloudData.pub_topic.ack_from_node,
             ].filter(Boolean) // 過濾掉空字符串
         }
 
-        // 如果沒有雲端數據，構建主題名稱（參考DiaperMonitoringPage的邏輯）
-        if (systemGateway) {
-            // DiaperMonitoringPage中使用的是從MAC地址提取後4位字符的邏輯
-            // 從 "GW:F9E516B8" 中提取 "16B8"
-            const macSuffix = systemGateway.macAddress.replace('GW:', '').slice(-4)
-            console.log(`🔧 構建Gateway ${gatewayId} 的主題格式，MAC後綴: ${macSuffix}`)
-            console.log(`🔧 MAC地址: ${systemGateway.macAddress} -> 後綴: ${macSuffix}`)
-            return [
-                `UWB/GW${macSuffix}_Health`,
-                `UWB/GW${macSuffix}_Loca`,
-                `UWB/GW${macSuffix}_Message`,
-                `UWB/GW${macSuffix}_Ack`
-            ]
-        }
-
-        // 如果連Gateway都找不到，使用默認格式
-        console.log(`⚠️ Gateway ${gatewayId} 未找到，使用默認主題格式`)
+        // 如果沒有雲端數據，使用Gateway名稱構建主題（與DiaperMonitoringPage一致）
+        const gatewayName = gateway.name.replace(/\s+/g, '')
+        console.log(`🔧 構建Gateway ${gatewayId} 的主題格式，Gateway名稱: ${gatewayName}`)
         return [
-            `UWB/UWB_Gateway/${gatewayId}/health`,
-            `UWB/UWB_Gateway/${gatewayId}/location`,
-            `UWB/UWB_Gateway/${gatewayId}/ack_from_node`,
-            `UWB/UWB_Gateway/${gatewayId}/message`
+            `UWB/GW${gatewayName}_Health`,
+            `UWB/GW${gatewayName}_Loca`,
+            `UWB/GW${gatewayName}_Message`,
+            `UWB/GW${gatewayName}_Ack`
         ]
     }, [gateways])
 
