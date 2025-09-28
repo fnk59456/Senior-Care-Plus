@@ -2,7 +2,7 @@ import React from 'react'
 
 interface BatteryIconProps {
     level: number // 0-100
-    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl'
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl'
     className?: string
 }
 
@@ -26,6 +26,7 @@ export default function BatteryIcon({ level, size = 'md', className = '' }: Batt
 
     // 尺寸配置
     const sizeConfig = {
+        xs: { width: 12, height: 8, strokeWidth: 1 },
         sm: { width: 16, height: 10, strokeWidth: 1.5 },
         md: { width: 20, height: 12, strokeWidth: 2 },
         lg: { width: 24, height: 14, strokeWidth: 2.5 },

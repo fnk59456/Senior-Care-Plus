@@ -104,6 +104,17 @@
         "room": "房間",
         "ageUnit": "歲",
         "boundDevices": "綁定設備",
+        "noDevicesBound": "尚未綁定任何設備",
+        "actions": {
+            "addResident": "新增院友",
+            "showDeviceManagement": "顯示設備管理",
+            "hideDeviceManagement": "隱藏設備管理",
+            "manageDevices": "管理設備",
+            "edit": "編輯",
+            "remove": "移除",
+            "info": "詳情",
+            "unbindDevice": "解除綁定"
+        },
         "modal": {
             "addResident": "新增院友",
             "name": "姓名",

@@ -33,7 +33,9 @@ import {
   Upload
 } from 'lucide-react'
 import { useDeviceManagement } from '@/contexts/DeviceManagementContext'
+import { useDeviceMonitoring } from '@/contexts/DeviceMonitoringContext'
 import DeviceBindingModal from '@/components/DeviceBindingModal'
+import ResidentCard from '@/components/ResidentCard'
 import { Device, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
 
 // 使用統一的Resident接口
@@ -51,6 +53,9 @@ export default function ResidentsPage() {
     unbindDevice,
     getDeviceStatusSummary
   } = useDeviceManagement()
+
+  // 整合設備監控數據
+  const { realTimeDevices } = useDeviceMonitoring()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'good' | 'attention' | 'critical'>('all')
@@ -438,6 +443,43 @@ export default function ResidentsPage() {
     unbindDevice(deviceId, residentId)
   }
 
+  // 處理 ResidentCard 的操作
+  const handleResidentCardAction = (action: string, residentId: string, deviceId?: string) => {
+    const resident = residents.find(r => r.id === residentId)
+    if (!resident) return
+
+    switch (action) {
+      case 'manageDevices':
+        handleDeviceBinding(resident)
+        break
+      case 'edit':
+        setIsEditingResident(true)
+        setNewResident({
+          name: resident.name,
+          age: resident.age,
+          gender: resident.gender,
+          room: resident.room,
+          status: resident.status,
+          emergencyContact: { ...resident.emergencyContact },
+          careNotes: resident.careNotes,
+          avatar: resident.avatar || ''
+        })
+        setSelectedResident(resident)
+        break
+      case 'remove':
+        handleRemoveResident(residentId)
+        break
+      case 'info':
+        handleResidentClick(resident)
+        break
+      case 'unbindDevice':
+        if (deviceId) {
+          handleUnbindDevice(deviceId, residentId)
+        }
+        break
+    }
+  }
+
   const getDeviceTypeIcon = (deviceType: DeviceType) => {
     switch (deviceType) {
       case DeviceType.SMARTWATCH_300B: return Watch
@@ -710,150 +752,18 @@ export default function ResidentsPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredResidents.map((resident) => {
-              const statusInfo = getStatusInfo(resident.status)
               const residentDevices = getDevicesForResident(resident.id)
 
               return (
-                <div
+                <ResidentCard
                   key={resident.id}
-                  className="p-4 rounded-lg border hover:bg-gray-50 transition-colors"
-                >
-                  {/* 院友基本信息 */}
-                  <div
-                    onClick={() => handleResidentClick(resident)}
-                    className="flex items-center justify-between cursor-pointer mb-3"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-12 h-12 rounded-full ${statusInfo.bgColor} flex items-center justify-center text-2xl`}>
-                        {statusInfo.icon}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-lg">{resident.name}</h3>
-                          {statusInfo.badge}
-                          <Badge className="text-xs">
-                            {residentDevices.length} {t('pages:residents.deviceCount')}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          {t('pages:residents.id')}: {resident.id}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {t('pages:residents.room')}: {resident.room} • {resident.age} {t('pages:residents.ageUnit')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeviceBinding(resident)
-                        }}
-                      >
-                        <Link className="w-4 h-4 mr-1" />
-                        {t('pages:residents.actions.manageDevices')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          console.log('🔄 點擊編輯按鈕，院友:', resident)
-                          setIsEditingResident(true)
-                          setNewResident({
-                            name: resident.name,
-                            age: resident.age,
-                            gender: resident.gender,
-                            room: resident.room,
-                            status: resident.status,
-                            emergencyContact: { ...resident.emergencyContact },
-                            careNotes: resident.careNotes,
-                            avatar: resident.avatar || ''
-                          })
-                          setSelectedResident(resident)
-                          console.log('✅ 編輯狀態已設置，newResident:', {
-                            name: resident.name,
-                            age: resident.age,
-                            gender: resident.gender,
-                            room: resident.room,
-                            status: resident.status
-                          })
-                        }}
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        {t('pages:residents.actions.edit')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleRemoveResident(resident.id)
-                        }}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <X className="w-4 h-4 mr-1" />
-                        {t('pages:residents.actions.remove')}
-                      </Button>
-                      <Info className="w-5 h-5 text-blue-500" />
-                    </div>
-                  </div>
-
-                  {/* 設備列表 */}
-                  {residentDevices.length > 0 && (
-                    <div className="ml-16 space-y-2">
-                      <h4 className="text-sm font-medium text-gray-700">{t('pages:residents.boundDevices')}:</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {residentDevices.map((device) => {
-                          const DeviceIcon = getDeviceTypeIcon(device.deviceType)
-                          return (
-                            <div key={device.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                              <div className="flex items-center gap-2">
-                                <div className={`p-1.5 rounded ${DEVICE_TYPE_CONFIG[device.deviceType].color}`}>
-                                  <DeviceIcon className="h-3 w-3" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="text-sm font-medium truncate">{device.name}</p>
-                                  <div className="flex items-center gap-2">
-                                    {getDeviceStatusBadge(device.status)}
-                                    {device.batteryLevel && (
-                                      <div className="flex items-center gap-1">
-                                        <Battery className={`h-3 w-3 ${device.batteryLevel > 20 ? 'text-green-500' : 'text-red-500'}`} />
-                                        <span className="text-xs">{device.batteryLevel}%</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleUnbindDevice(device.id, resident.id)
-                                }}
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Unlink className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 無設備提示 */}
-                  {residentDevices.length === 0 && (
-                    <div className="ml-16 text-sm text-gray-500">
-                      尚未綁定任何設備
-                    </div>
-                  )}
-                </div>
+                  resident={resident}
+                  devices={residentDevices}
+                  realTimeData={realTimeDevices}
+                  onAction={handleResidentCardAction}
+                />
               )
             })}
           </div>

@@ -104,6 +104,17 @@
         "room": "Room",
         "ageUnit": "years old",
         "boundDevices": "Bound Devices",
+        "noDevicesBound": "No devices bound",
+        "actions": {
+            "addResident": "Add Resident",
+            "showDeviceManagement": "Show Device Management",
+            "hideDeviceManagement": "Hide Device Management",
+            "manageDevices": "Manage Devices",
+            "edit": "Edit",
+            "remove": "Remove",
+            "info": "Info",
+            "unbindDevice": "Unbind Device"
+        },
         "modal": {
             "addResident": "Add Resident",
             "name": "Name",

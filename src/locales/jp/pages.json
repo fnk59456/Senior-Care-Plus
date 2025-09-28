@@ -104,6 +104,17 @@
         "room": "部屋",
         "ageUnit": "歳",
         "boundDevices": "バインドデバイス",
+        "noDevicesBound": "バインドされたデバイスがありません",
+        "actions": {
+            "addResident": "居住者追加",
+            "showDeviceManagement": "デバイス管理を表示",
+            "hideDeviceManagement": "デバイス管理を非表示",
+            "manageDevices": "デバイス管理",
+            "edit": "編集",
+            "remove": "削除",
+            "info": "詳細",
+            "unbindDevice": "バインド解除"
+        },
         "modal": {
             "addResident": "居住者追加",
             "name": "名前",
