@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import {
     Download,
     User,
-    Database,
+    Trash2,
     Unlink,
     CheckCircle2,
     AlertCircle,
@@ -62,11 +62,11 @@ export default function DeviceActionHandler({ deviceId, deviceName, onAction }: 
             description: '管理用戶資訊'
         },
         {
-            key: 'deviceData',
-            label: '設備數據',
-            icon: Database,
-            color: 'text-purple-600 hover:text-purple-700',
-            description: '查看設備詳細數據'
+            key: 'remove',
+            label: '移除設備',
+            icon: Trash2,
+            color: 'text-red-600 hover:text-red-700',
+            description: '從系統中移除設備'
         },
         {
             key: 'unbind',

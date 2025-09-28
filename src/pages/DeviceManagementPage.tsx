@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Search,
-  RotateCcw,
   Watch,
   Activity,
   AlertCircle,
@@ -15,18 +14,29 @@ import {
   Plus,
   MapPin,
   Baby,
-  Trash2,
   X,
   Database,
   Save,
   Download,
   Upload,
-  Link
+  Wifi,
+  Filter,
+  TestTube,
+  Bug
 } from "lucide-react"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
-import { DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG, DeviceUIDGenerator } from "@/types/device-types"
+import { useDeviceDiscovery } from "@/contexts/DeviceDiscoveryContext"
+import { useDeviceMonitoring } from "@/contexts/DeviceMonitoringContext"
+import { useUWBLocation } from "@/contexts/UWBLocationContext"
+import { DeviceType, DeviceStatus, DeviceUIDGenerator } from "@/types/device-types"
 import DeviceMonitoringView from "@/components/DeviceMonitoringView"
 import DeviceBindingModal from "@/components/DeviceBindingModal"
+import DeviceDiscoveryModal from "@/components/DeviceDiscoveryModal"
+import DeviceMonitoringControls from "@/components/DeviceMonitoringControls"
+import DeviceMonitoringStatus from "@/components/DeviceMonitoringStatus"
+import DeviceMonitoringTest from "@/components/DeviceMonitoringTest"
+import DeviceMonitoringDebug from "@/components/DeviceMonitoringDebug"
+import DeviceMonitorCard from "@/components/DeviceMonitorCard"
 
 export default function DeviceManagementPage() {
   const { t } = useTranslation()
@@ -38,6 +48,14 @@ export default function DeviceManagementPage() {
     getDeviceTypeSummary,
     getDeviceStatusSummary
   } = useDeviceManagement()
+
+  const { startDiscovery } = useDeviceDiscovery()
+  const { selectedGateway } = useUWBLocation()
+  const {
+    realTimeDevices,
+    startMonitoring,
+    stopMonitoring
+  } = useDeviceMonitoring()
 
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedFilter, setSelectedFilter] = useState<DeviceType | "all">("all")
@@ -52,6 +70,11 @@ export default function DeviceManagementPage() {
   // 新增：綁定模態框狀態
   const [showBindingModal, setShowBindingModal] = useState(false)
   const [bindingDevice, setBindingDevice] = useState<any>(null)
+
+  // 新增：監控控制面板狀態
+  const [showControls, setShowControls] = useState(false)
+  const [showTest, setShowTest] = useState(false)
+  const [showDebug, setShowDebug] = useState(false)
 
   // 新增設備的狀態
   const [newDevice, setNewDevice] = useState({
@@ -471,8 +494,98 @@ export default function DeviceManagementPage() {
           }
         }
         break
+      case 'remove':
+        // 實現移除設備邏輯
+        if (confirm('確定要移除這個設備嗎？此操作無法復原。')) {
+          try {
+            removeDevice(deviceId)
+            console.log('設備已移除:', deviceId)
+          } catch (error) {
+            console.error('移除設備失敗:', error)
+            alert('移除設備失敗')
+          }
+        }
+        break
       default:
         console.log('未知操作:', action)
+    }
+  }
+
+  // 新增：監控相關函數
+  const handleStartMonitoring = async () => {
+    if (!selectedGateway) {
+      alert('請先選擇一個Gateway')
+      return
+    }
+    try {
+      await startMonitoring(selectedGateway)
+      console.log('監控已啟動')
+    } catch (error) {
+      console.error('啟動監控失敗:', error)
+      alert('啟動監控失敗')
+    }
+  }
+
+  const handleStopMonitoring = () => {
+    stopMonitoring()
+    console.log('監控已停止')
+  }
+
+
+  // 獲取實時數據
+  const getDeviceWithRealTimeData = (device: any) => {
+    const realTimeData = realTimeDevices.get(device.id)
+    return {
+      ...device,
+      realTimeData
+    }
+  }
+
+  // 計算監控統計數據
+  const getMonitoringStats = () => {
+    const boundDevices = devices.filter(device => device.residentId)
+    return {
+      total: boundDevices.length,
+      online: boundDevices.filter(device => {
+        const realTimeData = realTimeDevices.get(device.id)
+        return realTimeData && realTimeData.status === DeviceStatus.ACTIVE
+      }).length,
+      offline: boundDevices.filter(device => {
+        const realTimeData = realTimeDevices.get(device.id)
+        return !realTimeData || realTimeData.status === DeviceStatus.OFFLINE
+      }).length,
+      error: boundDevices.filter(device => {
+        const realTimeData = realTimeDevices.get(device.id)
+        return realTimeData && realTimeData.status === DeviceStatus.ERROR
+      }).length,
+      averageBattery: boundDevices.length > 0 ?
+        Math.round(boundDevices.reduce((sum, device) => {
+          const realTimeData = realTimeDevices.get(device.id)
+          return sum + (realTimeData?.batteryLevel || device.batteryLevel || 0)
+        }, 0) / boundDevices.length) : 0
+    }
+  }
+
+  // 獲取設備綁定的院友信息
+  const getResidentForDevice = (deviceId: string) => {
+    const device = devices.find(d => d.id === deviceId)
+    if (!device || !device.residentId) return undefined
+
+    // 這裡需要從院友管理系統獲取院友信息
+    // 暫時返回模擬數據
+    return {
+      id: device.residentId,
+      name: 'Jane',
+      age: 75,
+      gender: '女',
+      room: 'Room/202',
+      status: 'good' as const,
+      emergencyContact: {
+        name: '張三',
+        relationship: '兒子',
+        phone: '0912-345-678'
+      },
+      careNotes: '無特殊需求'
     }
   }
 
@@ -596,6 +709,87 @@ export default function DeviceManagementPage() {
         <DeviceMonitoringView onAction={handleDeviceAction} />
       ) : (
         <>
+          {/* 監控控制面板 */}
+          <div className="space-y-6">
+            {/* 監控狀態和控制按鈕 */}
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">設備監控</h3>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowControls(!showControls)}
+                  className="gap-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  {showControls ? '隱藏控制' : '顯示控制'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowTest(!showTest)}
+                  className="gap-2"
+                >
+                  <TestTube className="h-4 w-4" />
+                  {showTest ? '隱藏測試' : '顯示測試'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDebug(!showDebug)}
+                  className="gap-2"
+                >
+                  <Bug className="h-4 w-4" />
+                  {showDebug ? '隱藏調試' : '顯示調試'}
+                </Button>
+              </div>
+            </div>
+
+            {/* 監控狀態 */}
+            <DeviceMonitoringStatus />
+
+            {/* 監控控制面板 */}
+            {showControls && <DeviceMonitoringControls />}
+
+            {/* 測試面板 */}
+            {showTest && <DeviceMonitoringTest />}
+
+            {/* 調試面板 */}
+            {showDebug && <DeviceMonitoringDebug />}
+
+            {/* 監控統計概覽 */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-600">{getMonitoringStats().total}</p>
+                    <p className="text-sm text-muted-foreground">已綁定設備</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-green-600">{getMonitoringStats().online}</p>
+                    <p className="text-sm text-muted-foreground">線上設備</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-yellow-600">{getMonitoringStats().offline}</p>
+                    <p className="text-sm text-muted-foreground">離線設備</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-red-600">{getMonitoringStats().error}</p>
+                    <p className="text-sm text-muted-foreground">錯誤設備</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
           {/* 搜尋框 */}
           <Card>
@@ -657,7 +851,27 @@ export default function DeviceManagementPage() {
           </div>
 
           {/* 新增設備按鈕 */}
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (!selectedGateway) {
+                  alert('請先選擇一個Gateway')
+                  return
+                }
+                try {
+                  // 同時啟動監控和設備發現
+                  await handleStartMonitoring()
+                  startDiscovery(selectedGateway)
+                } catch (error) {
+                  console.error('啟動失敗:', error)
+                }
+              }}
+              disabled={!selectedGateway}
+            >
+              <Wifi className="h-4 w-4 mr-2" />
+              自動發現設備
+            </Button>
             <Button onClick={() => setShowAddModal(true)}>
               <Plus className="h-4 w-4 mr-2" />
               {t('pages:deviceManagement.actions.addDevice')}
@@ -708,101 +922,45 @@ export default function DeviceManagementPage() {
             </Card>
           </div>
 
-          {/* 設備列表 */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>{t('pages:deviceManagement.deviceList.title')}</CardTitle>
-                <span className="text-sm text-muted-foreground">
-                  {t('pages:deviceManagement.deviceList.count', { count: filteredDevices.length })}
-                </span>
+          {/* 設備監控卡片網格 */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">設備監控</h3>
+              <Badge variant="outline" className="gap-1">
+                <Filter className="h-3 w-3" />
+                {filteredDevices.length} 個設備
+              </Badge>
+            </div>
+
+            {filteredDevices.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    {devices.length === 0
+                      ? '沒有設備'
+                      : '沒有符合篩選條件的設備'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredDevices.map(device => {
+                  const resident = getResidentForDevice(device.id)
+                  const deviceWithRealTime = getDeviceWithRealTimeData(device)
+                  return (
+                    <DeviceMonitorCard
+                      key={device.id}
+                      device={deviceWithRealTime}
+                      resident={resident}
+                      onAction={handleDeviceAction}
+                    />
+                  )
+                })}
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {filteredDevices.length === 0 ? (
-                  <div className="text-center py-8">
-                    <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">{t('pages:deviceManagement.deviceList.noDevices')}</p>
-                  </div>
-                ) : (
-                  filteredDevices.map((device) => {
-                    const DeviceIcon = getDeviceIcon(device.deviceType)
-                    const statusInfo = getDeviceStatusBadge(device.status)
-
-                    return (
-                      <div key={device.id} className="flex items-center gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                        {/* 設備圖標 */}
-                        <div className={`rounded-full p-3 ${DEVICE_TYPE_CONFIG[device.deviceType].color}`}>
-                          <DeviceIcon className="h-6 w-6" />
-                        </div>
-
-                        {/* 設備資訊 */}
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="text-base font-semibold">{device.name}</h3>
-                            <Badge className={statusInfo.className}>
-                              {statusInfo.label}
-                            </Badge>
-                          </div>
-                          <p className="text-sm text-muted-foreground mb-1">
-                            {device.deviceUid} | {t('pages:deviceManagement.deviceList.hardwareId')}: {device.hardwareId}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {t('pages:deviceManagement.deviceList.type')}: {DEVICE_TYPE_CONFIG[device.deviceType].label}
-                            {device.gatewayId && ` | ${t('pages:deviceManagement.deviceList.gateway')}: ${device.gatewayId}`}
-                          </p>
-                        </div>
-
-                        {/* 操作按鈕 */}
-                        <div className="flex gap-2">
-                          {!device.residentId ? (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleBindDevice(device)}
-                              className="gap-2 text-blue-600"
-                            >
-                              <Link className="h-4 w-4" />
-                              綁定院友
-                            </Button>
-                          ) : (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleBindDevice(device)}
-                              className="gap-2 text-green-600"
-                            >
-                              <Link className="h-4 w-4" />
-                              重新綁定
-                            </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleReplaceDevice(device)}
-                            className="gap-2"
-                          >
-                            <RotateCcw className="h-4 w-4" />
-                            {t('pages:deviceManagement.deviceList.replace')}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRemoveDevice(device.id)}
-                            className="gap-2 text-red-600"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            {t('pages:deviceManagement.deviceList.remove')}
-                          </Button>
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-            </CardContent>
-          </Card>
+            )}
+          </div>
 
           {/* 新增設備彈出視窗 */}
           {showAddModal && (
@@ -970,6 +1128,9 @@ export default function DeviceManagementPage() {
             }}
             device={bindingDevice || undefined}
           />
+
+          {/* 設備發現模態框 */}
+          <DeviceDiscoveryModal />
         </>
       )}
     </div>

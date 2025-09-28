@@ -5,6 +5,7 @@ import { EmergencyCallProvider } from './contexts/EmergencyCallContext'
 import { UWBLocationProvider } from './contexts/UWBLocationContext'
 import { DeviceManagementProvider } from './contexts/DeviceManagementContext'
 import { DeviceMonitoringProvider } from './contexts/DeviceMonitoringContext'
+import { DeviceDiscoveryProvider } from './contexts/DeviceDiscoveryContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { MainLayout } from './components/layout/MainLayout'
 import { useTranslation } from 'react-i18next'
@@ -36,33 +37,35 @@ function App() {
         <DeviceManagementProvider>
           <UWBLocationProvider>
             <DeviceMonitoringProvider>
-              <EmergencyCallProvider>
-                <Router basename={basename}>
-                  <MainLayout>
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/health" element={<HealthPage />} />
-                      <Route path="/health2" element={<NewHealthPage />} />
-                      <Route path="/location" element={<LocationPage />} />
-                      <Route path="/temperature" element={<TemperaturePage />} />
-                      <Route path="/heart-rate" element={<HeartRatePage />} />
-                      <Route path="/reminders" element={<RemindersPage />} />
-                      <Route path="/residents" element={<ResidentsPage />} />
-                      <Route path="/residents/:id" element={<ResidentDetailPage />} />
-                      <Route path="/diaper-monitoring" element={<DiaperMonitoringPage />} />
-                      <Route path="/devices" element={<DeviceManagementPage />} />
-                      <Route path="/settings" element={<SettingsPage />} />
-                      <Route path="/staff" element={<StaffManagementPage />} />
-                      <Route path="/uwb-location" element={<UWBLocationPage />} />
-                      <Route path="/test-i18n" element={<TestI18nPage />} />
-                      <Route path="/more" element={<Placeholder title="更多功能頁面" />} />
-                      <Route path="/help" element={<Placeholder title="幫助中心" />} />
-                      <Route path="/emergency-call" element={<EmergencyCallPage />} />
-                      <Route path="*" element={<Placeholder title="404 - 頁面不存在" />} />
-                    </Routes>
-                  </MainLayout>
-                </Router>
-              </EmergencyCallProvider>
+              <DeviceDiscoveryProvider>
+                <EmergencyCallProvider>
+                  <Router basename={basename}>
+                    <MainLayout>
+                      <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/health" element={<HealthPage />} />
+                        <Route path="/health2" element={<NewHealthPage />} />
+                        <Route path="/location" element={<LocationPage />} />
+                        <Route path="/temperature" element={<TemperaturePage />} />
+                        <Route path="/heart-rate" element={<HeartRatePage />} />
+                        <Route path="/reminders" element={<RemindersPage />} />
+                        <Route path="/residents" element={<ResidentsPage />} />
+                        <Route path="/residents/:id" element={<ResidentDetailPage />} />
+                        <Route path="/diaper-monitoring" element={<DiaperMonitoringPage />} />
+                        <Route path="/devices" element={<DeviceManagementPage />} />
+                        <Route path="/settings" element={<SettingsPage />} />
+                        <Route path="/staff" element={<StaffManagementPage />} />
+                        <Route path="/uwb-location" element={<UWBLocationPage />} />
+                        <Route path="/test-i18n" element={<TestI18nPage />} />
+                        <Route path="/more" element={<Placeholder title="更多功能頁面" />} />
+                        <Route path="/help" element={<Placeholder title="幫助中心" />} />
+                        <Route path="/emergency-call" element={<EmergencyCallPage />} />
+                        <Route path="*" element={<Placeholder title="404 - 頁面不存在" />} />
+                      </Routes>
+                    </MainLayout>
+                  </Router>
+                </EmergencyCallProvider>
+              </DeviceDiscoveryProvider>
             </DeviceMonitoringProvider>
           </UWBLocationProvider>
         </DeviceManagementProvider>
