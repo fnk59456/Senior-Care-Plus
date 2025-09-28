@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
-    Download,
+    Info,
     User,
     Trash2,
     Unlink,
@@ -48,11 +48,11 @@ export default function DeviceActionHandler({ deviceId, deviceName, onAction }: 
     // 操作按鈕配置
     const actionButtons = [
         {
-            key: 'dataTransfer',
-            label: '數據轉移',
-            icon: Download,
+            key: 'deviceInfo',
+            label: '設備資訊',
+            icon: Info,
             color: 'text-blue-600 hover:text-blue-700',
-            description: '導出設備數據'
+            description: '查看設備詳細資訊'
         },
         {
             key: 'user',

@@ -37,6 +37,7 @@ import DeviceMonitoringStatus from "@/components/DeviceMonitoringStatus"
 import DeviceMonitoringTest from "@/components/DeviceMonitoringTest"
 import DeviceMonitoringDebug from "@/components/DeviceMonitoringDebug"
 import DeviceMonitorCard from "@/components/DeviceMonitorCard"
+import DeviceInfoModal from "@/components/DeviceInfoModal"
 
 export default function DeviceManagementPage() {
   const { t } = useTranslation()
@@ -70,6 +71,10 @@ export default function DeviceManagementPage() {
   // 新增：綁定模態框狀態
   const [showBindingModal, setShowBindingModal] = useState(false)
   const [bindingDevice, setBindingDevice] = useState<any>(null)
+
+  // 新增：設備資訊模態框狀態
+  const [showDeviceInfoModal, setShowDeviceInfoModal] = useState(false)
+  const [selectedDeviceInfo, setSelectedDeviceInfo] = useState<any>(null)
 
   // 新增：監控控制面板狀態
   const [showControls, setShowControls] = useState(false)
@@ -472,9 +477,15 @@ export default function DeviceManagementPage() {
     console.log(`執行操作: ${action} 設備ID: ${deviceId}`)
 
     switch (action) {
-      case 'dataTransfer':
-        // 實現數據轉移邏輯
-        alert('數據轉移功能開發中...')
+      case 'deviceInfo':
+        // 實現設備資訊顯示邏輯
+        const device = devices.find(d => d.id === deviceId)
+        if (device) {
+          setSelectedDeviceInfo(device)
+          setShowDeviceInfoModal(true)
+        } else {
+          alert('找不到設備資訊')
+        }
         break
       case 'user':
         // 實現用戶管理邏輯
@@ -1131,6 +1142,16 @@ export default function DeviceManagementPage() {
 
           {/* 設備發現模態框 */}
           <DeviceDiscoveryModal />
+
+          {/* 設備資訊模態框 */}
+          <DeviceInfoModal
+            isOpen={showDeviceInfoModal}
+            onClose={() => {
+              setShowDeviceInfoModal(false)
+              setSelectedDeviceInfo(null)
+            }}
+            device={selectedDeviceInfo}
+          />
         </>
       )}
     </div>
