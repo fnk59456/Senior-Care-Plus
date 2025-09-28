@@ -93,7 +93,7 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
         const roomInfo = resident.room?.split('/')[1] || 'Y'
         const roomNumber = resident.room || 'Z'
 
-        return `${homeName}/${floor}`
+        return `${homeName}/${roomInfo}`
     }
 
     const DeviceIcon = getDeviceIcon(device.deviceType)

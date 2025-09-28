@@ -131,7 +131,6 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
             return [
                 gateway.cloudData.pub_topic.health,
                 gateway.cloudData.pub_topic.location,
-                gateway.cloudData.pub_topic.message,
                 gateway.cloudData.pub_topic.ack_from_node,
             ].filter(Boolean)
         }
@@ -141,7 +140,6 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
         const topics = [
             `UWB/GW${gatewayName}_Health`,
             `UWB/GW${gatewayName}_Loca`,
-            `UWB/GW${gatewayName}_Message`,
             `UWB/GW${gatewayName}_Ack`
         ]
 
@@ -189,7 +187,7 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
         const macAddress = data['mac address'] || data.mac_address || data.macAddress || data.MAC
         const name = data.name || data.device_name
 
-        console.log(`🔍 查找設備 - 提取的識別信息:`, {
+        console.log(`🔍 提取的識別信息:`, {
             deviceId,
             deviceUid,
             hardwareId,
@@ -197,14 +195,7 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
             name
         })
 
-        console.log(`🔍 可用設備列表:`, devices.map(d => ({
-            id: d.id,
-            name: d.name,
-            deviceUid: d.deviceUid,
-            hardwareId: d.hardwareId
-        })))
-
-        // 查找對應的設備
+        // 查找對應的設備（如果存在）
         const device = devices.find(d => {
             // 嘗試多種匹配方式
             const matches = {
@@ -219,45 +210,39 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
                 byMacInUid: d.deviceUid && macAddress && d.deviceUid.split(':').slice(1).join(':') === macAddress
             }
 
-            console.log(`🔍 檢查設備 ${d.name}:`, {
-                ...matches,
-                deviceUid: d.deviceUid,
-                macAddress,
-                uidMacPart: d.deviceUid ? d.deviceUid.split(':').slice(1).join(':') : null
-            })
-
             return matches.byId || matches.byUid || matches.byHardwareId || matches.byMacAddress || matches.byName || matches.byUidMac || matches.byMacInUid
         })
 
-        if (!device) {
-            console.log('❌ 找不到對應的設備:', {
+        // 如果找到對應設備，更新實時數據
+        if (device) {
+            // 提取電池電量並正規化
+            const extractedBatteryLevel = data['battery level'] || data.battery_level || data.battery || device.batteryLevel || 0
+            const normalizedBatteryLevel = Math.max(0, Math.min(100, Number(extractedBatteryLevel) || 0))
+
+            const realTimeData: RealTimeDeviceData = {
+                deviceId: device.id,
+                deviceUid: device.deviceUid,
+                batteryLevel: normalizedBatteryLevel,
+                status: 'online' as DeviceStatus,
+                lastSeen: new Date(),
+                signalStrength: data['signal strength'] || data.signal_strength || data.signalStrength,
+                position: data.position ? {
+                    x: data.position.x || 0,
+                    y: data.position.y || 0,
+                    z: data.position.z || 0,
+                    quality: data.position.quality || 0
+                } : undefined
+            }
+
+            setRealTimeDevices(prev => new Map(prev.set(device.id, realTimeData)))
+            console.log(`✅ 更新設備 ${device.name} 實時數據:`, realTimeData)
+        } else {
+            // 即使找不到對應設備，也記錄訊息（用於調試面板顯示）
+            console.log(`📝 未註冊設備健康數據:`, {
                 extractedInfo: { deviceId, deviceUid, hardwareId, macAddress, name },
-                availableDevices: devices.map(d => ({ id: d.id, name: d.name, deviceUid: d.deviceUid, hardwareId: d.hardwareId }))
+                data: data
             })
-            return
         }
-
-        // 提取電池電量並正規化
-        const extractedBatteryLevel = data['battery level'] || data.battery_level || data.battery || device.batteryLevel || 0
-        const normalizedBatteryLevel = Math.max(0, Math.min(100, Number(extractedBatteryLevel) || 0))
-
-        const realTimeData: RealTimeDeviceData = {
-            deviceId: device.id,
-            deviceUid: device.deviceUid,
-            batteryLevel: normalizedBatteryLevel,
-            status: 'online' as DeviceStatus,
-            lastSeen: new Date(),
-            signalStrength: data['signal strength'] || data.signal_strength || data.signalStrength,
-            position: data.position ? {
-                x: data.position.x || 0,
-                y: data.position.y || 0,
-                z: data.position.z || 0,
-                quality: data.position.quality || 0
-            } : undefined
-        }
-
-        setRealTimeDevices(prev => new Map(prev.set(device.id, realTimeData)))
-        console.log(`✅ 更新設備 ${device.name} 實時數據:`, realTimeData)
     }, [devices])
 
     // 處理位置數據
@@ -272,11 +257,6 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
         // ACK數據的調試消息已在主消息處理中添加
     }, [])
 
-    // 處理消息數據
-    const handleMessageData = useCallback((_gatewayId: string, data: any) => {
-        console.log(`💬 處理消息數據:`, data)
-        // 消息數據的調試消息已在主消息處理中添加
-    }, [])
 
     // 開始監控
     const startMonitoring = useCallback((gatewayId: string) => {
@@ -346,9 +326,6 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
                 } else if (topic.includes('Ack')) {
                     handleAckData(gatewayId, message)
                     addDebugMessage(topic, JSON.stringify(message), 'ack', payload.toString(), message)
-                } else if (topic.includes('Message')) {
-                    handleMessageData(gatewayId, message)
-                    addDebugMessage(topic, JSON.stringify(message), 'message', payload.toString(), message)
                 } else {
                     addDebugMessage(topic, JSON.stringify(message), 'other', payload.toString(), message)
                 }
@@ -382,7 +359,7 @@ export function DeviceMonitoringProvider({ children }: { children: React.ReactNo
         })
 
         mqttClientRef.current = client
-    }, [isMonitoring, generateDeviceTopics, handleHealthData, handleLocationData, handleAckData, handleMessageData, addDebugMessage])
+    }, [isMonitoring, generateDeviceTopics, handleHealthData, handleLocationData, handleAckData, addDebugMessage])
 
     // 停止監控
     const stopMonitoring = useCallback(() => {

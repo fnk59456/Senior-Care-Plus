@@ -14,6 +14,7 @@ interface DiscoveredDevice {
     macAddress?: string
     lastSeen: Date
     signalStrength?: number
+    batteryLevel?: number
     rawData: any
 }
 
@@ -93,6 +94,10 @@ export function DeviceDiscoveryProvider({ children }: { children: React.ReactNod
         const gatewayId = message['gateway id'] || message.gateway_id || message.gatewayId
         const signalStrength = message['signal strength'] || message.signal_strength || message.signalStrength
 
+        // 提取電量信息
+        const batteryLevel = message['battery level'] || message.battery_level || message.battery || 0
+        const normalizedBatteryLevel = Math.max(0, Math.min(100, Number(batteryLevel) || 0))
+
         if (!macAddress && !deviceId) return null
 
         const deviceUid = generateDeviceUID(deviceType, macAddress || 'unknown', deviceId)
@@ -104,6 +109,7 @@ export function DeviceDiscoveryProvider({ children }: { children: React.ReactNod
             gatewayId: gatewayId?.toString() || 'unknown',
             macAddress,
             signalStrength,
+            batteryLevel: normalizedBatteryLevel,
             rawData: message
         }
     }, [identifyDeviceType, generateDeviceUID])
@@ -184,13 +190,14 @@ export function DeviceDiscoveryProvider({ children }: { children: React.ReactNod
             hardwareId: device.hardwareId,
             status: 'active' as any,
             gatewayId: device.gatewayId,
-            firmwareVersion: '1.0.0'
+            firmwareVersion: '1.0.0',
+            batteryLevel: device.batteryLevel || 0
         })
 
         // 從發現列表中移除
         setDiscoveredDevices(prev => prev.filter(d => d.id !== deviceId))
 
-        console.log(`✅ 已添加設備: ${device.deviceUid}`)
+        console.log(`✅ 已添加設備: ${device.deviceUid}，電量: ${device.batteryLevel || 0}%`)
     }, [discoveredDevices, addDevice])
 
     // 拒絕設備
