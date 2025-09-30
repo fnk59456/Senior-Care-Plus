@@ -978,6 +978,8 @@ export default function UWBLocationPage() {
 
     // Tag管理相關狀態
     const [showTagForm, setShowTagForm] = useState(false)
+    const [showTagModal, setShowTagModal] = useState(false)
+    const [showTagEditModal, setShowTagEditModal] = useState(false)
     const [editingTag, setEditingTag] = useState<TagDevice | null>(null)
 
     // 錨點地圖模式狀態
@@ -2680,6 +2682,8 @@ export default function UWBLocationPage() {
     const resetTagForm = () => {
         setTagForm({ name: "", macAddress: "", type: "person", assignedTo: "" })
         setShowTagForm(false)
+        setShowTagModal(false)
+        setShowTagEditModal(false)
         setEditingTag(null)
     }
 
@@ -3570,10 +3574,10 @@ export default function UWBLocationPage() {
                                             </p>
                                             <div className="flex items-center gap-4 pt-2">
                                                 <span className="text-xs text-muted-foreground">
-                                                    樓層: {floors.filter(f => f.homeId === home.id).length}
+                                                    {t('pages:uwbLocation.homeCard.floors')}: {floors.filter(f => f.homeId === home.id).length}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">
-                                                    閘道器: {gateways.filter(g =>
+                                                    {t('pages:uwbLocation.homeCard.gateways')}: {gateways.filter(g =>
                                                         floors.some(f => f.homeId === home.id && f.id === g.floorId)
                                                     ).length}
                                                 </span>
@@ -3698,16 +3702,16 @@ export default function UWBLocationPage() {
                                                     {floor.mapImage && (
                                                         <div className="mt-3 pt-3 border-t">
                                                             <div className="flex items-center justify-between mb-2">
-                                                                <span className="text-sm font-medium">地圖預覽</span>
+                                                                <span className="text-sm font-medium">{t('pages:uwbLocation.floorCard.mapPreview')}</span>
                                                                 <div className="flex items-center gap-2">
                                                                     {floor.calibration?.isCalibrated && (
                                                                         <Badge variant="outline" className="text-xs">
-                                                                            比例: {floor.calibration.pixelToMeterRatio.toFixed(2)}px/m
+                                                                            {t('pages:uwbLocation.floorCard.ratio')}: {floor.calibration.pixelToMeterRatio.toFixed(2)}px/m
                                                                         </Badge>
                                                                     )}
                                                                     {getAnchorsForFloor(floor.id).length > 0 && (
                                                                         <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                                                                            {getAnchorsForFloor(floor.id).length} 個錨點
+                                                                            {getAnchorsForFloor(floor.id).length} {t('pages:uwbLocation.floorCard.anchorsCount')}
                                                                         </Badge>
                                                                     )}
                                                                 </div>
@@ -4577,7 +4581,7 @@ export default function UWBLocationPage() {
                                         disabled={!selectedFloorForAnchors}
                                     >
                                         <SelectTrigger className="w-[200px]">
-                                            <SelectValue placeholder={t('pages:uwbLocation.selectGateway')} />
+                                            <SelectValue placeholder={t('pages:uwbLocation.anchorPairing.selectGateway')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {/* 顯示該樓層下的系統閘道器 */}
@@ -5185,12 +5189,12 @@ export default function UWBLocationPage() {
 
                                                         {/* 縮放比例顯示 */}
                                                         <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-lg shadow-lg text-sm z-10">
-                                                            縮放: {(anchorMapTransform.scale * 100).toFixed(0)}%
+                                                            {t('pages:uwbLocation.mapControls.zoom')}: {(anchorMapTransform.scale * 100).toFixed(0)}%
                                                         </div>
 
                                                         {/* 操作提示 */}
                                                         <div className="absolute top-4 left-4 bg-blue-600 text-white text-sm px-3 py-1 rounded shadow-sm z-10">
-                                                            滑鼠在地圖上滾動縮放，拖拽移動
+                                                            {t('pages:uwbLocation.mapControls.mouseInstructions')}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -5573,7 +5577,16 @@ export default function UWBLocationPage() {
                                     <RefreshIcon className="h-4 w-4 mr-2" />
                                     {t('pages:uwbLocation.tagManagement.controls.reconnectTags')}
                                 </Button>
-                                <Button onClick={() => setShowTagForm(true)}>
+                                <Button onClick={() => {
+                                    setEditingTag(null)
+                                    setTagForm({
+                                        name: "",
+                                        macAddress: "",
+                                        type: "person",
+                                        assignedTo: ""
+                                    })
+                                    setShowTagModal(true)
+                                }}>
                                     <Plus className="h-4 w-4 mr-2" />
                                     {t('pages:uwbLocation.tagManagement.controls.addTag')}
                                 </Button>
@@ -5922,7 +5935,7 @@ export default function UWBLocationPage() {
                                                                         type: tag.type,
                                                                         assignedTo: tag.assignedTo || ""
                                                                     })
-                                                                    setShowTagForm(true)
+                                                                    setShowTagEditModal(true)
                                                                 }}
                                                             >
                                                                 <Edit className="h-4 w-4" />
@@ -6429,6 +6442,64 @@ export default function UWBLocationPage() {
                     </div>
                 )}
 
+                {/* 編輯場域彈窗 */}
+                {showHomeForm && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle>
+                                    {editingItem ? t('pages:uwbLocation.actions.editHome') : t('pages:uwbLocation.actions.addHome')}
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={resetHomeForm}>
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeName')}</label>
+                                    <Input
+                                        value={homeForm.name}
+                                        onChange={(e) => setHomeForm(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.forms.homeNamePlaceholder')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeDescription')}</label>
+                                    <Textarea
+                                        value={homeForm.description}
+                                        onChange={(e) => setHomeForm(prev => ({ ...prev, description: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.forms.homeDescriptionPlaceholder')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.forms.homeAddress')}</label>
+                                    <Input
+                                        value={homeForm.address}
+                                        onChange={(e) => setHomeForm(prev => ({ ...prev, address: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.forms.homeAddressPlaceholder')}
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        variant="outline"
+                                        onClick={resetHomeForm}
+                                        className="flex-1"
+                                    >
+                                        {t('common:actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        onClick={handleHomeSubmit}
+                                        className="flex-1"
+                                        disabled={!homeForm.name || !homeForm.description || !homeForm.address}
+                                    >
+                                        {editingItem ? t('common:actions.save') : t('pages:uwbLocation.actions.addHome')}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
                 {/* 新增樓層彈窗 */}
                 {showFloorModal && (
                     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -6494,6 +6565,80 @@ export default function UWBLocationPage() {
                                         disabled={!floorForm.name || !selectedHome}
                                     >
                                         {t('pages:uwbLocation.actions.addFloor')}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* 編輯樓層彈窗 */}
+                {showFloorForm && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle>
+                                    {editingItem ? t('pages:uwbLocation.actions.editFloor') : t('pages:uwbLocation.actions.addFloor')}
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={resetFloorForm}>
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.name')}</label>
+                                        <Input
+                                            value={floorForm.name}
+                                            onChange={(e) => setFloorForm(prev => ({ ...prev, name: e.target.value }))}
+                                            placeholder={t('pages:uwbLocation.floorForm.namePlaceholder')}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.level')}</label>
+                                        <Input
+                                            type="number"
+                                            value={floorForm.level}
+                                            onChange={(e) => setFloorForm(prev => ({ ...prev, level: parseInt(e.target.value) }))}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.realWidth')}</label>
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            value={floorForm.realWidth}
+                                            onChange={(e) => setFloorForm(prev => ({ ...prev, realWidth: parseFloat(e.target.value) }))}
+                                            placeholder="0.0"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.floorForm.realHeight')}</label>
+                                        <Input
+                                            type="number"
+                                            step="0.1"
+                                            value={floorForm.realHeight}
+                                            onChange={(e) => setFloorForm(prev => ({ ...prev, realHeight: parseFloat(e.target.value) }))}
+                                            placeholder="0.0"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        variant="outline"
+                                        onClick={resetFloorForm}
+                                        className="flex-1"
+                                    >
+                                        {t('common:actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        onClick={handleFloorSubmit}
+                                        className="flex-1"
+                                        disabled={!floorForm.name || !selectedHome}
+                                    >
+                                        {editingItem ? t('common:actions.save') : t('pages:uwbLocation.actions.addFloor')}
                                     </Button>
                                 </div>
                             </CardContent>
@@ -6579,6 +6724,84 @@ export default function UWBLocationPage() {
                                         disabled={!gatewayForm.name || !gatewayForm.floorId}
                                     >
                                         {t('common:actions.add')}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* 編輯閘道器彈窗 */}
+                {showGatewayForm && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle>
+                                    {editingItem ? t('pages:uwbLocation.actions.editGateway') : t('pages:uwbLocation.manualAddGateway')}
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={resetGatewayForm}>
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.gatewayName')}</label>
+                                    <Input
+                                        value={gatewayForm.name}
+                                        onChange={(e) => setGatewayForm(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.enterGatewayName')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.belongingFloor')}</label>
+                                    <Select
+                                        value={gatewayForm.floorId}
+                                        onValueChange={(value) => setGatewayForm(prev => ({ ...prev, floorId: value }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {currentFloors.map(floor => (
+                                                <SelectItem key={floor.id} value={floor.id}>
+                                                    {floor.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.macAddress')}</label>
+                                        <Input
+                                            value={gatewayForm.macAddress}
+                                            onChange={(e) => setGatewayForm(prev => ({ ...prev, macAddress: e.target.value }))}
+                                            placeholder="AA:BB:CC:DD:EE:FF"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.ipAddress')}</label>
+                                        <Input
+                                            value={gatewayForm.ipAddress}
+                                            onChange={(e) => setGatewayForm(prev => ({ ...prev, ipAddress: e.target.value }))}
+                                            placeholder="192.168.1.100"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={resetGatewayForm}
+                                    >
+                                        {t('common:actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        className="flex-1"
+                                        onClick={handleGatewaySubmit}
+                                        disabled={!gatewayForm.name || !gatewayForm.floorId}
+                                    >
+                                        {editingItem ? t('common:actions.save') : t('common:actions.add')}
                                     </Button>
                                 </div>
                             </CardContent>
@@ -6781,6 +7004,161 @@ export default function UWBLocationPage() {
                                         disabled={!selectedCloudAnchor}
                                     >
                                         加入系統
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* 新增標籤彈窗 */}
+                {showTagModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle className="flex items-center">
+                                    <Plus className="mr-2 h-5 w-5" />
+                                    {t('pages:uwbLocation.tagManagement.controls.addTag')}
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={resetTagForm}>
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.tagManagement.tagForm.tagName')}</label>
+                                    <Input
+                                        value={tagForm.name}
+                                        onChange={(e) => setTagForm(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.tagManagement.tagForm.tagNamePlaceholder')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.tagManagement.tagForm.macAddress')}</label>
+                                    <Input
+                                        value={tagForm.macAddress}
+                                        onChange={(e) => setTagForm(prev => ({ ...prev, macAddress: e.target.value }))}
+                                        placeholder="AA:BB:CC:DD:EE:FF"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.tagManagement.tagForm.tagType')}</label>
+                                    <Select
+                                        value={tagForm.type}
+                                        onValueChange={(value) => setTagForm(prev => ({ ...prev, type: value as TagDevice['type'] }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="person">{t('pages:uwbLocation.tagManagement.tagForm.person')}</SelectItem>
+                                            <SelectItem value="equipment">{t('pages:uwbLocation.tagManagement.tagForm.equipment')}</SelectItem>
+                                            <SelectItem value="asset">{t('pages:uwbLocation.tagManagement.tagForm.asset')}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.tagManagement.tagForm.assignedTo')}</label>
+                                    <Input
+                                        value={tagForm.assignedTo}
+                                        onChange={(e) => setTagForm(prev => ({ ...prev, assignedTo: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.tagManagement.tagForm.assignedToPlaceholder')}
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={resetTagForm}
+                                    >
+                                        {t('common:actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        className="flex-1"
+                                        onClick={() => {
+                                            handleTagSubmit()
+                                            setShowTagModal(false)
+                                        }}
+                                        disabled={!tagForm.name || !tagForm.macAddress}
+                                    >
+                                        {t('pages:uwbLocation.tagManagement.controls.addTag')}
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* 編輯標籤彈窗 */}
+                {showTagEditModal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md">
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <CardTitle>
+                                    {editingTag ? t('pages:uwbLocation.tagManagement.tagForm.editTag') : t('pages:uwbLocation.tagManagement.controls.addTag')}
+                                </CardTitle>
+                                <Button variant="ghost" size="sm" onClick={resetTagForm}>
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.tagManagement.tagForm.tagName')}</label>
+                                    <Input
+                                        value={tagForm.name}
+                                        onChange={(e) => setTagForm(prev => ({ ...prev, name: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.tagManagement.tagForm.tagNamePlaceholder')}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.tagManagement.tagForm.macAddress')}</label>
+                                    <Input
+                                        value={tagForm.macAddress}
+                                        onChange={(e) => setTagForm(prev => ({ ...prev, macAddress: e.target.value }))}
+                                        placeholder="AA:BB:CC:DD:EE:FF"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.tagManagement.tagForm.tagType')}</label>
+                                    <Select
+                                        value={tagForm.type}
+                                        onValueChange={(value) => setTagForm(prev => ({ ...prev, type: value as TagDevice['type'] }))}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="person">{t('pages:uwbLocation.tagManagement.tagForm.person')}</SelectItem>
+                                            <SelectItem value="equipment">{t('pages:uwbLocation.tagManagement.tagForm.equipment')}</SelectItem>
+                                            <SelectItem value="asset">{t('pages:uwbLocation.tagManagement.tagForm.asset')}</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-2 block">{t('pages:uwbLocation.tagManagement.tagForm.assignedTo')}</label>
+                                    <Input
+                                        value={tagForm.assignedTo}
+                                        onChange={(e) => setTagForm(prev => ({ ...prev, assignedTo: e.target.value }))}
+                                        placeholder={t('pages:uwbLocation.tagManagement.tagForm.assignedToPlaceholder')}
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={resetTagForm}
+                                    >
+                                        {t('common:actions.cancel')}
+                                    </Button>
+                                    <Button
+                                        className="flex-1"
+                                        onClick={() => {
+                                            handleTagSubmit()
+                                            setShowTagEditModal(false)
+                                        }}
+                                        disabled={!tagForm.name || !tagForm.macAddress}
+                                    >
+                                        {editingTag ? t('common:actions.save') : t('pages:uwbLocation.tagManagement.controls.addTag')}
                                     </Button>
                                 </div>
                             </CardContent>

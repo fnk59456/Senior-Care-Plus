@@ -1098,8 +1098,11 @@
         },
         "actions": {
             "addHome": "新增場域",
+            "editHome": "編輯場域",
             "addFloor": "新增樓層",
+            "editFloor": "編輯樓層",
             "addGateway": "新增閘道器",
+            "editGateway": "編輯閘道器",
             "addAnchor": "新增錨點",
             "addTag": "新增標籤"
         },
@@ -1110,6 +1113,19 @@
             "homeDescriptionPlaceholder": "請輸入場域描述",
             "homeAddress": "場域地址",
             "homeAddressPlaceholder": "請輸入場域地址"
+        },
+        "homeCard": {
+            "floors": "樓層",
+            "gateways": "閘道器"
+        },
+        "floorCard": {
+            "mapPreview": "地圖預覽",
+            "ratio": "比例",
+            "anchorsCount": "個錨點"
+        },
+        "mapControls": {
+            "zoom": "縮放",
+            "mouseInstructions": "滑鼠在地圖上滾動縮放，拖拽移動"
         },
         "messages": {
             "selectFieldFirst": "請先選擇一個場域",
@@ -1163,6 +1179,7 @@
         "setCoordinateOrigin": "設定座標原點",
         "originInstructions": "請點擊地圖上的任意位置設定為座標原點，然後輸入該點的實際座標。通常建議選擇房間或走廊的角落作為參考點。",
         "clickMapSetOrigin": "點擊地圖設定原點",
+        "clickMapSetNewPosition": "點擊地圖為 {{name}} 設定新位置",
         "originPixelPosition": "原點像素位置",
         "actualXCoordinate": "實際 X 座標 (米)",
         "actualYCoordinate": "實際 Y 座標 (米)",
@@ -1268,6 +1285,7 @@
             "title": "錨點配對管理",
             "localAnchorManagement": "本地錨點管理 (已加入的錨點)",
             "currentGateway": "當前選擇的閘道器",
+            "selectGateway": "選擇閘道器",
             "startSimulationPairing": "開始模擬配對",
             "pairingInProgress": "配對中...",
             "selectGatewayFirst": "請先在上方選擇閘道器以管理錨點",

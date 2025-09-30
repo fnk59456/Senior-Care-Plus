@@ -405,8 +405,11 @@
         },
         "actions": {
             "addHome": "フィールド追加",
+            "editHome": "フィールド編集",
             "addFloor": "フロア追加",
+            "editFloor": "フロア編集",
             "addGateway": "ゲートウェイ追加",
+            "editGateway": "ゲートウェイ編集",
             "addAnchor": "アンカー追加",
             "addTag": "タグ追加"
         },
@@ -417,6 +420,19 @@
             "homeDescriptionPlaceholder": "フィールド説明を入力",
             "homeAddress": "フィールド住所",
             "homeAddressPlaceholder": "フィールド住所を入力"
+        },
+        "homeCard": {
+            "floors": "フロア",
+            "gateways": "ゲートウェイ"
+        },
+        "floorCard": {
+            "mapPreview": "マッププレビュー",
+            "ratio": "比率",
+            "anchorsCount": "個のアンカー"
+        },
+        "mapControls": {
+            "zoom": "ズーム",
+            "mouseInstructions": "マウスでスクロールしてズーム、ドラッグして移動"
         },
         "messages": {
             "selectFieldFirst": "まずフィールドを選択してください",
@@ -470,6 +486,7 @@
         "setCoordinateOrigin": "座標原点設定",
         "originInstructions": "マップ上の任意の位置をクリックして座標原点として設定し、その点の実際の座標を入力してください。通常、部屋や廊下の角を参照点として選択することをお勧めします。",
         "clickMapSetOrigin": "マップをクリックして原点設定",
+        "clickMapSetNewPosition": "マップをクリックして {{name}} の新しい位置を設定",
         "originPixelPosition": "原点ピクセル位置",
         "actualXCoordinate": "実際のX座標（メートル）",
         "actualYCoordinate": "実際のY座標（メートル）",
@@ -575,6 +592,7 @@
             "title": "アンカーペアリング管理",
             "localAnchorManagement": "ローカルアンカー管理（追加されたアンカー）",
             "currentGateway": "現在選択されたゲートウェイ",
+            "selectGateway": "ゲートウェイ選択",
             "startSimulationPairing": "シミュレーションペアリング開始",
             "pairingInProgress": "ペアリング中...",
             "selectGatewayFirst": "アンカーを管理するために上でゲートウェイを選択してください",

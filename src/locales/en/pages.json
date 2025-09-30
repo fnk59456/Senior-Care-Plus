@@ -1101,8 +1101,11 @@
         },
         "actions": {
             "addHome": "Add Field",
+            "editHome": "Edit Field",
             "addFloor": "Add Floor",
+            "editFloor": "Edit Floor",
             "addGateway": "Add Gateway",
+            "editGateway": "Edit Gateway",
             "addAnchor": "Add Anchor",
             "addTag": "Add Tag"
         },
@@ -1113,6 +1116,19 @@
             "homeDescriptionPlaceholder": "Enter field description",
             "homeAddress": "Field Address",
             "homeAddressPlaceholder": "Enter field address"
+        },
+        "homeCard": {
+            "floors": "Floors",
+            "gateways": "Gateways"
+        },
+        "floorCard": {
+            "mapPreview": "Map Preview",
+            "ratio": "Ratio",
+            "anchorsCount": "anchors"
+        },
+        "mapControls": {
+            "zoom": "Zoom",
+            "mouseInstructions": "Scroll to zoom, drag to move on the map"
         },
         "messages": {
             "selectFieldFirst": "Please select a field first",
@@ -1166,6 +1182,7 @@
         "setCoordinateOrigin": "Set Coordinate Origin",
         "originInstructions": "Please click any position on the map to set it as the coordinate origin, then input the actual coordinates of that point. It is usually recommended to choose the corner of a room or corridor as a reference point.",
         "clickMapSetOrigin": "Click Map to Set Origin",
+        "clickMapSetNewPosition": "Click Map to Set New Position for {{name}}",
         "originPixelPosition": "Origin Pixel Position",
         "actualXCoordinate": "Actual X Coordinate (meters)",
         "actualYCoordinate": "Actual Y Coordinate (meters)",
@@ -1271,6 +1288,7 @@
             "title": "Anchor Pairing Management",
             "localAnchorManagement": "Local Anchor Management (Added Anchors)",
             "currentGateway": "Currently Selected Gateway",
+            "selectGateway": "Select Gateway",
             "startSimulationPairing": "Start Simulation Pairing",
             "pairingInProgress": "Pairing...",
             "selectGatewayFirst": "Please select a gateway above to manage anchors",
