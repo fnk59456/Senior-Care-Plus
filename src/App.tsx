@@ -25,6 +25,8 @@ import EmergencyCallPage from './pages/EmergencyCallPage'
 import StaffManagementPage from './pages/StaffManagementPage'
 import UWBLocationPage from './pages/UWBLocationPage'
 import TestI18nPage from './pages/TestI18nPage'
+import BackendConnectionTest from './pages/BackendConnectionTest'
+import FieldManagementTest from './pages/FieldManagementTest'
 import './index.css'
 
 // Firebase Hosting使用根路徑
@@ -57,6 +59,8 @@ function App() {
                         <Route path="/staff" element={<StaffManagementPage />} />
                         <Route path="/uwb-location" element={<UWBLocationPage />} />
                         <Route path="/test-i18n" element={<TestI18nPage />} />
+                        <Route path="/backend-test" element={<BackendConnectionTest />} />
+                        <Route path="/field-test" element={<FieldManagementTest />} />
                         <Route path="/more" element={<Placeholder title="更多功能頁面" />} />
                         <Route path="/help" element={<Placeholder title="幫助中心" />} />
                         <Route path="/emergency-call" element={<EmergencyCallPage />} />

@@ -1,0 +1,3334 @@
+[
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_428",
+      "position": {
+        "x": 78.35978642354411,
+        "y": 25.144134711890942,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:18:58.953Z",
+      "signalStrength": -61.72071843181074,
+      "batteryLevel": 90.95641577986817
+    },
+    "timestamp": "2025-10-02T17:18:58.956Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_16",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:18:58.955Z",
+      "batteryLevel": 93.84977853266292,
+      "signalStrength": -79.98686565779528
+    },
+    "timestamp": "2025-10-02T17:18:58.957Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_408",
+      "position": {
+        "x": 29.976676203758256,
+        "y": 75.1472221908023,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:03.955Z",
+      "signalStrength": -63.97475181372234,
+      "batteryLevel": 94.54667159076016
+    },
+    "timestamp": "2025-10-02T17:19:03.956Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_59",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:03.955Z",
+      "batteryLevel": 79.40388020261186,
+      "signalStrength": -74.4982239067177
+    },
+    "timestamp": "2025-10-02T17:19:03.957Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_904",
+      "position": {
+        "x": 14.284940845716365,
+        "y": 84.62463744471557,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:08.955Z",
+      "signalStrength": -74.97800889911844,
+      "batteryLevel": 80.00878191584431
+    },
+    "timestamp": "2025-10-02T17:19:08.957Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_60",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:08.956Z",
+      "batteryLevel": 90.58182075429559,
+      "signalStrength": -70.0117781264246
+    },
+    "timestamp": "2025-10-02T17:19:08.958Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_199",
+      "position": {
+        "x": 22.752595385688945,
+        "y": 56.25400064319486,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:13.966Z",
+      "signalStrength": -63.191233900321194,
+      "batteryLevel": 95.58131098438432
+    },
+    "timestamp": "2025-10-02T17:19:13.970Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_64",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:13.967Z",
+      "batteryLevel": 79.36015550453146,
+      "signalStrength": -75.58256911126175
+    },
+    "timestamp": "2025-10-02T17:19:13.974Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_272",
+      "position": {
+        "x": 27.156681514265824,
+        "y": 77.35316484251737,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:18.967Z",
+      "signalStrength": -75.75483629634617,
+      "batteryLevel": 96.69911826091113
+    },
+    "timestamp": "2025-10-02T17:19:18.971Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_72",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:18.968Z",
+      "batteryLevel": 74.87619257012881,
+      "signalStrength": -72.12408501458785
+    },
+    "timestamp": "2025-10-02T17:19:18.973Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_591",
+      "position": {
+        "x": 68.87314400304152,
+        "y": 41.379360056163314,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:23.980Z",
+      "signalStrength": -75.90368049392373,
+      "batteryLevel": 83.2311738575286
+    },
+    "timestamp": "2025-10-02T17:19:23.981Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_50",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:23.980Z",
+      "batteryLevel": 82.19360740744864,
+      "signalStrength": -70.83660005330576
+    },
+    "timestamp": "2025-10-02T17:19:23.982Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_129",
+      "position": {
+        "x": 0.498750303994977,
+        "y": 32.75949301006029,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:28.981Z",
+      "signalStrength": -72.44571639070845,
+      "batteryLevel": 95.83713298794991
+    },
+    "timestamp": "2025-10-02T17:19:28.982Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_53",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:28.981Z",
+      "batteryLevel": 71.79040424370882,
+      "signalStrength": -75.13584139841694
+    },
+    "timestamp": "2025-10-02T17:19:28.983Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_52",
+      "position": {
+        "x": 0.9825652716266564,
+        "y": 20.895161971175156,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:33.993Z",
+      "signalStrength": -66.59039590177689,
+      "batteryLevel": 91.25541434824297
+    },
+    "timestamp": "2025-10-02T17:19:33.994Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_75",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:33.993Z",
+      "batteryLevel": 96.5828738239136,
+      "signalStrength": -76.82562959650761
+    },
+    "timestamp": "2025-10-02T17:19:33.995Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_238",
+      "position": {
+        "x": 98.25536505135742,
+        "y": 87.96647965488799,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:39.002Z",
+      "signalStrength": -71.4057911492783,
+      "batteryLevel": 94.29245895002035
+    },
+    "timestamp": "2025-10-02T17:19:39.004Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_92",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:39.003Z",
+      "batteryLevel": 91.72549207427723,
+      "signalStrength": -73.75717665059561
+    },
+    "timestamp": "2025-10-02T17:19:39.005Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_794",
+      "position": {
+        "x": 67.33297146621284,
+        "y": 32.41092214096959,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:44.016Z",
+      "signalStrength": -60.37272209660597,
+      "batteryLevel": 96.03308822045018
+    },
+    "timestamp": "2025-10-02T17:19:44.018Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_11",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:44.016Z",
+      "batteryLevel": 92.00005204994076,
+      "signalStrength": -77.03828939542733
+    },
+    "timestamp": "2025-10-02T17:19:44.021Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_131",
+      "position": {
+        "x": 51.926375241564315,
+        "y": 34.68847263949972,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:49.016Z",
+      "signalStrength": -76.10647933596965,
+      "batteryLevel": 82.2767890593979
+    },
+    "timestamp": "2025-10-02T17:19:49.017Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_67",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:49.017Z",
+      "batteryLevel": 99.93675819900058,
+      "signalStrength": -77.54004189595706
+    },
+    "timestamp": "2025-10-02T17:19:49.018Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_409",
+      "position": {
+        "x": 28.708611462346802,
+        "y": 11.640396548737787,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:54.022Z",
+      "signalStrength": -70.51447110392988,
+      "batteryLevel": 86.75803853058935
+    },
+    "timestamp": "2025-10-02T17:19:54.023Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_77",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:54.023Z",
+      "batteryLevel": 90.10371172598579,
+      "signalStrength": -79.63236762117248
+    },
+    "timestamp": "2025-10-02T17:19:54.024Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_266",
+      "position": {
+        "x": 1.507409723886033,
+        "y": 7.9196968822941916,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:19:59.026Z",
+      "signalStrength": -65.45568542819164,
+      "batteryLevel": 80.01813726180309
+    },
+    "timestamp": "2025-10-02T17:19:59.028Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_62",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:19:59.026Z",
+      "batteryLevel": 91.34975107819734,
+      "signalStrength": -78.90506858576268
+    },
+    "timestamp": "2025-10-02T17:19:59.029Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_469",
+      "position": {
+        "x": 75.46145146676146,
+        "y": 1.0794965524718148,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:04.037Z",
+      "signalStrength": -78.59328312868547,
+      "batteryLevel": 85.09818954847188
+    },
+    "timestamp": "2025-10-02T17:20:04.040Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_79",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:04.038Z",
+      "batteryLevel": 72.3637149948937,
+      "signalStrength": -79.04374387471877
+    },
+    "timestamp": "2025-10-02T17:20:04.044Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_316",
+      "position": {
+        "x": 48.568758891850194,
+        "y": 21.00366472670787,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:09.048Z",
+      "signalStrength": -66.96883932344139,
+      "batteryLevel": 90.36933161600354
+    },
+    "timestamp": "2025-10-02T17:20:09.050Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_19",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:09.049Z",
+      "batteryLevel": 92.59184405070842,
+      "signalStrength": -73.05775850896771
+    },
+    "timestamp": "2025-10-02T17:20:09.052Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_729",
+      "position": {
+        "x": 82.4148553433439,
+        "y": 97.65271627108594,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:14.053Z",
+      "signalStrength": -78.82070507743086,
+      "batteryLevel": 88.43180033346796
+    },
+    "timestamp": "2025-10-02T17:20:14.054Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_69",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:14.053Z",
+      "batteryLevel": 95.88752909164545,
+      "signalStrength": -71.17533111329354
+    },
+    "timestamp": "2025-10-02T17:20:14.056Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_386",
+      "position": {
+        "x": 35.570408771834394,
+        "y": 30.574291558387067,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:19.064Z",
+      "signalStrength": -69.29062220856605,
+      "batteryLevel": 91.48654859198973
+    },
+    "timestamp": "2025-10-02T17:20:19.065Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_9",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:19.064Z",
+      "batteryLevel": 90.37863074240666,
+      "signalStrength": -73.98874027892272
+    },
+    "timestamp": "2025-10-02T17:20:19.066Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_289",
+      "position": {
+        "x": 33.57730479861824,
+        "y": 51.90188415574903,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:24.076Z",
+      "signalStrength": -65.08133307222015,
+      "batteryLevel": 94.99168032955681
+    },
+    "timestamp": "2025-10-02T17:20:24.080Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_79",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:24.078Z",
+      "batteryLevel": 73.40755140825924,
+      "signalStrength": -71.44445891451353
+    },
+    "timestamp": "2025-10-02T17:20:24.082Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_952",
+      "position": {
+        "x": 17.45253780711249,
+        "y": 63.02618375979074,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:29.077Z",
+      "signalStrength": -74.63126233497316,
+      "batteryLevel": 80.15817426236673
+    },
+    "timestamp": "2025-10-02T17:20:29.078Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_62",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:29.077Z",
+      "batteryLevel": 83.01698548687266,
+      "signalStrength": -78.66423150614885
+    },
+    "timestamp": "2025-10-02T17:20:29.080Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_675",
+      "position": {
+        "x": 87.19114876397182,
+        "y": 51.41357110808775,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:34.081Z",
+      "signalStrength": -64.96946188796556,
+      "batteryLevel": 81.55699655326805
+    },
+    "timestamp": "2025-10-02T17:20:34.082Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_49",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:34.082Z",
+      "batteryLevel": 89.33859389339537,
+      "signalStrength": -73.94415467566444
+    },
+    "timestamp": "2025-10-02T17:20:34.083Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_865",
+      "position": {
+        "x": 52.910962610304814,
+        "y": 43.94971329979518,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:39.088Z",
+      "signalStrength": -75.0648384461723,
+      "batteryLevel": 90.95150527061043
+    },
+    "timestamp": "2025-10-02T17:20:39.090Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_99",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:39.089Z",
+      "batteryLevel": 75.38577330517607,
+      "signalStrength": -70.12050606805299
+    },
+    "timestamp": "2025-10-02T17:20:39.092Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_722",
+      "position": {
+        "x": 7.315893905297344,
+        "y": 15.928024170239286,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:44.101Z",
+      "signalStrength": -72.82094387714699,
+      "batteryLevel": 96.18495289205853
+    },
+    "timestamp": "2025-10-02T17:20:44.103Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_56",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:44.102Z",
+      "batteryLevel": 80.54573069959906,
+      "signalStrength": -73.59494397831715
+    },
+    "timestamp": "2025-10-02T17:20:44.104Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_144",
+      "position": {
+        "x": 54.01320395315206,
+        "y": 73.4333286697385,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:49.109Z",
+      "signalStrength": -69.73848414710511,
+      "batteryLevel": 94.16353331941194
+    },
+    "timestamp": "2025-10-02T17:20:49.110Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_10",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:49.109Z",
+      "batteryLevel": 78.89205537226609,
+      "signalStrength": -75.95568631680473
+    },
+    "timestamp": "2025-10-02T17:20:49.111Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_114",
+      "position": {
+        "x": 69.46521051193521,
+        "y": 33.53961675335913,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:54.123Z",
+      "signalStrength": -68.9871253725614,
+      "batteryLevel": 98.77809009084075
+    },
+    "timestamp": "2025-10-02T17:20:54.124Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_33",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:54.123Z",
+      "batteryLevel": 80.27390749047909,
+      "signalStrength": -73.74442727263325
+    },
+    "timestamp": "2025-10-02T17:20:54.127Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_751",
+      "position": {
+        "x": 42.66060528970357,
+        "y": 1.9551713197426546,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:20:59.130Z",
+      "signalStrength": -77.93239010264041,
+      "batteryLevel": 91.51111472275755
+    },
+    "timestamp": "2025-10-02T17:20:59.133Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_51",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:20:59.131Z",
+      "batteryLevel": 95.11827500782643,
+      "signalStrength": -75.04685262172463
+    },
+    "timestamp": "2025-10-02T17:20:59.136Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_396",
+      "position": {
+        "x": 15.854678126302746,
+        "y": 77.38443068763301,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:04.138Z",
+      "signalStrength": -70.3250132002488,
+      "batteryLevel": 97.66263157272557
+    },
+    "timestamp": "2025-10-02T17:21:04.140Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_55",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:04.139Z",
+      "batteryLevel": 90.28702292565248,
+      "signalStrength": -71.08130959385252
+    },
+    "timestamp": "2025-10-02T17:21:04.142Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_694",
+      "position": {
+        "x": 22.034806873178404,
+        "y": 30.11264525134454,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:09.152Z",
+      "signalStrength": -74.16121900304994,
+      "batteryLevel": 88.13367501170279
+    },
+    "timestamp": "2025-10-02T17:21:09.154Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_97",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:09.152Z",
+      "batteryLevel": 99.49328215546097,
+      "signalStrength": -72.08302284877641
+    },
+    "timestamp": "2025-10-02T17:21:09.156Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_741",
+      "position": {
+        "x": 52.88806034034705,
+        "y": 44.655779402671044,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:14.158Z",
+      "signalStrength": -75.88612376140992,
+      "batteryLevel": 97.34453535656777
+    },
+    "timestamp": "2025-10-02T17:21:14.159Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_65",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:14.158Z",
+      "batteryLevel": 71.51610061955533,
+      "signalStrength": -78.1578105476729
+    },
+    "timestamp": "2025-10-02T17:21:14.160Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_629",
+      "position": {
+        "x": 21.333232869173703,
+        "y": 20.471294401051598,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:19.171Z",
+      "signalStrength": -76.53241590980672,
+      "batteryLevel": 86.6687195250788
+    },
+    "timestamp": "2025-10-02T17:21:19.172Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_28",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:19.171Z",
+      "batteryLevel": 91.39406324747466,
+      "signalStrength": -75.41980559226072
+    },
+    "timestamp": "2025-10-02T17:21:19.174Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_259",
+      "position": {
+        "x": 75.99835443734153,
+        "y": 59.062184010617024,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:24.176Z",
+      "signalStrength": -74.67753155519988,
+      "batteryLevel": 80.02805274643178
+    },
+    "timestamp": "2025-10-02T17:21:24.179Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_82",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:24.177Z",
+      "batteryLevel": 95.34617797284378,
+      "signalStrength": -79.04649248811556
+    },
+    "timestamp": "2025-10-02T17:21:24.182Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_676",
+      "position": {
+        "x": 1.9831813758465877,
+        "y": 33.42251767626892,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:29.177Z",
+      "signalStrength": -79.53294197657078,
+      "batteryLevel": 81.34899317106746
+    },
+    "timestamp": "2025-10-02T17:21:29.178Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_61",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:29.178Z",
+      "batteryLevel": 80.17738766406217,
+      "signalStrength": -77.46885830631116
+    },
+    "timestamp": "2025-10-02T17:21:29.180Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_251",
+      "position": {
+        "x": 80.31927584399942,
+        "y": 11.635012181783644,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:34.190Z",
+      "signalStrength": -78.67860137723127,
+      "batteryLevel": 97.89488576187439
+    },
+    "timestamp": "2025-10-02T17:21:34.192Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_93",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:34.191Z",
+      "batteryLevel": 99.84088711938998,
+      "signalStrength": -70.189066130291
+    },
+    "timestamp": "2025-10-02T17:21:34.193Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_626",
+      "position": {
+        "x": 13.788956773413187,
+        "y": 77.4707230485338,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:39.202Z",
+      "signalStrength": -77.95185328313397,
+      "batteryLevel": 90.85020223146617
+    },
+    "timestamp": "2025-10-02T17:21:39.203Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_16",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:39.202Z",
+      "batteryLevel": 88.16942770952602,
+      "signalStrength": -72.10962237921571
+    },
+    "timestamp": "2025-10-02T17:21:39.204Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_796",
+      "position": {
+        "x": 11.917315580257682,
+        "y": 72.68342298004701,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:44.212Z",
+      "signalStrength": -75.68706374938807,
+      "batteryLevel": 89.33667426320473
+    },
+    "timestamp": "2025-10-02T17:21:44.214Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_73",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:44.212Z",
+      "batteryLevel": 83.77470155663698,
+      "signalStrength": -79.91527700159529
+    },
+    "timestamp": "2025-10-02T17:21:44.216Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_29",
+      "position": {
+        "x": 5.402338113296201,
+        "y": 88.96971836223884,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:49.224Z",
+      "signalStrength": -65.53392567448758,
+      "batteryLevel": 92.0922380668768
+    },
+    "timestamp": "2025-10-02T17:21:49.225Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_96",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:49.224Z",
+      "batteryLevel": 95.36564246236401,
+      "signalStrength": -74.16174563543238
+    },
+    "timestamp": "2025-10-02T17:21:49.226Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_181",
+      "position": {
+        "x": 40.539993520697216,
+        "y": 27.14945137470284,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:54.227Z",
+      "signalStrength": -65.58188532691156,
+      "batteryLevel": 80.6967116342616
+    },
+    "timestamp": "2025-10-02T17:21:54.229Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_3",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:54.227Z",
+      "batteryLevel": 93.0262306976347,
+      "signalStrength": -78.73933205285078
+    },
+    "timestamp": "2025-10-02T17:21:54.231Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_188",
+      "position": {
+        "x": 21.08141009176878,
+        "y": 69.53857800758412,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:21:59.232Z",
+      "signalStrength": -63.12593862357805,
+      "batteryLevel": 82.42537383968343
+    },
+    "timestamp": "2025-10-02T17:21:59.233Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_36",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:21:59.232Z",
+      "batteryLevel": 77.49135431503379,
+      "signalStrength": -71.01163802286064
+    },
+    "timestamp": "2025-10-02T17:21:59.234Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_488",
+      "position": {
+        "x": 7.894878889328671,
+        "y": 67.13854982948794,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:04.240Z",
+      "signalStrength": -78.71373251442039,
+      "batteryLevel": 86.24224912085923
+    },
+    "timestamp": "2025-10-02T17:22:04.242Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_62",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:04.241Z",
+      "batteryLevel": 74.22600911591707,
+      "signalStrength": -71.29235940612125
+    },
+    "timestamp": "2025-10-02T17:22:04.244Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_788",
+      "position": {
+        "x": 36.434968826138416,
+        "y": 48.6146558454986,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:09.240Z",
+      "signalStrength": -68.97162992406047,
+      "batteryLevel": 87.35156849709662
+    },
+    "timestamp": "2025-10-02T17:22:09.244Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_12",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:09.241Z",
+      "batteryLevel": 83.20931098950577,
+      "signalStrength": -76.84877275940929
+    },
+    "timestamp": "2025-10-02T17:22:09.247Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_998",
+      "position": {
+        "x": 93.82174764213333,
+        "y": 73.97644160463805,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:14.244Z",
+      "signalStrength": -64.48161710123887,
+      "batteryLevel": 97.40168655763983
+    },
+    "timestamp": "2025-10-02T17:22:14.246Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_28",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:14.245Z",
+      "batteryLevel": 99.75976473821154,
+      "signalStrength": -78.53341652696477
+    },
+    "timestamp": "2025-10-02T17:22:14.247Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_295",
+      "position": {
+        "x": 29.663239150628318,
+        "y": 2.242851534382817,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:19.250Z",
+      "signalStrength": -79.46600607974403,
+      "batteryLevel": 88.01846409410417
+    },
+    "timestamp": "2025-10-02T17:22:19.252Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_17",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:19.250Z",
+      "batteryLevel": 83.99425118822856,
+      "signalStrength": -73.31585175128166
+    },
+    "timestamp": "2025-10-02T17:22:19.255Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_885",
+      "position": {
+        "x": 29.74388573562654,
+        "y": 0.4604540642989985,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:24.257Z",
+      "signalStrength": -60.2338965234038,
+      "batteryLevel": 92.53031644682713
+    },
+    "timestamp": "2025-10-02T17:22:24.260Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_63",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:24.258Z",
+      "batteryLevel": 70.18567328454851,
+      "signalStrength": -76.97255261923499
+    },
+    "timestamp": "2025-10-02T17:22:24.263Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_37",
+      "position": {
+        "x": 25.851332859330455,
+        "y": 79.00125392204438,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:29.259Z",
+      "signalStrength": -63.73892940378305,
+      "batteryLevel": 89.40143255237068
+    },
+    "timestamp": "2025-10-02T17:22:29.261Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_85",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:29.260Z",
+      "batteryLevel": 71.86613323572756,
+      "signalStrength": -73.10346556562119
+    },
+    "timestamp": "2025-10-02T17:22:29.262Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_59",
+      "position": {
+        "x": 68.50203197490305,
+        "y": 51.810433198557604,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:34.268Z",
+      "signalStrength": -65.93455642495634,
+      "batteryLevel": 82.46503070786852
+    },
+    "timestamp": "2025-10-02T17:22:34.269Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_8",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:34.269Z",
+      "batteryLevel": 97.42295463433659,
+      "signalStrength": -72.20444532515874
+    },
+    "timestamp": "2025-10-02T17:22:34.272Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_191",
+      "position": {
+        "x": 90.14019890170397,
+        "y": 44.73797852848129,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:39.270Z",
+      "signalStrength": -77.21944160926287,
+      "batteryLevel": 86.56216141831086
+    },
+    "timestamp": "2025-10-02T17:22:39.273Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_96",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:39.270Z",
+      "batteryLevel": 90.61105266816853,
+      "signalStrength": -79.27593911796818
+    },
+    "timestamp": "2025-10-02T17:22:39.275Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_35",
+      "position": {
+        "x": 95.35178022614011,
+        "y": 49.86227167493311,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:44.285Z",
+      "signalStrength": -76.80212345605304,
+      "batteryLevel": 94.12061478981597
+    },
+    "timestamp": "2025-10-02T17:22:44.286Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_61",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:44.285Z",
+      "batteryLevel": 72.36665691409482,
+      "signalStrength": -72.87758083018518
+    },
+    "timestamp": "2025-10-02T17:22:44.287Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_603",
+      "position": {
+        "x": 80.00902082123955,
+        "y": 99.58538600860258,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:49.298Z",
+      "signalStrength": -66.71439029114005,
+      "batteryLevel": 81.3585179521106
+    },
+    "timestamp": "2025-10-02T17:22:49.301Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_96",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:49.298Z",
+      "batteryLevel": 75.07679153227485,
+      "signalStrength": -75.34505764435339
+    },
+    "timestamp": "2025-10-02T17:22:49.304Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_16",
+      "position": {
+        "x": 83.98237649403704,
+        "y": 79.94885584766867,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:54.302Z",
+      "signalStrength": -73.66157699884596,
+      "batteryLevel": 99.91147425639888
+    },
+    "timestamp": "2025-10-02T17:22:54.303Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_81",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:54.302Z",
+      "batteryLevel": 98.05988363236543,
+      "signalStrength": -77.22305679786047
+    },
+    "timestamp": "2025-10-02T17:22:54.304Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_407",
+      "position": {
+        "x": 59.60617401723225,
+        "y": 75.36717877635138,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:22:59.303Z",
+      "signalStrength": -68.98538868308103,
+      "batteryLevel": 84.8919500171304
+    },
+    "timestamp": "2025-10-02T17:22:59.305Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_19",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:22:59.304Z",
+      "batteryLevel": 70.06258147397321,
+      "signalStrength": -77.07153741247485
+    },
+    "timestamp": "2025-10-02T17:22:59.306Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_946",
+      "position": {
+        "x": 49.204435694177896,
+        "y": 71.05624947881306,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:04.313Z",
+      "signalStrength": -60.253140434394325,
+      "batteryLevel": 94.22817707777291
+    },
+    "timestamp": "2025-10-02T17:23:04.315Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_53",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:04.314Z",
+      "batteryLevel": 86.90680270214602,
+      "signalStrength": -75.08583736701313
+    },
+    "timestamp": "2025-10-02T17:23:04.318Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_447",
+      "position": {
+        "x": 90.71580285730896,
+        "y": 17.874690492293844,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:09.325Z",
+      "signalStrength": -61.483840560813974,
+      "batteryLevel": 86.9487581383799
+    },
+    "timestamp": "2025-10-02T17:23:09.326Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_72",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:09.325Z",
+      "batteryLevel": 85.62253497200754,
+      "signalStrength": -73.75003500796262
+    },
+    "timestamp": "2025-10-02T17:23:09.327Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_734",
+      "position": {
+        "x": 39.72873359778166,
+        "y": 21.001433409883518,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:14.325Z",
+      "signalStrength": -70.51545104880677,
+      "batteryLevel": 98.79999939330325
+    },
+    "timestamp": "2025-10-02T17:23:14.326Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_32",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:14.325Z",
+      "batteryLevel": 79.44813471455363,
+      "signalStrength": -79.77498885403672
+    },
+    "timestamp": "2025-10-02T17:23:14.328Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_151",
+      "position": {
+        "x": 1.5116080281495359,
+        "y": 28.2818964395126,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:19.339Z",
+      "signalStrength": -70.84085644670313,
+      "batteryLevel": 83.40790012134278
+    },
+    "timestamp": "2025-10-02T17:23:19.340Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_14",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:19.339Z",
+      "batteryLevel": 84.10297431372712,
+      "signalStrength": -71.4486426053947
+    },
+    "timestamp": "2025-10-02T17:23:19.342Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_84",
+      "position": {
+        "x": 65.47553050486033,
+        "y": 78.33037947337999,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:24.347Z",
+      "signalStrength": -75.69325126500206,
+      "batteryLevel": 93.06001819154245
+    },
+    "timestamp": "2025-10-02T17:23:24.348Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_18",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:24.348Z",
+      "batteryLevel": 74.78034602985151,
+      "signalStrength": -70.6310022936349
+    },
+    "timestamp": "2025-10-02T17:23:24.350Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_25",
+      "position": {
+        "x": 37.162426557266,
+        "y": 30.717171309846947,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:29.357Z",
+      "signalStrength": -77.1511835794442,
+      "batteryLevel": 83.09663462021355
+    },
+    "timestamp": "2025-10-02T17:23:29.358Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_22",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:29.357Z",
+      "batteryLevel": 84.3952849010326,
+      "signalStrength": -77.1182906185762
+    },
+    "timestamp": "2025-10-02T17:23:29.359Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_654",
+      "position": {
+        "x": 28.456000669693115,
+        "y": 86.92875141024932,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:34.360Z",
+      "signalStrength": -77.31970142457462,
+      "batteryLevel": 82.28309659293976
+    },
+    "timestamp": "2025-10-02T17:23:34.361Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_72",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:34.360Z",
+      "batteryLevel": 73.87967661407721,
+      "signalStrength": -70.55548652839835
+    },
+    "timestamp": "2025-10-02T17:23:34.363Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_537",
+      "position": {
+        "x": 77.31224607115159,
+        "y": 65.81513751354751,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:39.361Z",
+      "signalStrength": -68.50818396954901,
+      "batteryLevel": 94.33167327113118
+    },
+    "timestamp": "2025-10-02T17:23:39.363Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_11",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:39.362Z",
+      "batteryLevel": 90.36925683058986,
+      "signalStrength": -77.45604879905851
+    },
+    "timestamp": "2025-10-02T17:23:39.364Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_101",
+      "position": {
+        "x": 97.97884663986368,
+        "y": 7.885610540542909,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:44.375Z",
+      "signalStrength": -66.38557373781784,
+      "batteryLevel": 98.34361239684497
+    },
+    "timestamp": "2025-10-02T17:23:44.376Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_56",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:44.376Z",
+      "batteryLevel": 96.31389208630165,
+      "signalStrength": -79.89327498783125
+    },
+    "timestamp": "2025-10-02T17:23:44.378Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_179",
+      "position": {
+        "x": 75.77754340273168,
+        "y": 87.02701567100064,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:49.387Z",
+      "signalStrength": -69.02943712325214,
+      "batteryLevel": 83.48913313765607
+    },
+    "timestamp": "2025-10-02T17:23:49.390Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_92",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:49.388Z",
+      "batteryLevel": 81.63129080899661,
+      "signalStrength": -71.33659086019098
+    },
+    "timestamp": "2025-10-02T17:23:49.392Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_658",
+      "position": {
+        "x": 61.759007933983234,
+        "y": 9.057046546532455,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:54.402Z",
+      "signalStrength": -76.3365300761524,
+      "batteryLevel": 87.67069969424719
+    },
+    "timestamp": "2025-10-02T17:23:54.403Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_14",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:54.402Z",
+      "batteryLevel": 98.89853727426467,
+      "signalStrength": -78.78761552365393
+    },
+    "timestamp": "2025-10-02T17:23:54.404Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_698",
+      "position": {
+        "x": 19.634394370347398,
+        "y": 12.878294311969185,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:23:59.407Z",
+      "signalStrength": -72.72795364604686,
+      "batteryLevel": 80.34718400263841
+    },
+    "timestamp": "2025-10-02T17:23:59.408Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_52",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:23:59.408Z",
+      "batteryLevel": 73.28523617184678,
+      "signalStrength": -70.37682481400657
+    },
+    "timestamp": "2025-10-02T17:23:59.410Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_440",
+      "position": {
+        "x": 94.19122376362763,
+        "y": 88.74011499092936,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:04.419Z",
+      "signalStrength": -65.8081039074168,
+      "batteryLevel": 93.54392293984927
+    },
+    "timestamp": "2025-10-02T17:24:04.420Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_30",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:04.419Z",
+      "batteryLevel": 92.56674458117776,
+      "signalStrength": -78.65206518723986
+    },
+    "timestamp": "2025-10-02T17:24:04.422Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_936",
+      "position": {
+        "x": 31.684629788403296,
+        "y": 29.588770372268193,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:09.425Z",
+      "signalStrength": -78.66348732521423,
+      "batteryLevel": 85.9809873424054
+    },
+    "timestamp": "2025-10-02T17:24:09.426Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_10",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:09.425Z",
+      "batteryLevel": 92.81810491822021,
+      "signalStrength": -79.85804575412479
+    },
+    "timestamp": "2025-10-02T17:24:09.427Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_80",
+      "position": {
+        "x": 33.85854653461071,
+        "y": 41.21120179083162,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:14.427Z",
+      "signalStrength": -78.99074506223388,
+      "batteryLevel": 93.12876748477362
+    },
+    "timestamp": "2025-10-02T17:24:14.429Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_38",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:14.427Z",
+      "batteryLevel": 84.2998827215834,
+      "signalStrength": -76.47948999780685
+    },
+    "timestamp": "2025-10-02T17:24:14.433Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_268",
+      "position": {
+        "x": 54.46095960458241,
+        "y": 63.44789777644944,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:19.434Z",
+      "signalStrength": -68.98726547194458,
+      "batteryLevel": 89.8065440066494
+    },
+    "timestamp": "2025-10-02T17:24:19.437Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_39",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:19.434Z",
+      "batteryLevel": 89.64615014667305,
+      "signalStrength": -73.00626106225502
+    },
+    "timestamp": "2025-10-02T17:24:19.441Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_869",
+      "position": {
+        "x": 97.1042086798666,
+        "y": 91.3082815535319,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:24.438Z",
+      "signalStrength": -70.48086307063454,
+      "batteryLevel": 82.50127389664638
+    },
+    "timestamp": "2025-10-02T17:24:24.439Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_65",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:24.438Z",
+      "batteryLevel": 89.83933155898399,
+      "signalStrength": -70.97400675873227
+    },
+    "timestamp": "2025-10-02T17:24:24.441Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_360",
+      "position": {
+        "x": 13.892142804871387,
+        "y": 51.271104660052266,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:29.447Z",
+      "signalStrength": -74.66321017016146,
+      "batteryLevel": 87.75184716826334
+    },
+    "timestamp": "2025-10-02T17:24:29.448Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_16",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:29.447Z",
+      "batteryLevel": 93.5226422951614,
+      "signalStrength": -70.57158343253717
+    },
+    "timestamp": "2025-10-02T17:24:29.450Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_176",
+      "position": {
+        "x": 82.46747183249863,
+        "y": 30.821295863112,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:34.459Z",
+      "signalStrength": -79.95417448297113,
+      "batteryLevel": 91.98274412132534
+    },
+    "timestamp": "2025-10-02T17:24:34.462Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_31",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:34.459Z",
+      "batteryLevel": 76.4157366542991,
+      "signalStrength": -73.09356946579173
+    },
+    "timestamp": "2025-10-02T17:24:34.465Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_262",
+      "position": {
+        "x": 95.13577220708937,
+        "y": 71.42204076204442,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:39.460Z",
+      "signalStrength": -79.28548503206969,
+      "batteryLevel": 96.30489961005173
+    },
+    "timestamp": "2025-10-02T17:24:39.461Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_22",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:39.461Z",
+      "batteryLevel": 87.88013618101144,
+      "signalStrength": -72.46711446887436
+    },
+    "timestamp": "2025-10-02T17:24:39.463Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_635",
+      "position": {
+        "x": 52.7773154220653,
+        "y": 1.8099204172916439,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:44.474Z",
+      "signalStrength": -72.96643769623869,
+      "batteryLevel": 95.86916545850022
+    },
+    "timestamp": "2025-10-02T17:24:44.475Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_81",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:44.474Z",
+      "batteryLevel": 89.70916751191196,
+      "signalStrength": -73.06551475865174
+    },
+    "timestamp": "2025-10-02T17:24:44.476Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_515",
+      "position": {
+        "x": 91.44424384173975,
+        "y": 66.3718432237003,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:49.484Z",
+      "signalStrength": -64.51494807592566,
+      "batteryLevel": 90.09496227912724
+    },
+    "timestamp": "2025-10-02T17:24:49.485Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_94",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:49.484Z",
+      "batteryLevel": 95.60757754048454,
+      "signalStrength": -77.21157975815919
+    },
+    "timestamp": "2025-10-02T17:24:49.487Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_408",
+      "position": {
+        "x": 99.1525552195067,
+        "y": 48.945902670946204,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:54.490Z",
+      "signalStrength": -73.17508734987562,
+      "batteryLevel": 97.81482027781738
+    },
+    "timestamp": "2025-10-02T17:24:54.491Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_93",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:54.490Z",
+      "batteryLevel": 97.3694136828418,
+      "signalStrength": -73.9584817935016
+    },
+    "timestamp": "2025-10-02T17:24:54.493Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_799",
+      "position": {
+        "x": 90.78232355422857,
+        "y": 72.02404274982639,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:24:59.492Z",
+      "signalStrength": -66.20114594092082,
+      "batteryLevel": 81.4681432205889
+    },
+    "timestamp": "2025-10-02T17:24:59.494Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_14",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:24:59.493Z",
+      "batteryLevel": 94.7390182933067,
+      "signalStrength": -72.5130554612607
+    },
+    "timestamp": "2025-10-02T17:24:59.495Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_622",
+      "position": {
+        "x": 15.378725171535113,
+        "y": 95.56848167669717,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:04.495Z",
+      "signalStrength": -70.88580929381978,
+      "batteryLevel": 91.54373388926192
+    },
+    "timestamp": "2025-10-02T17:25:04.496Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_40",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:04.495Z",
+      "batteryLevel": 71.07792970335308,
+      "signalStrength": -79.04068295399122
+    },
+    "timestamp": "2025-10-02T17:25:04.498Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_746",
+      "position": {
+        "x": 27.79166844966847,
+        "y": 81.5510888006435,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:09.507Z",
+      "signalStrength": -73.67174440176424,
+      "batteryLevel": 99.96942402450031
+    },
+    "timestamp": "2025-10-02T17:25:09.508Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_17",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:09.507Z",
+      "batteryLevel": 85.05216476631664,
+      "signalStrength": -78.35704740615888
+    },
+    "timestamp": "2025-10-02T17:25:09.509Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_870",
+      "position": {
+        "x": 38.74809034320534,
+        "y": 84.21460885699612,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:14.510Z",
+      "signalStrength": -66.0692714996008,
+      "batteryLevel": 80.00512266683232
+    },
+    "timestamp": "2025-10-02T17:25:14.511Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_68",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:14.510Z",
+      "batteryLevel": 84.54594786808578,
+      "signalStrength": -75.93644532158477
+    },
+    "timestamp": "2025-10-02T17:25:14.512Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_921",
+      "position": {
+        "x": 57.27846541293036,
+        "y": 60.08566472332897,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:19.518Z",
+      "signalStrength": -71.66947035283538,
+      "batteryLevel": 99.15823930607209
+    },
+    "timestamp": "2025-10-02T17:25:19.519Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_66",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:19.518Z",
+      "batteryLevel": 95.55826016831132,
+      "signalStrength": -79.60106197234497
+    },
+    "timestamp": "2025-10-02T17:25:19.521Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_667",
+      "position": {
+        "x": 32.73317873850176,
+        "y": 67.64613781197626,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:24.528Z",
+      "signalStrength": -63.985526095027076,
+      "batteryLevel": 88.01323168674028
+    },
+    "timestamp": "2025-10-02T17:25:24.529Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_51",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:24.528Z",
+      "batteryLevel": 83.22318880894302,
+      "signalStrength": -71.04282725884434
+    },
+    "timestamp": "2025-10-02T17:25:24.531Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_824",
+      "position": {
+        "x": 95.29960426813646,
+        "y": 20.66557500820878,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:29.533Z",
+      "signalStrength": -79.55612716501713,
+      "batteryLevel": 91.96440539855553
+    },
+    "timestamp": "2025-10-02T17:25:29.534Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_59",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:29.533Z",
+      "batteryLevel": 75.71608849641859,
+      "signalStrength": -77.08081974147755
+    },
+    "timestamp": "2025-10-02T17:25:29.535Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_681",
+      "position": {
+        "x": 38.491552756279155,
+        "y": 49.307509614293,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:34.547Z",
+      "signalStrength": -61.85435543825147,
+      "batteryLevel": 90.70411175975073
+    },
+    "timestamp": "2025-10-02T17:25:34.549Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_96",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:34.548Z",
+      "batteryLevel": 98.19408768845784,
+      "signalStrength": -78.18861978962515
+    },
+    "timestamp": "2025-10-02T17:25:34.551Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_625",
+      "position": {
+        "x": 86.53294649587117,
+        "y": 95.69588347696063,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:39.548Z",
+      "signalStrength": -76.37848370564558,
+      "batteryLevel": 87.90956557147197
+    },
+    "timestamp": "2025-10-02T17:25:39.549Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_48",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:39.548Z",
+      "batteryLevel": 80.16203632518628,
+      "signalStrength": -73.28246414498155
+    },
+    "timestamp": "2025-10-02T17:25:39.552Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_905",
+      "position": {
+        "x": 27.35159349412939,
+        "y": 41.446528391205995,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:44.558Z",
+      "signalStrength": -65.28621539206351,
+      "batteryLevel": 95.05367257735774
+    },
+    "timestamp": "2025-10-02T17:25:44.560Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_59",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:44.559Z",
+      "batteryLevel": 91.0067925039346,
+      "signalStrength": -71.97289717308894
+    },
+    "timestamp": "2025-10-02T17:25:44.564Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_417",
+      "position": {
+        "x": 27.929820116459283,
+        "y": 75.11404664867496,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:49.573Z",
+      "signalStrength": -78.53046516867052,
+      "batteryLevel": 97.67924263321618
+    },
+    "timestamp": "2025-10-02T17:25:49.574Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_71",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:49.573Z",
+      "batteryLevel": 83.42522200153842,
+      "signalStrength": -71.99582572394888
+    },
+    "timestamp": "2025-10-02T17:25:49.575Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_824",
+      "position": {
+        "x": 6.384467350742606,
+        "y": 55.99168893514699,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:54.577Z",
+      "signalStrength": -68.53514658465673,
+      "batteryLevel": 92.9763871844703
+    },
+    "timestamp": "2025-10-02T17:25:54.580Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_94",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:54.578Z",
+      "batteryLevel": 83.6799709839708,
+      "signalStrength": -78.4265617459038
+    },
+    "timestamp": "2025-10-02T17:25:54.584Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_239",
+      "position": {
+        "x": 23.517618650634596,
+        "y": 38.780360020771056,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:25:59.578Z",
+      "signalStrength": -69.61619649453219,
+      "batteryLevel": 90.66311493682116
+    },
+    "timestamp": "2025-10-02T17:25:59.579Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_68",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:25:59.578Z",
+      "batteryLevel": 82.9984186342661,
+      "signalStrength": -79.73144677339363
+    },
+    "timestamp": "2025-10-02T17:25:59.580Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_82",
+      "position": {
+        "x": 51.746206380307754,
+        "y": 59.696174111827304,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:04.587Z",
+      "signalStrength": -78.3258699459889,
+      "batteryLevel": 98.33513879162265
+    },
+    "timestamp": "2025-10-02T17:26:04.590Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_63",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:04.588Z",
+      "batteryLevel": 97.53133999704986,
+      "signalStrength": -70.60035141349056
+    },
+    "timestamp": "2025-10-02T17:26:04.595Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_829",
+      "position": {
+        "x": 5.347738724531559,
+        "y": 59.851864015824454,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:09.602Z",
+      "signalStrength": -60.65111067953473,
+      "batteryLevel": 91.78545482194167
+    },
+    "timestamp": "2025-10-02T17:26:09.603Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_84",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:09.602Z",
+      "batteryLevel": 70.64329839530592,
+      "signalStrength": -73.04417803836715
+    },
+    "timestamp": "2025-10-02T17:26:09.605Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_465",
+      "position": {
+        "x": 89.45059618042677,
+        "y": 47.99796236669198,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:14.615Z",
+      "signalStrength": -61.85507902523802,
+      "batteryLevel": 91.39055010564157
+    },
+    "timestamp": "2025-10-02T17:26:14.618Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_72",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:14.617Z",
+      "batteryLevel": 72.44207468403037,
+      "signalStrength": -75.81876244737435
+    },
+    "timestamp": "2025-10-02T17:26:14.619Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_791",
+      "position": {
+        "x": 89.56275857380514,
+        "y": 11.652877283776974,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:19.626Z",
+      "signalStrength": -67.70180607237171,
+      "batteryLevel": 88.25027963943865
+    },
+    "timestamp": "2025-10-02T17:26:19.628Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_85",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:19.627Z",
+      "batteryLevel": 77.22596963758417,
+      "signalStrength": -73.8143390727352
+    },
+    "timestamp": "2025-10-02T17:26:19.632Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_390",
+      "position": {
+        "x": 85.2590188329174,
+        "y": 9.463270310874039,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:24.628Z",
+      "signalStrength": -69.13834980232119,
+      "batteryLevel": 97.75253191568868
+    },
+    "timestamp": "2025-10-02T17:26:24.632Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_23",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:24.629Z",
+      "batteryLevel": 76.92224822087944,
+      "signalStrength": -78.91766535017543
+    },
+    "timestamp": "2025-10-02T17:26:24.635Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_758",
+      "position": {
+        "x": 19.957424191252127,
+        "y": 87.97952012998036,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:29.642Z",
+      "signalStrength": -77.13325509230901,
+      "batteryLevel": 93.47798726465784
+    },
+    "timestamp": "2025-10-02T17:26:29.645Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_1",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:29.643Z",
+      "batteryLevel": 73.40940844819933,
+      "signalStrength": -73.52152141592731
+    },
+    "timestamp": "2025-10-02T17:26:29.650Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_894",
+      "position": {
+        "x": 22.109836632983757,
+        "y": 68.09796626781446,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:34.653Z",
+      "signalStrength": -61.85288073009468,
+      "batteryLevel": 92.716379418507
+    },
+    "timestamp": "2025-10-02T17:26:34.655Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_3",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:34.653Z",
+      "batteryLevel": 95.93659447361239,
+      "signalStrength": -79.47808164620439
+    },
+    "timestamp": "2025-10-02T17:26:34.656Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_232",
+      "position": {
+        "x": 1.3972853472304037,
+        "y": 41.04862594674002,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:39.652Z",
+      "signalStrength": -73.46163457991592,
+      "batteryLevel": 81.18856618575225
+    },
+    "timestamp": "2025-10-02T17:26:39.655Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_28",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:39.653Z",
+      "batteryLevel": 87.96338274274765,
+      "signalStrength": -71.74956439329148
+    },
+    "timestamp": "2025-10-02T17:26:39.659Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_772",
+      "position": {
+        "x": 15.333316398337772,
+        "y": 7.698010706502489,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:44.658Z",
+      "signalStrength": -74.39419639103521,
+      "batteryLevel": 83.69551543871042
+    },
+    "timestamp": "2025-10-02T17:26:44.659Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_94",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:44.659Z",
+      "batteryLevel": 98.97363006591414,
+      "signalStrength": -74.67411213886285
+    },
+    "timestamp": "2025-10-02T17:26:44.661Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_932",
+      "position": {
+        "x": 75.20434081385632,
+        "y": 29.24440376916062,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:49.666Z",
+      "signalStrength": -74.11860047781022,
+      "batteryLevel": 93.94411873152893
+    },
+    "timestamp": "2025-10-02T17:26:49.668Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_18",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:49.667Z",
+      "batteryLevel": 71.61502446018758,
+      "signalStrength": -70.83553816608662
+    },
+    "timestamp": "2025-10-02T17:26:49.670Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_324",
+      "position": {
+        "x": 75.49299630538027,
+        "y": 66.18819511962705,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:54.682Z",
+      "signalStrength": -63.900586011561124,
+      "batteryLevel": 92.90689287392226
+    },
+    "timestamp": "2025-10-02T17:26:54.683Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_1",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:54.682Z",
+      "batteryLevel": 88.50622910117228,
+      "signalStrength": -76.29824746824964
+    },
+    "timestamp": "2025-10-02T17:26:54.684Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_834",
+      "position": {
+        "x": 78.52852035422231,
+        "y": 7.200003359516538,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:26:59.687Z",
+      "signalStrength": -79.14619012229117,
+      "batteryLevel": 92.9090219945873
+    },
+    "timestamp": "2025-10-02T17:26:59.690Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_56",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:26:59.688Z",
+      "batteryLevel": 82.1924969950121,
+      "signalStrength": -74.18313211294416
+    },
+    "timestamp": "2025-10-02T17:26:59.693Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_737",
+      "position": {
+        "x": 60.815898147827596,
+        "y": 21.67223768594111,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:04.688Z",
+      "signalStrength": -70.59078733687365,
+      "batteryLevel": 83.23497915279448
+    },
+    "timestamp": "2025-10-02T17:27:04.691Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_99",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:04.689Z",
+      "batteryLevel": 81.0192210687181,
+      "signalStrength": -70.49718579950706
+    },
+    "timestamp": "2025-10-02T17:27:04.694Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_362",
+      "position": {
+        "x": 2.809886227562508,
+        "y": 73.37750048051997,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:09.688Z",
+      "signalStrength": -75.0761854281944,
+      "batteryLevel": 95.1558202027678
+    },
+    "timestamp": "2025-10-02T17:27:09.691Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_21",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:09.689Z",
+      "batteryLevel": 89.88898886599418,
+      "signalStrength": -76.30541353604094
+    },
+    "timestamp": "2025-10-02T17:27:09.695Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_342",
+      "position": {
+        "x": 78.4151463821672,
+        "y": 75.55849990342831,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:14.695Z",
+      "signalStrength": -65.04782744962064,
+      "batteryLevel": 83.42045227279863
+    },
+    "timestamp": "2025-10-02T17:27:14.699Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_15",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:14.697Z",
+      "batteryLevel": 99.43906773318636,
+      "signalStrength": -73.93678988941943
+    },
+    "timestamp": "2025-10-02T17:27:14.701Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_267",
+      "position": {
+        "x": 40.312865721719795,
+        "y": 10.56710745604228,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:19.709Z",
+      "signalStrength": -71.61612965696679,
+      "batteryLevel": 85.22797775723004
+    },
+    "timestamp": "2025-10-02T17:27:19.710Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_63",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:19.709Z",
+      "batteryLevel": 84.86152156229137,
+      "signalStrength": -77.56916178619969
+    },
+    "timestamp": "2025-10-02T17:27:19.711Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_520",
+      "position": {
+        "x": 78.65336600890987,
+        "y": 99.54075453330663,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:24.709Z",
+      "signalStrength": -72.91667121331565,
+      "batteryLevel": 82.38293235212369
+    },
+    "timestamp": "2025-10-02T17:27:24.710Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_27",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:24.710Z",
+      "batteryLevel": 96.75930047961415,
+      "signalStrength": -79.7457806560963
+    },
+    "timestamp": "2025-10-02T17:27:24.712Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_348",
+      "position": {
+        "x": 59.0397860574444,
+        "y": 5.620870016652391,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:29.714Z",
+      "signalStrength": -79.71702193052145,
+      "batteryLevel": 87.6749576650845
+    },
+    "timestamp": "2025-10-02T17:27:29.716Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_77",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:29.715Z",
+      "batteryLevel": 74.36744989987817,
+      "signalStrength": -74.33182067082576
+    },
+    "timestamp": "2025-10-02T17:27:29.717Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_448",
+      "position": {
+        "x": 59.40614362483125,
+        "y": 27.822586037765483,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:34.717Z",
+      "signalStrength": -76.52822983111005,
+      "batteryLevel": 94.94382183947373
+    },
+    "timestamp": "2025-10-02T17:27:34.719Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_22",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:34.717Z",
+      "batteryLevel": 80.94795974778545,
+      "signalStrength": -77.95059569135492
+    },
+    "timestamp": "2025-10-02T17:27:34.723Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_303",
+      "position": {
+        "x": 4.202896960519609,
+        "y": 19.577103361240212,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:39.720Z",
+      "signalStrength": -63.49051256146818,
+      "batteryLevel": 91.1517132823921
+    },
+    "timestamp": "2025-10-02T17:27:39.723Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_68",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:39.721Z",
+      "batteryLevel": 97.45328829297424,
+      "signalStrength": -76.69425479593221
+    },
+    "timestamp": "2025-10-02T17:27:39.727Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_611",
+      "position": {
+        "x": 71.12711077712022,
+        "y": 2.841689304281636,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:44.729Z",
+      "signalStrength": -72.00455942174295,
+      "batteryLevel": 98.35110534020596
+    },
+    "timestamp": "2025-10-02T17:27:44.732Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_16",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:44.729Z",
+      "batteryLevel": 74.94067158868671,
+      "signalStrength": -71.83442970812368
+    },
+    "timestamp": "2025-10-02T17:27:44.736Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_993",
+      "position": {
+        "x": 3.2449346431096204,
+        "y": 82.746376375868,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:49.730Z",
+      "signalStrength": -74.07895669048952,
+      "batteryLevel": 96.11910262794113
+    },
+    "timestamp": "2025-10-02T17:27:49.732Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_95",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:49.731Z",
+      "batteryLevel": 86.56860479088363,
+      "signalStrength": -75.44956202298158
+    },
+    "timestamp": "2025-10-02T17:27:49.735Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_666",
+      "position": {
+        "x": 51.915522188505214,
+        "y": 81.18808127779631,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:54.731Z",
+      "signalStrength": -75.34000768712619,
+      "batteryLevel": 91.27905990762714
+    },
+    "timestamp": "2025-10-02T17:27:54.733Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_18",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:54.732Z",
+      "batteryLevel": 91.63531671649528,
+      "signalStrength": -78.90280062418553
+    },
+    "timestamp": "2025-10-02T17:27:54.735Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_991",
+      "position": {
+        "x": 74.90437784642394,
+        "y": 98.4845488370001,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:27:59.736Z",
+      "signalStrength": -76.0119236928766,
+      "batteryLevel": 89.92137027974574
+    },
+    "timestamp": "2025-10-02T17:27:59.737Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_21",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:27:59.736Z",
+      "batteryLevel": 83.82500734808929,
+      "signalStrength": -75.40864918964483
+    },
+    "timestamp": "2025-10-02T17:27:59.739Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_792",
+      "position": {
+        "x": 67.19655899951414,
+        "y": 2.563159188369557,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:04.741Z",
+      "signalStrength": -74.70118543739437,
+      "batteryLevel": 94.54547405758882
+    },
+    "timestamp": "2025-10-02T17:28:04.742Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_78",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:04.741Z",
+      "batteryLevel": 95.08806578455676,
+      "signalStrength": -77.94569710424616
+    },
+    "timestamp": "2025-10-02T17:28:04.743Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_587",
+      "position": {
+        "x": 13.9004408608987,
+        "y": 38.70541853861962,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:09.750Z",
+      "signalStrength": -66.49369258079236,
+      "batteryLevel": 95.29227722169942
+    },
+    "timestamp": "2025-10-02T17:28:09.751Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_46",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:09.750Z",
+      "batteryLevel": 84.29369497927878,
+      "signalStrength": -71.6989304382147
+    },
+    "timestamp": "2025-10-02T17:28:09.753Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_515",
+      "position": {
+        "x": 90.47476392609532,
+        "y": 6.820910559595572,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:14.763Z",
+      "signalStrength": -76.04203995074747,
+      "batteryLevel": 99.8854354271451
+    },
+    "timestamp": "2025-10-02T17:28:14.765Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_82",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:14.763Z",
+      "batteryLevel": 85.48444279456575,
+      "signalStrength": -78.31404333493312
+    },
+    "timestamp": "2025-10-02T17:28:14.766Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_28",
+      "position": {
+        "x": 46.74350787834969,
+        "y": 82.26445477885333,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:19.775Z",
+      "signalStrength": -75.90470417074762,
+      "batteryLevel": 99.17856913467475
+    },
+    "timestamp": "2025-10-02T17:28:19.776Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_57",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:19.775Z",
+      "batteryLevel": 88.68776193430709,
+      "signalStrength": -79.69636673571294
+    },
+    "timestamp": "2025-10-02T17:28:19.777Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_192",
+      "position": {
+        "x": 82.34812150388802,
+        "y": 40.77563937236908,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:24.790Z",
+      "signalStrength": -65.1602052956053,
+      "batteryLevel": 85.19526340131266
+    },
+    "timestamp": "2025-10-02T17:28:24.793Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_63",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:24.791Z",
+      "batteryLevel": 83.89692397283915,
+      "signalStrength": -75.07973830323158
+    },
+    "timestamp": "2025-10-02T17:28:24.798Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_940",
+      "position": {
+        "x": 56.29286629285275,
+        "y": 66.0545443043149,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:29.798Z",
+      "signalStrength": -72.34233771446578,
+      "batteryLevel": 97.10431559061125
+    },
+    "timestamp": "2025-10-02T17:28:29.801Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_21",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:29.799Z",
+      "batteryLevel": 86.54518977562428,
+      "signalStrength": -70.88338932474375
+    },
+    "timestamp": "2025-10-02T17:28:29.805Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_544",
+      "position": {
+        "x": 11.941474828504317,
+        "y": 99.08555040319492,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:34.805Z",
+      "signalStrength": -78.98266808840536,
+      "batteryLevel": 86.07350411764683
+    },
+    "timestamp": "2025-10-02T17:28:34.806Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_72",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:34.805Z",
+      "batteryLevel": 70.69352964326927,
+      "signalStrength": -70.98625856041242
+    },
+    "timestamp": "2025-10-02T17:28:34.809Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_556",
+      "position": {
+        "x": 36.016378346626276,
+        "y": 17.876660795529652,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:39.819Z",
+      "signalStrength": -64.03707804495271,
+      "batteryLevel": 84.9736669825026
+    },
+    "timestamp": "2025-10-02T17:28:39.820Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_28",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:39.820Z",
+      "batteryLevel": 70.3637377741537,
+      "signalStrength": -74.10726563362317
+    },
+    "timestamp": "2025-10-02T17:28:39.822Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_539",
+      "position": {
+        "x": 84.58481113108454,
+        "y": 89.18259995132276,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:44.828Z",
+      "signalStrength": -64.15187844903973,
+      "batteryLevel": 91.05087842885858
+    },
+    "timestamp": "2025-10-02T17:28:44.830Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_82",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:44.829Z",
+      "batteryLevel": 95.1171512691038,
+      "signalStrength": -74.07575419196384
+    },
+    "timestamp": "2025-10-02T17:28:44.832Z"
+  },
+  {
+    "topic": "UWB/location/test_tag",
+    "message": {
+      "tagId": "test_tag_834",
+      "position": {
+        "x": 12.487395206545337,
+        "y": 54.473725018424226,
+        "z": 0
+      },
+      "floorId": "test_floor_123",
+      "timestamp": "2025-10-02T17:28:49.834Z",
+      "signalStrength": -62.500540507238156,
+      "batteryLevel": 98.01129652162172
+    },
+    "timestamp": "2025-10-02T17:28:49.837Z"
+  },
+  {
+    "topic": "UWB/device/test_device/status",
+    "message": {
+      "deviceId": "test_device_90",
+      "deviceType": "gateway",
+      "status": "online",
+      "lastSeen": "2025-10-02T17:28:49.835Z",
+      "batteryLevel": 96.77364199988762,
+      "signalStrength": -79.98449438933251
+    },
+    "timestamp": "2025-10-02T17:28:49.839Z"
+  }
+]

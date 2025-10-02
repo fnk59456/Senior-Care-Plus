@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useTranslation } from 'react-i18next'
 // @ts-ignore
 import mqtt from "mqtt"
+import { api } from "@/services/api"
+import { useDataSync } from "@/hooks/useDataSync"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -447,6 +449,43 @@ export default function UWBLocationPage() {
     const { t } = useTranslation()
     const { toast } = useToast()
 
+    // 智能切換邏輯：檢測後端可用性
+    const [backendAvailable, setBackendAvailable] = useState(false)
+    const [isCheckingBackend, setIsCheckingBackend] = useState(true)
+
+    // 數據同步 Hook
+    const {
+        isLoading: isDataLoading,
+        error: dataError,
+        syncHomes,
+        syncFloors
+    } = useDataSync({
+        enableAutoSync: false, // 手動控制同步
+        onError: (error) => {
+            console.warn('數據同步失敗，使用本地存儲:', error)
+            setBackendAvailable(false)
+        }
+    })
+
+    // 檢測後端可用性
+    useEffect(() => {
+        const checkBackendAvailability = async () => {
+            try {
+                setIsCheckingBackend(true)
+                await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'}/health`)
+                setBackendAvailable(true)
+                console.log('✅ 後端連接可用，使用 API 模式')
+            } catch (error) {
+                setBackendAvailable(false)
+                console.log('⚠️ 後端連接不可用，使用 localStorage 模式')
+            } finally {
+                setIsCheckingBackend(false)
+            }
+        }
+
+        checkBackendAvailability()
+    }, [])
+
     // 從 localStorage 加載數據的輔助函數（含智能恢復）
     const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
         try {
@@ -741,29 +780,56 @@ export default function UWBLocationPage() {
     const [anchors, setAnchors] = useState<AnchorDevice[]>([])
     const [tags, setTags] = useState<TagDevice[]>([])
 
-    // 初始化數據加載
+    // 初始化數據加載 - 智能切換版本
     useEffect(() => {
         const initializeData = async () => {
             try {
                 setIsLoading(true)
                 setLoadError(null)
 
-                console.log('🔄 開始加載本地存儲數據...')
+                let loadedHomes: Home[]
+                let loadedFloors: Floor[]
+                let loadedGateways: Gateway[]
+                let loadedAnchors: AnchorDevice[]
+                let loadedTags: TagDevice[]
 
-                // 異步加載數據以避免阻塞 UI
-                const [
-                    loadedHomes,
-                    loadedFloors,
-                    loadedGateways,
-                    loadedAnchors,
-                    loadedTags
-                ] = await Promise.all([
-                    Promise.resolve(loadFromStorage('homes', MOCK_HOMES)),
-                    Promise.resolve(loadFromStorage('floors', MOCK_FLOORS)),
-                    Promise.resolve(loadFromStorage('gateways', MOCK_GATEWAYS)),
-                    Promise.resolve(loadFromStorage('anchors', MOCK_ANCHORS)),
-                    Promise.resolve(loadFromStorage('tags', MOCK_TAGS))
-                ])
+                if (backendAvailable && !isCheckingBackend) {
+                    console.log('🔄 開始從後端加載數據...')
+                    // 從後端加載數據
+                    try {
+                        loadedHomes = await syncHomes()
+                        // 暫時使用本地存儲的樓層數據，因為需要 homeId 參數
+                        loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
+                    } catch (error) {
+                        console.warn('後端數據加載失敗，使用本地存儲:', error)
+                        loadedHomes = loadFromStorage('homes', MOCK_HOMES)
+                        loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
+                    }
+                    // 其他數據暫時使用本地存儲
+                    const [gateways, anchors, tags] = await Promise.all([
+                        Promise.resolve(loadFromStorage('gateways', MOCK_GATEWAYS)),
+                        Promise.resolve(loadFromStorage('anchors', MOCK_ANCHORS)),
+                        Promise.resolve(loadFromStorage('tags', MOCK_TAGS))
+                    ])
+                    loadedGateways = gateways
+                    loadedAnchors = anchors
+                    loadedTags = tags
+                } else {
+                    console.log('🔄 開始加載本地存儲數據...')
+                    // 從本地存儲加載數據
+                    const [homes, floors, gateways, anchors, tags] = await Promise.all([
+                        Promise.resolve(loadFromStorage('homes', MOCK_HOMES)),
+                        Promise.resolve(loadFromStorage('floors', MOCK_FLOORS)),
+                        Promise.resolve(loadFromStorage('gateways', MOCK_GATEWAYS)),
+                        Promise.resolve(loadFromStorage('anchors', MOCK_ANCHORS)),
+                        Promise.resolve(loadFromStorage('tags', MOCK_TAGS))
+                    ])
+                    loadedHomes = homes
+                    loadedFloors = floors
+                    loadedGateways = gateways
+                    loadedAnchors = anchors
+                    loadedTags = tags
+                }
 
                 setHomes(loadedHomes)
                 setFloors(loadedFloors)
@@ -826,7 +892,7 @@ export default function UWBLocationPage() {
         }
 
         initializeData()
-    }, [])
+    }, [backendAvailable, isCheckingBackend])
     const [selectedHome, setSelectedHome] = useState<string>("")
     const [activeTab, setActiveTab] = useState(() => loadFromStorage('activeTab', "overview"))
 
@@ -2098,75 +2164,153 @@ export default function UWBLocationPage() {
         }
     }, [selectedHomeForTags, selectedFloorForTags, floors])
 
-    // 處理表單提交
-    const handleHomeSubmit = () => {
-        if (editingItem) {
-            setHomes(prev => prev.map(home =>
-                home.id === editingItem.id
-                    ? { ...home, ...homeForm }
-                    : home
-            ))
-        } else {
-            const newHome: Home = {
-                id: `home_${Date.now()}`,
-                ...homeForm,
-                createdAt: new Date()
+    // 處理表單提交 - 智能切換版本
+    const handleHomeSubmit = async () => {
+        try {
+            if (editingItem) {
+                // 編輯場域
+                if (backendAvailable) {
+                    // 使用 API 更新
+                    const updatedHome = await api.home.update(editingItem.id, homeForm)
+                    setHomes(prev => prev.map(home =>
+                        home.id === editingItem.id ? updatedHome : home
+                    ))
+                    toast({
+                        title: "場域更新成功",
+                        description: "場域信息已同步到後端"
+                    })
+                } else {
+                    // 使用 localStorage 更新
+                    setHomes(prev => prev.map(home =>
+                        home.id === editingItem.id
+                            ? { ...home, ...homeForm }
+                            : home
+                    ))
+                    toast({
+                        title: "場域更新成功",
+                        description: "場域信息已保存到本地"
+                    })
+                }
+            } else {
+                // 創建新場域
+                if (backendAvailable) {
+                    // 使用 API 創建
+                    const newHome = await api.home.create(homeForm)
+                    setHomes(prev => [...prev, newHome])
+                    setSelectedHome(newHome.id)
+                    toast({
+                        title: "場域創建成功",
+                        description: "場域已同步到後端"
+                    })
+                } else {
+                    // 使用 localStorage 創建
+                    const newHome: Home = {
+                        id: `home_${Date.now()}`,
+                        ...homeForm,
+                        createdAt: new Date()
+                    }
+                    setHomes(prev => [...prev, newHome])
+                    setSelectedHome(newHome.id)
+                    toast({
+                        title: "場域創建成功",
+                        description: "場域已保存到本地"
+                    })
+                }
             }
-            setHomes(prev => [...prev, newHome])
-            setSelectedHome(newHome.id)
+            resetHomeForm()
+        } catch (error) {
+            console.error('場域操作失敗:', error)
+            toast({
+                title: "操作失敗",
+                description: error instanceof Error ? error.message : "未知錯誤",
+                variant: "destructive"
+            })
         }
-        resetHomeForm()
     }
 
-    const handleFloorSubmit = () => {
+    const handleFloorSubmit = async () => {
         if (!selectedHome) return
 
-        if (editingItem) {
-            setFloors(prev => prev.map(floor =>
-                floor.id === editingItem.id
-                    ? {
-                        ...floor,
-                        ...floorForm,
-                        dimensions: {
-                            width: 800, // 預設畫布大小
-                            height: 600,
-                            realWidth: floorForm.realWidth,
-                            realHeight: floorForm.realHeight
-                        }
-                    }
-                    : floor
-            ))
-
-            // 觸發自定義事件，通知UWBLocationContext數據已更新
-            const storageChangeEvent = new CustomEvent('uwb-storage-change', {
-                detail: { key: 'uwb_floors' }
-            })
-            window.dispatchEvent(storageChangeEvent)
-            console.log('📡 已觸發樓層編輯事件')
-        } else {
-            const newFloor: Floor = {
-                id: `floor_${Date.now()}`,
-                homeId: selectedHome,
+        try {
+            const floorData = {
                 ...floorForm,
                 dimensions: {
                     width: 800,
                     height: 600,
                     realWidth: floorForm.realWidth,
                     realHeight: floorForm.realHeight
-                },
-                createdAt: new Date()
+                }
             }
-            setFloors(prev => [...prev, newFloor])
+
+            if (editingItem) {
+                // 編輯樓層
+                if (backendAvailable) {
+                    // 使用 API 更新
+                    const updatedFloor = await api.floor.update(editingItem.id, floorData)
+                    setFloors(prev => prev.map(floor =>
+                        floor.id === editingItem.id ? updatedFloor : floor
+                    ))
+                    toast({
+                        title: "樓層更新成功",
+                        description: "樓層信息已同步到後端"
+                    })
+                } else {
+                    // 使用 localStorage 更新
+                    setFloors(prev => prev.map(floor =>
+                        floor.id === editingItem.id
+                            ? { ...floor, ...floorData }
+                            : floor
+                    ))
+                    toast({
+                        title: "樓層更新成功",
+                        description: "樓層信息已保存到本地"
+                    })
+                }
+            } else {
+                // 創建新樓層
+                if (backendAvailable) {
+                    // 使用 API 創建
+                    const newFloor = await api.floor.create({
+                        ...floorData,
+                        homeId: selectedHome
+                    })
+                    setFloors(prev => [...prev, newFloor])
+                    toast({
+                        title: "樓層創建成功",
+                        description: "樓層已同步到後端"
+                    })
+                } else {
+                    // 使用 localStorage 創建
+                    const newFloor: Floor = {
+                        id: `floor_${Date.now()}`,
+                        homeId: selectedHome,
+                        ...floorData,
+                        createdAt: new Date()
+                    }
+                    setFloors(prev => [...prev, newFloor])
+                    toast({
+                        title: "樓層創建成功",
+                        description: "樓層已保存到本地"
+                    })
+                }
+            }
+
+            // 觸發自定義事件，通知UWBLocationContext數據已更新
+            const storageChangeEvent = new CustomEvent('uwb-storage-change', {
+                detail: { key: 'uwb_floors' }
+            })
+            window.dispatchEvent(storageChangeEvent)
+            console.log('📡 已觸發樓層數據更新事件')
+
+            resetFloorForm()
+        } catch (error) {
+            console.error('樓層操作失敗:', error)
+            toast({
+                title: "操作失敗",
+                description: error instanceof Error ? error.message : "未知錯誤",
+                variant: "destructive"
+            })
         }
-
-        // 觸發自定義事件，通知UWBLocationContext數據已更新
-        const storageChangeEvent = new CustomEvent('uwb-storage-change', {
-            detail: { key: 'uwb_floors' }
-        })
-        window.dispatchEvent(storageChangeEvent)
-        console.log('📡 已觸發樓層數據更新事件')
-
-        resetFloorForm()
     }
 
     const handleGatewaySubmit = () => {
@@ -2545,21 +2689,10 @@ export default function UWBLocationPage() {
         const pixelX = originPixel.x + (deltaX * pixelToMeterRatio)
         const pixelY = originPixel.y - (deltaY * pixelToMeterRatio) // 注意這裡是減號
 
-        console.log(`🎯 座標轉換調試:`)
-        console.log(`- 實際座標: (${x}, ${y}) 米`)
-        console.log(`- 原點實際座標: (${originCoordinates?.x || 0}, ${originCoordinates?.y || 0}) 米`)
-        console.log(`- 原點像素座標: (${originPixel.x}, ${originPixel.y}) px`)
-        console.log(`- 距離差值: (${deltaX}, ${deltaY}) 米`)
-        console.log(`- 比例: ${pixelToMeterRatio.toFixed(2)} 像素/米`)
-        console.log(`- X計算: ${originPixel.x} + (${deltaX} * ${pixelToMeterRatio.toFixed(2)}) = ${pixelX.toFixed(1)}`)
-        console.log(`- Y計算: ${originPixel.y} - (${deltaY} * ${pixelToMeterRatio.toFixed(2)}) = ${pixelY.toFixed(1)} (注意Y軸反向)`)
-        console.log(`- 轉換後像素座標: (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)}) px`)
-
         // 邊界檢查
         if (pixelX < -100 || pixelX > 2000 || pixelY < -100 || pixelY > 2000) {
             console.warn(`⚠️ 座標超出合理範圍: (${pixelX.toFixed(1)}, ${pixelY.toFixed(1)})`)
         }
-        console.log(`---`)
 
         return { x: pixelX, y: pixelY }
     }
@@ -2591,25 +2724,75 @@ export default function UWBLocationPage() {
         })
     }
 
-    // 刪除功能
-    const deleteHome = (id: string) => {
-        setHomes(prev => prev.filter(home => home.id !== id))
-        if (selectedHome === id && homes.length > 1) {
-            setSelectedHome(homes.find(h => h.id !== id)?.id || "")
+    // 刪除功能 - 智能切換版本
+    const deleteHome = async (id: string) => {
+        try {
+            if (backendAvailable) {
+                // 使用 API 刪除
+                await api.home.delete(id)
+                setHomes(prev => prev.filter(home => home.id !== id))
+                toast({
+                    title: "場域刪除成功",
+                    description: "場域已從後端刪除"
+                })
+            } else {
+                // 使用 localStorage 刪除
+                setHomes(prev => prev.filter(home => home.id !== id))
+                toast({
+                    title: "場域刪除成功",
+                    description: "場域已從本地刪除"
+                })
+            }
+
+            if (selectedHome === id && homes.length > 1) {
+                setSelectedHome(homes.find(h => h.id !== id)?.id || "")
+            }
+        } catch (error) {
+            console.error('場域刪除失敗:', error)
+            toast({
+                title: "刪除失敗",
+                description: error instanceof Error ? error.message : "未知錯誤",
+                variant: "destructive"
+            })
         }
     }
 
-    const deleteFloor = (id: string) => {
-        setFloors(prev => prev.filter(floor => floor.id !== id))
-        // 同時刪除該樓層的所有閘道器
-        setGateways(prev => prev.filter(gateway => gateway.floorId !== id))
+    const deleteFloor = async (id: string) => {
+        try {
+            if (backendAvailable) {
+                // 使用 API 刪除
+                await api.floor.delete(id)
+                setFloors(prev => prev.filter(floor => floor.id !== id))
+                toast({
+                    title: "樓層刪除成功",
+                    description: "樓層已從後端刪除"
+                })
+            } else {
+                // 使用 localStorage 刪除
+                setFloors(prev => prev.filter(floor => floor.id !== id))
+                toast({
+                    title: "樓層刪除成功",
+                    description: "樓層已從本地刪除"
+                })
+            }
 
-        // 觸發自定義事件，通知UWBLocationContext數據已更新
-        const storageChangeEvent = new CustomEvent('uwb-storage-change', {
-            detail: { key: 'uwb_floors' }
-        })
-        window.dispatchEvent(storageChangeEvent)
-        console.log('📡 已觸發樓層刪除事件')
+            // 同時刪除該樓層的所有閘道器
+            setGateways(prev => prev.filter(gateway => gateway.floorId !== id))
+
+            // 觸發自定義事件，通知UWBLocationContext數據已更新
+            const storageChangeEvent = new CustomEvent('uwb-storage-change', {
+                detail: { key: 'uwb_floors' }
+            })
+            window.dispatchEvent(storageChangeEvent)
+            console.log('📡 已觸發樓層刪除事件')
+        } catch (error) {
+            console.error('樓層刪除失敗:', error)
+            toast({
+                title: "刪除失敗",
+                description: error instanceof Error ? error.message : "未知錯誤",
+                variant: "destructive"
+            })
+        }
     }
 
     const deleteGateway = (id: string) => {
@@ -3128,46 +3311,80 @@ export default function UWBLocationPage() {
     }
 
     // 保存地圖標定
-    const saveMapCalibration = () => {
+    const saveMapCalibration = async () => {
         if (!calibratingFloor || !selectedOrigin || !uploadedImage || !scalePoints.point1 || !scalePoints.point2) return
 
-        // 計算兩點之間的像素距離
-        const pixelDistance = Math.sqrt(
-            Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
-            Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
-        )
+        try {
+            // 計算兩點之間的像素距離
+            const pixelDistance = Math.sqrt(
+                Math.pow(scalePoints.point2.x - scalePoints.point1.x, 2) +
+                Math.pow(scalePoints.point2.y - scalePoints.point1.y, 2)
+            )
 
-        // 計算像素/公尺比例
-        const calculatedRatio = pixelDistance / realDistance
+            // 計算像素/公尺比例
+            const calculatedRatio = pixelDistance / realDistance
 
-        const updatedFloor: Floor = {
-            ...calibratingFloor,
-            mapImage: uploadedImage,
-            calibration: {
-                originPixel: selectedOrigin,
-                originCoordinates: originCoordinates,
-                pixelToMeterRatio: calculatedRatio,
-                scalePoints: scalePoints,
-                realDistance: realDistance,
-                isCalibrated: true
+            const floorData = {
+                mapImage: uploadedImage,
+                calibration: {
+                    originPixel: selectedOrigin,
+                    originCoordinates: originCoordinates,
+                    pixelToMeterRatio: calculatedRatio,
+                    scalePoints: scalePoints,
+                    realDistance: realDistance,
+                    isCalibrated: true
+                }
             }
+
+            if (backendAvailable) {
+                // 使用 API 更新樓層
+                const updatedFloor = await api.floor.update(calibratingFloor.id, floorData)
+                setFloors(prev => prev.map(floor =>
+                    floor.id === calibratingFloor.id ? updatedFloor : floor
+                ))
+                toast({
+                    title: "地圖標定完成",
+                    description: `${calibratingFloor.name} 的地圖已同步到後端`
+                })
+            } else {
+                // 使用 localStorage 更新樓層
+                const updatedFloor: Floor = {
+                    ...calibratingFloor,
+                    ...floorData
+                }
+                setFloors(prev => prev.map(floor =>
+                    floor.id === calibratingFloor.id ? updatedFloor : floor
+                ))
+                toast({
+                    title: "地圖標定完成",
+                    description: `${calibratingFloor.name} 的地圖已保存到本地`
+                })
+            }
+
+            // 同步更新狀態中的比例值
+            setPixelToMeterRatio(calculatedRatio)
+
+            // 觸發自定義事件，通知UWBLocationContext數據已更新
+            const storageChangeEvent = new CustomEvent('uwb-storage-change', {
+                detail: { key: 'uwb_floors' }
+            })
+            window.dispatchEvent(storageChangeEvent)
+            console.log('📡 已觸發標定數據更新事件')
+
+            setCalibrationStep('complete')
+            console.log(`✅ 地圖標定完成: ${calibratingFloor.name}`)
+            console.log(`- 原點: (${selectedOrigin.x}, ${selectedOrigin.y}) px`)
+            console.log(`- 比例: ${calculatedRatio.toFixed(2)} px/m`)
+            console.log(`- 實際距離: ${realDistance} m`)
+
+        } catch (error) {
+            console.error('地圖標定保存失敗:', error)
+            toast({
+                title: "保存失敗",
+                description: error instanceof Error ? error.message : "未知錯誤",
+                variant: "destructive"
+            })
         }
-
-        setFloors(prev => prev.map(floor =>
-            floor.id === calibratingFloor.id ? updatedFloor : floor
-        ))
-
-        // 同步更新狀態中的比例值
-        setPixelToMeterRatio(calculatedRatio)
-
-        // 觸發自定義事件，通知UWBLocationContext數據已更新
-        const storageChangeEvent = new CustomEvent('uwb-storage-change', {
-            detail: { key: 'uwb_floors' }
-        })
-        window.dispatchEvent(storageChangeEvent)
-        console.log('📡 已觸發標定數據更新事件')
-
-        setCalibrationStep('complete')
     }
 
     // 重置地圖標定
@@ -3270,6 +3487,25 @@ export default function UWBLocationPage() {
                         <p className="text-muted-foreground mt-2">
                             {t('pages:uwbLocation.subtitle')}
                         </p>
+                        {/* 存儲模式指示器 */}
+                        <div className="flex items-center gap-2 mt-2">
+                            {isCheckingBackend ? (
+                                <Badge variant="outline" className="flex items-center gap-1">
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    檢測後端連接中...
+                                </Badge>
+                            ) : backendAvailable ? (
+                                <Badge variant="default" className="flex items-center gap-1">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    後端模式 (API)
+                                </Badge>
+                            ) : (
+                                <Badge variant="secondary" className="flex items-center gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    本地模式 (localStorage)
+                                </Badge>
+                            )}
+                        </div>
                     </div>
 
                     {/* 場域選擇 */}
@@ -5833,18 +6069,6 @@ export default function UWBLocationPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {(() => {
                                 // 根据选择的网关过滤标签，参考锚点配对的过滤逻辑
-                                console.log("🔍 標籤過濾調試:")
-                                console.log("- 選擇的閘道器:", selectedGatewayForTags, "類型:", typeof selectedGatewayForTags)
-                                console.log("- 總標籤數量:", tags.length)
-                                console.log("- 所有標籤:", tags.map(t => ({
-                                    id: t.id,
-                                    name: t.name,
-                                    gatewayId: t.gatewayId,
-                                    gatewayIdType: typeof t.gatewayId,
-                                    cloudGatewayId: t.cloudGatewayId,
-                                    cloudGatewayIdType: typeof t.cloudGatewayId
-                                })))
-
                                 const filteredTags = tags.filter(tag => {
                                     // 確保 selectedGatewayForTags 是字符串類型進行比較
                                     const selectedGatewayStr = selectedGatewayForTags?.toString()
@@ -5853,17 +6077,10 @@ export default function UWBLocationPage() {
                                     const match2 = tag.cloudGatewayId?.toString() === selectedGatewayStr
                                     const match3 = tag.cloudGatewayId === parseInt(selectedGatewayStr || "0")
 
-                                    console.log(`標籤 ${tag.id}: gatewayId="${tag.gatewayId}" vs selected="${selectedGatewayForTags}" => match1:${match1}, match2:${match2}, match3:${match3}`)
-
                                     return match1 || match2 || match3
                                 })
 
-                                console.log("🔍 過濾結果:")
-                                console.log("- 過濾後的標籤數量:", filteredTags.length)
-                                console.log("- 過濾後的標籤:", filteredTags.map(t => ({ id: t.id, name: t.name })))
-
                                 if (filteredTags.length === 0) {
-                                    console.log("⚠️ 沒有標籤匹配，顯示空狀態")
                                     return (
                                         <div className="col-span-2 text-center py-8 text-muted-foreground">
                                             <Tag className="mx-auto h-12 w-12 mb-3 opacity-30" />

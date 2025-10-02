@@ -1,0 +1,19 @@
+# Mosquitto ACL配置文件
+# 保存為: C:\Program Files\mosquitto\acl
+
+# 管理員權限
+user admin
+topic readwrite #
+
+# 普通用戶權限
+user user1
+topic read UWB/location/+
+topic write UWB/device/user1/+
+
+user user2
+topic read UWB/location/+
+topic write UWB/device/user2/+
+
+# 匿名用戶權限（如果允許）
+user anonymous
+topic read UWB/public/+
