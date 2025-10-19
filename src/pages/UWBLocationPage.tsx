@@ -2329,6 +2329,36 @@ export default function UWBLocationPage() {
                 cloudData = cloudGatewayData.find(gw => gw.gateway_id === selectedDiscoveredGateway)
             }
 
+            // 🔍 檢查是否已存在相同的閘道器
+            const existingGateway = gateways.find(gw => {
+                // 檢查 MAC 地址是否重複
+                if (gw.macAddress === gatewayForm.macAddress) {
+                    return true
+                }
+
+                // 檢查名稱是否重複
+                if (gw.name === gatewayForm.name) {
+                    return true
+                }
+
+                // 如果來自雲端，檢查雲端 gateway_id 是否重複
+                if (cloudData && gw.cloudData?.gateway_id === cloudData.gateway_id) {
+                    return true
+                }
+
+                return false
+            })
+
+            if (existingGateway) {
+                console.warn("⚠️ 閘道器已存在，跳過重複新增:", {
+                    existing: existingGateway,
+                    new: gatewayForm
+                })
+                alert(`閘道器已存在！\n名稱: ${existingGateway.name}\nMAC: ${existingGateway.macAddress}`)
+                resetGatewayForm()
+                return
+            }
+
             const newGateway: Gateway = {
                 id: `gw_${Date.now()}`,
                 ...gatewayForm,
@@ -2337,7 +2367,7 @@ export default function UWBLocationPage() {
                 cloudData: cloudData || undefined // 保存完整的雲端數據
             }
 
-            console.log("新增 Gateway，包含雲端數據:", newGateway)
+            console.log("✅ 新增 Gateway，包含雲端數據:", newGateway)
             setGateways(prev => [...prev, newGateway])
         }
         resetGatewayForm()
