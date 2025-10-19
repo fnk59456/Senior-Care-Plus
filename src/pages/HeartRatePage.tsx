@@ -30,6 +30,12 @@ const NORMAL_HEART_RATE_MIN = 60
 const NORMAL_HEART_RATE_MAX = 100
 const TARGET_HEART_RATE = 75
 
+// 血壓範圍
+const NORMAL_BP_SYST_MAX = 120  // 正常收縮壓上限
+const NORMAL_BP_DIAST_MAX = 80  // 正常舒張壓上限
+const HIGH_BP_SYST = 140        // 高血壓收縮壓
+const HIGH_BP_DIAST = 90        // 高血壓舒張壓
+
 // 用戶列表
 const USERS = [
   { id: "user001", name: "張三" },
@@ -53,6 +59,8 @@ type HeartRateRecord = {
   datetime: Date
   isAbnormal: boolean
   temperature?: number
+  bp_syst?: number  // 收縮壓
+  bp_diast?: number // 舒張壓
 }
 
 type ChartDataPoint = {
@@ -60,6 +68,8 @@ type ChartDataPoint = {
   hour: string
   heart_rate: number
   isAbnormal: boolean
+  bp_syst?: number  // 收縮壓
+  bp_diast?: number // 舒張壓
 }
 
 // 雲端設備記錄類型
@@ -246,6 +256,9 @@ export default function HeartRatePage() {
   const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [currentMqttTab, setCurrentMqttTab] = useState<string>("local")
 
+  // 參考線顯示狀態
+  const [showReferenceLines, setShowReferenceLines] = useState<boolean>(true)
+
   // 動態獲取健康監控MQTT主題
   const getHealthTopic = () => {
     if (!selectedGateway) return null
@@ -366,7 +379,9 @@ export default function HeartRatePage() {
             time: msg.time,
             datetime: datetime,
             isAbnormal: msg.heart_rate > NORMAL_HEART_RATE_MAX || msg.heart_rate < NORMAL_HEART_RATE_MIN,
-            temperature: msg.temperature
+            temperature: msg.temperature,
+            bp_syst: msg.bp_syst || msg["bp syst"],
+            bp_diast: msg.bp_diast || msg["bp diast"]
           }
 
           console.log("處理的心率記錄:", record) // 添加調試日誌
@@ -718,7 +733,9 @@ export default function HeartRatePage() {
         time: record.time,
         datetime: record.datetime,
         isAbnormal: record.isAbnormal,
-        temperature: record.skin_temp
+        temperature: record.skin_temp,
+        bp_syst: record.bp_syst || 0,
+        bp_diast: record.bp_diast || 0
       }))
     : []
 
@@ -861,6 +878,16 @@ export default function HeartRatePage() {
       filtered = filtered.filter(r => r.heart_rate > NORMAL_HEART_RATE_MAX)
     } else if (recordFilter === "low") {
       filtered = filtered.filter(r => r.heart_rate < NORMAL_HEART_RATE_MIN)
+    } else if (recordFilter === "highBP") {
+      filtered = filtered.filter(r =>
+        (r.bp_syst && r.bp_syst >= HIGH_BP_SYST) ||
+        (r.bp_diast && r.bp_diast >= HIGH_BP_DIAST)
+      )
+    } else if (recordFilter === "lowBP") {
+      filtered = filtered.filter(r =>
+        (r.bp_syst && r.bp_syst < 90) ||
+        (r.bp_diast && r.bp_diast < 60)
+      )
     }
 
     setFilteredRecords(filtered)
@@ -874,7 +901,9 @@ export default function HeartRatePage() {
       time: record.time,
       hour: record.datetime.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
       heart_rate: record.heart_rate,
-      isAbnormal: record.isAbnormal
+      isAbnormal: record.isAbnormal,
+      bp_syst: record.bp_syst || 0,
+      bp_diast: record.bp_diast || 0
     }))
 
   console.log("心率圖表數據準備:")
@@ -1429,42 +1458,126 @@ export default function HeartRatePage() {
                     </span>
                   )}
                 </span>
-                <span className="text-sm text-muted-foreground">{getDateString()}</span>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant={showReferenceLines ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowReferenceLines(!showReferenceLines)}
+                    className="text-xs"
+                  >
+                    {showReferenceLines ? t('pages:heartRate.heartRateChart.hideReferenceLines') : t('pages:heartRate.heartRateChart.showReferenceLines')}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">{getDateString()}</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {chartData.length > 0 ? (
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis
-                        dataKey="hour"
-                        tick={{ fontSize: 12 }}
-                        interval="preserveStartEnd"
-                      />
-                      <YAxis
-                        domain={currentMqttTab === "cloud" ? ['dataMin - 5', 'dataMax + 5'] : [40, 120]}
-                        tick={{ fontSize: 12 }}
-                        label={{ value: t('pages:heartRate.heartRateChart.yAxisLabel'), angle: -90, position: 'insideLeft' }}
-                      />
-                      <Tooltip
-                        labelFormatter={(value) => `${t('pages:heartRate.heartRateChart.time')}: ${value}`}
-                        formatter={(value) => [`${value} BPM`, t('pages:heartRate.heartRateChart.heartRate')]}
-                      />
-                      <ReferenceLine y={TARGET_HEART_RATE} stroke="#ec4899" strokeDasharray="5 5" label={`${t('pages:heartRate.heartRateChart.targetHeartRate')}: 75 BPM`} />
-                      <ReferenceLine y={NORMAL_HEART_RATE_MAX} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:heartRate.heartRateChart.highHeartRateLine')} />
-                      <ReferenceLine y={NORMAL_HEART_RATE_MIN} stroke="#3b82f6" strokeDasharray="5 5" label={t('pages:heartRate.heartRateChart.lowHeartRateLine')} />
-                      <Line
-                        type="monotone"
-                        dataKey="heart_rate"
-                        stroke="#ec4899"
-                        strokeWidth={2}
-                        dot={{ fill: '#ec4899', strokeWidth: 2, r: 4 }}
-                        activeDot={{ r: 6 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+                <div className="space-y-4">
+                  {/* 圖例說明 */}
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-0.5 bg-pink-500"></div>
+                      <span className="text-pink-600 font-medium">{t('pages:heartRate.heartRateChart.legend.heartRate')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-0.5 bg-red-500"></div>
+                      <span className="text-red-600 font-medium">{t('pages:heartRate.heartRateChart.legend.systolicBP')}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-0.5 bg-blue-500"></div>
+                      <span className="text-blue-600 font-medium">{t('pages:heartRate.heartRateChart.legend.diastolicBP')}</span>
+                    </div>
+                    {showReferenceLines && (
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{t('pages:heartRate.heartRateChart.legend.referenceLinesVisible')}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={chartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="hour"
+                          tick={{ fontSize: 12 }}
+                          interval="preserveStartEnd"
+                        />
+                        {/* 心率Y軸 (左側) */}
+                        <YAxis
+                          yAxisId="heartRate"
+                          domain={currentMqttTab === "cloud" ? ['dataMin - 5', 'dataMax + 5'] : [40, 120]}
+                          tick={{ fontSize: 12 }}
+                          label={{ value: t('pages:heartRate.heartRateChart.yAxisLabel'), angle: -90, position: 'insideLeft' }}
+                        />
+                        {/* 血壓Y軸 (右側) */}
+                        <YAxis
+                          yAxisId="bloodPressure"
+                          orientation="right"
+                          domain={[50, 180]}
+                          tick={{ fontSize: 12 }}
+                          label={{ value: '血壓 (mmHg)', angle: 90, position: 'insideRight' }}
+                        />
+                        <Tooltip
+                          labelFormatter={(value) => `${t('pages:heartRate.heartRateChart.time')}: ${value}`}
+                          formatter={(value, name) => {
+                            if (name === 'heart_rate') return [`${value} BPM`, t('pages:heartRate.heartRateChart.legend.heartRate')]
+                            if (name === 'bp_syst') return [`${value} mmHg`, t('pages:heartRate.heartRateChart.legend.systolicBP')]
+                            if (name === 'bp_diast') return [`${value} mmHg`, t('pages:heartRate.heartRateChart.legend.diastolicBP')]
+                            return [`${value}`, name]
+                          }}
+                        />
+                        {/* 心率參考線 - 條件顯示 */}
+                        {showReferenceLines && (
+                          <>
+                            <ReferenceLine yAxisId="heartRate" y={TARGET_HEART_RATE} stroke="#ec4899" strokeDasharray="5 5" label={`${t('pages:heartRate.heartRateChart.targetHeartRate')}: 75 BPM`} />
+                            <ReferenceLine yAxisId="heartRate" y={NORMAL_HEART_RATE_MAX} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:heartRate.heartRateChart.highHeartRateLine')} />
+                            <ReferenceLine yAxisId="heartRate" y={NORMAL_HEART_RATE_MIN} stroke="#3b82f6" strokeDasharray="5 5" label={t('pages:heartRate.heartRateChart.lowHeartRateLine')} />
+                          </>
+                        )}
+                        {/* 血壓參考線 - 條件顯示 */}
+                        {showReferenceLines && (
+                          <>
+                            <ReferenceLine yAxisId="bloodPressure" y={NORMAL_BP_SYST_MAX} stroke="#f59e0b" strokeDasharray="3 3" label={t('pages:heartRate.heartRateChart.referenceLines.normalSystolicBP')} />
+                            <ReferenceLine yAxisId="bloodPressure" y={NORMAL_BP_DIAST_MAX} stroke="#10b981" strokeDasharray="3 3" label={t('pages:heartRate.heartRateChart.referenceLines.normalDiastolicBP')} />
+                            <ReferenceLine yAxisId="bloodPressure" y={HIGH_BP_SYST} stroke="#dc2626" strokeDasharray="3 3" label={t('pages:heartRate.heartRateChart.referenceLines.highSystolicBP')} />
+                            <ReferenceLine yAxisId="bloodPressure" y={HIGH_BP_DIAST} stroke="#dc2626" strokeDasharray="3 3" label={t('pages:heartRate.heartRateChart.referenceLines.highDiastolicBP')} />
+                          </>
+                        )}
+                        {/* 心率線 */}
+                        <Line
+                          yAxisId="heartRate"
+                          type="monotone"
+                          dataKey="heart_rate"
+                          stroke="#ec4899"
+                          strokeWidth={2}
+                          dot={{ fill: '#ec4899', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                        {/* 收縮壓線 */}
+                        <Line
+                          yAxisId="bloodPressure"
+                          type="monotone"
+                          dataKey="bp_syst"
+                          stroke="#ef4444"
+                          strokeWidth={2}
+                          dot={{ fill: '#ef4444', strokeWidth: 2, r: 3 }}
+                          activeDot={{ r: 5 }}
+                        />
+                        {/* 舒張壓線 */}
+                        <Line
+                          yAxisId="bloodPressure"
+                          type="monotone"
+                          dataKey="bp_diast"
+                          stroke="#3b82f6"
+                          strokeWidth={2}
+                          dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
+                          activeDot={{ r: 5 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
               ) : (
                 <div className="h-80 flex items-center justify-center text-muted-foreground">
@@ -1533,6 +1646,22 @@ export default function HeartRatePage() {
                   >
                     {t('pages:heartRate.heartRateRecords.filters.low')}
                   </Button>
+                  <Button
+                    variant={recordFilter === "highBP" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setRecordFilter("highBP")}
+                    className="text-red-600 border-red-600 hover:bg-red-50"
+                  >
+                    {t('pages:heartRate.heartRateRecords.filters.highBP')}
+                  </Button>
+                  <Button
+                    variant={recordFilter === "lowBP" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setRecordFilter("lowBP")}
+                    className="text-purple-600 border-purple-600 hover:bg-purple-50"
+                  >
+                    {t('pages:heartRate.heartRateRecords.filters.lowBP')}
+                  </Button>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -1583,6 +1712,9 @@ export default function HeartRatePage() {
                             {record.heart_rate > 0 ? `${record.heart_rate} BPM` : t('pages:heartRate.heartRateRecords.noHeartRateData')}
                             {record.temperature && record.temperature > 0 && (
                               <span className="ml-2">| {t('pages:heartRate.heartRateRecords.temperature')}: {record.temperature}°C</span>
+                            )}
+                            {(record.bp_syst && record.bp_syst > 0) && (record.bp_diast && record.bp_diast > 0) && (
+                              <span className="ml-2">| {t('pages:heartRate.heartRateRecords.bloodPressure')}: {record.bp_syst}/{record.bp_diast} mmHg</span>
                             )}
                           </div>
                         </div>

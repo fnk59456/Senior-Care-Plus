@@ -857,14 +857,30 @@
             "noData": "暫無{{date}}的心率數據",
             "cloudSimulatorCheck": "請確認雲端MQTT模擬器已啟動",
             "selectValidDevice": "並選擇有效的雲端設備",
-            "localSimulatorCheck": "請確認本地MQTT模擬器已啟動"
+            "localSimulatorCheck": "請確認本地MQTT模擬器已啟動",
+            "hideReferenceLines": "隱藏參考線",
+            "showReferenceLines": "顯示參考線",
+            "legend": {
+                "heartRate": "心率 (BPM)",
+                "systolicBP": "收縮壓 (mmHg)",
+                "diastolicBP": "舒張壓 (mmHg)",
+                "referenceLinesVisible": "參考線已顯示"
+            },
+            "referenceLines": {
+                "normalSystolicBP": "正常收縮壓: 120",
+                "normalDiastolicBP": "正常舒張壓: 80",
+                "highSystolicBP": "高血壓收縮壓: 140",
+                "highDiastolicBP": "高血壓舒張壓: 90"
+            }
         },
         "heartRateRecords": {
             "title": "心率記錄",
             "filters": {
                 "all": "全部",
                 "high": "高心率",
-                "low": "低心率"
+                "low": "低心率",
+                "highBP": "高血壓",
+                "lowBP": "低血壓"
             },
             "timeRanges": {
                 "1day": "1天",
@@ -873,6 +889,7 @@
             },
             "noHeartRateData": "無心率數據",
             "temperature": "體溫",
+            "bloodPressure": "血壓",
             "heartRateHigh": "心率過高",
             "heartRateLow": "心率過低",
             "normal": "正常",

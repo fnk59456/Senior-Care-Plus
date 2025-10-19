@@ -857,14 +857,30 @@
             "noData": "No heart rate data for {{date}}",
             "cloudSimulatorCheck": "Please confirm cloud MQTT simulator is running",
             "selectValidDevice": "and select a valid cloud device",
-            "localSimulatorCheck": "Please confirm local MQTT simulator is running"
+            "localSimulatorCheck": "Please confirm local MQTT simulator is running",
+            "hideReferenceLines": "Hide Reference Lines",
+            "showReferenceLines": "Show Reference Lines",
+            "legend": {
+                "heartRate": "Heart Rate (BPM)",
+                "systolicBP": "Systolic BP (mmHg)",
+                "diastolicBP": "Diastolic BP (mmHg)",
+                "referenceLinesVisible": "Reference Lines Visible"
+            },
+            "referenceLines": {
+                "normalSystolicBP": "Normal Systolic: 120",
+                "normalDiastolicBP": "Normal Diastolic: 80",
+                "highSystolicBP": "High Systolic: 140",
+                "highDiastolicBP": "High Diastolic: 90"
+            }
         },
         "heartRateRecords": {
             "title": "Heart Rate Records",
             "filters": {
                 "all": "All",
-                "high": "High",
-                "low": "Low"
+                "high": "High HR",
+                "low": "Low HR",
+                "highBP": "High BP",
+                "lowBP": "Low BP"
             },
             "timeRanges": {
                 "1day": "1 Day",
@@ -873,6 +889,7 @@
             },
             "noHeartRateData": "No Heart Rate Data",
             "temperature": "Temperature",
+            "bloodPressure": "Blood Pressure",
             "heartRateHigh": "Heart Rate High",
             "heartRateLow": "Heart Rate Low",
             "normal": "Normal",

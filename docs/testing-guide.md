@@ -21,13 +21,13 @@ docker run -it -p 8083:8083 -p 1883:1883 eclipse-mosquitto:2.0
 
 # 使用本地安裝的Mosquitto
 ##將本專案目錄底下的"mosquitto.conf"覆蓋安裝位置(如 C:\Program Files\mosquitto\mosquitto.conf)
-mosquitto -c /etc/mosquitto/mosquitto.conf
+mosquitto.exe -c mosquitto.conf -v
 ```
 
 ### 3. 啟動測試服務器
 ```bash
 # 啟動REST API + MQTT測試服務器
-node test-backend-server.js
+node test-backend-with-db.js
 ```
 
 ## 🧪 測試步驟

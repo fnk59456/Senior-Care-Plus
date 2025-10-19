@@ -807,5 +807,147 @@
             "mainAnchor": "メインアンカー",
             "unknown": "不明"
         }
+    },
+    "heartRate": {
+        "title": "心拍監視",
+        "subtitle": "高齢者の心拍変化と異常警告のリアルタイム監視",
+        "navigationFromHealth": "健康監視ページからナビゲーション",
+        "currentPatient": "現在の患者",
+        "reconnectLocal": "ローカル再接続",
+        "reconnectCloud": "クラウド再接続",
+        "tabs": {
+            "local": "ローカル MQTT",
+            "cloud": "クラウド MQTT"
+        },
+        "patientSelection": {
+            "title": "患者選択",
+            "selectPatient": "患者を選択",
+            "patient": "患者"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "クラウドデバイス監視",
+            "connected": "接続正常",
+            "離線": "オフライン",
+            "連接中...": "接続中...",
+            "重新連接中...": "再接続中...",
+            "連接已關閉": "接続が閉じられました",
+            "連接錯誤": "接続エラー",
+            "未選擇閘道器": "ゲートウェイが選択されていません",
+            "selectArea": "監視エリアを選択：",
+            "selectNursingHome": "老人ホーム",
+            "selectNursingHomeFirst": "まず老人ホームを選択してください",
+            "selectFloor": "階層",
+            "selectFloorFirst": "まず階層を選択してください",
+            "selectGateway": "ゲートウェイ",
+            "currentGateway": "現在選択されているゲートウェイ：",
+            "listeningTopic": "リスニングトピック",
+            "cannotGetTopic": "トピックを取得できません",
+            "discoveredDevices": "発見されたデバイス",
+            "totalRecords": "総記録数",
+            "mqttMessages": "MQTTメッセージ",
+            "selectDevice": "監視デバイスを選択：",
+            "selectCloudDevice": "詳細監視のためのクラウドデバイスを選択",
+            "records": "件の記録",
+            "noDevices": "まだクラウドデバイスが発見されていません",
+            "pleaseConfirm": "確認してください：",
+            "cloudMqttSimulator": "クラウド MQTT シミュレーターが起動しています",
+            "simulatorFormat": "シミュレーターは content: \"300B\" 形式のデータを送信",
+            "dataFields": "データにはMACと心拍関連フィールドが含まれます",
+            "recentData": "最近受信したデータ：",
+            "device": "デバイス",
+            "heartRate": "心拍数",
+            "spo2": "血中酸素",
+            "bloodPressure": "血圧",
+            "temperature": "体温",
+            "diaperDevice": "おむつデバイス",
+            "humidity": "湿度",
+            "viewRawData": "生のMQTTデータを表示（デバッグ用）",
+            "clickToExpand": "下のデータをクリックして完全な内容を展開表示",
+            "deviceCreationConditions": "デバイス作成条件チェック：",
+            "condition1": "content: \"300B\" が必要",
+            "condition2": "MACフィールドが必要",
+            "condition3": "hr, SpO2, bp_syst, bp_diast フィールドは空または0でも可（条件緩和済み）",
+            "condition4": "diaper DV1 タイプのデータは現在デバイス記録を作成しません"
+        },
+        "deviceHeartRateData": {
+            "title": "デバイス生命徴候データ",
+            "unknownDevice": "不明なデバイス",
+            "heartRate": "心拍数",
+            "spo2": "血中酸素",
+            "bloodPressure": "血圧",
+            "skinTemperature": "皮膚温度",
+            "steps": "歩数",
+            "battery": "バッテリー",
+            "noData": "データなし",
+            "noHeartRateData": "心拍データなし",
+            "heartRateHigh": "心拍数高",
+            "heartRateLow": "心拍数低",
+            "normal": "正常"
+        },
+        "dateTabs": {
+            "today": "今日",
+            "yesterday": "昨日",
+            "dayBefore": "一昨日"
+        },
+        "heartRateChart": {
+            "title": "心拍トレンドチャート",
+            "cloudDevice": "クラウドデバイス",
+            "localUser": "ローカルユーザー",
+            "yAxisLabel": "心拍数 (BPM)",
+            "time": "時間",
+            "heartRate": "心拍数",
+            "targetHeartRate": "目標心拍数",
+            "highHeartRateLine": "高心拍数警戒線",
+            "lowHeartRateLine": "低心拍数警戒線",
+            "noData": "{{date}}の心拍データがありません",
+            "cloudSimulatorCheck": "クラウドMQTTシミュレーターが起動していることを確認してください",
+            "selectValidDevice": "有効なクラウドデバイスを選択してください",
+            "localSimulatorCheck": "ローカルMQTTシミュレーターが起動していることを確認してください",
+            "hideReferenceLines": "参照線を非表示",
+            "showReferenceLines": "参照線を表示",
+            "legend": {
+                "heartRate": "心拍数 (BPM)",
+                "systolicBP": "収縮期血圧 (mmHg)",
+                "diastolicBP": "拡張期血圧 (mmHg)",
+                "referenceLinesVisible": "参照線表示中"
+            },
+            "referenceLines": {
+                "normalSystolicBP": "正常収縮期: 120",
+                "normalDiastolicBP": "正常拡張期: 80",
+                "highSystolicBP": "高血圧収縮期: 140",
+                "highDiastolicBP": "高血圧拡張期: 90"
+            }
+        },
+        "heartRateRecords": {
+            "title": "心拍記録",
+            "filters": {
+                "all": "すべて",
+                "high": "高心拍",
+                "low": "低心拍",
+                "highBP": "高血圧",
+                "lowBP": "低血圧"
+            },
+            "timeRanges": {
+                "1day": "1日",
+                "3day": "3日",
+                "7day": "7日"
+            },
+            "noHeartRateData": "心拍データなし",
+            "temperature": "体温",
+            "bloodPressure": "血圧",
+            "heartRateHigh": "心拍数高",
+            "heartRateLow": "心拍数低",
+            "normal": "正常",
+            "noRecords": "条件に一致する記録がありません",
+            "selectCloudDeviceFirst": "まずクラウドデバイスを選択してください",
+            "selectedDeviceNoData": "選択されたデバイスに心拍データがありません"
+        },
+        "connectionStatus": {
+            "title": "接続状態監視",
+            "localMqtt": "ローカル MQTT",
+            "cloudMqtt": "クラウド MQTT",
+            "error": "エラー",
+            "hint": "ヒント：ローカルMQTTはlocalhost:9001で実行する必要があり、クラウドMQTTはHiveMQクラウドサービスに自動接続されます"
+        }
     }
 }
