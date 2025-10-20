@@ -7,6 +7,7 @@ from datetime import datetime
 MQTT_BROKER = "067ec32ef1344d3bb20c4e53abdde99a.s1.eu.hivemq.cloud"
 MQTT_PORT = 8883  # SSL/TLS 端口
 MQTT_TOPIC_CONFIG = "UWB/GW16B8_AncConf"  # Anchor 配置主題
+MQTT_TOPIC_TAGCONF = "UWB/GW16B8_TagConf"  # Tag 配置主題
 MQTT_TOPIC_MESSAGE = "UWB/GW16B8_Message"  # 訊息主題
 MQTT_USERNAME = "testweb1"
 MQTT_PASSWORD = "Aa000000"
@@ -16,9 +17,12 @@ def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 成功連接到 MQTT Broker")
 
-        # 訂閱兩個主題
+        # 訂閱三個主題
         client.subscribe(MQTT_TOPIC_CONFIG)
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 已訂閱主題: {MQTT_TOPIC_CONFIG}")
+
+        client.subscribe(MQTT_TOPIC_TAGCONF)
+        print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 已訂閱主題: {MQTT_TOPIC_TAGCONF}")
 
         client.subscribe(MQTT_TOPIC_MESSAGE)
         print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 已訂閱主題: {MQTT_TOPIC_MESSAGE}")
@@ -34,6 +38,33 @@ def handle_anchor_config_message(message, topic):
 
     # 格式化輸出訊息內容
     print("Anchor 配置訊息內容:")
+    print(f"  內容類型: {message.get('content', 'N/A')}")
+    print(f"  Gateway ID: {message.get('gateway id', 'N/A')}")
+    print(f"  節點類型: {message.get('node', 'N/A')}")
+    print(f"  設備名稱: {message.get('name', 'N/A')}")
+    print(f"  設備 ID: {message.get('id', 'N/A')}")
+    print(f"  韌體更新: {message.get('fw update', 'N/A')}")
+    print(f"  LED 狀態: {message.get('led', 'N/A')}")
+    print(f"  BLE 狀態: {message.get('ble', 'N/A')}")
+    print(f"  發起者: {message.get('initiator', 'N/A')}")
+
+    # 輸出位置信息
+    position = message.get('position', {})
+    if position:
+        print("  位置坐標:")
+        print(f"    X: {position.get('x', 'N/A')}")
+        print(f"    Y: {position.get('y', 'N/A')}")
+        print(f"    Z: {position.get('z', 'N/A')}")
+
+def handle_tag_config_message(message, topic):
+    """處理 Tag 配置訊息"""
+    print(f"\n{'='*60}")
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 收到 UWB Tag 配置訊息")
+    print(f"主題: {topic}")
+    print(f"{'='*60}")
+
+    # 格式化輸出訊息內容
+    print("Tag 配置訊息內容:")
     print(f"  內容類型: {message.get('content', 'N/A')}")
     print(f"  Gateway ID: {message.get('gateway id', 'N/A')}")
     print(f"  節點類型: {message.get('node', 'N/A')}")
@@ -77,6 +108,8 @@ def on_message(client, userdata, msg):
         # 根據主題判斷訊息類型並處理
         if msg.topic == MQTT_TOPIC_CONFIG:
             handle_anchor_config_message(message, msg.topic)
+        elif msg.topic == MQTT_TOPIC_TAGCONF:
+            handle_tag_config_message(message, msg.topic)
         elif msg.topic == MQTT_TOPIC_MESSAGE:
             handle_status_message(message, msg.topic)
         else:
@@ -107,7 +140,8 @@ def main():
     print(f"雲端 MQTT Broker: {MQTT_BROKER}:{MQTT_PORT}")
     print(f"用戶名: {MQTT_USERNAME}")
     print(f"監聽主題 1: {MQTT_TOPIC_CONFIG} (Anchor 配置)")
-    print(f"監聽主題 2: {MQTT_TOPIC_MESSAGE} (狀態訊息)")
+    print(f"監聽主題 2: {MQTT_TOPIC_TAGCONF} (Tag 配置)")
+    print(f"監聽主題 3: {MQTT_TOPIC_MESSAGE} (狀態訊息)")
     print("使用 SSL/TLS 加密連接")
     print("按 Ctrl+C 退出程式\n")
 

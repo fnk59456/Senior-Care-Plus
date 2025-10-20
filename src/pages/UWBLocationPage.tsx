@@ -1131,9 +1131,40 @@ export default function UWBLocationPage() {
     )
 
     // 獲取當前場域的所有錨點
-    const currentAnchors = anchors.filter(anchor =>
-        currentGateways.some(gateway => gateway.id === anchor.gatewayId)
-    )
+    const currentAnchors = anchors.filter(anchor => {
+        // 檢查錨點是否屬於當前場域的閘道器
+        const belongsToCurrentGateway = currentGateways.some(gateway => gateway.id === anchor.gatewayId)
+
+        // 檢查錨點是否屬於當前場域的樓層（通過閘道器關聯）
+        const belongsToCurrentFloor = currentFloors.some(floor => {
+            const gateway = gateways.find(gw => gw.id === anchor.gatewayId)
+            return gateway?.floorId === floor.id
+        })
+
+        return belongsToCurrentGateway || belongsToCurrentFloor
+    })
+
+    // 調試 currentAnchors
+    console.log("🏠 currentAnchors 調試:")
+    console.log("- selectedHome:", selectedHome)
+    console.log("- currentFloors 數量:", currentFloors.length)
+    console.log("- currentFloors IDs:", currentFloors.map(f => f.id))
+    console.log("- currentGateways 數量:", currentGateways.length)
+    console.log("- currentGateways IDs:", currentGateways.map(g => g.id))
+    console.log("- currentGateways 詳情:", currentGateways.map(g => ({
+        id: g.id,
+        name: g.name,
+        floorId: g.floorId,
+        cloudData: g.cloudData
+    })))
+    console.log("- anchors 總數:", anchors.length)
+    console.log("- anchors 詳情:", anchors.map(a => ({
+        id: a.id,
+        name: a.name,
+        gatewayId: a.gatewayId,
+        cloudGatewayId: a.cloudGatewayId
+    })))
+    console.log("- currentAnchors 數量:", currentAnchors.length)
 
     // 獲取在線的Gateway列表（用於Anchor配對）
     const onlineGateways = currentGateways.filter(gw => gw.status === 'online')
@@ -1707,6 +1738,7 @@ export default function UWBLocationPage() {
                 return {
                     messageTopic: selectedGatewayData.pub_topic.message,
                     locationTopic: selectedGatewayData.pub_topic.location,
+                    tagConfigTopic: selectedGatewayData.pub_topic.tag_config || `UWB/${selectedGatewayData.name.replace(/\s+/g, '')}_TagConf`,
                     source: "雲端發現"
                 }
             }
@@ -1723,6 +1755,7 @@ export default function UWBLocationPage() {
                 return {
                     messageTopic: systemGateway.cloudData.pub_topic.message,
                     locationTopic: systemGateway.cloudData.pub_topic.location,
+                    tagConfigTopic: systemGateway.cloudData.pub_topic.tag_config || `UWB/${systemGateway.name.replace(/\s+/g, '')}_TagConf`,
                     source: "系統閘道器(雲端數據)"
                 }
             } else if (systemGateway) {
@@ -1730,6 +1763,7 @@ export default function UWBLocationPage() {
                 return {
                     messageTopic: `UWB/${gatewayName}_Message`,
                     locationTopic: `UWB/${gatewayName}_Loca`,
+                    tagConfigTopic: `UWB/${gatewayName}_TagConf`,
                     source: "系統閘道器(構建)"
                 }
             }
@@ -1749,12 +1783,14 @@ export default function UWBLocationPage() {
 
         const messageTopic = gatewayConfig.messageTopic
         const locationTopic = gatewayConfig.locationTopic
+        const tagConfigTopic = gatewayConfig.tagConfigTopic
         console.log(`${gatewayConfig.source}的閘道器，使用 message topic:`, messageTopic)
         console.log(`${gatewayConfig.source}的閘道器，使用 location topic:`, locationTopic)
+        console.log(`${gatewayConfig.source}的閘道器，使用 tag config topic:`, tagConfigTopic)
 
         // 檢查是否已經連接到相同的主題，避免重複連接
         if (tagCloudClientRef.current &&
-            currentTagTopic === `${messageTopic}+${locationTopic}` &&
+            currentTagTopic === `${messageTopic}+${locationTopic}+${tagConfigTopic}` &&
             (tagCloudConnected || tagCloudConnectionStatus === "連接中...")) {
             console.log("⚠️ 已連接到相同主題或正在連接中，跳過重複連接")
             console.log("- 當前狀態:", tagCloudConnectionStatus)
@@ -1769,14 +1805,14 @@ export default function UWBLocationPage() {
             tagCloudClientRef.current = null
         }
 
-        setCurrentTagTopic(`${messageTopic}+${locationTopic}`)
+        setCurrentTagTopic(`${messageTopic}+${locationTopic}+${tagConfigTopic}`)
         setTagCloudConnectionStatus("連接中...")
         setTagCloudError("")
 
         console.log("🚀 開始連接 Tag MQTT")
         console.log("- MQTT URL:", CLOUD_MQTT_URL)
         console.log("- MQTT 用戶名:", CLOUD_MQTT_OPTIONS.username)
-        console.log("- 訂閱主題:", messageTopic, "和", locationTopic)
+        console.log("- 訂閱主題:", messageTopic, "、", locationTopic, "和", tagConfigTopic)
         console.log("- Client ID 前綴: uwb-tag-client-")
         console.log("- 觸發原因: selectedGatewayForTags 變化或數據更新")
 
@@ -1796,7 +1832,7 @@ export default function UWBLocationPage() {
         tagClient.on("connect", () => {
             console.log("✅ Tag 雲端 MQTT 已連接成功！")
             console.log("- Client ID:", tagClient.options.clientId)
-            console.log("- 準備訂閱主題:", messageTopic, "和", locationTopic)
+            console.log("- 準備訂閱主題:", messageTopic, "、", locationTopic, "和", tagConfigTopic)
             setTagCloudConnected(true)
             setTagCloudConnectionStatus("已連線")
             setTagCloudError("")
@@ -1831,7 +1867,7 @@ export default function UWBLocationPage() {
             setTagCloudConnectionStatus("離線")
         })
 
-        // 訂閱兩個主題
+        // 訂閱三個主題
         tagClient.subscribe(messageTopic, (err) => {
             if (err) {
                 console.error("❌ Tag message 主題訂閱失敗:", err)
@@ -1850,20 +1886,29 @@ export default function UWBLocationPage() {
             }
         })
 
-        // 檢查兩個主題是否都訂閱成功
+        tagClient.subscribe(tagConfigTopic, (err) => {
+            if (err) {
+                console.error("❌ Tag config 主題訂閱失敗:", err)
+                setTagCloudError(`tag config 主題訂閱失敗: ${err.message}`)
+            } else {
+                console.log("✅ 已成功訂閱 tag config 主題:", tagConfigTopic)
+            }
+        })
+
+        // 檢查三個主題是否都訂閱成功
         setTimeout(() => {
             if (!tagCloudError.includes("訂閱失敗")) {
                 setTagCloudConnectionStatus("已連線並訂閱")
-                console.log("✅ 兩個主題都已訂閱成功")
+                console.log("✅ 三個主題都已訂閱成功")
             }
         }, 1000)
 
         tagClient.on("message", (topic: string, payload: Uint8Array) => {
             console.log("📨 收到 Tag MQTT 消息")
             console.log("- 接收主題:", topic)
-            console.log("- 預期主題:", messageTopic, "或", locationTopic)
+            console.log("- 預期主題:", messageTopic, "、", locationTopic, "或", tagConfigTopic)
 
-            if (topic !== messageTopic && topic !== locationTopic) {
+            if (topic !== messageTopic && topic !== locationTopic && topic !== tagConfigTopic) {
                 console.log("⚠️ 主題不匹配，忽略消息")
                 return
             }
@@ -2133,6 +2178,104 @@ export default function UWBLocationPage() {
                                 console.log("- 關聯的本地 Gateway:", relatedGateway?.name || "未找到")
                                 console.log("- 雲端 Gateway ID:", tagData.gateway_id)
                                 return [...prev, newLocalTag]
+                            }
+                        })
+                    }
+                }
+                // 處理 tag config 主題數據 (content: "config", node: "TAG")
+                else if (topic === tagConfigTopic && msg.content === "config" && msg.node === "TAG") {
+                    console.log("處理 Tag config 數據...")
+
+                    const tagData = {
+                        content: msg.content,
+                        gateway_id: msg["gateway id"] || 0,
+                        node: msg.node || "",
+                        id: msg.id || 0,
+                        name: msg.name || "",
+                        fw_update: msg["fw update"] || 0,
+                        led: msg.led || 0,
+                        ble: msg.ble || 0,
+                        location_engine: msg["location engine"] || 0,
+                        responsive_mode: msg["responsive mode(0=On,1=Off)"] || 0,
+                        stationary_detect: msg["stationary detect"] || 0,
+                        nominal_udr: msg["nominal udr(hz)"] || 0,
+                        stationary_udr: msg["stationary udr(hz)"] || 0,
+                        receivedAt: new Date(),
+                        topic: "config"
+                    }
+
+                    console.log("解析的 Tag config 數據:", tagData)
+
+                    // 更新原始數據列表
+                    setCloudTagData(prev => {
+                        const newData = [tagData, ...prev].slice(0, 50)
+                        return newData
+                    })
+
+                    // 檢查並更新發現的 Tag 列表
+                    if (tagData.id) {
+                        setDiscoveredCloudTags(prev => {
+                            const existingTag = prev.find(t => t.id === tagData.id)
+
+                            if (existingTag) {
+                                // 更新現有 Tag 的 name 信息
+                                const updatedTags = prev.map(t =>
+                                    t.id === tagData.id
+                                        ? {
+                                            ...t,
+                                            name: tagData.name || t.name, // 更新 name，如果沒有則保持原值
+                                            lastSeen: new Date(),
+                                            recordCount: t.recordCount + 1,
+                                            isOnline: true
+                                        }
+                                        : t
+                                )
+                                console.log("更新現有 Tag 的 name 信息，總數:", updatedTags.length)
+                                return updatedTags
+                            } else {
+                                // 添加新 Tag
+                                const newTag = {
+                                    id: tagData.id,
+                                    name: tagData.name || `ID_${tagData.id}`,
+                                    gateway_id: tagData.gateway_id,
+                                    fw_update: tagData.fw_update,
+                                    led: tagData.led,
+                                    ble: tagData.ble,
+                                    location_engine: tagData.location_engine,
+                                    responsive_mode: tagData.responsive_mode,
+                                    stationary_detect: tagData.stationary_detect,
+                                    nominal_udr: tagData.nominal_udr,
+                                    stationary_udr: tagData.stationary_udr,
+                                    lastSeen: new Date(),
+                                    recordCount: 1,
+                                    isOnline: true,
+                                    topic: "config"
+                                }
+                                const updatedTags = [...prev, newTag]
+                                console.log("添加新 Tag (config):", newTag)
+                                console.log("更新後總 Tag 數:", updatedTags.length)
+                                return updatedTags
+                            }
+                        })
+
+                        // 更新本地標籤的 name 信息
+                        const tagId = tagData.id.toString()
+                        setTags(prev => {
+                            const existingLocalTag = prev.find(t => t.id === tagId)
+
+                            if (existingLocalTag) {
+                                // 更新現有本地標籤的 name 信息
+                                console.log("✅ 自動更新本地標籤 name 信息:", tagId, "->", tagData.name)
+                                return prev.map(t =>
+                                    t.id === tagId ? {
+                                        ...t,
+                                        name: tagData.name || t.name // 更新 name，如果沒有則保持原值
+                                    } : t
+                                )
+                            } else {
+                                // 如果本地沒有這個標籤，創建一個新的（但不會自動加入，因為沒有電池和位置信息）
+                                console.log("⚠️ 本地沒有找到對應的標籤，跳過創建:", tagId)
+                                return prev
                             }
                         })
                     }
@@ -2592,13 +2735,16 @@ export default function UWBLocationPage() {
 
     // 從雲端發現的 Anchor 加入系統
     const handleAddAnchorFromCloud = (cloudAnchor: DiscoveredCloudAnchor) => {
-        // 找到對應的 Gateway
-        const relatedGateway = gateways.find(gw => {
-            // 檢查是否有雲端數據且 gateway_id 匹配
+        console.log("🔧 開始處理雲端錨點加入系統:", cloudAnchor)
+        console.log("🔍 當前選擇的閘道器:", selectedGatewayForAnchors)
+
+        // 優先使用當前選擇的閘道器（通過雲端ID匹配）
+        let relatedGateway = currentGateways.find(gw => {
+            // 檢查雲端ID匹配
             if (gw.cloudData && gw.cloudData.gateway_id === cloudAnchor.gateway_id) {
                 return true
             }
-            // 檢查 MAC 地址是否匹配 (如果 MAC 格式為 GW:xxxxx)
+            // 檢查MAC地址匹配
             if (gw.macAddress.startsWith('GW:')) {
                 const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
                 return gatewayIdFromMac === cloudAnchor.gateway_id
@@ -2607,7 +2753,33 @@ export default function UWBLocationPage() {
         })
 
         if (!relatedGateway) {
-            console.error("找不到對應的 Gateway，無法加入 Anchor")
+            // 如果當前場域沒有匹配的閘道器，從所有閘道器中找到
+            relatedGateway = gateways.find(gw => {
+                // 檢查是否有雲端數據且 gateway_id 匹配
+                if (gw.cloudData && gw.cloudData.gateway_id === cloudAnchor.gateway_id) {
+                    return true
+                }
+                // 檢查 MAC 地址是否匹配 (如果 MAC 格式為 GW:xxxxx)
+                if (gw.macAddress.startsWith('GW:')) {
+                    const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
+                    return gatewayIdFromMac === cloudAnchor.gateway_id
+                }
+                return false
+            })
+        }
+
+        console.log("🔍 找到的關聯閘道器:", relatedGateway)
+
+        if (!relatedGateway) {
+            console.error("❌ 找不到對應的 Gateway，無法加入 Anchor")
+            console.log("- 雲端錨點 gateway_id:", cloudAnchor.gateway_id)
+            console.log("- 當前選擇的閘道器:", selectedGatewayForAnchors)
+            console.log("- 當前場域閘道器:", currentGateways.map(gw => ({
+                id: gw.id,
+                name: gw.name,
+                macAddress: gw.macAddress,
+                cloudData: gw.cloudData
+            })))
             return
         }
 
@@ -2640,8 +2812,12 @@ export default function UWBLocationPage() {
             cloudGatewayId: cloudAnchor.gateway_id
         }
 
-        console.log("加入雲端 Anchor 到系統:", newAnchor)
-        setAnchors(prev => [...prev, newAnchor])
+        console.log("✅ 加入雲端 Anchor 到系統:", newAnchor)
+        setAnchors(prev => {
+            const updated = [...prev, newAnchor]
+            console.log("📊 更新後錨點總數:", updated.length)
+            return updated
+        })
     }
 
     // 獲取圖片在 object-contain 模式下的實際顯示信息
@@ -2745,13 +2921,46 @@ export default function UWBLocationPage() {
         return displayCoords
     }
 
-    // 獲取指定樓層的 Anchor 列表
+    // 獲取指定樓層的 Anchor 列表（與錨點列表使用相同的過濾邏輯）
     const getAnchorsForFloor = (floorId: string) => {
-        return anchors.filter(anchor => {
+        // 先獲取屬於該樓層的所有錨點
+        const result = anchors.filter(anchor => {
             // 通過 Gateway 關聯找到樓層
             const gateway = gateways.find(gw => gw.id === anchor.gatewayId)
-            return gateway?.floorId === floorId
+            const belongsToCurrentFloor = gateway?.floorId === floorId
+
+            if (!belongsToCurrentFloor) return false
+
+            // 如果沒有選擇閘道器，顯示該樓層的所有錨點
+            if (!selectedGatewayForAnchors) return true
+
+            // 與錨點列表使用相同的匹配邏輯
+            const matchesGatewayId = anchor.gatewayId === selectedGatewayForAnchors
+            const matchesCloudGatewayId = anchor.cloudGatewayId?.toString() === selectedGatewayForAnchors
+            const matchesCloudData = gateway?.cloudData?.gateway_id?.toString() === selectedGatewayForAnchors
+
+            // MAC地址匹配
+            let matchesMacAddress = false
+            if (gateway?.macAddress.startsWith('GW:')) {
+                const gatewayIdFromMac = parseInt(gateway.macAddress.replace('GW:', ''), 16)
+                matchesMacAddress = gatewayIdFromMac.toString() === selectedGatewayForAnchors
+            }
+
+            return matchesGatewayId || matchesCloudGatewayId || matchesCloudData || matchesMacAddress
         })
+        console.log("🗺️ getAnchorsForFloor 調試:")
+        console.log("- floorId:", floorId)
+        console.log("- selectedGatewayForAnchors:", selectedGatewayForAnchors)
+        console.log("- anchors 總數:", anchors.length)
+        console.log("- 過濾結果:", result.length)
+        console.log("- 錨點詳情:", result.map(a => ({
+            id: a.id,
+            name: a.name,
+            gatewayId: a.gatewayId,
+            cloudGatewayId: a.cloudGatewayId,
+            gateway: gateways.find(gw => gw.id === a.gatewayId)?.name
+        })))
+        return result
     }
 
     // 刪除功能 - 智能切換版本
@@ -5163,23 +5372,67 @@ export default function UWBLocationPage() {
 
                         {/* Anchor 位置地圖視圖 */}
                         {selectedGatewayForAnchors && (() => {
-                            // 找到選擇的 Gateway
-                            const selectedGateway = gateways.find(gw => {
-                                const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
-                                    ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
-                                    : null
-                                return gatewayIdFromMac === selectedGatewayForAnchors || gw.id === selectedGatewayForAnchors
+                            // 優先從當前場域的閘道器中找到匹配的閘道器
+                            let selectedGateway = currentGateways.find(gw => {
+                                // 檢查雲端ID匹配
+                                if (gw.cloudData && gw.cloudData.gateway_id?.toString() === selectedGatewayForAnchors) {
+                                    return true
+                                }
+                                // 檢查MAC地址匹配
+                                if (gw.macAddress.startsWith('GW:')) {
+                                    const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
+                                    return gatewayIdFromMac.toString() === selectedGatewayForAnchors
+                                }
+                                // 檢查本地ID匹配
+                                return gw.id === selectedGatewayForAnchors
+                            })
+
+                            // 如果在當前場域找不到，再從所有閘道器中找
+                            if (!selectedGateway) {
+                                selectedGateway = gateways.find(gw => {
+                                    const gatewayIdFromMac = gw.macAddress.startsWith('GW:')
+                                        ? parseInt(gw.macAddress.replace('GW:', ''), 16).toString()
+                                        : null
+                                    return gatewayIdFromMac === selectedGatewayForAnchors || gw.id === selectedGatewayForAnchors
+                                })
+                            }
+
+                            console.log("🔍 地圖選擇的閘道器:", {
+                                selectedGatewayForAnchors,
+                                selectedGateway: selectedGateway ? {
+                                    id: selectedGateway.id,
+                                    name: selectedGateway.name,
+                                    floorId: selectedGateway.floorId,
+                                    cloudData: selectedGateway.cloudData
+                                } : null
                             })
 
                             if (!selectedGateway) return null
 
                             // 找到對應的樓層
                             const floor = floors.find(f => f.id === selectedGateway.floorId)
-                            if (!floor || !floor.mapImage || !floor.calibration?.isCalibrated) return null
+                            if (!floor || !floor.mapImage || !floor.calibration?.isCalibrated) {
+                                console.warn("⚠️ 樓層不可用:", {
+                                    floor: floor ? {
+                                        id: floor.id,
+                                        name: floor.name,
+                                        hasMapImage: !!floor.mapImage,
+                                        isCalibrated: floor.calibration?.isCalibrated
+                                    } : null
+                                })
+                                return null
+                            }
 
                             // 獲取該樓層的 Anchor
                             const floorAnchors = getAnchorsForFloor(floor.id)
-                            if (floorAnchors.length === 0) return null
+                            console.log("🗺️ 地圖渲染檢查:")
+                            console.log("- selectedGateway:", selectedGateway)
+                            console.log("- floor:", floor)
+                            console.log("- floorAnchors 數量:", floorAnchors.length)
+                            console.log("- floorAnchors 詳情:", floorAnchors.map(a => ({ id: a.id, name: a.name })))
+
+                            // 即使沒有錨點也顯示地圖，讓用戶可以看到空的地圖
+                            // if (floorAnchors.length === 0) return null
 
                             return (
                                 <Card>
@@ -5267,13 +5520,31 @@ export default function UWBLocationPage() {
 
                                                     {/* Anchor 位置 */}
                                                     {floorAnchors.map(anchor => {
-                                                        if (!anchor.position) return null
+                                                        console.log("🎯 渲染錨點:", {
+                                                            id: anchor.id,
+                                                            name: anchor.name,
+                                                            hasPosition: !!anchor.position,
+                                                            position: anchor.position
+                                                        })
+
+                                                        if (!anchor.position) {
+                                                            console.warn(`⚠️ 錨點 ${anchor.name} 沒有 position，跳過渲染`)
+                                                            return null
+                                                        }
 
                                                         const imgElement = document.querySelector('.anchor-map-image') as HTMLImageElement
-                                                        if (!imgElement || imgElement.naturalWidth === 0) return null
+                                                        if (!imgElement || imgElement.naturalWidth === 0) {
+                                                            console.warn(`⚠️ 地圖圖片元素未準備好`)
+                                                            return null
+                                                        }
 
                                                         const displayPos = convertRealToDisplayCoords(anchor.position.x, anchor.position.y, floor, imgElement)
-                                                        if (!displayPos) return null
+                                                        if (!displayPos) {
+                                                            console.warn(`⚠️ 錨點 ${anchor.name} 座標轉換失敗`)
+                                                            return null
+                                                        }
+
+                                                        console.log(`✅ 錨點 ${anchor.name} 將在 (${displayPos.x}, ${displayPos.y}) 渲染`)
 
                                                         return (
                                                             <div
@@ -5519,6 +5790,21 @@ export default function UWBLocationPage() {
                                                     </>
                                                 )}
                                             </Button>
+                                            <Button
+                                                onClick={() => {
+                                                    if (confirm('確定要清理所有舊的錨點數據嗎？這將移除不屬於當前場域的錨點。')) {
+                                                        const currentAnchorIds = currentAnchors.map(a => a.id)
+                                                        const filteredAnchors = anchors.filter(anchor => currentAnchorIds.includes(anchor.id))
+                                                        setAnchors(filteredAnchors)
+                                                        console.log('🧹 已清理舊錨點數據，保留錨點數量:', filteredAnchors.length)
+                                                    }
+                                                }}
+                                                variant="outline"
+                                                className="text-red-600 hover:text-red-700"
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                清理舊數據
+                                            </Button>
                                         </div>
                                     ) : (
                                         <div className="text-center py-4 text-muted-foreground">
@@ -5579,16 +5865,60 @@ export default function UWBLocationPage() {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 {(() => {
                                                     // 根据选择的网关过滤锚点
-                                                    const filteredAnchors = currentAnchors.filter(anchor =>
-                                                        anchor.gatewayId === selectedGatewayForAnchors ||
-                                                        anchor.cloudGatewayId?.toString() === selectedGatewayForAnchors
-                                                    )
+                                                    console.log("🔍 錨點列表調試信息:")
+                                                    console.log("- selectedGatewayForAnchors:", selectedGatewayForAnchors)
+                                                    console.log("- currentAnchors 總數:", currentAnchors.length)
+                                                    console.log("- currentAnchors 詳情:", currentAnchors.map(a => ({
+                                                        id: a.id,
+                                                        name: a.name,
+                                                        gatewayId: a.gatewayId,
+                                                        cloudGatewayId: a.cloudGatewayId,
+                                                        cloudGatewayIdType: typeof a.cloudGatewayId
+                                                    })))
+
+                                                    const filteredAnchors = currentAnchors.filter(anchor => {
+                                                        const matchesGatewayId = anchor.gatewayId === selectedGatewayForAnchors
+                                                        const matchesCloudGatewayId = anchor.cloudGatewayId?.toString() === selectedGatewayForAnchors
+
+                                                        // 額外檢查：如果 selectedGatewayForAnchors 是雲端ID，檢查閘道器的雲端數據
+                                                        let matchesCloudData = false
+                                                        if (selectedGatewayForAnchors && !matchesGatewayId && !matchesCloudGatewayId) {
+                                                            const gateway = gateways.find(gw => gw.id === anchor.gatewayId)
+                                                            if (gateway?.cloudData?.gateway_id?.toString() === selectedGatewayForAnchors) {
+                                                                matchesCloudData = true
+                                                            }
+                                                        }
+
+                                                        // 如果 selectedGatewayForAnchors 是雲端ID，也檢查閘道器的MAC地址
+                                                        let matchesMacAddress = false
+                                                        if (selectedGatewayForAnchors && !matchesGatewayId && !matchesCloudGatewayId && !matchesCloudData) {
+                                                            const gateway = gateways.find(gw => gw.id === anchor.gatewayId)
+                                                            if (gateway?.macAddress.startsWith('GW:')) {
+                                                                const gatewayIdFromMac = parseInt(gateway.macAddress.replace('GW:', ''), 16)
+                                                                if (gatewayIdFromMac.toString() === selectedGatewayForAnchors) {
+                                                                    matchesMacAddress = true
+                                                                }
+                                                            }
+                                                        }
+
+                                                        const matches = matchesGatewayId || matchesCloudGatewayId || matchesCloudData || matchesMacAddress
+                                                        console.log(`- 錨點 ${anchor.name}: gatewayId=${anchor.gatewayId} (${matchesGatewayId}), cloudGatewayId=${anchor.cloudGatewayId} (${matchesCloudGatewayId}), cloudData=${matchesCloudData}, macAddress=${matchesMacAddress} -> ${matches}`)
+                                                        return matches
+                                                    })
+
+                                                    console.log("- 過濾後的錨點數量:", filteredAnchors.length)
 
                                                     if (filteredAnchors.length === 0) {
                                                         return (
                                                             <div className="col-span-2 text-center py-8 text-muted-foreground">
                                                                 <Anchor className="mx-auto h-12 w-12 mb-3 opacity-30" />
                                                                 <p className="text-sm">{t('pages:uwbLocation.anchorPairing.noPairedAnchors')}</p>
+                                                                <p className="text-xs text-muted-foreground mt-2">
+                                                                    調試: 選擇的閘道器ID: {selectedGatewayForAnchors}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    總錨點數: {currentAnchors.length}
+                                                                </p>
                                                             </div>
                                                         )
                                                     }
@@ -6001,7 +6331,11 @@ export default function UWBLocationPage() {
                                                             </div>
                                                             <div>
                                                                 <div className="font-medium flex items-center gap-2">
-                                                                    ID: {tag.id}
+                                                                    {tag.name ? (
+                                                                        <span className="text-blue-600 font-semibold">{tag.name}</span>
+                                                                    ) : (
+                                                                        <span className="text-gray-500">ID: {tag.id}</span>
+                                                                    )}
                                                                     {tag.id_hex && (
                                                                         <span className="text-xs text-muted-foreground font-mono">
                                                                             ({tag.id_hex})
@@ -7201,7 +7535,24 @@ export default function UWBLocationPage() {
                                     <label className="text-sm font-medium mb-2 block">所屬閘道器</label>
                                     <Select
                                         value={(() => {
-                                            // 找到對應的閘道器ID
+                                            // 優先使用當前選擇的閘道器
+                                            if (selectedGatewayForAnchors) {
+                                                const currentGateway = currentGateways.find(gw => {
+                                                    if (gw.cloudData && gw.cloudData.gateway_id?.toString() === selectedGatewayForAnchors) {
+                                                        return true
+                                                    }
+                                                    if (gw.macAddress.startsWith('GW:')) {
+                                                        const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
+                                                        return gatewayIdFromMac.toString() === selectedGatewayForAnchors
+                                                    }
+                                                    return gw.id === selectedGatewayForAnchors
+                                                })
+                                                if (currentGateway) {
+                                                    return currentGateway.id
+                                                }
+                                            }
+
+                                            // 如果沒有當前選擇的閘道器，嘗試找到匹配的閘道器
                                             const relatedGateway = gateways.find(gw => {
                                                 if (gw.cloudData && gw.cloudData.gateway_id === selectedCloudAnchor.gateway_id) {
                                                     return true
@@ -7215,15 +7566,19 @@ export default function UWBLocationPage() {
                                             return relatedGateway?.id || ""
                                         })()}
                                         onValueChange={(value) => {
-                                            // 這裡可以更新選中的閘道器，但通常錨點已經綁定到特定閘道器
                                             console.log("選擇閘道器:", value)
+                                            // 更新 selectedGatewayForAnchors 為對應的雲端ID
+                                            const selectedGateway = gateways.find(gw => gw.id === value)
+                                            if (selectedGateway?.cloudData?.gateway_id) {
+                                                setSelectedGatewayForAnchors(selectedGateway.cloudData.gateway_id.toString())
+                                            }
                                         }}
                                     >
                                         <SelectTrigger>
                                             <SelectValue placeholder="選擇閘道器" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {gateways.map(gateway => (
+                                            {currentGateways.map(gateway => (
                                                 <SelectItem key={gateway.id} value={gateway.id}>
                                                     {gateway.name} ({gateway.macAddress})
                                                 </SelectItem>
@@ -7413,7 +7768,7 @@ export default function UWBLocationPage() {
                     </div>
                 )}
 
-            </div >
+            </div>
             <Toaster />
         </>
     )
