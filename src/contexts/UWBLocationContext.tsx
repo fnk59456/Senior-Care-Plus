@@ -1,4 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
+import { gatewayRegistry } from '@/services/gatewayRegistry'
+import { mqttBus } from '@/services/mqttBus'
+// 初始化所有 Store 以註冊路由規則
+import '@/stores/initStores'
 
 // 類型定義
 interface Home {
@@ -214,6 +218,24 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
         }
     }, [loadFromStorage])
 
+    // ✨ 初始化 MQTT Bus（應用啟動時只執行一次）
+    useEffect(() => {
+        console.log('🚀 初始化 MQTT Bus...')
+
+        // 連接 MQTT
+        mqttBus.connect()
+
+        // 監聽連接狀態
+        const unsubscribeStatus = mqttBus.onStatusChange((status) => {
+            console.log(`📊 MQTT Bus 狀態: ${status}`)
+        })
+
+        return () => {
+            unsubscribeStatus()
+            // 注意：不要在這裡斷開 MQTT 連接，因為是全局單例
+        }
+    }, []) // 空依賴數組，只執行一次
+
     // 從localStorage載入數據 - 只在組件初始化時執行
     useEffect(() => {
         console.log('🚀 UWBLocationContext初始化，開始載入數據...')
@@ -288,6 +310,41 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
             setSelectedGateway("")
         }
     }, [selectedFloor])
+
+    // ✨ 同步 Gateways 到 Gateway Registry
+    useEffect(() => {
+        console.log(`🔄 同步 ${gateways.length} 個 Gateways 到 Registry...`)
+
+        // 註冊所有 Gateways
+        gateways.forEach(gateway => {
+            gatewayRegistry.registerGateway(gateway)
+        })
+
+        // 清理：當組件卸載或 gateways 變化時，先清空 Registry
+        return () => {
+            // 不清空，讓 MQTT 連接保持
+            // gatewayRegistry.clear()
+        }
+    }, [gateways])
+
+    // ✨ 監聽 Gateway Registry 事件（用於調試）
+    useEffect(() => {
+        const unsubscribe = gatewayRegistry.on((event) => {
+            switch (event.type) {
+                case 'gateway_added':
+                    console.log(`✅ Gateway 已註冊: ${event.gateway.name}`, event.topics)
+                    break
+                case 'gateway_removed':
+                    console.log(`❌ Gateway 已移除: ${event.gateway.name}`)
+                    break
+                case 'gateway_updated':
+                    console.log(`🔄 Gateway 已更新: ${event.gateway.name}`)
+                    break
+            }
+        })
+
+        return unsubscribe
+    }, [])
 
     const value: UWBLocationState = {
         homes,
