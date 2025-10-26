@@ -25,7 +25,9 @@ import {
   AlertTriangle,
   Watch,
   Baby,
-  Activity
+  Activity,
+  Eye,
+  EyeOff
 } from "lucide-react"
 
 // 類型定義
@@ -73,6 +75,9 @@ export default function LocationPage() {
 
   // ✅ 方案一：設備狀態緩存 - 避免地圖交互時重新計算過期狀態
   const [deviceOnlineStatus, setDeviceOnlineStatus] = useState<Record<string, boolean>>({})
+
+  // ✅ 地圖標記信息顯示控制
+  const [showMarkerInfo, setShowMarkerInfo] = useState(true)
 
   // 新增過濾和搜索狀態
   const [searchTerm, setSearchTerm] = useState("")
@@ -864,50 +869,59 @@ export default function LocationPage() {
                       const statusInfo = patient.residentStatus ? getStatusInfo(patient.residentStatus) : null
 
                       return (
-                        <div
-                          key={patient.id}
-                          className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                          style={{
-                            left: displayCoords.x,
-                            top: displayCoords.y
-                          }}
-                        >
-                          {/* 設備圖標 */}
-                          <div className="relative">
-                            <Avatar className="border-2 border-blue-500 shadow-lg">
-                              <AvatarFallback className="text-xs">
-                                {patient.residentName ? patient.residentName[0] : '設'}
-                              </AvatarFallback>
-                            </Avatar>
+                        <React.Fragment key={patient.id}>
+                          {/* 設備圖標 - 獨立定位 */}
+                          <div
+                            className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                            style={{
+                              left: displayCoords.x,
+                              top: displayCoords.y
+                            }}
+                          >
+                            <div className="relative">
+                              <Avatar className="border-2 border-blue-500 shadow-lg">
+                                <AvatarFallback className="text-xs">
+                                  {patient.residentName ? patient.residentName[0] : '設'}
+                                </AvatarFallback>
+                              </Avatar>
 
-                            {/* 設備類型圖標 */}
-                            <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-md">
-                              <DeviceIcon className="h-3 w-3 text-blue-600" />
+                              {/* 設備類型圖標 */}
+                              <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-md">
+                                <DeviceIcon className="h-3 w-3 text-blue-600" />
+                              </div>
                             </div>
                           </div>
 
-                          {/* 信息標籤 */}
-                          <div className="text-xs bg-white/90 rounded px-2 py-1 mt-1 text-center whitespace-nowrap shadow-md min-w-[80px]">
-                            <div className="font-medium">
-                              {patient.residentName || `設備-${patient.id}`}
+                          {/* 信息標籤 - 獨立定位，在設備圖標下方 */}
+                          {showMarkerInfo && (
+                            <div
+                              className="absolute transform -translate-x-1/2 pointer-events-none text-xs bg-white/90 rounded px-2 py-1 text-center whitespace-nowrap shadow-md min-w-[80px]"
+                              style={{
+                                left: displayCoords.x,
+                                top: displayCoords.y + 24  // 設備圖標下方（Avatar 高度 40px / 2 + 邊距 4px）
+                              }}
+                            >
+                              <div className="font-medium">
+                                {patient.residentName || `設備-${patient.id}`}
+                              </div>
+                              {patient.residentRoom && (
+                                <div className="text-gray-600 text-[10px]">
+                                  {t('pages:location.deviceList.room')}: {patient.residentRoom}
+                                </div>
+                              )}
+                              {patient.position.z !== undefined && (
+                                <div className="text-gray-600 text-[10px]">
+                                  Z: {patient.position.z.toFixed(2)}
+                                </div>
+                              )}
+                              {statusInfo && (
+                                <div className="mt-1">
+                                  {statusInfo.badge}
+                                </div>
+                              )}
                             </div>
-                            {patient.residentRoom && (
-                              <div className="text-gray-600 text-[10px]">
-                                {t('pages:location.deviceList.room')}: {patient.residentRoom}
-                              </div>
-                            )}
-                            {patient.position.z !== undefined && (
-                              <div className="text-gray-600 text-[10px]">
-                                Z: {patient.position.z.toFixed(2)}
-                              </div>
-                            )}
-                            {statusInfo && (
-                              <div className="mt-1">
-                                {statusInfo.badge}
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                          )}
+                        </React.Fragment>
                       )
                     })}
 
@@ -947,6 +961,15 @@ export default function LocationPage() {
                       title={t('pages:location.map.resetView')}
                     >
                       <RotateCcw className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={showMarkerInfo ? "default" : "outline"}
+                      onClick={() => setShowMarkerInfo(!showMarkerInfo)}
+                      className="w-8 h-8 p-0"
+                      title={showMarkerInfo ? t('pages:location.map.hideMarkerInfo') : t('pages:location.map.showMarkerInfo')}
+                    >
+                      {showMarkerInfo ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
 

@@ -588,6 +588,8 @@
             "zoomOut": "Zoom Out",
             "resetView": "Reset View",
             "zoom": "Zoom",
+            "hideMarkerInfo": "Hide Marker Info",
+            "showMarkerInfo": "Show Marker Info",
             "controls": "Wheel to zoom | Drag to move",
             "noDevices": "No devices match the criteria",
             "selectGateway": "Please select a gateway and establish connection first",

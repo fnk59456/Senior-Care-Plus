@@ -588,6 +588,8 @@
             "zoomOut": "縮小",
             "resetView": "重置視圖",
             "zoom": "縮放",
+            "hideMarkerInfo": "隱藏標記信息",
+            "showMarkerInfo": "顯示標記信息",
             "controls": "滾輪縮放 | 拖拽移動",
             "noDevices": "尚無符合條件的設備",
             "selectGateway": "請先選擇閘道器並建立連接",

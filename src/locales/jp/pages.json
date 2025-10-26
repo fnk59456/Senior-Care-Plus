@@ -1197,6 +1197,8 @@
             "zoomOut": "縮小",
             "resetView": "ビューリセット",
             "zoom": "ズーム",
+            "hideMarkerInfo": "マーカー情報を非表示",
+            "showMarkerInfo": "マーカー情報を表示",
             "controls": "ホイールでズーム | ドラッグで移動",
             "noDevices": "条件に合うデバイスがありません",
             "selectGateway": "まずゲートウェイを選択して接続を確立してください",
