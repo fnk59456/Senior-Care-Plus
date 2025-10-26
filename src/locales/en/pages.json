@@ -955,6 +955,16 @@
             "selectPatient": "Select Patient",
             "patient": "Patient"
         },
+        "connectionStatus": {
+            "title": "MQTT Status",
+            "connected": "Connected",
+            "disconnected": "Disconnected",
+            "connecting": "Connecting...",
+            "reconnecting": "Reconnecting...",
+            "connectionError": "Connection Error",
+            "cloudMqtt": "Cloud MQTT",
+            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ Cloud Service"
+        },
         "cloudDeviceMonitoring": {
             "title": "Cloud Diaper Device Monitoring",
             "connected": "Connected",
@@ -1091,13 +1101,6 @@
             "wet": "Wet",
             "veryWet": "Very Wet",
             "soiled": "Soiled"
-        },
-        "connectionStatus": {
-            "title": "Connection Status Monitoring",
-            "localMqtt": "Local MQTT",
-            "cloudMqtt": "Cloud MQTT",
-            "error": "Error",
-            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
         }
     },
     "staffManagement": {

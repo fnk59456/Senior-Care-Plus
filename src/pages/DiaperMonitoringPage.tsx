@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -23,24 +23,12 @@ import {
   Settings,
   TrendingUp
 } from "lucide-react"
-// @ts-ignore
-import mqtt from "mqtt"
 import { useLocation } from "react-router-dom"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { DeviceType } from "@/types/device-types"
 import { useTranslation } from "react-i18next"
-
-// 本地 MQTT 設置
-const MQTT_URL = "ws://localhost:9001"
-const MQTT_TOPIC = "diaper/monitoring"
-
-// 雲端 MQTT 設置
-const CLOUD_MQTT_URL = `${import.meta.env.VITE_MQTT_PROTOCOL}://${import.meta.env.VITE_MQTT_BROKER}:${import.meta.env.VITE_MQTT_PORT}/mqtt`
-const CLOUD_MQTT_OPTIONS = {
-  username: import.meta.env.VITE_MQTT_USERNAME,
-  password: import.meta.env.VITE_MQTT_PASSWORD
-}
+import { mqttBus } from "@/services/mqttBus"
 
 // 尿布狀態定義
 const DIAPER_STATUS = {
@@ -275,13 +263,19 @@ export default function DiaperMonitoringPage() {
   // 使用 DeviceManagementContext 獲取病患和設備資訊
   const {
     devices,
-    residents,
     getResidentForDevice
   } = useDeviceManagement()
 
+  // ✅ 恢復舊版本的狀態管理方式
+  const [cloudDiaperDevices, setCloudDiaperDevices] = useState<any[]>([])
+  const [cloudDiaperRecords, setCloudDiaperRecords] = useState<any[]>([])
+
+  // 原始 MQTT 數據狀態
+  const [cloudMqttData, setCloudMqttData] = useState<any[]>([])
+
+  // 保留原有的患者和記錄功能
   const [patients, setPatients] = useState<Patient[]>(MOCK_PATIENTS)
-  const [selectedPatient, setSelectedPatient] = useState<string>(() => {
-    // 如果從HealthPage傳遞了患者名稱，則使用該患者，否則默認選擇第一個
+  const [selectedPatient] = useState<string>(() => {
     return patientName ? getPatientIdByName(patientName) : MOCK_PATIENTS[0].id
   })
   const [selectedTab, setSelectedTab] = useState("today")
@@ -291,35 +285,21 @@ export default function DiaperMonitoringPage() {
     status: DIAPER_STATUS.DRY.value,
     nurse: "nurse_a"
   })
-  const [connected, setConnected] = useState(false)
-  const clientRef = useRef<mqtt.MqttClient | null>(null)
 
-  // 雲端 MQTT 相關狀態
-  const [cloudConnected, setCloudConnected] = useState(false)
-  const [cloudMqttData, setCloudMqttData] = useState<CloudMqttData[]>([])
-  const cloudClientRef = useRef<mqtt.MqttClient | null>(null)
-
-  // 雲端尿布設備管理狀態
-  const [cloudDiaperDevices, setCloudDiaperDevices] = useState<CloudDiaperDevice[]>([])
-  const [cloudDiaperRecords, setCloudDiaperRecords] = useState<CloudDiaperRecord[]>([])
+  // 雲端設備管理狀態
   const [selectedCloudDevice, setSelectedCloudDevice] = useState<string>("")
 
-  // 連線狀態和錯誤信息
-  const [localConnectionStatus, setLocalConnectionStatus] = useState<string>("未連線")
+  // ✅ MQTT Bus 連接狀態
+  const [cloudConnected, setCloudConnected] = useState(false)
   const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
-  const [localError, setLocalError] = useState<string>("")
-  const [cloudError, setCloudError] = useState<string>("")
-  const [reconnectAttempts, setReconnectAttempts] = useState(0)
-  const [cloudReconnectAttempts, setCloudReconnectAttempts] = useState(0)
 
-  // 當前MQTT標籤頁狀態
-  const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  // 參考線顯示狀態
+  const [showReferenceLines, setShowReferenceLines] = useState<boolean>(true)
 
   // 動態獲取健康監控MQTT主題
   const getHealthTopic = () => {
     if (!selectedGateway) return null
 
-    // 檢查是否有雲端數據
     const gateway = gateways.find(gw => gw.id === selectedGateway)
     console.log("🔍 選擇的健康監控閘道器:", gateway)
 
@@ -328,7 +308,6 @@ export default function DiaperMonitoringPage() {
       return gateway.cloudData.pub_topic.health
     }
 
-    // 如果沒有雲端數據，構建主題名稱
     if (gateway) {
       const gatewayName = gateway.name.replace(/\s+/g, '')
       const constructedTopic = `UWB/GW${gatewayName}_Health`
@@ -339,7 +318,6 @@ export default function DiaperMonitoringPage() {
     console.log("❌ 無法獲取健康監控閘道器主題")
     return null
   }
-  const [currentMqttTab, setCurrentMqttTab] = useState<string>("local")
 
   // 根據MAC地址查找對應的病患資訊
   const getResidentInfoByMAC = (mac: string) => {
@@ -430,375 +408,273 @@ export default function DiaperMonitoringPage() {
     }
   }
 
-  // 本地 MQTT 連接
+  // ✅ 修復頻率問題 - 只在有新消息時更新
   useEffect(() => {
-    setLocalConnectionStatus("連接中...")
-    setLocalError("")
+    let lastProcessedTime = 0
+    let processedMessages = new Set()
+    let lastUpdateTime = 0
 
-    const client = mqtt.connect(MQTT_URL, {
-      reconnectPeriod: 3000,
-      connectTimeout: 10000,
-      keepalive: 60
-    })
-    clientRef.current = client
-
-    client.on("connect", () => {
-      console.log("本地 MQTT 已連接")
-      setConnected(true)
-      setLocalConnectionStatus("已連線")
-      setLocalError("")
-      setReconnectAttempts(0)
-    })
-
-    client.on("reconnect", () => {
-      console.log("本地 MQTT 重新連接中...")
-      setConnected(false)
-      setReconnectAttempts(prev => prev + 1)
-      setLocalConnectionStatus(`重新連接中... (第${reconnectAttempts + 1}次嘗試)`)
-    })
-
-    client.on("close", () => {
-      console.log("本地 MQTT 連接關閉")
-      setConnected(false)
-      setLocalConnectionStatus("連接已關閉")
-    })
-
-    client.on("error", (error) => {
-      console.error("本地 MQTT 連接錯誤:", error)
-      setConnected(false)
-      setLocalError(error.message || "連接錯誤")
-      setLocalConnectionStatus("連接錯誤")
-    })
-
-    client.on("offline", () => {
-      console.log("本地 MQTT 離線")
-      setConnected(false)
-      setLocalConnectionStatus("離線")
-    })
-
-    client.subscribe(MQTT_TOPIC, (err) => {
-      if (err) {
-        console.error("本地 MQTT 訂閱失敗:", err)
-      } else {
-        console.log("已訂閱本地主題:", MQTT_TOPIC)
-      }
-    })
-
-    // 本地MQTT消息處理可在此添加
-    client.on("message", (topic: string, payload: Uint8Array) => {
-      if (topic !== MQTT_TOPIC) return
-      try {
-        const msg = JSON.parse(new TextDecoder().decode(payload))
-        console.log("收到本地 MQTT 尿布消息:", msg)
-        // 處理本地尿布數據...
-      } catch (error) {
-        console.error('本地 MQTT 尿布訊息解析錯誤:', error)
-      }
-    })
-
-    return () => {
-      console.log("清理本地MQTT連接")
-      client.end()
-    }
-  }, [])
-
-  // 雲端 MQTT 連接
-  useEffect(() => {
-    // 清理之前的超時
-    if (connectionTimeoutRef.current) {
-      clearTimeout(connectionTimeoutRef.current)
-    }
-
-    // 如果沒有選擇閘道器，不建立連接
-    if (!selectedGateway) {
-      if (cloudClientRef.current) {
-        console.log("清理雲端MQTT連接 - 未選擇閘道器")
-        cloudClientRef.current.end(true)
-        cloudClientRef.current = null
-      }
-      setCloudConnected(false)
-      setCloudConnectionStatus("未選擇閘道器")
-      return
-    }
-
-    // 防抖：延遲500ms再建立連接，避免頻繁切換
-    connectionTimeoutRef.current = setTimeout(() => {
-      setCloudConnectionStatus("連接中...")
-      setCloudError("")
-
-      // 如果已有連接，先清理
-      if (cloudClientRef.current) {
-        console.log("清理舊的雲端MQTT連接 - 準備重新連接")
-        cloudClientRef.current.end(true)
-        cloudClientRef.current = null
-      }
-
-      const cloudClient = mqtt.connect(CLOUD_MQTT_URL, {
-        ...CLOUD_MQTT_OPTIONS,
-        reconnectPeriod: 5000,
-        connectTimeout: 15000,
-        keepalive: 60,
-        clean: true,
-        clientId: `web-diaper-client-${Math.random().toString(16).slice(2, 8)}`
-      })
-      cloudClientRef.current = cloudClient
-
-      cloudClient.on("connect", () => {
-        console.log("雲端 MQTT 已連接，Client ID:", cloudClient.options.clientId)
-        setCloudConnected(true)
-        setCloudConnectionStatus("已連線")
-        setCloudError("")
-        setCloudReconnectAttempts(0)
-      })
-
-      cloudClient.on("reconnect", () => {
-        console.log("雲端 MQTT 重新連接中...")
-        setCloudConnected(false)
-        setCloudReconnectAttempts(prev => prev + 1)
-        setCloudConnectionStatus(`重新連接中... (第${cloudReconnectAttempts + 1}次嘗試)`)
-      })
-
-      cloudClient.on("close", () => {
-        console.log("雲端 MQTT 連接關閉")
-        setCloudConnected(false)
-        setCloudConnectionStatus("連接已關閉")
-      })
-
-      cloudClient.on("error", (error) => {
-        console.error("雲端 MQTT 連接錯誤:", error)
-        setCloudConnected(false)
-        setCloudError(error.message || "連接錯誤")
-        setCloudConnectionStatus("連接錯誤")
-      })
-
-      cloudClient.on("offline", () => {
-        console.log("雲端 MQTT 離線")
-        setCloudConnected(false)
-        setCloudConnectionStatus("離線")
-      })
-
-      // 獲取健康監控主題
-      const healthTopic = getHealthTopic()
-      if (!healthTopic) {
-        console.error("無法獲取健康監控主題，跳過訂閱")
+    const updateMqttData = () => {
+      // 🔧 額外頻率控制：確保至少間隔5秒才更新
+      const now = Date.now()
+      if (now - lastUpdateTime < 5000) {
+        console.log(`⏰ 頻率控制：距離上次更新不足5秒，跳過`)
         return
       }
+      try {
+        const recentMessages = mqttBus.getRecentMessages()
+        console.log(`🔍 檢查 MQTT 消息: 總數 ${recentMessages.length}, 最後處理時間: ${new Date(lastProcessedTime).toLocaleTimeString()}`)
 
-      cloudClient.subscribe(healthTopic, (err) => {
-        if (err) {
-          console.error("雲端 MQTT 訂閱失敗:", err)
-        } else {
-          console.log("已訂閱雲端主題:", healthTopic)
+        // 只處理新的消息（避免重複處理）
+        const newMessages = recentMessages.filter(msg => {
+          const msgTime = msg.timestamp.getTime()
+          const msgKey = `${msg.topic}-${msgTime}`
+          const isNew = msgTime > lastProcessedTime && !processedMessages.has(msgKey)
+
+          if (isNew) {
+            console.log(`✅ 新消息: ${msg.topic} at ${msg.timestamp.toLocaleTimeString()}`)
+          }
+
+          return isNew
+        })
+
+        if (newMessages.length === 0) {
+          console.log(`⏭️ 沒有新消息，跳過更新`)
+          return // 沒有新消息，不更新
         }
-      })
 
-      cloudClient.on("message", (topic: string, payload: Uint8Array) => {
-        const healthTopic = getHealthTopic()
-        if (!healthTopic || topic !== healthTopic) return
-        try {
-          const rawMessage = new TextDecoder().decode(payload)
-          const msg = JSON.parse(rawMessage)
-          console.log("收到雲端 MQTT 尿布消息:", msg)
+        console.log(`🔄 處理 ${newMessages.length} 條新 MQTT 消息`)
 
-          // 處理雲端 MQTT 數據
-          const cloudData: CloudMqttData = {
-            content: msg.content || "",
-            gateway_id: msg["gateway id"] || "",
-            MAC: msg.MAC || "",
-            receivedAt: new Date()
+        // 更新最後處理時間
+        lastProcessedTime = Math.max(...newMessages.map(msg => msg.timestamp.getTime()))
+
+        // 標記已處理的消息
+        newMessages.forEach(msg => {
+          const msgKey = `${msg.topic}-${msg.timestamp.getTime()}`
+          processedMessages.add(msgKey)
+          console.log(`📝 標記已處理: ${msgKey}`)
+        })
+
+        // 清理過期的處理記錄（保留最近1小時）
+        const oneHourAgo = Date.now() - 60 * 60 * 1000
+        const keysToDelete: string[] = []
+        processedMessages.forEach((key) => {
+          const keyStr = String(key)
+          const timestamp = parseInt(keyStr.split('-').pop() || '0')
+          if (timestamp < oneHourAgo) {
+            keysToDelete.push(keyStr)
           }
+        })
+        keysToDelete.forEach((key: string) => processedMessages.delete(key))
 
-          // 添加詳細的調試信息
-          console.log("==== 雲端MQTT尿布數據解析 ====")
-          console.log("原始數據:", msg)
-          console.log("Content:", msg.content)
-          console.log("MAC:", msg.MAC)
-          console.log("Humidity (humi):", msg.humi)
-          console.log("Temperature (temp):", msg.temp)
-          console.log("Battery Level:", msg["battery level"])
+        const formattedData = newMessages.map(msg => ({
+          content: msg.payload?.content || 'unknown',
+          MAC: msg.payload?.MAC || msg.payload?.['mac address'] || '',
+          receivedAt: msg.timestamp,
+          topic: msg.topic,
+          gateway: msg.gateway?.name || '',
+          // 尿布數據字段
+          name: msg.payload?.name || '',
+          fw_ver: msg.payload?.['fw ver'] || '',
+          temp: msg.payload?.temp || '',
+          humi: msg.payload?.humi || '',
+          button: msg.payload?.button || '',
+          msg_idx: msg.payload?.['msg idx'] || '',
+          ack: msg.payload?.ack || '',
+          battery_level: msg.payload?.['battery level'] || '',
+          serial_no: msg.payload?.['serial no'] || '',
+          // 健康數據字段（其他設備）
+          SOS: msg.payload?.SOS || '',
+          hr: msg.payload?.hr || '',
+          SpO2: msg.payload?.SpO2 || '',
+          bp_syst: msg.payload?.['bp syst'] || '',
+          bp_diast: msg.payload?.['bp diast'] || '',
+          skin_temp: msg.payload?.['skin temp'] || '',
+          room_temp: msg.payload?.['room temp'] || '',
+          steps: msg.payload?.steps || '',
+          light_sleep: msg.payload?.['light sleep (min)'] || '',
+          deep_sleep: msg.payload?.['deep sleep (min)'] || '',
+          wake_time: msg.payload?.['wake time'] || '',
+          move: msg.payload?.move || '',
+          wear: msg.payload?.wear || ''
+        }))
 
-          // 根據 content 判斷數據類型並提取相應字段
-          if (msg.content === "diaper DV1") {
-            console.log("處理 diaper DV1 數據...")
-            // 尿布數據處理
-            cloudData.name = msg.name || ""
-            cloudData.fw_ver = msg["fw ver"] || ""
-            cloudData.temp = msg.temp || ""
-            cloudData.humi = msg.humi || ""
-            cloudData.button = msg.button || ""
-            cloudData.msg_idx = msg["msg idx"] || ""
-            cloudData.ack = msg.ack || ""
-            cloudData.battery_level = msg["battery level"] || ""
-            cloudData.serial_no = msg["serial no"] || ""
+        // ✅ 只顯示尿布相關的 MQTT 數據 (僅 diaper DV1 設備)
+        const diaperData = formattedData.filter(data =>
+          data.content === 'diaper DV1'
+        )
 
-            // 檢查尿布設備記錄創建條件
-            console.log("檢查尿布設備記錄創建條件:")
-            console.log("- MAC存在:", !!msg.MAC)
-            console.log("- humi存在:", !!msg.humi)
-            console.log("- humi值:", msg.humi)
-            console.log("- temp值:", msg.temp)
-
-            // 只要有MAC就創建尿布設備記錄
-            if (msg.MAC) {
-              const humi = parseFloat(msg.humi) || 0
-              const temp = parseFloat(msg.temp) || 0
-              const fw_ver = parseFloat(msg["fw ver"]) || 0
-              const button = parseInt(msg.button) || 0
-              const msg_idx = parseInt(msg["msg idx"]) || 0
-              const ack = parseInt(msg.ack) || 0
-              const battery_level = parseInt(msg["battery level"]) || 0
-              const serial_no = parseInt(msg["serial no"]) || 0
-
-              // 查找對應的病患資訊
-              const residentInfo = getResidentInfoByMAC(msg.MAC)
-              console.log("查找病患資訊:", residentInfo)
-
-              console.log("創建尿布設備記錄:")
-              console.log("- MAC:", msg.MAC)
-              console.log("- 設備名稱:", msg.name)
-              console.log("- 濕度:", humi, "%")
-              console.log("- 溫度:", temp, "°C")
-              console.log("- 電量:", battery_level, "%")
-              if (residentInfo) {
-                console.log("- 病患姓名:", residentInfo.residentName)
-                console.log("- 病患房間:", residentInfo.residentRoom)
-                console.log("- 病患狀態:", residentInfo.residentStatus)
-              }
-
-              const cloudDiaperRecord: CloudDiaperRecord = {
-                MAC: msg.MAC,
-                deviceName: msg.name || `設備 ${msg.MAC.slice(-8)}`,
-                name: msg.name || "",
-                fw_ver: fw_ver,
-                temp: temp,
-                humi: humi,
-                button: button,
-                msg_idx: msg_idx,
-                ack: ack,
-                battery_level: battery_level,
-                serial_no: serial_no,
-                time: new Date().toISOString(),
-                datetime: new Date(),
-                isAbnormal: humi > 65, // 關鍵邏輯：濕度 > 75 時需要更換
-
-                // 添加病患資訊
-                ...residentInfo
-              }
-
-              console.log("尿布設備記錄:", cloudDiaperRecord)
-
-              // 更新雲端尿布設備記錄
-              setCloudDiaperRecords(prev => {
-                const newRecords = [cloudDiaperRecord, ...prev]
-                  .sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
-                  .slice(0, 1000)
-                console.log("更新後的尿布設備記錄數量:", newRecords.length)
-                return newRecords
-              })
-
-              // 更新尿布設備列表
-              setCloudDiaperDevices(prev => {
-                const existingDevice = prev.find(d => d.MAC === msg.MAC)
-                console.log("現有尿布設備:", existingDevice)
-
-                if (existingDevice) {
-                  const updatedDevices = prev.map(d =>
-                    d.MAC === msg.MAC
-                      ? {
-                        ...d,
-                        lastSeen: new Date(),
-                        recordCount: d.recordCount + 1,
-                        currentHumidity: humi,
-                        currentTemperature: temp,
-                        currentBatteryLevel: battery_level,
-                        // 更新病患資訊
-                        ...residentInfo
-                      }
-                      : d
-                  )
-                  console.log("更新現有尿布設備，總設備數:", updatedDevices.length)
-                  return updatedDevices
-                } else {
-                  const newDevice: CloudDiaperDevice = {
-                    MAC: msg.MAC,
-                    deviceName: msg.name || `設備 ${msg.MAC.slice(-8)}`,
-                    name: msg.name || "",
-                    lastSeen: new Date(),
-                    recordCount: 1,
-                    currentHumidity: humi,
-                    currentTemperature: temp,
-                    currentBatteryLevel: battery_level,
-                    // 添加病患資訊
-                    ...residentInfo
-                  }
-                  const updatedDevices = [...prev, newDevice]
-                  console.log("添加新尿布設備:", newDevice)
-                  console.log("更新後總設備數:", updatedDevices.length)
-                  return updatedDevices
-                }
-              })
-
-              // 如果還沒有選擇設備，自動選擇第一個
-              setSelectedCloudDevice(prev => {
-                if (!prev) {
-                  console.log("自動選擇尿布設備:", msg.MAC)
-                  return msg.MAC
-                }
-                return prev
-              })
-            } else {
-              console.log("⚠️ diaper DV1 數據缺少MAC字段，無法創建尿布設備記錄")
-            }
-          } else {
-            // 其他類型數據，提取所有可能的字段
-            cloudData.SOS = msg.SOS || ""
-            cloudData.hr = msg.hr || ""
-            cloudData.SpO2 = msg.SpO2 || ""
-            cloudData.bp_syst = msg["bp syst"] || ""
-            cloudData.bp_diast = msg["bp diast"] || ""
-            cloudData.skin_temp = msg["skin temp"] || ""
-            cloudData.room_temp = msg["room temp"] || ""
-            cloudData.steps = msg.steps || ""
-            cloudData.light_sleep = msg["light sleep (min)"] || ""
-            cloudData.deep_sleep = msg["deep sleep (min)"] || ""
-            cloudData.wake_time = msg["wake time"] || ""
-            cloudData.move = msg.move || ""
-            cloudData.wear = msg.wear || ""
-            cloudData.battery_level = msg["battery level"] || ""
-            cloudData.serial_no = msg["serial no"] || ""
-            cloudData.name = msg.name || ""
-            cloudData.fw_ver = msg["fw ver"] || ""
-            cloudData.temp = msg.temp || ""
-            cloudData.humi = msg.humi || ""
-            cloudData.button = msg.button || ""
-            cloudData.msg_idx = msg["msg idx"] || ""
-            cloudData.ack = msg.ack || ""
-          }
-
+        // 只添加新的尿布數據
+        if (diaperData.length > 0) {
           setCloudMqttData(prev => {
-            const newData = [cloudData, ...prev].slice(0, 50)
-            return newData
+            const combined = [...diaperData, ...prev]
+              .sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime())
+              .slice(0, 50) // 限制總數
+            return combined
           })
-
-        } catch (error) {
-          console.error('雲端 MQTT 尿布訊息解析錯誤:', error)
         }
-      })
 
-    }, 500) // 500ms防抖延遲
+        // ✅ 只處理尿布相關的數據 (diaper DV1 設備)
+        const diaperMessages = newMessages.filter(msg => {
+          const isDiaperMessage = msg.payload?.content === 'diaper DV1' && msg.payload?.MAC
+          if (isDiaperMessage) {
+            console.log('✅ 處理 diaper DV1 尿布消息:', {
+              MAC: msg.payload?.MAC,
+              topic: msg.topic,
+              gateway: msg.gateway?.name
+            })
+          } else {
+            console.log('⏭️ 跳過非尿布消息:', {
+              content: msg.payload?.content,
+              MAC: msg.payload?.MAC,
+              topic: msg.topic
+            })
+          }
+          return isDiaperMessage
+        })
 
-    // 清理函數
-    return () => {
-      if (connectionTimeoutRef.current) {
-        clearTimeout(connectionTimeoutRef.current)
-      }
-      if (cloudClientRef.current) {
-        console.log("清理雲端 MQTT 連接")
-        cloudClientRef.current.end(true)
-        cloudClientRef.current = null
+        diaperMessages.forEach(msg => {
+          const data = msg.payload
+          const MAC = data.MAC || data['mac address'] || data.macAddress
+
+          if (MAC) {
+            const humi = parseFloat(data.humi) || 0
+            const temp = parseFloat(data.temp) || 0
+            const fw_ver = parseFloat(data['fw ver']) || 0
+            const button = parseInt(data.button) || 0
+            const msg_idx = parseInt(data['msg idx']) || 0
+            const ack = parseInt(data.ack) || 0
+            const battery_level = parseInt(data['battery level']) || 0
+            const serial_no = parseInt(data['serial no']) || 0
+
+            // 獲取病患資訊
+            const residentInfo = getResidentInfoByMAC(MAC)
+
+            // 創建設備記錄
+            const cloudDiaperRecord = {
+              MAC: MAC,
+              deviceName: data.name || `設備 ${MAC.slice(-8)}`,
+              name: data.name || "",
+              fw_ver: fw_ver,
+              temp: temp,
+              humi: humi,
+              button: button,
+              msg_idx: msg_idx,
+              ack: ack,
+              battery_level: battery_level,
+              serial_no: serial_no,
+              time: msg.timestamp.toISOString(),
+              datetime: msg.timestamp, // 使用實際的 MQTT 時間戳
+              isAbnormal: humi > 65, // 關鍵邏輯：濕度 > 65 時需要更換
+              // 添加 Gateway 資訊
+              gateway: msg.gateway?.name || '',
+              gatewayId: msg.gateway?.id || '',
+              topic: msg.topic,
+              // 🔧 從 topic 中提取 Gateway 識別符作為備用
+              topicGateway: msg.topic?.match(/GW[A-F0-9]+/)?.[0] || '',
+              // 添加病患資訊
+              ...residentInfo
+            }
+
+            // 更新設備記錄
+            setCloudDiaperRecords(prev => {
+              const newRecords = [cloudDiaperRecord, ...prev]
+                .sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
+                .slice(0, 1000)
+              return newRecords
+            })
+
+            // 更新設備列表
+            setCloudDiaperDevices(prev => {
+              const existingDevice = prev.find(d => d.MAC === MAC)
+
+              if (existingDevice) {
+                return prev.map(d =>
+                  d.MAC === MAC
+                    ? {
+                      ...d,
+                      lastSeen: msg.timestamp, // 使用實際的 MQTT 時間戳
+                      recordCount: d.recordCount + 1,
+                      currentHumidity: humi,
+                      currentTemperature: temp,
+                      currentBatteryLevel: battery_level,
+                      // 更新病患資訊
+                      ...residentInfo
+                    }
+                    : d
+                )
+              } else {
+                const newDevice = {
+                  MAC: MAC,
+                  deviceName: data.name || `設備 ${MAC.slice(-8)}`,
+                  name: data.name || "",
+                  lastSeen: msg.timestamp, // 使用實際的 MQTT 時間戳
+                  recordCount: 1,
+                  currentHumidity: humi,
+                  currentTemperature: temp,
+                  currentBatteryLevel: battery_level,
+                  // 添加 Gateway 資訊
+                  gateway: msg.gateway?.name || '',
+                  gatewayId: msg.gateway?.id || '',
+                  topic: msg.topic,
+                  // 🔧 從 topic 中提取 Gateway 識別符作為備用
+                  topicGateway: msg.topic?.match(/GW[A-F0-9]+/)?.[0] || '',
+                  // 添加病患資訊
+                  ...residentInfo
+                }
+                return [...prev, newDevice]
+              }
+            })
+
+            // 自動選擇第一個設備
+            setSelectedCloudDevice(prev => {
+              if (!prev) {
+                return MAC
+              }
+              return prev
+            })
+          }
+        })
+
+        // 更新最後更新時間
+        lastUpdateTime = Date.now()
+        console.log(`✅ 更新完成，下次更新時間: ${new Date(lastUpdateTime + 5000).toLocaleTimeString()}`)
+      } catch (error) {
+        console.error('Error processing MQTT data:', error)
       }
     }
-  }, [selectedGateway, CLOUD_MQTT_URL, CLOUD_MQTT_OPTIONS, devices, residents, getResidentForDevice])
+
+    // 初始載入
+    updateMqttData()
+
+    // 降低更新頻率到 10 秒
+    const interval = setInterval(updateMqttData, 10000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // ✅ 監聽 MQTT Bus 連接狀態
+  useEffect(() => {
+    const unsubscribe = mqttBus.onStatusChange((status) => {
+      setCloudConnected(status === 'connected')
+      setCloudConnectionStatus(status === 'connected' ? t('pages:diaperMonitoring.connectionStatus.connected') :
+        status === 'connecting' ? t('pages:diaperMonitoring.connectionStatus.connecting') :
+          status === 'reconnecting' ? t('pages:diaperMonitoring.connectionStatus.reconnecting') :
+            status === 'error' ? t('pages:diaperMonitoring.connectionStatus.connectionError') : t('pages:diaperMonitoring.connectionStatus.disconnected'))
+    })
+
+    // 初始化狀態
+    const currentStatus = mqttBus.getStatus()
+    setCloudConnected(currentStatus === 'connected')
+    setCloudConnectionStatus(currentStatus === 'connected' ? t('pages:diaperMonitoring.connectionStatus.connected') : t('pages:diaperMonitoring.connectionStatus.disconnected'))
+
+    return unsubscribe
+  }, [])
+
+  // ✅ Gateway 切換時清除設備選擇
+  useEffect(() => {
+    setSelectedCloudDevice('')
+  }, [selectedGateway])
 
   const currentPatient = patients.find(p => p.id === selectedPatient) || patients[0]
 
@@ -807,12 +683,10 @@ export default function DiaperMonitoringPage() {
     ? cloudDiaperDevices.find(device => device.MAC === selectedCloudDevice)
     : null
 
-  // 根據當前MQTT標籤頁決定是否需要更換尿布
-  const needsChange = currentMqttTab === "cloud"
-    ? (currentCloudDevice ? currentCloudDevice.currentHumidity > 75 : false)
-    : currentPatient.currentHumidity > 75
+  // ✅ 簡化：只使用雲端數據判斷是否需要更換尿布
+  const needsChange = currentCloudDevice ? currentCloudDevice.currentHumidity > 75 : false
 
-  // 獲取當前雲端設備的濕度記錄，轉換為圖表格式
+  // ✅ 簡化：只使用雲端設備的濕度記錄
   const currentCloudHumidityRecords: HumidityChartDataPoint[] = selectedCloudDevice && cloudDiaperRecords.length > 0
     ? cloudDiaperRecords
       .filter(record => record.MAC === selectedCloudDevice)
@@ -824,19 +698,8 @@ export default function DiaperMonitoringPage() {
       }))
     : []
 
-  // 獲取當前患者的濕度記錄（本地MQTT）
-  const currentPatientHumidityRecords: HumidityChartDataPoint[] = currentPatient.records.map(record => ({
-    time: record.timestamp,
-    hour: new Date(record.timestamp).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
-    humidity: record.humidity,
-    isAbnormal: record.humidity > 75
-  }))
-
-  // 根據當前MQTT標籤頁選擇數據源
-  const currentHumidityRecords = currentMqttTab === "cloud" ? currentCloudHumidityRecords : currentPatientHumidityRecords
-
   // 準備濕度趨勢圖數據
-  const humidityChartData: HumidityChartDataPoint[] = currentHumidityRecords
+  const humidityChartData: HumidityChartDataPoint[] = currentCloudHumidityRecords
     .slice(0, 144) // 24小時 * 6個點/小時 = 144個數據點
     .reverse()
     .map(record => ({
@@ -846,7 +709,7 @@ export default function DiaperMonitoringPage() {
       isAbnormal: record.humidity > 75
     }))
 
-  // 獲取當前雲端設備的溫度記錄，轉換為圖表格式
+  // ✅ 簡化：只使用雲端設備的溫度記錄
   const currentCloudTemperatureRecords: TemperatureChartDataPoint[] = selectedCloudDevice && cloudDiaperRecords.length > 0
     ? cloudDiaperRecords
       .filter(record => record.MAC === selectedCloudDevice)
@@ -858,19 +721,8 @@ export default function DiaperMonitoringPage() {
       }))
     : []
 
-  // 獲取當前患者的溫度記錄（本地MQTT）
-  const currentPatientTemperatureRecords: TemperatureChartDataPoint[] = currentPatient.records.map(record => ({
-    time: record.timestamp,
-    hour: new Date(record.timestamp).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' }),
-    temperature: currentPatient.temperature, // 本地數據使用患者當前溫度（因為本地記錄沒有溫度字段）
-    isAbnormal: currentPatient.temperature > 40 || currentPatient.temperature < 30
-  }))
-
-  // 根據當前MQTT標籤頁選擇溫度數據源
-  const currentTemperatureRecords = currentMqttTab === "cloud" ? currentCloudTemperatureRecords : currentPatientTemperatureRecords
-
   // 準備溫度趨勢圖數據
-  const temperatureChartData: TemperatureChartDataPoint[] = currentTemperatureRecords
+  const temperatureChartData: TemperatureChartDataPoint[] = currentCloudTemperatureRecords
     .slice(0, 144) // 24小時 * 6個點/小時 = 144個數據點
     .reverse()
     .map(record => ({
@@ -961,518 +813,458 @@ export default function DiaperMonitoringPage() {
           <div className="font-semibold">{t('pages:diaperMonitoring.connectionStatus.title')}</div>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span>{t('pages:diaperMonitoring.connectionStatus.localMqtt')} ({MQTT_URL}):</span>
-              <span className={connected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
-                {localConnectionStatus}
-              </span>
-            </div>
-            {localError && (
-              <div className="text-xs text-red-500 ml-4">
-                {t('pages:diaperMonitoring.connectionStatus.error')}: {localError}
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              <span>{t('pages:diaperMonitoring.connectionStatus.cloudMqtt')} ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
+              <span>{t('pages:diaperMonitoring.connectionStatus.cloudMqtt')}:</span>
               <span className={cloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
-                {cloudConnectionStatus}
+                {cloudConnected ? t('pages:diaperMonitoring.connectionStatus.connected') : t('pages:diaperMonitoring.connectionStatus.disconnected')}
               </span>
             </div>
-            {cloudError && (
-              <div className="text-xs text-red-500 ml-4">
-                {t('pages:diaperMonitoring.connectionStatus.error')}: {cloudError}
-              </div>
-            )}
           </div>
-          <div className="flex items-center justify-between mt-3">
-            <div className="text-xs text-gray-500">
-              {t('pages:diaperMonitoring.connectionStatus.hint')}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (clientRef.current) {
-                    console.log("手動重連本地MQTT...")
-                    setLocalConnectionStatus("手動重連中...")
-                    clientRef.current.reconnect()
-                  }
-                }}
-                disabled={connected}
-              >
-                {t('pages:diaperMonitoring.reconnectLocal')}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (cloudClientRef.current) {
-                    console.log("手動重連雲端MQTT...")
-                    setCloudConnectionStatus("手動重連中...")
-                    cloudClientRef.current.reconnect()
-                  }
-                }}
-                disabled={cloudConnected}
-              >
-                {t('pages:diaperMonitoring.reconnectCloud')}
-              </Button>
-            </div>
+          <div className="text-xs text-gray-500">
+            {t('pages:diaperMonitoring.connectionStatus.hint')}
           </div>
         </div>
       </div>
 
-      {/* 主要功能標籤頁 */}
-      <Tabs defaultValue="local" className="w-full" value={currentMqttTab} onValueChange={setCurrentMqttTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="local">{t('pages:diaperMonitoring.tabs.local')}</TabsTrigger>
-          <TabsTrigger value="cloud">{t('pages:diaperMonitoring.tabs.cloud')}</TabsTrigger>
-        </TabsList>
+      {/* ✅ 簡化：直接顯示雲端設備監控，移除標籤頁 */}
+      {/* 設備選擇和狀態 */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center">
+              <Droplets className="mr-3 h-5 w-5 text-blue-500" />
+              {t('pages:diaperMonitoring.cloudDeviceMonitoring.title')}
+            </CardTitle>
+            <div className="text-sm">
+              {cloudConnected ? (
+                <span className="text-green-600 flex items-center">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                  {t('pages:diaperMonitoring.cloudDeviceMonitoring.connected')}
+                </span>
+              ) : (
+                <span className="text-red-500 flex items-center">
+                  <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                  {cloudConnectionStatus}
+                </span>
+              )}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Gateway 選擇 */}
+            <div className="space-y-4">
+              <div className="font-medium text-gray-900">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectArea')}</div>
 
-        {/* 本地 MQTT 標籤頁 */}
-        <TabsContent value="local" className="space-y-6">
-          {/* 患者選擇 */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center">
-                  <User className="mr-3 h-5 w-5 text-blue-500" />
-                  {t('pages:diaperMonitoring.patientSelection.title')}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Select value={selectedPatient} onValueChange={setSelectedPatient}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t('pages:diaperMonitoring.patientSelection.selectPatient')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {patients.map(patient => (
-                    <SelectItem key={patient.id} value={patient.id}>
-                      {t('pages:diaperMonitoring.patientSelection.patient')}：{patient.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* 雲端 MQTT 標籤頁 */}
-        <TabsContent value="cloud" className="space-y-6">
-          {/* 設備選擇和狀態 */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center">
-                  <Droplets className="mr-3 h-5 w-5 text-blue-500" />
-                  {t('pages:diaperMonitoring.cloudDeviceMonitoring.title')}
-                </CardTitle>
-                <div className="text-sm">
-                  {cloudConnected ? (
-                    <span className="text-green-600 flex items-center">
-                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-                      {t('pages:diaperMonitoring.cloudDeviceMonitoring.connected')}
-                    </span>
-                  ) : (
-                    <span className="text-red-500 flex items-center">
-                      <div className="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
-                      {cloudConnectionStatus}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Gateway 選擇 */}
-                <div className="space-y-4">
-                  <div className="font-medium text-gray-900">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectArea')}</div>
-
-                  {/* 橫排選擇器 */}
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    {/* 養老院選擇 */}
-                    <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHome')}</label>
-                      <Select value={selectedHome} onValueChange={setSelectedHome}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHomeFirst')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {homes.map(home => (
-                            <SelectItem key={home.id} value={home.id}>
-                              {home.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* 樓層選擇 */}
-                    <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor')}</label>
-                      <Select value={selectedFloor} onValueChange={setSelectedFloor} disabled={!selectedHome}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder={selectedHome ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloorFirst')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {floors
-                            .filter(floor => floor.homeId === selectedHome)
-                            .map(floor => (
-                              <SelectItem key={floor.id} value={floor.id}>
-                                {floor.name}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* 閘道器選擇 */}
-                    <div className="flex-1 space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGateway')}</label>
-                      <Select value={selectedGateway} onValueChange={setSelectedGateway} disabled={!selectedFloor}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder={selectedFloor ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGateway') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGatewayFirst')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {gateways
-                            .filter(gateway => gateway.floorId === selectedFloor)
-                            .map(gateway => (
-                              <SelectItem key={gateway.id} value={gateway.id}>
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{gateway.name}</span>
-                                  <span className="text-xs text-muted-foreground ml-2">
-                                    {gateway.macAddress}
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* 當前選擇的閘道器信息 */}
-                  {selectedGateway && (
-                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="text-sm space-y-1">
-                        <div className="font-medium text-blue-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.currentGateway')}</div>
-                        <div className="text-xs text-blue-700">
-                          {gateways.find(gw => gw.id === selectedGateway)?.name}
-                          ({gateways.find(gw => gw.id === selectedGateway)?.macAddress})
-                        </div>
-                        <div className="text-xs text-blue-600">
-                          {t('pages:diaperMonitoring.cloudDeviceMonitoring.listeningTopic')}: {getHealthTopic() || t('pages:diaperMonitoring.cloudDeviceMonitoring.cannotGetTopic')}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+              {/* 橫排選擇器 */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* 養老院選擇 */}
+                <div className="flex-1 space-y-2">
+                  <label className="text-sm font-medium text-gray-700">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHome')}</label>
+                  <Select value={selectedHome} onValueChange={setSelectedHome}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHomeFirst')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {homes.map(home => (
+                        <SelectItem key={home.id} value={home.id}>
+                          {home.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div className="bg-blue-50 p-3 rounded-lg">
-                    <div className="font-medium text-blue-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.discoveredDevices')}</div>
-                    <div className="text-2xl font-bold text-blue-600">{cloudDiaperDevices.length}</div>
-                  </div>
-                  <div className="bg-green-50 p-3 rounded-lg">
-                    <div className="font-medium text-green-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.totalRecords')}</div>
-                    <div className="text-2xl font-bold text-green-600">{cloudDiaperRecords.length}</div>
-                  </div>
-                  <div className="bg-purple-50 p-3 rounded-lg">
-                    <div className="font-medium text-purple-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.mqttMessages')}</div>
-                    <div className="text-2xl font-bold text-purple-600">{cloudMqttData.length}</div>
-                  </div>
+                {/* 樓層選擇 */}
+                <div className="flex-1 space-y-2">
+                  <label className="text-sm font-medium text-gray-700">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor')}</label>
+                  <Select value={selectedFloor} onValueChange={setSelectedFloor} disabled={!selectedHome}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={selectedHome ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloorFirst')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {floors
+                        .filter(floor => floor.homeId === selectedHome)
+                        .map(floor => (
+                          <SelectItem key={floor.id} value={floor.id}>
+                            {floor.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                {cloudDiaperDevices.length > 0 ? (
-                  <div className="space-y-3">
-                    <div className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectDevice')}</div>
-                    <Select value={selectedCloudDevice} onValueChange={setSelectedCloudDevice}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectCloudDevice')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cloudDiaperDevices.map(device => {
-                          const DeviceIcon = getDeviceTypeIcon(device.deviceType)
-                          const statusInfo = getStatusInfo(device.residentStatus)
-
-                          return (
-                            <SelectItem key={device.MAC} value={device.MAC}>
-                              <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-2">
-                                  <DeviceIcon className="h-4 w-4" />
-                                  <span>
-                                    {device.residentName ? device.residentName : device.deviceName}
-                                  </span>
-                                  {device.residentRoom && (
-                                    <span className="text-xs text-muted-foreground">
-                                      ({device.residentRoom})
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {statusInfo.badge}
-                                  <span className="text-xs text-muted-foreground">
-                                    {t('pages:diaperMonitoring.cloudDeviceMonitoring.humidity')}: {device.currentHumidity}%
-                                  </span>
-                                </div>
-                              </div>
-                            </SelectItem>
-                          )
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Droplets className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.noDevices')}</p>
-                    <div className="text-xs space-y-1 mt-2">
-                      <p>{t('pages:diaperMonitoring.cloudDeviceMonitoring.pleaseConfirm')}</p>
-                      <p>1. {t('pages:diaperMonitoring.cloudDeviceMonitoring.cloudMqttSimulator')}</p>
-                      <p>2. {t('pages:diaperMonitoring.cloudDeviceMonitoring.simulatorFormat')}</p>
-                      <p>3. {t('pages:diaperMonitoring.cloudDeviceMonitoring.dataFields')}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* 最近接收到的雲端數據 */}
-                {cloudMqttData.length > 0 && (
-                  <div className="mt-6 space-y-2">
-                    <div className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.recentData')}</div>
-                    <div className="max-h-40 overflow-y-auto space-y-1">
-                      {cloudMqttData.slice(0, 8).map((data, index) => {
-                        const residentInfo = getResidentInfoByMAC(data.MAC)
-
-                        return (
-                          <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono font-semibold text-blue-600">{data.content}</span>
-                              <span className="text-muted-foreground">
-                                {data.receivedAt.toLocaleTimeString('zh-TW')}
+                {/* 閘道器選擇 */}
+                <div className="flex-1 space-y-2">
+                  <label className="text-sm font-medium text-gray-700">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGateway')}</label>
+                  <Select value={selectedGateway} onValueChange={setSelectedGateway} disabled={!selectedFloor}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={selectedFloor ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGateway') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGatewayFirst')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {gateways
+                        .filter(gateway => gateway.floorId === selectedFloor)
+                        .map(gateway => (
+                          <SelectItem key={gateway.id} value={gateway.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{gateway.name}</span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                {gateway.macAddress}
                               </span>
                             </div>
-                            {data.MAC && data.content === "diaper DV1" && (
-                              <div className="text-muted-foreground mt-1">
-                                <div className="flex items-center gap-2">
-                                  <span>{t('pages:diaperMonitoring.cloudDeviceMonitoring.device')}: <span className="font-mono">{data.MAC}</span></span>
-                                  {residentInfo && (
-                                    <span className="text-green-600 font-medium">
-                                      → {residentInfo.residentName} ({residentInfo.residentRoom})
-                                    </span>
-                                  )}
-                                </div>
-                                {data.name && `${t('pages:diaperMonitoring.cloudDeviceMonitoring.deviceName')}: ${data.name}`}
-                                {data.humi && ` | ${t('pages:diaperMonitoring.cloudDeviceMonitoring.humidity')}: ${data.humi}%`}
-                                {data.temp && ` | ${t('pages:diaperMonitoring.cloudDeviceMonitoring.temperature')}: ${data.temp}°C`}
-                                {data.battery_level && ` | ${t('pages:diaperMonitoring.cloudDeviceMonitoring.battery')}: ${data.battery_level}%`}
-                              </div>
-                            )}
-                            {data.content !== "diaper DV1" && (
-                              <div className="text-muted-foreground mt-1">
-                                其他設備數據 - MAC: {data.MAC || "無"}
-                              </div>
-                            )}
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* 原始數據檢視器 - 用於調試 */}
-                <div className="mt-6">
-                  <details className="group">
-                    <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
-                      🔍 {t('pages:diaperMonitoring.cloudDeviceMonitoring.viewRawData')}
-                    </summary>
-                    <div className="mt-2 space-y-2 text-xs">
-                      <div className="text-muted-foreground">
-                        {t('pages:diaperMonitoring.cloudDeviceMonitoring.clickToExpand')}
-                      </div>
-                      <div className="max-h-60 overflow-y-auto space-y-2">
-                        {cloudMqttData.slice(0, 5).map((data, index) => (
-                          <details key={index} className="border rounded p-2 bg-slate-50">
-                            <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
-                              [{index + 1}] {data.content} - {data.receivedAt.toLocaleString('zh-TW')}
-                            </summary>
-                            <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
-                              {JSON.stringify({
-                                content: data.content,
-                                gateway_id: data.gateway_id,
-                                MAC: data.MAC,
-                                name: data.name,
-                                fw_ver: data.fw_ver,
-                                temp: data.temp,
-                                humi: data.humi,
-                                button: data.button,
-                                msg_idx: data.msg_idx,
-                                ack: data.ack,
-                                battery_level: data.battery_level,
-                                serial_no: data.serial_no,
-                                // 其他設備字段
-                                SOS: data.SOS,
-                                hr: data.hr,
-                                SpO2: data.SpO2,
-                                bp_syst: data.bp_syst,
-                                bp_diast: data.bp_diast,
-                                skin_temp: data.skin_temp,
-                                room_temp: data.room_temp,
-                                steps: data.steps,
-                                light_sleep: data.light_sleep,
-                                deep_sleep: data.deep_sleep,
-                                wake_time: data.wake_time,
-                                move: data.move,
-                                wear: data.wear
-                              }, null, 2)}
-                            </pre>
-                          </details>
+                          </SelectItem>
                         ))}
-                      </div>
-                      <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                        <div className="font-semibold mb-1">{t('pages:diaperMonitoring.cloudDeviceMonitoring.deviceCreationConditions')}</div>
-                        <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition1')}</div>
-                        <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition2')}</div>
-                        <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition3')}</div>
-                        <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition4')}</div>
-                      </div>
-                    </div>
-                  </details>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* 雲端設備詳細記錄 */}
-          {selectedCloudDevice && cloudDiaperRecords.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Clock className="mr-2 h-5 w-5" />
-                  {t('pages:diaperMonitoring.deviceDiaperData.title')} - {(() => {
-                    const device = cloudDiaperDevices.find(d => d.MAC === selectedCloudDevice)
-                    return device?.residentName ? `${device.residentName} (${device.residentRoom})` : device?.deviceName || t('pages:diaperMonitoring.deviceDiaperData.unknownDevice')
-                  })()}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* 設備記錄列表 */}
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {cloudDiaperRecords
-                      .filter(record => record.MAC === selectedCloudDevice)
-                      .slice(0, 20)
-                      .map((record, index) => {
-                        const DeviceIcon = getDeviceTypeIcon(record.deviceType)
-                        const statusInfo = getStatusInfo(record.residentStatus)
+              {/* 當前選擇的閘道器信息 */}
+              {selectedGateway && (
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="text-sm space-y-1">
+                    <div className="font-medium text-blue-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.currentGateway')}</div>
+                    <div className="text-xs text-blue-700">
+                      {gateways.find(gw => gw.id === selectedGateway)?.name}
+                      ({gateways.find(gw => gw.id === selectedGateway)?.macAddress})
+                    </div>
+                    <div className="text-xs text-blue-600">
+                      {t('pages:diaperMonitoring.cloudDeviceMonitoring.listeningTopic')}: {getHealthTopic() || t('pages:diaperMonitoring.cloudDeviceMonitoring.cannotGetTopic')}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
-                        return (
-                          <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
-                            <div className="flex items-center gap-3">
-                              <div className={`p-2 rounded-full ${record.humi > 75
-                                ? 'bg-red-100 text-red-600'
-                                : record.humi > 50
-                                  ? 'bg-orange-100 text-orange-600'
-                                  : 'bg-green-100 text-green-600'
-                                }`}>
-                                {record.isAbnormal ? (
-                                  <AlertTriangle className="h-4 w-4" />
-                                ) : (
-                                  <Droplets className="h-4 w-4" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <div className="font-medium text-blue-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.discoveredDevices')}</div>
+                <div className="text-2xl font-bold text-blue-600">{cloudDiaperDevices.length}</div>
+              </div>
+              <div className="bg-green-50 p-3 rounded-lg">
+                <div className="font-medium text-green-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.totalRecords')}</div>
+                <div className="text-2xl font-bold text-green-600">{cloudDiaperRecords.length}</div>
+              </div>
+              <div className="bg-purple-50 p-3 rounded-lg">
+                <div className="font-medium text-purple-800">{t('pages:diaperMonitoring.cloudDeviceMonitoring.mqttMessages')}</div>
+                <div className="text-2xl font-bold text-purple-600">{cloudMqttData.length}</div>
+              </div>
+            </div>
+
+            {cloudDiaperDevices.length > 0 ? (
+              <div className="space-y-3">
+
+                <div className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectDevice')}</div>
+                <Select value={selectedCloudDevice} onValueChange={setSelectedCloudDevice}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectCloudDevice')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cloudDiaperDevices.filter(device => {
+                      // ✅ 如果選擇了 Gateway，只顯示該 Gateway 的設備
+                      if (selectedGateway) {
+                        const gateway = gateways.find(gw => gw.id === selectedGateway)
+                        if (gateway) {
+                          // 檢查設備的所有記錄，只要有一條記錄來自選定的 Gateway 就顯示該設備
+                          const deviceRecords = cloudDiaperRecords.filter(record => record.MAC === device.MAC)
+
+                          // 🎯 使用與 HeartRatePage 相同的篩選邏輯：前綴匹配
+                          const hasMatchingRecord = deviceRecords.some(record => {
+                            // 主要匹配：record.gateway（來自 MQTT 的 gateway 字段）包含選定 Gateway 的名稱
+                            // 例如：record.gateway = "GwF9E516B8_142", gateway.name = "GwF9E516B8_176"
+                            // 匹配邏輯：檢查前綴是否相同（去掉最後的數字部分）
+                            const recordGatewayPrefix = record.gateway?.split('_')[0] || ''
+                            const selectedGatewayPrefix = gateway.name?.split('_')[0] || ''
+
+                            return recordGatewayPrefix &&
+                              selectedGatewayPrefix &&
+                              recordGatewayPrefix === selectedGatewayPrefix
+                          })
+
+                          return hasMatchingRecord
+                        }
+                      }
+                      // 如果沒有選擇 Gateway，顯示所有設備
+                      return true
+                    }).map(device => {
+                      const DeviceIcon = getDeviceTypeIcon(device.deviceType)
+                      const statusInfo = getStatusInfo(device.residentStatus)
+
+                      return (
+                        <SelectItem key={device.MAC} value={device.MAC}>
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-2">
+                              <DeviceIcon className="h-4 w-4" />
+                              <span>
+                                {device.residentName ? device.residentName : device.deviceName}
+                              </span>
+                              {device.residentRoom && (
+                                <span className="text-xs text-muted-foreground">
+                                  ({device.residentRoom})
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {statusInfo.badge}
+                              <span className="text-xs text-muted-foreground">
+                                {t('pages:diaperMonitoring.cloudDeviceMonitoring.humidity')}: {device.currentHumidity}%
+                              </span>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Droplets className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                <p className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.noDevices')}</p>
+                <div className="text-xs space-y-1 mt-2">
+                  <p>{t('pages:diaperMonitoring.cloudDeviceMonitoring.pleaseConfirm')}</p>
+                  <p>1. {t('pages:diaperMonitoring.cloudDeviceMonitoring.cloudMqttSimulator')}</p>
+                  <p>2. {t('pages:diaperMonitoring.cloudDeviceMonitoring.simulatorFormat')}</p>
+                  <p>3. {t('pages:diaperMonitoring.cloudDeviceMonitoring.dataFields')}</p>
+                </div>
+              </div>
+            )}
+
+            {/* 最近接收到的雲端數據 */}
+            {cloudMqttData.length > 0 && (
+              <div className="mt-6 space-y-2">
+                <div className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.recentData')}</div>
+                <div className="max-h-40 overflow-y-auto space-y-1">
+                  {cloudMqttData.slice(0, 8).map((data, index) => {
+                    const residentInfo = getResidentInfoByMAC(data.MAC)
+
+                    return (
+                      <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
+                        <div className="flex items-center justify-between">
+                          <span className="font-mono font-semibold text-blue-600">{data.content}</span>
+                          <span className="text-muted-foreground">
+                            {data.receivedAt.toLocaleTimeString('zh-TW')}
+                          </span>
+                        </div>
+                        {data.MAC && data.content === "diaper DV1" && (
+                          <div className="text-muted-foreground mt-1">
+                            <div className="flex items-center gap-2">
+                              <span>{t('pages:diaperMonitoring.cloudDeviceMonitoring.device')}: <span className="font-mono">{data.MAC}</span></span>
+                              {residentInfo && (
+                                <span className="text-green-600 font-medium">
+                                  → {residentInfo.residentName} ({residentInfo.residentRoom})
+                                </span>
+                              )}
+                            </div>
+                            {data.name && `${t('pages:diaperMonitoring.cloudDeviceMonitoring.deviceName')}: ${data.name}`}
+                            {data.humi && ` | ${t('pages:diaperMonitoring.cloudDeviceMonitoring.humidity')}: ${data.humi}%`}
+                            {data.temp && ` | ${t('pages:diaperMonitoring.cloudDeviceMonitoring.temperature')}: ${data.temp}°C`}
+                            {data.battery_level && ` | ${t('pages:diaperMonitoring.cloudDeviceMonitoring.battery')}: ${data.battery_level}%`}
+                          </div>
+                        )}
+                        {data.content !== "diaper DV1" && (
+                          <div className="text-muted-foreground mt-1">
+                            其他設備數據 - MAC: {data.MAC || "無"}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 原始數據檢視器 - 用於調試 */}
+            <div className="mt-6">
+              <details className="group">
+                <summary className="cursor-pointer font-medium text-sm text-muted-foreground hover:text-foreground">
+                  🔍 {t('pages:diaperMonitoring.cloudDeviceMonitoring.viewRawData')}
+                </summary>
+                <div className="mt-2 space-y-2 text-xs">
+                  <div className="text-muted-foreground">
+                    {t('pages:diaperMonitoring.cloudDeviceMonitoring.clickToExpand')}
+                  </div>
+                  <div className="max-h-60 overflow-y-auto space-y-2">
+                    {cloudMqttData.slice(0, 5).map((data, index) => (
+                      <details key={index} className="border rounded p-2 bg-slate-50">
+                        <summary className="cursor-pointer font-mono text-xs hover:bg-slate-100 p-1 rounded">
+                          [{index + 1}] {data.content} - {data.receivedAt.toLocaleString('zh-TW')}
+                        </summary>
+                        <pre className="mt-2 text-xs overflow-x-auto whitespace-pre-wrap bg-white p-2 rounded border">
+                          {JSON.stringify({
+                            content: data.content,
+                            gateway_id: data.gateway_id,
+                            MAC: data.MAC,
+                            name: data.name,
+                            fw_ver: data.fw_ver,
+                            temp: data.temp,
+                            humi: data.humi,
+                            button: data.button,
+                            msg_idx: data.msg_idx,
+                            ack: data.ack,
+                            battery_level: data.battery_level,
+                            serial_no: data.serial_no,
+                            // 其他設備字段
+                            SOS: data.SOS,
+                            hr: data.hr,
+                            SpO2: data.SpO2,
+                            bp_syst: data.bp_syst,
+                            bp_diast: data.bp_diast,
+                            skin_temp: data.skin_temp,
+                            room_temp: data.room_temp,
+                            steps: data.steps,
+                            light_sleep: data.light_sleep,
+                            deep_sleep: data.deep_sleep,
+                            wake_time: data.wake_time,
+                            move: data.move,
+                            wear: data.wear
+                          }, null, 2)}
+                        </pre>
+                      </details>
+                    ))}
+                  </div>
+                  <div className="text-xs text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
+                    <div className="font-semibold mb-1">{t('pages:diaperMonitoring.cloudDeviceMonitoring.deviceCreationConditions')}</div>
+                    <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition1')}</div>
+                    <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition2')}</div>
+                    <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition3')}</div>
+                    <div>• {t('pages:diaperMonitoring.cloudDeviceMonitoring.condition4')}</div>
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 雲端設備詳細記錄 */}
+      {selectedCloudDevice && cloudDiaperRecords.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Clock className="mr-2 h-5 w-5" />
+              {t('pages:diaperMonitoring.deviceDiaperData.title')} - {(() => {
+                const device = cloudDiaperDevices.find(d => d.MAC === selectedCloudDevice)
+                return device?.residentName ? `${device.residentName} (${device.residentRoom})` : device?.deviceName || t('pages:diaperMonitoring.deviceDiaperData.unknownDevice')
+              })()}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* 設備記錄列表 */}
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {cloudDiaperRecords
+                  .filter(record => record.MAC === selectedCloudDevice)
+                  .slice(0, 20)
+                  .map((record, index) => {
+                    const DeviceIcon = getDeviceTypeIcon(record.deviceType)
+                    const statusInfo = getStatusInfo(record.residentStatus)
+
+                    return (
+                      <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-full ${record.humi > 75
+                            ? 'bg-red-100 text-red-600'
+                            : record.humi > 50
+                              ? 'bg-orange-100 text-orange-600'
+                              : 'bg-green-100 text-green-600'
+                            }`}>
+                            {record.isAbnormal ? (
+                              <AlertTriangle className="h-4 w-4" />
+                            ) : (
+                              <Droplets className="h-4 w-4" />
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium">
+                              {record.datetime.toLocaleString('zh-TW')}
+                            </div>
+                            <div className="text-sm text-muted-foreground space-y-1">
+                              <div className="flex items-center gap-2">
+                                <DeviceIcon className="h-3 w-3" />
+                                <span>
+                                  {record.residentName ? record.residentName : record.deviceName}
+                                </span>
+                                {record.residentRoom && (
+                                  <span className="text-xs text-muted-foreground">
+                                    ({record.residentRoom})
+                                  </span>
                                 )}
+                                {statusInfo.badge}
                               </div>
                               <div>
-                                <div className="font-medium">
-                                  {record.datetime.toLocaleString('zh-TW')}
-                                </div>
-                                <div className="text-sm text-muted-foreground space-y-1">
-                                  <div className="flex items-center gap-2">
-                                    <DeviceIcon className="h-3 w-3" />
-                                    <span>
-                                      {record.residentName ? record.residentName : record.deviceName}
-                                    </span>
-                                    {record.residentRoom && (
-                                      <span className="text-xs text-muted-foreground">
-                                        ({record.residentRoom})
-                                      </span>
-                                    )}
-                                    {statusInfo.badge}
-                                  </div>
-                                  <div>
-                                    {t('pages:diaperMonitoring.deviceDiaperData.humidity')}: {record.humi > 0 ? `${record.humi}%` : t('pages:diaperMonitoring.deviceDiaperData.noData')}
-                                    {record.temp > 0 && ` | ${t('pages:diaperMonitoring.deviceDiaperData.temperature')}: ${record.temp}°C`}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {t('pages:diaperMonitoring.deviceDiaperData.battery')}: {record.battery_level}% |
-                                    固件版本: {record.fw_ver} |
-                                    序列號: {record.serial_no}
-                                  </div>
-                                </div>
+                                {t('pages:diaperMonitoring.deviceDiaperData.humidity')}: {record.humi > 0 ? `${record.humi}%` : t('pages:diaperMonitoring.deviceDiaperData.noData')}
+                                {record.temp > 0 && ` | ${t('pages:diaperMonitoring.deviceDiaperData.temperature')}: ${record.temp}°C`}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {t('pages:diaperMonitoring.deviceDiaperData.battery')}: {record.battery_level}% |
+                                固件版本: {record.fw_ver} |
+                                序列號: {record.serial_no}
                               </div>
                             </div>
-                            <div className={`px-3 py-1 rounded-full text-sm font-medium ${record.humi === 0
-                              ? 'bg-gray-100 text-gray-700'
-                              : record.humi > 75
-                                ? 'bg-red-100 text-red-700'
-                                : record.humi > 50
-                                  ? 'bg-orange-100 text-orange-700'
-                                  : 'bg-green-100 text-green-700'
-                              }`}>
-                              {record.humi === 0
-                                ? t('pages:diaperMonitoring.deviceDiaperData.noHumidityData')
-                                : record.humi > 75
-                                  ? t('pages:diaperMonitoring.deviceDiaperData.needsChange')
-                                  : record.humi > 50
-                                    ? t('pages:diaperMonitoring.deviceDiaperData.wet')
-                                    : t('pages:diaperMonitoring.deviceDiaperData.normal')}
-                            </div>
-                          </div>
-                        )
-                      })}
-                  </div>
-
-                  {/* 顯示雲端設備統計信息 */}
-                  {currentCloudDevice && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                      <div className="text-sm space-y-2">
-                        <div className="font-semibold text-blue-800">{t('pages:diaperMonitoring.deviceDiaperData.deviceStats')}</div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                          <div>
-                            <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.deviceMAC')}:</span>
-                            <div className="font-mono">{currentCloudDevice.MAC}</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.patientInfo')}:</span>
-                            <div>
-                              {currentCloudDevice.residentName ?
-                                `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` :
-                                t('pages:diaperMonitoring.deviceDiaperData.unboundPatient')
-                              }
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.lastConnection')}:</span>
-                            <div>{currentCloudDevice.lastSeen.toLocaleString('zh-TW')}</div>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.totalRecords')}:</span>
-                            <div>{currentCloudDevice.recordCount} 筆</div>
                           </div>
                         </div>
-                        <div className="mt-2">
-                          <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.currentStatus')}:</span>
-                          <div className={currentCloudDevice.currentHumidity > 75 ? "text-red-600 font-medium" : "text-green-600"}>
-                            {currentCloudDevice.currentHumidity > 75 ? t('pages:diaperMonitoring.deviceDiaperData.needsAttention') : t('pages:diaperMonitoring.deviceDiaperData.normal')}
-                          </div>
+                        <div className={`px-3 py-1 rounded-full text-sm font-medium ${record.humi === 0
+                          ? 'bg-gray-100 text-gray-700'
+                          : record.humi > 75
+                            ? 'bg-red-100 text-red-700'
+                            : record.humi > 50
+                              ? 'bg-orange-100 text-orange-700'
+                              : 'bg-green-100 text-green-700'
+                          }`}>
+                          {record.humi === 0
+                            ? t('pages:diaperMonitoring.deviceDiaperData.noHumidityData')
+                            : record.humi > 75
+                              ? t('pages:diaperMonitoring.deviceDiaperData.needsChange')
+                              : record.humi > 50
+                                ? t('pages:diaperMonitoring.deviceDiaperData.wet')
+                                : t('pages:diaperMonitoring.deviceDiaperData.normal')}
                         </div>
                       </div>
+                    )
+                  })}
+              </div>
+
+              {/* 顯示雲端設備統計信息 */}
+              {currentCloudDevice && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                  <div className="text-sm space-y-2">
+                    <div className="font-semibold text-blue-800">{t('pages:diaperMonitoring.deviceDiaperData.deviceStats')}</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.deviceMAC')}:</span>
+                        <div className="font-mono">{currentCloudDevice.MAC}</div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.patientInfo')}:</span>
+                        <div>
+                          {currentCloudDevice.residentName ?
+                            `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` :
+                            t('pages:diaperMonitoring.deviceDiaperData.unboundPatient')
+                          }
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.lastConnection')}:</span>
+                        <div>{currentCloudDevice.lastSeen.toLocaleString('zh-TW')}</div>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.totalRecords')}:</span>
+                        <div>{currentCloudDevice.recordCount} 筆</div>
+                      </div>
                     </div>
-                  )}
+                    <div className="mt-2">
+                      <span className="text-muted-foreground">{t('pages:diaperMonitoring.deviceDiaperData.currentStatus')}:</span>
+                      <div className={currentCloudDevice.currentHumidity > 75 ? "text-red-600 font-medium" : "text-green-600"}>
+                        {currentCloudDevice.currentHumidity > 75 ? t('pages:diaperMonitoring.deviceDiaperData.needsAttention') : t('pages:diaperMonitoring.deviceDiaperData.normal')}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 時間範圍標籤 */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
@@ -1490,7 +1282,7 @@ export default function DiaperMonitoringPage() {
                 <span className="flex items-center">
                   <TrendingUp className="mr-2 h-5 w-5" />
                   {t('pages:diaperMonitoring.humidityChart.title')}
-                  {currentMqttTab === "cloud" && selectedCloudDevice && (
+                  {selectedCloudDevice && (
                     <span className="ml-2 text-sm font-normal text-blue-600">
                       - {(() => {
                         const device = cloudDiaperDevices.find(d => d.MAC === selectedCloudDevice)
@@ -1500,13 +1292,18 @@ export default function DiaperMonitoringPage() {
                       })()}
                     </span>
                   )}
-                  {currentMqttTab === "local" && (
-                    <span className="ml-2 text-sm font-normal text-green-600">
-                      - {currentPatient.name || t('pages:diaperMonitoring.humidityChart.localPatient')}
-                    </span>
-                  )}
                 </span>
-                <span className="text-sm text-muted-foreground">{getDateString()}</span>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant={showReferenceLines ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowReferenceLines(!showReferenceLines)}
+                    className="text-xs"
+                  >
+                    {showReferenceLines ? t('pages:heartRate.heartRateChart.hideReferenceLines') : t('pages:heartRate.heartRateChart.showReferenceLines')}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">{getDateString()}</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1529,9 +1326,13 @@ export default function DiaperMonitoringPage() {
                         labelFormatter={(value) => `${t('pages:diaperMonitoring.humidityChart.time')}: ${value}`}
                         formatter={(value) => [`${value}%`, t('pages:diaperMonitoring.humidityChart.humidity')]}
                       />
-                      <ReferenceLine y={75} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:diaperMonitoring.humidityChart.changeAlertLine')} />
-                      <ReferenceLine y={50} stroke="#f59e0b" strokeDasharray="5 5" label={t('pages:diaperMonitoring.humidityChart.attentionLine')} />
-                      <ReferenceLine y={25} stroke="#10b981" strokeDasharray="5 5" label={t('pages:diaperMonitoring.humidityChart.normalLine')} />
+                      {showReferenceLines && (
+                        <>
+                          <ReferenceLine y={75} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:diaperMonitoring.humidityChart.changeAlertLine')} />
+                          <ReferenceLine y={50} stroke="#f59e0b" strokeDasharray="5 5" label={t('pages:diaperMonitoring.humidityChart.attentionLine')} />
+                          <ReferenceLine y={25} stroke="#10b981" strokeDasharray="5 5" label={t('pages:diaperMonitoring.humidityChart.normalLine')} />
+                        </>
+                      )}
                       <Line
                         type="monotone"
                         dataKey="humidity"
@@ -1548,14 +1349,10 @@ export default function DiaperMonitoringPage() {
                   <div className="text-center">
                     <Droplets className="mx-auto h-12 w-12 mb-4 opacity-50" />
                     <p>{t('pages:diaperMonitoring.humidityChart.noData', { date: getDateString() })}</p>
-                    {currentMqttTab === "cloud" ? (
-                      <div className="text-sm space-y-1">
-                        <p>{t('pages:diaperMonitoring.humidityChart.cloudSimulatorCheck')}</p>
-                        <p>{t('pages:diaperMonitoring.humidityChart.selectValidDevice')}</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm">{t('pages:diaperMonitoring.humidityChart.localSimulatorCheck')}</p>
-                    )}
+                    <div className="text-sm space-y-1">
+                      <p>{t('pages:diaperMonitoring.humidityChart.cloudSimulatorCheck')}</p>
+                      <p>{t('pages:diaperMonitoring.humidityChart.selectValidDevice')}</p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1569,7 +1366,7 @@ export default function DiaperMonitoringPage() {
                 <span className="flex items-center">
                   <Thermometer className="mr-2 h-5 w-5" />
                   {t('pages:diaperMonitoring.temperatureChart.title')}
-                  {currentMqttTab === "cloud" && selectedCloudDevice && (
+                  {selectedCloudDevice && (
                     <span className="ml-2 text-sm font-normal text-orange-600">
                       - {(() => {
                         const device = cloudDiaperDevices.find(d => d.MAC === selectedCloudDevice)
@@ -1579,13 +1376,18 @@ export default function DiaperMonitoringPage() {
                       })()}
                     </span>
                   )}
-                  {currentMqttTab === "local" && (
-                    <span className="ml-2 text-sm font-normal text-green-600">
-                      - {currentPatient.name || t('pages:diaperMonitoring.temperatureChart.localPatient')}
-                    </span>
-                  )}
                 </span>
-                <span className="text-sm text-muted-foreground">{getDateString()}</span>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant={showReferenceLines ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShowReferenceLines(!showReferenceLines)}
+                    className="text-xs"
+                  >
+                    {showReferenceLines ? t('pages:heartRate.heartRateChart.hideReferenceLines') : t('pages:heartRate.heartRateChart.showReferenceLines')}
+                  </Button>
+                  <span className="text-sm text-muted-foreground">{getDateString()}</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -1608,10 +1410,14 @@ export default function DiaperMonitoringPage() {
                         labelFormatter={(value) => `${t('pages:diaperMonitoring.temperatureChart.time')}: ${value}`}
                         formatter={(value) => [`${value}°C`, t('pages:diaperMonitoring.temperatureChart.temperature')]}
                       />
-                      <ReferenceLine y={40} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.highTempLine')} />
-                      <ReferenceLine y={35} stroke="#f59e0b" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.warmLine')} />
-                      <ReferenceLine y={30} stroke="#10b981" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.normalLine')} />
-                      <ReferenceLine y={25} stroke="#3b82f6" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.coolLine')} />
+                      {showReferenceLines && (
+                        <>
+                          <ReferenceLine y={40} stroke="#ef4444" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.highTempLine')} />
+                          <ReferenceLine y={35} stroke="#f59e0b" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.warmLine')} />
+                          <ReferenceLine y={30} stroke="#10b981" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.normalLine')} />
+                          <ReferenceLine y={25} stroke="#3b82f6" strokeDasharray="5 5" label={t('pages:diaperMonitoring.temperatureChart.coolLine')} />
+                        </>
+                      )}
                       <Line
                         type="monotone"
                         dataKey="temperature"
@@ -1628,14 +1434,10 @@ export default function DiaperMonitoringPage() {
                   <div className="text-center">
                     <Thermometer className="mx-auto h-12 w-12 mb-4 opacity-50" />
                     <p>{t('pages:diaperMonitoring.temperatureChart.noData', { date: getDateString() })}</p>
-                    {currentMqttTab === "cloud" ? (
-                      <div className="text-sm space-y-1">
-                        <p>{t('pages:diaperMonitoring.temperatureChart.cloudSimulatorCheck')}</p>
-                        <p>{t('pages:diaperMonitoring.temperatureChart.selectValidDevice')}</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm">{t('pages:diaperMonitoring.temperatureChart.localSimulatorCheck')}</p>
-                    )}
+                    <div className="text-sm space-y-1">
+                      <p>{t('pages:diaperMonitoring.temperatureChart.cloudSimulatorCheck')}</p>
+                      <p>{t('pages:diaperMonitoring.temperatureChart.selectValidDevice')}</p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1672,35 +1474,26 @@ export default function DiaperMonitoringPage() {
                         <div className="flex items-center gap-2">
                           <span className="text-sm">{t('pages:diaperMonitoring.currentDiaperStatus.humidity')}:</span>
                           <Progress
-                            value={currentMqttTab === "cloud"
-                              ? (currentCloudDevice ? currentCloudDevice.currentHumidity : 0)
-                              : currentPatient.currentHumidity
-                            }
+                            value={currentCloudDevice ? currentCloudDevice.currentHumidity : 0}
                             className="flex-1 max-w-[200px]"
                           />
                           <span className="text-sm font-medium">
-                            {currentMqttTab === "cloud"
-                              ? (currentCloudDevice ? `${currentCloudDevice.currentHumidity}%` : t('pages:diaperMonitoring.currentDiaperStatus.noData'))
-                              : `${currentPatient.currentHumidity}%`
-                            }
+                            {currentCloudDevice ? `${currentCloudDevice.currentHumidity}%` : t('pages:diaperMonitoring.currentDiaperStatus.noData')}
                           </span>
                         </div>
                         <div className="text-sm text-muted-foreground space-y-1">
                           <p>
-                            {t('pages:diaperMonitoring.currentDiaperStatus.device')}: {currentMqttTab === "cloud"
-                              ? (currentCloudDevice ?
-                                (currentCloudDevice.residentName ?
-                                  `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` :
-                                  currentCloudDevice.deviceName
-                                ) : "未選擇設備")
-                              : currentPatient.name
-                            }
+                            {t('pages:diaperMonitoring.currentDiaperStatus.device')}: {currentCloudDevice ?
+                              (currentCloudDevice.residentName ?
+                                `${currentCloudDevice.residentName} (${currentCloudDevice.residentRoom})` :
+                                currentCloudDevice.deviceName
+                              ) : "未選擇設備"}
                           </p>
-                          {currentMqttTab === "cloud" && currentCloudDevice && (
+                          {currentCloudDevice && (
                             <p>MAC: {currentCloudDevice.MAC}</p>
                           )}
                           <p>
-                            {t('pages:diaperMonitoring.currentDiaperStatus.lastChangeTime')}: {currentMqttTab === "local" && currentPatient.records.length > 0 ?
+                            {t('pages:diaperMonitoring.currentDiaperStatus.lastChangeTime')}: {currentPatient.records.length > 0 ?
                               `${currentPatient.records[0].timestamp} (${getTimeDifference(currentPatient.lastUpdate)})` :
                               t('pages:diaperMonitoring.currentDiaperStatus.noRecords')
                             }
@@ -1731,15 +1524,9 @@ export default function DiaperMonitoringPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">{t('pages:diaperMonitoring.deviceStatus.humidity')}</p>
                     <p className="text-2xl font-bold">
-                      {currentMqttTab === "cloud"
-                        ? (currentCloudDevice ? `${currentCloudDevice.currentHumidity}%` : t('pages:diaperMonitoring.deviceStatus.noData'))
-                        : `${currentPatient.currentHumidity}%`
-                      }
+                      {currentCloudDevice ? `${currentCloudDevice.currentHumidity}%` : t('pages:diaperMonitoring.deviceStatus.noData')}
                     </p>
-                    {currentMqttTab === "cloud" && currentCloudDevice && currentCloudDevice.currentHumidity > 75 && (
-                      <Badge className="bg-red-100 text-red-700 mt-1">{t('pages:diaperMonitoring.deviceStatus.needsChange')}</Badge>
-                    )}
-                    {currentMqttTab === "local" && currentPatient.currentHumidity > 75 && (
+                    {currentCloudDevice && currentCloudDevice.currentHumidity > 75 && (
                       <Badge className="bg-red-100 text-red-700 mt-1">{t('pages:diaperMonitoring.deviceStatus.needsChange')}</Badge>
                     )}
                   </div>
@@ -1754,10 +1541,7 @@ export default function DiaperMonitoringPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">{t('pages:diaperMonitoring.deviceStatus.temperature')}</p>
                     <p className="text-2xl font-bold">
-                      {currentMqttTab === "cloud"
-                        ? (currentCloudDevice ? `${currentCloudDevice.currentTemperature}°C` : t('pages:diaperMonitoring.deviceStatus.noData'))
-                        : `${currentPatient.temperature}°C`
-                      }
+                      {currentCloudDevice ? `${currentCloudDevice.currentTemperature}°C` : t('pages:diaperMonitoring.deviceStatus.noData')}
                     </p>
                   </div>
                 </div>
@@ -1771,10 +1555,7 @@ export default function DiaperMonitoringPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">{t('pages:diaperMonitoring.deviceStatus.battery')}</p>
                     <p className="text-2xl font-bold">
-                      {currentMqttTab === "cloud"
-                        ? (currentCloudDevice ? `${currentCloudDevice.currentBatteryLevel}%` : t('pages:diaperMonitoring.deviceStatus.noData'))
-                        : `${currentPatient.batteryLevel}%`
-                      }
+                      {currentCloudDevice ? `${currentCloudDevice.currentBatteryLevel}%` : t('pages:diaperMonitoring.deviceStatus.noData')}
                     </p>
                   </div>
                 </div>

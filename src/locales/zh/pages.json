@@ -955,6 +955,16 @@
             "selectPatient": "選擇患者",
             "patient": "患者"
         },
+        "connectionStatus": {
+            "title": "MQTT 狀態",
+            "connected": "已連線",
+            "disconnected": "未連線",
+            "connecting": "連接中...",
+            "reconnecting": "重新連接中...",
+            "connectionError": "連接錯誤",
+            "cloudMqtt": "雲端 MQTT",
+            "hint": "提示:本地MQTT需要運行在localhost:9001,雲端MQTT會自動連接到HiveMQ雲服務"
+        },
         "cloudDeviceMonitoring": {
             "title": "雲端尿布設備監控",
             "connected": "連線正常",
@@ -1091,13 +1101,6 @@
             "wet": "潮濕",
             "veryWet": "非常潮濕",
             "soiled": "髒污"
-        },
-        "connectionStatus": {
-            "title": "連線狀態監控",
-            "localMqtt": "本地 MQTT",
-            "cloudMqtt": "雲端 MQTT",
-            "error": "錯誤",
-            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
         }
     },
     "staffManagement": {
