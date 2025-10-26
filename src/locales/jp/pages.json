@@ -889,6 +889,35 @@
             "yesterday": "昨日",
             "dayBefore": "一昨日"
         },
+        "heartRateTrendChart": {
+            "title": "心拍トレンドチャート"
+        },
+        "bloodPressureTrendChart": {
+            "title": "血圧トレンドチャート",
+            "yAxisLabel": "血圧 (mmHg)",
+            "noData": "血圧データなし"
+        },
+        "recentMqttData": {
+            "title": "最近受信したMQTTデータ",
+            "device": "デバイス",
+            "heartRate": "心拍数",
+            "spo2": "血中酸素",
+            "bloodPressure": "血圧",
+            "diaperDevice": "おむつデバイス",
+            "temperature": "温度",
+            "humidity": "湿度"
+        },
+        "rawMqttData": {
+            "title": "生のMQTTデータを表示（デバッグ用）",
+            "clickToExpand": "下のデータをクリックして完全な内容を展開表示",
+            "deviceConditions": {
+                "title": "心拍デバイス作成条件チェック",
+                "mustHaveContent": "content: \"300B\" が必要",
+                "mustHaveMAC": "MACフィールドが必要",
+                "fieldsCanBeEmpty": "hr, SpO2, bp_syst, bp_diast フィールドは空または0でも可（条件緩和済み）",
+                "abnormalWarning": "心拍数 > 100 BPM または < 60 BPM の場合、異常警告が発生します"
+            }
+        },
         "heartRateChart": {
             "title": "心拍トレンドチャート",
             "cloudDevice": "クラウドデバイス",
@@ -947,7 +976,12 @@
             "localMqtt": "ローカル MQTT",
             "cloudMqtt": "クラウド MQTT",
             "error": "エラー",
-            "hint": "ヒント：ローカルMQTTはlocalhost:9001で実行する必要があり、クラウドMQTTはHiveMQクラウドサービスに自動接続されます"
+            "hint": "ヒント：ローカルMQTTはlocalhost:9001で実行する必要があり、クラウドMQTTはHiveMQクラウドサービスに自動接続されます",
+            "connected": "接続済み",
+            "disconnected": "未接続",
+            "connecting": "接続中...",
+            "reconnecting": "再接続中...",
+            "connectionError": "接続エラー"
         }
     }
 }

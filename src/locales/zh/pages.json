@@ -844,6 +844,35 @@
             "yesterday": "昨天",
             "dayBefore": "前天"
         },
+        "heartRateTrendChart": {
+            "title": "心率趨勢圖"
+        },
+        "bloodPressureTrendChart": {
+            "title": "血壓趨勢圖",
+            "yAxisLabel": "血壓 (mmHg)",
+            "noData": "無血壓數據"
+        },
+        "recentMqttData": {
+            "title": "最近接收到的 MQTT 數據",
+            "device": "設備",
+            "heartRate": "心率",
+            "spo2": "血氧",
+            "bloodPressure": "血壓",
+            "diaperDevice": "尿布設備",
+            "temperature": "溫度",
+            "humidity": "濕度"
+        },
+        "rawMqttData": {
+            "title": "查看原始MQTT數據 (調試用)",
+            "clickToExpand": "點擊下方數據可展開查看完整內容",
+            "deviceConditions": {
+                "title": "心率設備創建條件檢查",
+                "mustHaveContent": "必須有 content: \"300B\"",
+                "mustHaveMAC": "必須有 MAC 字段",
+                "fieldsCanBeEmpty": "hr, SpO2, bp_syst, bp_diast 字段可以為空或0 (已放寬條件)",
+                "abnormalWarning": "心率 > 100 BPM 或 < 60 BPM 時會觸發異常警告"
+            }
+        },
         "heartRateChart": {
             "title": "心率趨勢圖",
             "cloudDevice": "雲端設備",
@@ -902,7 +931,12 @@
             "localMqtt": "本地 MQTT",
             "cloudMqtt": "雲端 MQTT",
             "error": "錯誤",
-            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
+            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務",
+            "connected": "已連線",
+            "disconnected": "未連線",
+            "connecting": "連接中...",
+            "reconnecting": "重新連接中...",
+            "connectionError": "連接錯誤"
         }
     },
     "diaperMonitoring": {
