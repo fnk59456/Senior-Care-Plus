@@ -7,10 +7,9 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Heart, TrendingUp, Clock, AlertTriangle, MapPin, Baby, Activity, Watch, Settings } from "lucide-react"
 import { useLocation } from "react-router-dom"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
-// 暫時移除未使用的 import
+import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { DeviceType } from "@/types/device-types"
 import { useTranslation } from "react-i18next"
-// 暫時移除 useHealthStore 避免無限循環
 import { mqttBus } from "@/services/mqttBus"
 
 // 心率範圍
@@ -48,7 +47,34 @@ export default function HeartRatePage() {
     setSelectedGateway
   } = useUWBLocation()
 
-  // 暫時移除未使用的 devices
+  // 使用 DeviceManagementContext
+  const { devices, residents, getResidentForDevice } = useDeviceManagement()
+
+  // 根據MAC地址獲取病患資訊
+  const getResidentInfoByMAC = (mac: string) => {
+    // 查找設備：先嘗試hardwareId，再嘗試deviceUid
+    const device = devices.find(d =>
+      d.hardwareId === mac ||
+      d.deviceUid === mac ||
+      d.deviceUid === `300B:${mac}` ||
+      d.deviceUid === `SMARTWATCH_300B:${mac}`
+    )
+
+    if (device) {
+      const resident = getResidentForDevice(device.id)
+      if (resident) {
+        return {
+          residentId: resident.id,
+          residentName: resident.name,
+          residentRoom: resident.room,
+          residentStatus: resident.status,
+          deviceType: device.deviceType
+        }
+      }
+    }
+
+    return null
+  }
 
   // ✅ 恢復舊版本的狀態管理方式
   const [cloudDeviceRecords, setCloudDeviceRecords] = useState<any[]>([])
@@ -148,10 +174,13 @@ export default function HeartRatePage() {
             const steps = parseInt(data.steps) || 0
             const batteryLevel = parseInt(data['battery level']) || 0
 
+            // 獲取病患資訊
+            const residentInfo = getResidentInfoByMAC(MAC)
+
             // 創建設備記錄
             const cloudDeviceRecord = {
               MAC: MAC,
-              deviceName: `設備 ${MAC.slice(-8)}`,
+              deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${MAC.slice(-8)}`,
               hr: hr,
               SpO2: SpO2,
               bp_syst: bp_syst,
@@ -163,11 +192,8 @@ export default function HeartRatePage() {
               time: msg.timestamp.toISOString(),
               datetime: msg.timestamp, // 使用實際的 MQTT 時間戳
               isAbnormal: hr > 0 && (hr > NORMAL_HEART_RATE_MAX || hr < NORMAL_HEART_RATE_MIN),
-              residentId: undefined,
-              residentName: undefined,
-              residentRoom: undefined,
-              residentStatus: 'unknown',
-              deviceType: DeviceType.SMARTWATCH_300B
+              // 添加病患資訊
+              ...residentInfo
             }
 
             // 更新設備記錄
@@ -188,21 +214,20 @@ export default function HeartRatePage() {
                     ? {
                       ...d,
                       lastSeen: msg.timestamp, // 使用實際的 MQTT 時間戳
-                      recordCount: d.recordCount + 1
+                      recordCount: d.recordCount + 1,
+                      // 更新病患資訊
+                      ...residentInfo
                     }
                     : d
                 )
               } else {
                 const newDevice = {
                   MAC: MAC,
-                  deviceName: `設備 ${MAC.slice(-8)}`,
+                  deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${MAC.slice(-8)}`,
                   lastSeen: msg.timestamp, // 使用實際的 MQTT 時間戳
                   recordCount: 1,
-                  residentId: undefined,
-                  residentName: undefined,
-                  residentRoom: undefined,
-                  residentStatus: 'unknown',
-                  deviceType: DeviceType.SMARTWATCH_300B
+                  // 添加病患資訊
+                  ...residentInfo
                 }
                 return [...prev, newDevice]
               }
@@ -327,7 +352,7 @@ export default function HeartRatePage() {
       .filter(record => record.MAC === selectedCloudDevice)
       .map(record => ({
         id: record.MAC,
-        name: record.deviceName,
+        name: record.residentName ? `${record.residentName} (${record.residentRoom})` : record.deviceName,
         heart_rate: record.hr || 0,
         time: record.time,
         datetime: record.datetime,
