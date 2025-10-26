@@ -554,6 +554,7 @@
             "deviceCount": "Device Count",
             "error": "Error",
             "none": "None",
+            "mqttBus": "MQTT Bus",
             "未連線": "Disconnected",
             "已連線": "Connected",
             "連接中...": "Connecting...",
@@ -563,6 +564,14 @@
             "連接錯誤": "Connection Error",
             "未選擇閘道器": "No Gateway Selected",
             "無法獲取閘道器主題": "Cannot Get Gateway Topic"
+        },
+        "connectionStatus": {
+            "title": "MQTT Status",
+            "connected": "Connected",
+            "disconnected": "Disconnected",
+            "connecting": "Connecting...",
+            "reconnecting": "Reconnecting...",
+            "connectionError": "Connection Error"
         },
         "searchFilter": {
             "title": "Search and Filter",

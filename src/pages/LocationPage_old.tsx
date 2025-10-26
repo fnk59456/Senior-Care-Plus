@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
+// @ts-ignore
+import mqtt from "mqtt"
 import { useTranslation } from "react-i18next"
-import { mqttBus } from "@/services/mqttBus"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,23 +10,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
-import { DeviceType, DEVICE_TYPE_CONFIG } from "@/types/device-types"
+import { DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from "@/types/device-types"
 import {
   MapPin,
   Wifi,
   Signal,
+  Battery,
   AlertCircle,
   CheckCircle2,
+  Loader2,
   RotateCcw,
   ZoomIn,
   ZoomOut,
   RefreshCw,
   Search,
+  Users,
   Heart,
   AlertTriangle,
   Watch,
   Baby,
-  Activity
+  Activity,
+  User,
+  Filter,
+  Database
 } from "lucide-react"
 
 // 類型定義
@@ -63,16 +70,17 @@ export default function LocationPage() {
   // 從設備管理Context獲取數據
   const {
     devices,
-    getResidentForDevice
+    residents,
+    getResidentForDevice,
+    getDevicesForResident
   } = useDeviceManagement()
 
   // 本地狀態
   const [patients, setPatients] = useState<Record<string, Patient>>({})
-  const [cloudConnected, setCloudConnected] = useState(false)
-  const [cloudConnectionStatus, setCloudConnectionStatus] = useState("未連線")
-
-  // ✅ 方案一：設備狀態緩存 - 避免地圖交互時重新計算過期狀態
-  const [deviceOnlineStatus, setDeviceOnlineStatus] = useState<Record<string, boolean>>({})
+  const [connected, setConnected] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState("未連線")
+  const [currentTopic, setCurrentTopic] = useState("")
+  const [mqttError, setMqttError] = useState("")
 
   // 新增過濾和搜索狀態
   const [searchTerm, setSearchTerm] = useState("")
@@ -93,32 +101,40 @@ export default function LocationPage() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const [lastTransform, setLastTransform] = useState({ translateX: 0, translateY: 0 })
 
+  const clientRef = useRef<mqtt.MqttClient | null>(null)
+  const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapImageRef = useRef<HTMLImageElement>(null)
 
-  // 根據MAC地址獲取病患資訊
-  const getResidentInfoByMAC = (mac: string) => {
-    // 查找設備：先嘗試hardwareId，再嘗試deviceUid
-    const device = devices.find(d =>
-      d.hardwareId === mac ||
-      d.deviceUid === mac ||
-      d.deviceUid === `TAG:${mac}` ||
-      d.deviceUid === `UWB_TAG:${mac}`
-    )
+  // MQTT連接配置 - 使用useMemo避免重新創建
+  const MQTT_URL = `${import.meta.env.VITE_MQTT_PROTOCOL}://${import.meta.env.VITE_MQTT_BROKER}:${import.meta.env.VITE_MQTT_PORT}/mqtt`
+  const MQTT_OPTIONS = React.useMemo(() => ({
+    username: import.meta.env.VITE_MQTT_USERNAME,
+    password: import.meta.env.VITE_MQTT_PASSWORD
+  }), [])
 
-    if (device) {
-      const resident = getResidentForDevice(device.id)
-      if (resident) {
-        return {
-          residentId: resident.id,
-          residentName: resident.name,
-          residentRoom: resident.room,
-          residentStatus: resident.status,
-          deviceType: device.deviceType
-        }
-      }
+  // 獲取Gateway的location主題
+  const getLocationTopic = () => {
+    if (!selectedGateway) return null
+
+    // 檢查是否有雲端數據
+    const gateway = gateways.find(gw => gw.id === selectedGateway)
+    console.log("🔍 選擇的閘道器:", gateway)
+
+    if (gateway?.cloudData?.pub_topic?.location) {
+      console.log("✅ 使用雲端主題:", gateway.cloudData.pub_topic.location)
+      return gateway.cloudData.pub_topic.location
     }
 
+    // 如果沒有雲端數據，構建主題名稱
+    if (gateway) {
+      const gatewayName = gateway.name.replace(/\s+/g, '')
+      const constructedTopic = `UWB/${gatewayName}_Loca`
+      console.log("🔧 構建本地主題:", constructedTopic)
+      return constructedTopic
+    }
+
+    console.log("❌ 無法獲取閘道器主題")
     return null
   }
 
@@ -349,189 +365,189 @@ export default function LocationPage() {
     }
   }, [handleWheel])
 
-  // ✅ 使用 MQTT Bus 處理位置數據
+  // MQTT連接管理
   useEffect(() => {
-    let lastProcessedTime = 0
-    let processedMessages = new Set()
-    let lastUpdateTime = 0
-
-    const updateLocationData = () => {
-      // 🔧 頻率控制：確保至少間隔2秒才更新
-      const now = Date.now()
-      if (now - lastUpdateTime < 2000) {
-        return
-      }
-
-      try {
-        const recentMessages = mqttBus.getRecentMessages()
-
-        // 只處理新的位置消息
-        const newMessages = recentMessages.filter(msg => {
-          const msgTime = msg.timestamp.getTime()
-          const msgKey = `${msg.topic}-${msgTime}`
-          const isNew = msgTime > lastProcessedTime && !processedMessages.has(msgKey)
-          return isNew && msg.payload?.content === "location" && msg.payload?.id && msg.payload?.position
-        })
-
-        if (newMessages.length === 0) {
-          return
-        }
-
-        // 更新最後處理時間
-        lastProcessedTime = Math.max(...newMessages.map(msg => msg.timestamp.getTime()))
-
-        // 標記已處理的消息
-        newMessages.forEach(msg => {
-          const msgKey = `${msg.topic}-${msg.timestamp.getTime()}`
-          processedMessages.add(msgKey)
-        })
-
-        // 清理過期的處理記錄（保留最近1小時）
-        const oneHourAgo = Date.now() - 60 * 60 * 1000
-        const keysToDelete: string[] = []
-        processedMessages.forEach((key) => {
-          const keyStr = String(key)
-          const timestamp = parseInt(keyStr.split('-').pop() || '0')
-          if (timestamp < oneHourAgo) {
-            keysToDelete.push(keyStr)
-          }
-        })
-        keysToDelete.forEach((key: string) => processedMessages.delete(key))
-
-        // 處理位置消息
-        newMessages.forEach(msg => {
-          const data = msg.payload
-          const deviceId = String(data.id)
-
-          // ✅ 添加 Gateway 篩選：只處理來自選定 Gateway 的位置消息
-          if (selectedGateway) {
-            const gateway = gateways.find(gw => gw.id === selectedGateway)
-            if (gateway) {
-              // 檢查消息是否來自選定的 Gateway
-              const msgGateway = msg.gateway?.name || ''
-              const msgTopicGateway = msg.topic?.match(/GW[A-F0-9]+/)?.[0] || ''
-
-              // 使用前綴匹配邏輯（類似 HeartRatePage）
-              const msgGatewayPrefix = msgGateway?.split('_')[0] || ''
-              const selectedGatewayPrefix = gateway.name?.split('_')[0] || ''
-
-              const isFromSelectedGateway = msgGatewayPrefix &&
-                selectedGatewayPrefix &&
-                msgGatewayPrefix === selectedGatewayPrefix
-
-              if (!isFromSelectedGateway) {
-                console.log(`⏭️ 跳過非選定 Gateway 的位置消息:`, {
-                  deviceId,
-                  msgGateway,
-                  msgTopicGateway,
-                  selectedGateway: gateway.name,
-                  msgGatewayPrefix,
-                  selectedGatewayPrefix
-                })
-                return // 跳過此消息
-              }
-
-              console.log(`✅ 處理選定 Gateway 的位置消息:`, {
-                deviceId,
-                msgGateway,
-                selectedGateway: gateway.name,
-                msgGatewayPrefix,
-                selectedGatewayPrefix
-              })
-            }
-          }
-
-          // 獲取病患資訊
-          const residentInfo = getResidentInfoByMAC(deviceId)
-
-          setPatients(prev => ({
-            ...prev,
-            [deviceId]: {
-              id: deviceId,
-              name: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備-${deviceId}`,
-              position: {
-                x: data.position.x,
-                y: data.position.y,
-                quality: data.position.quality || 0,
-                z: data.position.z,
-              },
-              updatedAt: msg.timestamp.getTime(),
-              gatewayId: selectedGateway,
-              deviceId: residentInfo?.deviceType ? devices.find(d => d.hardwareId === deviceId)?.id : undefined,
-              deviceType: residentInfo?.deviceType,
-              residentId: residentInfo?.residentId,
-              residentName: residentInfo?.residentName,
-              residentStatus: residentInfo?.residentStatus,
-              residentRoom: residentInfo?.residentRoom,
-              // 添加 Gateway 資訊用於調試
-              gateway: msg.gateway?.name || '',
-              topic: msg.topic
-            },
-          }))
-        })
-
-        // 更新最後更新時間
-        lastUpdateTime = Date.now()
-      } catch (error) {
-        console.error('Error processing location data:', error)
-      }
+    // 清理之前的超時
+    if (connectionTimeoutRef.current) {
+      clearTimeout(connectionTimeoutRef.current)
     }
 
-    // 初始載入
-    updateLocationData()
+    if (!selectedGateway) {
+      // 清理連接
+      if (clientRef.current) {
+        console.log("清理MQTT連接 - 未選擇閘道器")
+        clientRef.current.end(true) // 強制斷開
+        clientRef.current = null
+      }
+      setConnected(false)
+      setConnectionStatus("未選擇閘道器")
+      setCurrentTopic("")
+      return
+    }
 
-    // 每5秒檢查一次新消息
-    const interval = setInterval(updateLocationData, 5000)
+    const locationTopic = getLocationTopic()
+    if (!locationTopic) {
+      setConnectionStatus("無法獲取閘道器主題")
+      return
+    }
 
-    return () => clearInterval(interval)
-  }, [selectedGateway, devices, getResidentForDevice])
+    // 防抖：延遲500ms再建立連接，避免頻繁切換
+    connectionTimeoutRef.current = setTimeout(() => {
+      // 如果已有連接，先清理
+      if (clientRef.current) {
+        console.log("清理舊的MQTT連接 - 準備重新連接")
+        clientRef.current.end(true) // 強制斷開
+        clientRef.current = null
+      }
 
-  // ✅ 監聽 MQTT Bus 連接狀態
-  useEffect(() => {
-    const unsubscribe = mqttBus.onStatusChange((status) => {
-      setCloudConnected(status === 'connected')
-      setCloudConnectionStatus(status === 'connected' ? t('pages:location.connectionStatus.connected') :
-        status === 'connecting' ? t('pages:location.connectionStatus.connecting') :
-          status === 'reconnecting' ? t('pages:location.connectionStatus.reconnecting') :
-            status === 'error' ? t('pages:location.connectionStatus.connectionError') : t('pages:location.connectionStatus.disconnected'))
-    })
+      setConnectionStatus("連接中...")
+      setMqttError("")
 
-    // 初始化狀態
-    const currentStatus = mqttBus.getStatus()
-    setCloudConnected(currentStatus === 'connected')
-    setCloudConnectionStatus(currentStatus === 'connected' ? t('pages:location.connectionStatus.connected') : t('pages:location.connectionStatus.disconnected'))
+      // 建立MQTT連接
+      const client = mqtt.connect(MQTT_URL, {
+        ...MQTT_OPTIONS,
+        reconnectPeriod: 1000,        // 減少重連間隔
+        connectTimeout: 30000,        // 增加連接超時
+        keepalive: 30,               // 減少keepalive間隔
+        clean: false,                // 改為false，保持會話
+        clientId: `location-client-${Math.random().toString(16).slice(2, 8)}`,
+        reschedulePings: true,       // 重新安排ping
+        queueQoSZero: false,         // 不隊列QoS 0消息
+        rejectUnauthorized: false    // 不拒絕未授權連接
+      })
 
-    return unsubscribe
-  }, [])
+      clientRef.current = client
 
-  // ✅ Gateway 切換時清除位置數據
-  useEffect(() => {
-    console.log(`🔄 Gateway 切換，清除舊的位置數據:`, selectedGateway)
-    setPatients({})
-    setDeviceOnlineStatus({}) // 同時清除設備狀態緩存
-  }, [selectedGateway])
+      client.on("connect", () => {
+        console.log("✅ 室內定位MQTT已連接")
+        setConnected(true)
+        setConnectionStatus("已連線")
+        setMqttError("")
 
-  // ✅ 方案一：設備狀態緩存更新 - 只在 patients 變化時重新計算在線狀態
-  useEffect(() => {
-    const now = Date.now()
-    const newOnlineStatus: Record<string, boolean> = {}
+        // 訂閱主題
+        client.subscribe(locationTopic, (err) => {
+          if (err) {
+            console.error("訂閱失敗:", err)
+            setMqttError("訂閱失敗")
+          } else {
+            console.log("已訂閱主題:", locationTopic)
+            setCurrentTopic(locationTopic)
+          }
+        })
+      })
 
-    Object.values(patients).forEach(patient => {
-      newOnlineStatus[patient.id] = now - patient.updatedAt < 5000
-    })
+      client.on("reconnect", () => {
+        console.log("重新連接中...")
+        setConnected(false)
+        setConnectionStatus("重新連接中...")
+      })
 
-    console.log(`📊 更新設備在線狀態緩存:`, {
-      totalDevices: Object.keys(patients).length,
-      onlineDevices: Object.values(newOnlineStatus).filter(status => status).length,
-      offlineDevices: Object.values(newOnlineStatus).filter(status => !status).length
-    })
+      client.on("close", () => {
+        console.log("連接已關閉")
+        setConnected(false)
+        setConnectionStatus("連接已關閉")
+      })
 
-    setDeviceOnlineStatus(newOnlineStatus)
-  }, [patients]) // 只在 patients 變化時更新
+      client.on("offline", () => {
+        console.log("客戶端離線")
+        setConnected(false)
+        setConnectionStatus("客戶端離線")
+      })
 
-  // ✅ 方案一：使用緩存的設備狀態 - 避免地圖交互時重新計算
+      client.on("packetsend", (packet) => {
+        console.log("發送數據包:", packet.cmd)
+      })
+
+      client.on("packetreceive", (packet) => {
+        console.log("接收數據包:", packet.cmd)
+      })
+
+      client.on("error", (error) => {
+        console.error("MQTT連接錯誤:", error)
+        setConnected(false)
+        setMqttError(error.message || "連接錯誤")
+        setConnectionStatus("連接錯誤")
+      })
+
+      client.on("message", (topic: string, payload: Uint8Array) => {
+        if (topic !== locationTopic) return
+
+        try {
+          const rawMessage = new TextDecoder().decode(payload)
+          const msg = JSON.parse(rawMessage)
+
+          if (msg.content === "location" && msg.id && msg.position) {
+            const deviceId = String(msg.id)
+
+            // 查找對應的設備和院友信息
+            const device = devices.find(d => {
+              // 解析設備UID，提取實際ID
+              if (d.deviceUid.startsWith('TAG:')) {
+                const tagId = d.deviceUid.split(':')[1]
+                return tagId === deviceId || d.hardwareId === deviceId
+              }
+              return d.deviceUid === deviceId || d.hardwareId === deviceId
+            })
+
+            console.log('🔍 查找設備:', {
+              mqttDeviceId: deviceId,
+              foundDevice: device,
+              allDevices: devices.map(d => ({ id: d.id, deviceUid: d.deviceUid, hardwareId: d.hardwareId, residentId: d.residentId }))
+            })
+
+            const resident = device ? getResidentForDevice(device.id) : undefined
+
+            console.log('🔍 查找院友:', {
+              deviceId: device?.id,
+              foundResident: resident,
+              allResidents: residents.map(r => ({ id: r.id, name: r.name, room: r.room }))
+            })
+
+            setPatients(prev => ({
+              ...prev,
+              [deviceId]: {
+                id: deviceId,
+                name: resident ? resident.name : `設備-${deviceId}`,
+                position: {
+                  x: msg.position.x,
+                  y: msg.position.y,
+                  quality: msg.position.quality || 0,
+                  z: msg.position.z,
+                },
+                updatedAt: Date.now(),
+                gatewayId: selectedGateway,
+                deviceId: device?.id,
+                deviceType: device?.deviceType,
+                residentId: resident?.id,
+                residentName: resident?.name,
+                residentStatus: resident?.status,
+                residentRoom: resident?.room
+              },
+            }))
+          }
+        } catch (error) {
+          console.error('MQTT 訊息解析錯誤:', error)
+        }
+      })
+    }, 500) // 500ms防抖延遲
+
+    // 清理函數
+    return () => {
+      if (connectionTimeoutRef.current) {
+        clearTimeout(connectionTimeoutRef.current)
+      }
+      if (clientRef.current) {
+        console.log("清理MQTT連接 - 組件卸載")
+        clientRef.current.end(true)
+        clientRef.current = null
+      }
+    }
+  }, [selectedGateway, MQTT_URL, MQTT_OPTIONS, devices, getResidentForDevice])
+
+  // 過期判斷（5秒未更新視為離線）
+  const now = Date.now()
   const patientList = Object.values(patients)
-  const onlinePatients = patientList.filter(p => deviceOnlineStatus[p.id] !== false)
+  const onlinePatients = patientList.filter(p => now - p.updatedAt < 5000)
 
   // 過濾患者列表
   const filteredPatients = onlinePatients.filter(patient => {
@@ -673,24 +689,29 @@ export default function LocationPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{t('pages:location.mqttStatus.status')}:</span>
-              <Badge variant={cloudConnected ? "default" : "secondary"}>
-                {cloudConnected ? (
+              <Badge variant={connected ? "default" : "secondary"}>
+                {connected ? (
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                 ) : (
                   <AlertCircle className="mr-1 h-3 w-3" />
                 )}
-                {cloudConnectionStatus}
+                {t(`pages:location.mqttStatus.${connectionStatus}`)}
               </Badge>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{t('pages:location.mqttStatus.topic')}:</span>
-              <span className="text-sm font-mono">{selectedGateway ? t('pages:location.mqttStatus.mqttBus') : t('pages:location.mqttStatus.none')}</span>
+              <span className="text-sm font-mono">{currentTopic || t('pages:location.mqttStatus.none')}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">{t('pages:location.mqttStatus.deviceCount')}:</span>
               <span className="text-sm">{onlinePatients.length}</span>
             </div>
           </div>
+          {mqttError && (
+            <div className="mt-2 text-sm text-red-600">
+              {t('pages:location.mqttStatus.error')}: {mqttError}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -914,7 +935,7 @@ export default function LocationPage() {
                     {/* 无人在线提示 */}
                     {filteredPatients.length === 0 && (
                       <div className="absolute inset-0 flex items-center justify-center text-lg text-muted-foreground bg-white/70 pointer-events-none">
-                        {cloudConnected ? t('pages:location.map.noDevices') : t('pages:location.map.selectGateway')}
+                        {connected ? t('pages:location.map.noDevices') : t('pages:location.map.selectGateway')}
                       </div>
                     )}
                   </div>

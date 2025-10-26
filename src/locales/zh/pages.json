@@ -554,6 +554,7 @@
             "deviceCount": "設備數量",
             "error": "錯誤",
             "none": "無",
+            "mqttBus": "MQTT Bus",
             "未連線": "未連線",
             "已連線": "已連線",
             "連接中...": "連接中...",
@@ -563,6 +564,14 @@
             "連接錯誤": "連接錯誤",
             "未選擇閘道器": "未選擇閘道器",
             "無法獲取閘道器主題": "無法獲取閘道器主題"
+        },
+        "connectionStatus": {
+            "title": "MQTT 狀態",
+            "connected": "已連線",
+            "disconnected": "未連線",
+            "connecting": "連接中...",
+            "reconnecting": "重新連接中...",
+            "connectionError": "連接錯誤"
         },
         "searchFilter": {
             "title": "搜索和過濾",

@@ -1140,5 +1140,84 @@
                 "confirm": "確認"
             }
         }
+    },
+    "location": {
+        "title": "屋内位置",
+        "subtitle": "施設内の高齢者とデバイスの位置を追跡し、安全とケアを確保",
+        "selectArea": {
+            "title": "監視エリア選択",
+            "nursingHome": "老人ホーム",
+            "floor": "フロア",
+            "gateway": "ゲートウェイ",
+            "selectNursingHome": "老人ホームを選択",
+            "selectFloor": "フロアを選択",
+            "selectGateway": "ゲートウェイを選択",
+            "local": "ローカル"
+        },
+        "mqttStatus": {
+            "title": "MQTT接続状態",
+            "refreshData": "データ更新",
+            "refreshTitle": "キャリブレーションデータ更新",
+            "status": "状態",
+            "topic": "トピック",
+            "deviceCount": "デバイス数",
+            "error": "エラー",
+            "none": "なし",
+            "mqttBus": "MQTT Bus",
+            "未連線": "未接続",
+            "已連線": "接続済み",
+            "連接中...": "接続中...",
+            "重新連接中...": "再接続中...",
+            "連接已關閉": "接続終了",
+            "客戶端離線": "クライアントオフライン",
+            "連接錯誤": "接続エラー",
+            "未選擇閘道器": "ゲートウェイ未選択",
+            "無法獲取閘道器主題": "ゲートウェイトピック取得不可"
+        },
+        "connectionStatus": {
+            "title": "MQTT 状態",
+            "connected": "接続済み",
+            "disconnected": "未接続",
+            "connecting": "接続中...",
+            "reconnecting": "再接続中...",
+            "connectionError": "接続エラー"
+        },
+        "searchFilter": {
+            "title": "検索とフィルター",
+            "searchPlaceholder": "入居者名または部屋番号を検索...",
+            "allStatus": "全状態",
+            "allDevices": "全デバイス",
+            "watch": "時計",
+            "uwbTag": "UWBタグ"
+        },
+        "map": {
+            "realtimeMap": "リアルタイム位置マップ",
+            "showDevices": "{{count}}個のデバイスを表示",
+            "zoomIn": "拡大",
+            "zoomOut": "縮小",
+            "resetView": "ビューリセット",
+            "zoom": "ズーム",
+            "controls": "ホイールでズーム | ドラッグで移動",
+            "noDevices": "条件に合うデバイスがありません",
+            "selectGateway": "まずゲートウェイを選択して接続を確立してください",
+            "noDimensions": "このフロアのマップサイズが設定されていません",
+            "selectFloor": "マップを表示するにはフロアを選択してください",
+            "mapStatus": "マップ状態",
+            "calibrated": "キャリブレーション済み",
+            "notCalibrated": "未キャリブレーション",
+            "ratio": "比率",
+            "pixelsPerMeter": "ピクセル/メートル",
+            "translate": "平行移動",
+            "onlineDevices": "オンラインデバイス",
+            "filtered": "フィルター後"
+        },
+        "deviceList": {
+            "onlineDevices": "オンラインデバイス ({{count}})",
+            "totalDevices": "合計 {{count}}個のデバイス",
+            "room": "部屋",
+            "position": "位置",
+            "updated": "更新",
+            "online": "オンライン"
+        }
     }
 }
