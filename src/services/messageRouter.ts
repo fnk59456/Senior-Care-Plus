@@ -131,6 +131,8 @@ export const RoutePatterns = {
 
     // ACK 確認
     ACK: /_Ack$/,
+    // 雲端 ack_from_node 主題
+    ACK_FROM_NODE: /ack_from_node$/,
 
     // 消息
     MESSAGE: /_Message$/,
@@ -143,6 +145,11 @@ export const RoutePatterns = {
 
     // 特定內容類型
     forContent: (contentType: string) => new RegExp(`"content"\\s*:\\s*"${contentType}"`),
+
+    // Anchor 設定（AncConf）
+    ANC_CONF: /_AncConf$/,
+    // 雲端 anchor_config 主題
+    ANCHOR_CONFIG: /anchor_config$/,
 
     // 調試：匹配所有 Topics
     ALL_TOPICS: /.*/,

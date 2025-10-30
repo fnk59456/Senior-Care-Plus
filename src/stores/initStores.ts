@@ -7,6 +7,8 @@
 import './healthStore'
 import './locationStore'
 import './deviceStore'
+import './ackStore'
+import './anchorStore'
 
 // 導入 MQTT Bus 和路由模式
 import { mqttBus } from '@/services/mqttBus'

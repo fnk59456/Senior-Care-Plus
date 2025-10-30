@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useTranslation } from 'react-i18next'
 // @ts-ignore
 import mqtt from "mqtt"
-import { mqttBus } from '@/services/mqttBus'
-import { useAnchorStore } from '@/stores/anchorStore'
 import { api } from "@/services/api"
 import { useDataSync } from "@/hooks/useDataSync"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -1441,66 +1439,6 @@ export default function UWBLocationPage() {
         console.log(`${gatewayConfig.source}的閘道器，使用 anchor topic:`, anchorTopic)
         console.log(`${gatewayConfig.source}的閘道器，使用 ack topic:`, ackTopic)
 
-        // ✅ 使用 MQTT Bus 取數據，避免本地直連（最小侵入：在此提前返回，阻止後續直連代碼執行）
-        setCurrentAnchorTopic(anchorTopic)
-        setCurrentAckTopic(ackTopic)
-        setAnchorCloudError("")
-        setAnchorCloudConnectionStatus('連接中...')
-
-        let timer: any
-        const update = () => {
-            // 從 Anchor Store 取得最近配置
-            const configs = useAnchorStore.getState().getConfigsByTopic(anchorTopic, 60 * 1000)
-            setCloudAnchorData(configs.map(c => ({ ...(c.payload || {}), receivedAt: c.receivedAt, topic: c.topic })) as any)
-            // Ack 仍由 ackStore 全域通知；此處僅保留頁面內列表顯示（沿用 Bus buffer 方案）
-            const since = new Date(Date.now() - 60 * 1000)
-            const all = mqttBus.getRecentMessages()
-            const ackMsgs = all.filter(m => m.topic === ackTopic && m.timestamp >= since)
-            const mappedAcks = ackMsgs.map(m => ({ ...(m.payload || {}), receivedAt: m.timestamp, topic: m.topic }))
-            setCloudAckData(mappedAcks as any)
-
-            // 建立「雲端已發現但系統未加入」清單，驅動「加入系統」按鈕
-            try {
-                const existingIds = new Set(
-                    currentAnchors
-                        .filter(a => a.gatewayId === selectedGatewayForAnchors || a.cloudGatewayId?.toString() === selectedGatewayForAnchors)
-                        .map(a => String(a.id))
-                )
-                const discovered = configs
-                    .map(c => {
-                        const pid = c.payload?.id ?? c.id
-                        const pname = c.payload?.name ?? c.name ?? `ANCHOR_${pid}`
-                        return {
-                            id: Number(pid) || 0,
-                            name: String(pname),
-                            gateway_id: Number(selectedGatewayForAnchors) || 0,
-                            fw_update: 0,
-                            led: 0,
-                            ble: 0,
-                            initiator: 0,
-                            position: c.payload?.position || { x: 0, y: 0, z: 0 },
-                            lastSeen: new Date(),
-                            recordCount: 1,
-                            isOnline: true,
-                        }
-                    })
-                    .filter(d => d.id && !existingIds.has(String(d.id)))
-
-                setDiscoveredCloudAnchors(discovered as any)
-            } catch (e) {
-                console.warn('⚠️ 生成雲端錨點清單失敗:', e)
-            }
-            setAnchorCloudConnected(true)
-            setAnchorCloudConnectionStatus('已連線')
-        }
-
-        update()
-        timer = setInterval(update, 2000)
-
-        return () => {
-            if (timer) clearInterval(timer)
-        }
-
         // 檢查是否已經連接到相同的主題，避免重複連接
         if (anchorCloudClientRef.current &&
             currentAnchorTopic === anchorTopic &&
@@ -1515,7 +1453,7 @@ export default function UWBLocationPage() {
         // 如果有現有連接，先清理
         if (anchorCloudClientRef.current) {
             console.log("清理現有 Anchor MQTT 連接")
-            anchorCloudClientRef.current?.end()
+            anchorCloudClientRef.current.end()
             anchorCloudClientRef.current = null
         }
 
@@ -1542,7 +1480,6 @@ export default function UWBLocationPage() {
         })
 
         console.log("Anchor MQTT Client 已創建，Client ID:", anchorClient.options.clientId)
-        // @ts-ignore - legacy direct MQTT path is deprecated after MQTT Bus migration
         anchorCloudClientRef.current = anchorClient
 
         anchorClient.on("connect", () => {
