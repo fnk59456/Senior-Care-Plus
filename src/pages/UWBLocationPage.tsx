@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import mqtt from "mqtt"
 import { mqttBus } from '@/services/mqttBus'
 import { useAnchorStore } from '@/stores/anchorStore'
+import { useTagStore } from '@/stores/tagStore'
 import { api } from "@/services/api"
 import { useDataSync } from "@/hooks/useDataSync"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -40,7 +41,7 @@ import {
     Signal,
     Battery,
     Upload,
-    Map,
+    Map as MapIcon,
     Target,
     Crosshair,
     Save,
@@ -1078,7 +1079,7 @@ export default function UWBLocationPage() {
     const [selectedFloorForTags, setSelectedFloorForTags] = useState<string>("")
     const [selectedGatewayForTags, setSelectedGatewayForTags] = useState<string>("")
 
-    const tagCloudClientRef = useRef<mqtt.MqttClient | null>(null)
+    // 移除 tagCloudClientRef，改用 MQTT Bus + Store
 
     // 移除自動選擇邏輯，讓用戶必須手動選擇 Gateway
     // 這樣可以確保 MQTT 連線真正依賴用戶的選擇
@@ -1777,14 +1778,9 @@ export default function UWBLocationPage() {
         }
     }, [selectedHomeForAnchors, selectedFloorForAnchors, floors])
 
-    // Tag 雲端 MQTT 連接 - 根據選擇的 Gateway 動態訂閱
+    // Tag 雲端數據讀取 - 從 MQTT Bus + Store 獲取數據
     useEffect(() => {
         if (!selectedGatewayForTags) {
-            // 如果沒有選擇 Gateway，清理連接
-            if (tagCloudClientRef.current) {
-                tagCloudClientRef.current.end()
-                tagCloudClientRef.current = null
-            }
             setTagCloudConnected(false)
             setTagCloudConnectionStatus("未選擇閘道器")
             setCurrentTagTopic("")
@@ -1851,511 +1847,272 @@ export default function UWBLocationPage() {
         console.log(`${gatewayConfig.source}的閘道器，使用 location topic:`, locationTopic)
         console.log(`${gatewayConfig.source}的閘道器，使用 tag config topic:`, tagConfigTopic)
 
-        // 檢查是否已經連接到相同的主題，避免重複連接
-        if (tagCloudClientRef.current &&
-            currentTagTopic === `${messageTopic}+${locationTopic}+${tagConfigTopic}` &&
-            (tagCloudConnected || tagCloudConnectionStatus === "連接中...")) {
-            console.log("⚠️ 已連接到相同主題或正在連接中，跳過重複連接")
-            console.log("- 當前狀態:", tagCloudConnectionStatus)
-            console.log("- 連接狀態:", tagCloudConnected)
-            return
-        }
-
-        // 如果有現有連接，先清理
-        if (tagCloudClientRef.current) {
-            console.log("清理現有 Tag MQTT 連接")
-            tagCloudClientRef.current.end()
-            tagCloudClientRef.current = null
-        }
-
         setCurrentTagTopic(`${messageTopic}+${locationTopic}+${tagConfigTopic}`)
-        setTagCloudConnectionStatus("連接中...")
+
+        // 從 MQTT Bus 讀取連線狀態
+        const isConnected = mqttBus.isConnected()
+        setTagCloudConnected(isConnected)
+        setTagCloudConnectionStatus(isConnected ? "已連線" : "未連線")
         setTagCloudError("")
 
-        console.log("🚀 開始連接 Tag MQTT")
-        console.log("- MQTT URL:", CLOUD_MQTT_URL)
-        console.log("- MQTT 用戶名:", CLOUD_MQTT_OPTIONS.username)
-        console.log("- 訂閱主題:", messageTopic, "、", locationTopic, "和", tagConfigTopic)
-        console.log("- Client ID 前綴: uwb-tag-client-")
-        console.log("- 觸發原因: selectedGatewayForTags 變化或數據更新")
+        // 從 Tag Store 讀取數據
+        const update = () => {
+            const tagStore = useTagStore.getState()
 
-        const tagClient = mqtt.connect(CLOUD_MQTT_URL, {
-            ...CLOUD_MQTT_OPTIONS,
-            reconnectPeriod: 3000,     // 縮短重連間隔
-            connectTimeout: 30000,     // 增加連接超時時間
-            keepalive: 30,             // 縮短心跳間隔
-            clean: true,
-            resubscribe: true,         // 重連時自動重新訂閱
-            clientId: `uwb-tag-client-${Math.random().toString(16).slice(2, 8)}`
-        })
+            // 讀取最近 60 秒的數據
+            const sinceMs = 60 * 1000
+            const messages = tagStore.getMessagesByTopic(messageTopic, sinceMs)
+            const locations = tagStore.getLocationsByTopic(locationTopic, sinceMs)
+            const configs = tagStore.getConfigsByTopic(tagConfigTopic, sinceMs)
 
-        console.log("Tag MQTT Client 已創建，Client ID:", tagClient.options.clientId)
-        tagCloudClientRef.current = tagClient
+            console.log(`📊 從 Tag Store 讀取數據:`, {
+                messages: messages.length,
+                locations: locations.length,
+                configs: configs.length
+            })
 
-        tagClient.on("connect", () => {
-            console.log("✅ Tag 雲端 MQTT 已連接成功！")
-            console.log("- Client ID:", tagClient.options.clientId)
-            console.log("- 準備訂閱主題:", messageTopic, "、", locationTopic, "和", tagConfigTopic)
-            setTagCloudConnected(true)
-            setTagCloudConnectionStatus("已連線")
-            setTagCloudError("")
-        })
+            // 合併為原始數據列表（供原始數據檢視器使用）
+            const allTagData = [
+                ...messages.map(m => ({
+                    ...m,
+                    topic: "message"
+                })),
+                ...locations.map(l => ({
+                    ...l,
+                    topic: "location"
+                })),
+                ...configs.map(c => ({
+                    ...c,
+                    topic: "config"
+                }))
+            ].sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime()).slice(0, 50)
 
-        tagClient.on("reconnect", () => {
-            console.log("Tag 雲端 MQTT 重新連接中...")
-            setTagCloudConnected(false)
-            setTagCloudConnectionStatus("重新連接中...")
-        })
+            setCloudTagData(allTagData)
 
-        tagClient.on("close", () => {
-            console.log("Tag 雲端 MQTT 連接關閉")
-            setTagCloudConnected(false)
-            setTagCloudConnectionStatus("連接已關閉")
-        })
+            // 生成 discoveredCloudTags（合併三種數據類型）
+            const tagMap = new Map()
 
-        tagClient.on("error", (error) => {
-            console.error("❌ Tag 雲端 MQTT 連接錯誤:", error)
-            console.error("- 錯誤類型:", error.name)
-            console.error("- 錯誤消息:", error.message)
-            console.error("- 可能原因: HiveMQ 連接限制或網絡問題")
-
-            setTagCloudConnected(false)
-            setTagCloudError(`${error.message} (可能是雲端服務限制)`)
-            setTagCloudConnectionStatus("連接錯誤 - 雲端服務問題")
-        })
-
-        tagClient.on("offline", () => {
-            console.log("Tag 雲端 MQTT 離線")
-            setTagCloudConnected(false)
-            setTagCloudConnectionStatus("離線")
-        })
-
-        // 訂閱三個主題
-        tagClient.subscribe(messageTopic, (err) => {
-            if (err) {
-                console.error("❌ Tag message 主題訂閱失敗:", err)
-                setTagCloudError(`message 主題訂閱失敗: ${err.message}`)
-            } else {
-                console.log("✅ 已成功訂閱 message 主題:", messageTopic)
-            }
-        })
-
-        tagClient.subscribe(locationTopic, (err) => {
-            if (err) {
-                console.error("❌ Tag location 主題訂閱失敗:", err)
-                setTagCloudError(`location 主題訂閱失敗: ${err.message}`)
-            } else {
-                console.log("✅ 已成功訂閱 location 主題:", locationTopic)
-            }
-        })
-
-        tagClient.subscribe(tagConfigTopic, (err) => {
-            if (err) {
-                console.error("❌ Tag config 主題訂閱失敗:", err)
-                setTagCloudError(`tag config 主題訂閱失敗: ${err.message}`)
-            } else {
-                console.log("✅ 已成功訂閱 tag config 主題:", tagConfigTopic)
-            }
-        })
-
-        // 檢查三個主題是否都訂閱成功
-        setTimeout(() => {
-            if (!tagCloudError.includes("訂閱失敗")) {
-                setTagCloudConnectionStatus("已連線並訂閱")
-                console.log("✅ 三個主題都已訂閱成功")
-            }
-        }, 1000)
-
-        tagClient.on("message", (topic: string, payload: Uint8Array) => {
-            console.log("📨 收到 Tag MQTT 消息")
-            console.log("- 接收主題:", topic)
-            console.log("- 預期主題:", messageTopic, "、", locationTopic, "或", tagConfigTopic)
-
-            if (topic !== messageTopic && topic !== locationTopic && topic !== tagConfigTopic) {
-                console.log("⚠️ 主題不匹配，忽略消息")
-                return
-            }
-
-            try {
-                const rawMessage = new TextDecoder().decode(payload)
-                console.log("📄 原始消息內容:", rawMessage)
-                const msg = JSON.parse(rawMessage)
-                console.log("📋 解析後的 JSON:", msg)
-
-                // 處理 message 主題數據 (content: "info", node: "TAG")
-                if (topic === messageTopic && msg.content === "info" && msg.node === "TAG") {
-                    console.log("處理 Tag message 數據...")
-
-                    const tagData = {
-                        content: msg.content,
-                        gateway_id: msg["gateway id"] || 0,
-                        node: msg.node || "",
-                        id: msg.id || 0,
-                        id_hex: msg["id(Hex)"] || "",
-                        fw_ver: msg["fw ver"] || 0,
-                        battery_level: msg["battery level"] || 0,
-                        battery_voltage: msg["battery voltage"] || 0,
-                        led_on_time: msg["led on time(1ms)"] || 0,
-                        led_off_time: msg["led off time(1ms)"] || 0,
-                        bat_detect_time: msg["bat detect time(1s)"] || 0,
-                        five_v_plugged: msg["5V plugged"] || "",
-                        uwb_tx_power_changed: msg["uwb tx power changed"] || "",
-                        uwb_tx_power: msg["uwb tx power"] || {},
-                        serial_no: msg["serial no"] || 0,
-                        receivedAt: new Date(),
+            // 從 messages 添加/更新
+            messages.forEach(msg => {
+                if (!tagMap.has(msg.id)) {
+                    tagMap.set(msg.id, {
+                        id: msg.id,
+                        id_hex: msg.id_hex,
+                        gateway_id: msg.gateway_id,
+                        fw_ver: msg.fw_ver,
+                        battery_level: msg.battery_level,
+                        battery_voltage: msg.battery_voltage,
+                        lastSeen: msg.receivedAt,
+                        recordCount: 1,
+                        isOnline: true,
                         topic: "message"
-                    }
-
-                    console.log("解析的 Tag message 數據:", tagData)
-
-                    // 更新原始數據列表
-                    setCloudTagData(prev => {
-                        const newData = [tagData, ...prev].slice(0, 50)
-                        return newData
                     })
-
-                    // 檢查並更新發現的 Tag 列表
-                    if (tagData.id) {
-                        setDiscoveredCloudTags(prev => {
-                            const existingTag = prev.find(t => t.id === tagData.id)
-
-                            if (existingTag) {
-                                // 更新現有 Tag
-                                const updatedTags = prev.map(t =>
-                                    t.id === tagData.id
-                                        ? {
-                                            ...t,
-                                            battery_level: tagData.battery_level,
-                                            battery_voltage: tagData.battery_voltage,
-                                            lastSeen: new Date(),
-                                            recordCount: t.recordCount + 1,
-                                            isOnline: true
-                                        }
-                                        : t
-                                )
-                                console.log("更新現有 Tag，總數:", updatedTags.length)
-                                return updatedTags
-                            } else {
-                                // 添加新 Tag
-                                const newTag = {
-                                    id: tagData.id,
-                                    id_hex: tagData.id_hex,
-                                    gateway_id: tagData.gateway_id,
-                                    fw_ver: tagData.fw_ver,
-                                    battery_level: tagData.battery_level,
-                                    battery_voltage: tagData.battery_voltage,
-                                    lastSeen: new Date(),
-                                    recordCount: 1,
-                                    isOnline: true,
-                                    topic: "message"
-                                }
-                                const updatedTags = [...prev, newTag]
-                                console.log("添加新 Tag:", newTag)
-                                console.log("更新後總 Tag 數:", updatedTags.length)
-                                return updatedTags
-                            }
-                        })
-
-                        // 自動加入系統功能
-                        const tagId = tagData.id.toString()
-
-                        setTags(prev => {
-                            const existingLocalTag = prev.find(t => t.id === tagId)
-
-                            if (existingLocalTag) {
-                                // 更新現有本地標籤信息
-                                console.log("✅ 自動更新本地標籤信息:", tagId)
-                                return prev.map(t =>
-                                    t.id === tagId ? {
-                                        ...t,
-                                        status: tagData.battery_level > 20 ? 'active' : 'low_battery',
-                                        batteryLevel: tagData.battery_level,
-                                        lastPosition: t.lastPosition ? {
-                                            ...t.lastPosition,
-                                            timestamp: new Date()
-                                        } : undefined
-                                    } : t
-                                )
-                            } else {
-                                // 自動創建新標籤並加入系統 - 參考錨點配對的實現方式
-                                // 找到對應的本地 Gateway
-                                const relatedGateway = currentGateways.find(gw => {
-                                    // 檢查是否有雲端數據且 gateway_id 匹配
-                                    if (gw.cloudData && gw.cloudData.gateway_id === tagData.gateway_id) {
-                                        return true
-                                    }
-                                    // 檢查 MAC 地址是否匹配 (如果 MAC 格式為 GW:xxxxx)
-                                    if (gw.macAddress.startsWith('GW:')) {
-                                        const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
-                                        return gatewayIdFromMac === tagData.gateway_id
-                                    }
-                                    return false
-                                })
-
-                                const newLocalTag: TagDevice = {
-                                    id: tagId,
-                                    gatewayId: relatedGateway?.id || selectedGatewayForTags || "default", // 優先使用關聯的本地 Gateway
-                                    name: `ID_${tagData.id}`,
-                                    macAddress: tagData.id_hex || `0x${tagData.id.toString(16).toUpperCase()}`,
-                                    type: 'person',
-                                    status: tagData.battery_level > 20 ? 'active' : 'low_battery',
-                                    batteryLevel: tagData.battery_level,
-                                    lastPosition: undefined,
-                                    createdAt: new Date(),
-                                    // 新增：保存雲端 Gateway ID 信息，參考錨點配對的實現
-                                    cloudGatewayId: tagData.gateway_id
-                                }
-
-                                console.log("✅ 自動加入新標籤到系統:", newLocalTag)
-                                console.log("- 關聯的本地 Gateway:", relatedGateway?.name || "未找到")
-                                console.log("- 雲端 Gateway ID:", tagData.gateway_id)
-                                return [...prev, newLocalTag]
-                            }
-                        })
-                    }
-                }
-                // 處理 location 主題數據 (content: "location", node: "TAG")
-                else if (topic === locationTopic && msg.content === "location" && msg.node === "TAG") {
-                    console.log("處理 Tag location 數據...")
-
-                    const tagData = {
-                        content: msg.content,
-                        gateway_id: msg["gateway id"] || 0,
-                        node: msg.node || "",
-                        id: msg.id || 0,
-                        position: msg.position || { x: 0, y: 0, z: 0, quality: 0 },
-                        time: msg.time || "",
-                        serial_no: msg["serial no"] || 0,
-                        receivedAt: new Date(),
-                        topic: "location"
-                    }
-
-                    console.log("解析的 Tag location 數據:", tagData)
-
-                    // 更新原始數據列表
-                    setCloudTagData(prev => {
-                        const newData = [tagData, ...prev].slice(0, 50)
-                        return newData
-                    })
-
-                    // 檢查並更新發現的 Tag 列表
-                    if (tagData.id) {
-                        setDiscoveredCloudTags(prev => {
-                            const existingTag = prev.find(t => t.id === tagData.id)
-
-                            if (existingTag) {
-                                // 更新現有 Tag
-                                const updatedTags = prev.map(t =>
-                                    t.id === tagData.id
-                                        ? {
-                                            ...t,
-                                            position: tagData.position,
-                                            time: tagData.time,
-                                            lastSeen: new Date(),
-                                            recordCount: t.recordCount + 1,
-                                            isOnline: true
-                                        }
-                                        : t
-                                )
-                                console.log("更新現有 Tag，總數:", updatedTags.length)
-                                return updatedTags
-                            } else {
-                                // 添加新 Tag
-                                const newTag = {
-                                    id: tagData.id,
-                                    gateway_id: tagData.gateway_id,
-                                    position: tagData.position,
-                                    time: tagData.time,
-                                    lastSeen: new Date(),
-                                    recordCount: 1,
-                                    isOnline: true,
-                                    topic: "location"
-                                }
-                                const updatedTags = [...prev, newTag]
-                                console.log("添加新 Tag:", newTag)
-                                console.log("更新後總 Tag 數:", updatedTags.length)
-                                return updatedTags
-                            }
-                        })
-
-                        // 自動加入系統功能
-                        const tagId = tagData.id.toString()
-
-                        setTags(prev => {
-                            const existingLocalTag = prev.find(t => t.id === tagId)
-
-                            if (existingLocalTag) {
-                                // 更新現有本地標籤的位置信息和閘道器關聯
-                                console.log("✅ 自動更新本地標籤位置信息:", tagId)
-                                return prev.map(t =>
-                                    t.id === tagId ? {
-                                        ...t,
-                                        gatewayId: selectedGatewayForTags || t.gatewayId, // 更新閘道器關聯
-                                        cloudGatewayId: tagData.gateway_id, // 更新雲端閘道器ID
-                                        lastPosition: {
-                                            x: tagData.position.x,
-                                            y: tagData.position.y,
-                                            z: tagData.position.z,
-                                            floorId: selectedFloorForTags,
-                                            timestamp: tagData.time ? new Date(tagData.time) : new Date()
-                                        }
-                                    } : t
-                                )
-                            } else {
-                                // 自動創建新標籤並加入系統 - 參考錨點配對的實現方式
-                                // 找到對應的本地 Gateway
-                                const relatedGateway = currentGateways.find(gw => {
-                                    // 檢查是否有雲端數據且 gateway_id 匹配
-                                    if (gw.cloudData && gw.cloudData.gateway_id === tagData.gateway_id) {
-                                        return true
-                                    }
-                                    // 檢查 MAC 地址是否匹配 (如果 MAC 格式為 GW:xxxxx)
-                                    if (gw.macAddress.startsWith('GW:')) {
-                                        const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
-                                        return gatewayIdFromMac === tagData.gateway_id
-                                    }
-                                    return false
-                                })
-
-                                const newLocalTag: TagDevice = {
-                                    id: tagId,
-                                    gatewayId: selectedGatewayForTags || "default", // 直接使用當前選擇的閘道器
-                                    name: `ID_${tagData.id}`,
-                                    macAddress: `0x${tagData.id.toString(16).toUpperCase()}`,
-                                    type: 'person',
-                                    status: 'active',
-                                    batteryLevel: 100, // 默認電量
-                                    lastPosition: {
-                                        x: tagData.position.x,
-                                        y: tagData.position.y,
-                                        z: tagData.position.z,
-                                        floorId: selectedFloorForTags,
-                                        timestamp: tagData.time ? new Date(tagData.time) : new Date()
-                                    },
-                                    createdAt: new Date(),
-                                    // 新增：保存雲端 Gateway ID 信息，參考錨點配對的實現
-                                    cloudGatewayId: tagData.gateway_id
-                                }
-
-                                console.log("✅ 自動加入新標籤到系統:", newLocalTag)
-                                console.log("- 關聯的本地 Gateway:", relatedGateway?.name || "未找到")
-                                console.log("- 雲端 Gateway ID:", tagData.gateway_id)
-                                return [...prev, newLocalTag]
-                            }
-                        })
-                    }
-                }
-                // 處理 tag config 主題數據 (content: "config", node: "TAG")
-                else if (topic === tagConfigTopic && msg.content === "config" && msg.node === "TAG") {
-                    console.log("處理 Tag config 數據...")
-
-                    const tagData = {
-                        content: msg.content,
-                        gateway_id: msg["gateway id"] || 0,
-                        node: msg.node || "",
-                        id: msg.id || 0,
-                        name: msg.name || "",
-                        fw_update: msg["fw update"] || 0,
-                        led: msg.led || 0,
-                        ble: msg.ble || 0,
-                        location_engine: msg["location engine"] || 0,
-                        responsive_mode: msg["responsive mode(0=On,1=Off)"] || 0,
-                        stationary_detect: msg["stationary detect"] || 0,
-                        nominal_udr: msg["nominal udr(hz)"] || 0,
-                        stationary_udr: msg["stationary udr(hz)"] || 0,
-                        receivedAt: new Date(),
-                        topic: "config"
-                    }
-
-                    console.log("解析的 Tag config 數據:", tagData)
-
-                    // 更新原始數據列表
-                    setCloudTagData(prev => {
-                        const newData = [tagData, ...prev].slice(0, 50)
-                        return newData
-                    })
-
-                    // 檢查並更新發現的 Tag 列表
-                    if (tagData.id) {
-                        setDiscoveredCloudTags(prev => {
-                            const existingTag = prev.find(t => t.id === tagData.id)
-
-                            if (existingTag) {
-                                // 更新現有 Tag 的 name 信息
-                                const updatedTags = prev.map(t =>
-                                    t.id === tagData.id
-                                        ? {
-                                            ...t,
-                                            name: tagData.name || t.name, // 更新 name，如果沒有則保持原值
-                                            lastSeen: new Date(),
-                                            recordCount: t.recordCount + 1,
-                                            isOnline: true
-                                        }
-                                        : t
-                                )
-                                console.log("更新現有 Tag 的 name 信息，總數:", updatedTags.length)
-                                return updatedTags
-                            } else {
-                                // 添加新 Tag
-                                const newTag = {
-                                    id: tagData.id,
-                                    name: tagData.name || `ID_${tagData.id}`,
-                                    gateway_id: tagData.gateway_id,
-                                    fw_update: tagData.fw_update,
-                                    led: tagData.led,
-                                    ble: tagData.ble,
-                                    location_engine: tagData.location_engine,
-                                    responsive_mode: tagData.responsive_mode,
-                                    stationary_detect: tagData.stationary_detect,
-                                    nominal_udr: tagData.nominal_udr,
-                                    stationary_udr: tagData.stationary_udr,
-                                    lastSeen: new Date(),
-                                    recordCount: 1,
-                                    isOnline: true,
-                                    topic: "config"
-                                }
-                                const updatedTags = [...prev, newTag]
-                                console.log("添加新 Tag (config):", newTag)
-                                console.log("更新後總 Tag 數:", updatedTags.length)
-                                return updatedTags
-                            }
-                        })
-
-                        // 更新本地標籤的 name 信息
-                        const tagId = tagData.id.toString()
-                        setTags(prev => {
-                            const existingLocalTag = prev.find(t => t.id === tagId)
-
-                            if (existingLocalTag) {
-                                // 更新現有本地標籤的 name 信息
-                                console.log("✅ 自動更新本地標籤 name 信息:", tagId, "->", tagData.name)
-                                return prev.map(t =>
-                                    t.id === tagId ? {
-                                        ...t,
-                                        name: tagData.name || t.name // 更新 name，如果沒有則保持原值
-                                    } : t
-                                )
-                            } else {
-                                // 如果本地沒有這個標籤，創建一個新的（但不會自動加入，因為沒有電池和位置信息）
-                                console.log("⚠️ 本地沒有找到對應的標籤，跳過創建:", tagId)
-                                return prev
-                            }
-                        })
-                    }
                 } else {
-                    console.log("⚠️ 非 Tag 相關數據，內容:", msg.content, "節點:", msg.node, "主題:", topic)
+                    const existing = tagMap.get(msg.id)!
+                    tagMap.set(msg.id, {
+                        ...existing,
+                        battery_level: msg.battery_level,
+                        battery_voltage: msg.battery_voltage,
+                        lastSeen: msg.receivedAt,
+                        recordCount: existing.recordCount + 1,
+                        isOnline: true
+                    })
                 }
+            })
 
-            } catch (error) {
-                console.error('Tag 雲端 MQTT 訊息解析錯誤:', error)
-            }
+            // 從 locations 添加/更新
+            locations.forEach(loc => {
+                if (!tagMap.has(loc.id)) {
+                    tagMap.set(loc.id, {
+                        id: loc.id,
+                        gateway_id: loc.gateway_id,
+                        position: loc.position,
+                        time: loc.time,
+                        lastSeen: loc.receivedAt,
+                        recordCount: 1,
+                        isOnline: true,
+                        topic: "location"
+                    })
+                } else {
+                    const existing = tagMap.get(loc.id)!
+                    tagMap.set(loc.id, {
+                        ...existing,
+                        position: loc.position,
+                        time: loc.time,
+                        lastSeen: loc.receivedAt,
+                        recordCount: existing.recordCount + 1,
+                        isOnline: true
+                    })
+                }
+            })
+
+            // 從 configs 添加/更新
+            configs.forEach(cfg => {
+                if (!tagMap.has(cfg.id)) {
+                    tagMap.set(cfg.id, {
+                        id: cfg.id,
+                        name: cfg.name || `ID_${cfg.id}`,
+                        gateway_id: cfg.gateway_id,
+                        fw_update: cfg.fw_update,
+                        led: cfg.led,
+                        ble: cfg.ble,
+                        location_engine: cfg.location_engine,
+                        responsive_mode: cfg.responsive_mode,
+                        stationary_detect: cfg.stationary_detect,
+                        nominal_udr: cfg.nominal_udr,
+                        stationary_udr: cfg.stationary_udr,
+                        lastSeen: cfg.receivedAt,
+                        recordCount: 1,
+                        isOnline: true,
+                        topic: "config"
+                    })
+                } else {
+                    const existing = tagMap.get(cfg.id)!
+                    tagMap.set(cfg.id, {
+                        ...existing,
+                        name: cfg.name || existing.name,
+                        fw_update: cfg.fw_update,
+                        led: cfg.led,
+                        ble: cfg.ble,
+                        location_engine: cfg.location_engine,
+                        responsive_mode: cfg.responsive_mode,
+                        stationary_detect: cfg.stationary_detect,
+                        nominal_udr: cfg.nominal_udr,
+                        stationary_udr: cfg.stationary_udr,
+                        lastSeen: cfg.receivedAt,
+                        recordCount: existing.recordCount + 1,
+                        isOnline: true
+                    })
+                }
+            })
+
+            const discovered = Array.from(tagMap.values())
+
+            setDiscoveredCloudTags(discovered)
+
+            // 自動加入系統邏輯（保持原有邏輯）
+            // 使用函數式更新，統一在一個 setTags 調用中處理所有更新
+            setTags(prevTags => {
+                const tagMap = new Map()
+                prevTags.forEach(t => tagMap.set(t.id, t))
+
+                // 處理 messages
+                messages.forEach(msg => {
+                    const tagId = String(msg.id)
+                    const existing = tagMap.get(tagId)
+
+                    if (existing) {
+                        tagMap.set(tagId, {
+                            ...existing,
+                            status: (msg.battery_level || 0) > 20 ? 'active' : 'low_battery',
+                            batteryLevel: msg.battery_level,
+                            lastPosition: existing.lastPosition ? {
+                                ...existing.lastPosition,
+                                timestamp: new Date()
+                            } : undefined
+                        })
+                    } else {
+                        const relatedGateway = currentGateways.find(gw => {
+                            if (gw.cloudData && gw.cloudData.gateway_id === msg.gateway_id) return true
+                            if (gw.macAddress.startsWith('GW:')) {
+                                const gatewayIdFromMac = parseInt(gw.macAddress.replace('GW:', ''), 16)
+                                return gatewayIdFromMac === msg.gateway_id
+                            }
+                            return false
+                        })
+
+                        tagMap.set(tagId, {
+                            id: tagId,
+                            gatewayId: relatedGateway?.id || selectedGatewayForTags || "default",
+                            name: `ID_${msg.id}`,
+                            macAddress: msg.id_hex || `0x${msg.id.toString(16).toUpperCase()}`,
+                            type: 'person',
+                            status: (msg.battery_level || 0) > 20 ? 'active' : 'low_battery',
+                            batteryLevel: msg.battery_level,
+                            lastPosition: undefined,
+                            createdAt: new Date(),
+                            cloudGatewayId: msg.gateway_id
+                        })
+                    }
+                })
+
+                // 處理 locations
+                locations.forEach(loc => {
+                    const tagId = String(loc.id)
+                    const existing = tagMap.get(tagId)
+
+                    if (existing) {
+                        tagMap.set(tagId, {
+                            ...existing,
+                            gatewayId: selectedGatewayForTags || existing.gatewayId,
+                            cloudGatewayId: loc.gateway_id,
+                            lastPosition: {
+                                x: loc.position.x,
+                                y: loc.position.y,
+                                z: loc.position.z,
+                                floorId: selectedFloorForTags,
+                                timestamp: loc.time ? new Date(loc.time) : new Date()
+                            }
+                        })
+                    } else {
+                        tagMap.set(tagId, {
+                            id: tagId,
+                            gatewayId: selectedGatewayForTags || "default",
+                            name: `ID_${loc.id}`,
+                            macAddress: `0x${loc.id.toString(16).toUpperCase()}`,
+                            type: 'person',
+                            status: 'active',
+                            batteryLevel: 100,
+                            lastPosition: {
+                                x: loc.position.x,
+                                y: loc.position.y,
+                                z: loc.position.z,
+                                floorId: selectedFloorForTags,
+                                timestamp: loc.time ? new Date(loc.time) : new Date()
+                            },
+                            createdAt: new Date(),
+                            cloudGatewayId: loc.gateway_id
+                        })
+                    }
+                })
+
+                // 處理 configs
+                configs.forEach(cfg => {
+                    const tagId = String(cfg.id)
+                    const existing = tagMap.get(tagId)
+
+                    if (existing) {
+                        tagMap.set(tagId, {
+                            ...existing,
+                            name: cfg.name || existing.name
+                        })
+                    }
+                    // Config 類型不會自動創建新標籤（因為沒有電池和位置信息）
+                })
+
+                return Array.from(tagMap.values())
+            })
+        }
+
+        // 初始更新
+        update()
+
+        // 定期更新（每 2 秒）
+        const interval = setInterval(update, 2000)
+
+        // 監聽 MQTT Bus 狀態變化
+        const unsubscribe = mqttBus.onStatusChange((status) => {
+            const isConnected = status === 'connected'
+            setTagCloudConnected(isConnected)
+            setTagCloudConnectionStatus(isConnected ? "已連線" : "未連線")
+            setTagCloudError(status === 'error' ? "連接錯誤" : "")
         })
 
         return () => {
-            console.log("清理 Tag 雲端 MQTT 連接")
-            tagClient.end()
+            clearInterval(interval)
+            unsubscribe()
         }
-    }, [selectedGatewayForTags]) // 只在選擇的 Gateway 改變時重新連接
+    }, [selectedGatewayForTags, currentGateways, cloudGatewayData, selectedFloorForTags])
 
     // 監聽養老院和樓層變化，自動更新標籤管理的選擇
     useEffect(() => {
@@ -4005,7 +3762,7 @@ export default function UWBLocationPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="flex items-center">
-                                            <Map className="mr-2 h-5 w-5 text-cyan-500" />
+                                            <MapIcon className="mr-2 h-5 w-5 text-cyan-500" />
                                             {t('pages:uwbLocation.mapCalibrationProgress')}
                                         </CardTitle>
                                     </CardHeader>
@@ -4165,7 +3922,7 @@ export default function UWBLocationPage() {
                                                             onClick={() => startMapCalibration(floor)}
                                                             title="地圖標定"
                                                         >
-                                                            <Map className="h-4 w-4" />
+                                                            <MapIcon className="h-4 w-4" />
                                                         </Button>
                                                         <Button
                                                             size="sm"
@@ -4308,7 +4065,7 @@ export default function UWBLocationPage() {
                                     <div className="p-6">
                                         <div className="flex items-center justify-between mb-6">
                                             <h2 className="text-2xl font-bold flex items-center">
-                                                <Map className="mr-3 h-6 w-6" />
+                                                <MapIcon className="mr-3 h-6 w-6" />
                                                 {calibratingFloor.name} - {t('pages:uwbLocation.mapCalibration')}
                                             </h2>
                                             <Button variant="outline" onClick={resetMapCalibration}>
@@ -5501,7 +5258,7 @@ export default function UWBLocationPage() {
                                 <Card>
                                     <CardHeader>
                                         <CardTitle className="text-lg flex items-center">
-                                            <Map className="mr-3 h-5 w-5 text-green-500" />
+                                            <MapIcon className="mr-3 h-5 w-5 text-green-500" />
                                             {t('pages:uwbLocation.anchorLocationMap')} - {floor.name}
                                         </CardTitle>
                                     </CardHeader>
@@ -6208,26 +5965,14 @@ export default function UWBLocationPage() {
                                 <Button
                                     variant="outline"
                                     onClick={() => {
-                                        console.log("🔄 手動重連 Tag MQTT...")
+                                        console.log("🔄 手動刷新 Tag 數據...")
                                         console.log("- 當前選擇的 Gateway:", selectedGatewayForTags)
 
-                                        // 強制清理現有連接
-                                        if (tagCloudClientRef.current) {
-                                            console.log("- 清理現有連接")
-                                            tagCloudClientRef.current.end()
-                                            tagCloudClientRef.current = null
-                                        }
-
-                                        // 重置狀態
-                                        setTagCloudConnected(false)
-                                        setTagCloudConnectionStatus(t('pages:uwbLocation.tagManagement.messages.manualReconnecting'))
-                                        setTagCloudError("")
-
-                                        // 觸發重新連接（通過重新設置選擇的 Gateway）
+                                        // 觸發數據刷新（通過重新設置選擇的 Gateway）
                                         const currentGateway = selectedGatewayForTags
                                         setSelectedGatewayForTags("")
                                         setTimeout(() => {
-                                            console.log("- 恢復 Gateway 選擇，觸發重連")
+                                            console.log("- 恢復 Gateway 選擇，觸發刷新")
                                             setSelectedGatewayForTags(currentGateway)
                                         }, 100)
                                     }}

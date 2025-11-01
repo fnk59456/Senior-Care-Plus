@@ -151,6 +151,11 @@ export const RoutePatterns = {
     // 雲端 anchor_config 主題
     ANCHOR_CONFIG: /anchor_config$/,
 
+    // Tag 配置（TagConf）
+    TAG_CONF: /_TagConf$/,
+    // 雲端 tag_config 主題
+    TAG_CONFIG: /tag_config$/,
+
     // 調試：匹配所有 Topics
     ALL_TOPICS: /.*/,
 }
