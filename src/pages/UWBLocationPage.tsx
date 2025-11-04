@@ -920,6 +920,31 @@ export default function UWBLocationPage() {
     const [selectedHome, setSelectedHome] = useState<string>("")
     const [activeTab, setActiveTab] = useState(() => loadFromStorage('activeTab', "overview"))
 
+    // 當選擇的場域改變時，從後端加載對應的樓層數據
+    useEffect(() => {
+        if (!selectedHome || !backendAvailable || isCheckingBackend) {
+            return
+        }
+
+        const loadFloorsForHome = async () => {
+            try {
+                console.log(`🔄 場域切換，從後端加載樓層數據 (homeId: ${selectedHome})`)
+                const loadedFloors = await syncFloors(selectedHome)
+                setFloors(loadedFloors)
+                console.log(`✅ 從後端加載 ${loadedFloors.length} 個樓層`)
+            } catch (error) {
+                console.warn('後端樓層數據加載失敗，使用本地存儲:', error)
+                // 智能降級：從 localStorage 讀取該場域的樓層
+                const allFloors = loadFromStorage('floors', MOCK_FLOORS)
+                const homeFloors = allFloors.filter(f => f.homeId === selectedHome)
+                setFloors(homeFloors)
+            }
+        }
+
+        loadFloorsForHome()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedHome, backendAvailable, isCheckingBackend])
+
     // 🚀 智能自動持久化系統 - 狀態聲明
     const [lastSaveTime, setLastSaveTime] = useState<Date>(new Date())
     const [pendingSave, setPendingSave] = useState<boolean>(false)
@@ -2806,29 +2831,92 @@ export default function UWBLocationPage() {
 
     // 刪除功能 - 智能切換版本
     const deleteHome = async (id: string) => {
+        // 立即输出日志，确保函数被调用
+        console.log('🗑️ ========== 刪除場域函數被調用 ==========')
+        console.log('🗑️ 刪除場域觸發，ID:', id)
+        console.log('🗑️ 當前場域列表:', homes.map(h => ({ id: h.id, name: h.name })))
+
+        // 確認對話框
+        const home = homes.find(h => h.id === id)
+        console.log('🗑️ 找到的場域:', home)
+        const confirmMessage = home
+            ? `確定要刪除場域「${home.name}」嗎？此操作無法復原，且會刪除該場域下的所有樓層和設備。`
+            : '確定要刪除此場域嗎？此操作無法復原。'
+
+        console.log('🗑️ 顯示確認對話框...')
+        const confirmed = confirm(confirmMessage)
+        console.log('🗑️ 用戶確認結果:', confirmed)
+
+        if (!confirmed) {
+            console.log('❌ 用戶取消刪除')
+            return
+        }
+
+        console.log('✅ 用戶確認刪除，繼續執行...')
+
         try {
+            console.log('🔄 開始刪除場域，後端可用:', backendAvailable)
             if (backendAvailable) {
                 // 使用 API 刪除
-                await api.home.delete(id)
-                setHomes(prev => prev.filter(home => home.id !== id))
+                console.log('📡 使用 API 刪除場域')
+                console.log('📡 API 端點:', `${import.meta.env.VITE_API_BASE_URL}/homes/${id}`)
+
+                try {
+                    await api.home.delete(id)
+                    console.log('✅ API 刪除請求成功')
+                } catch (apiError) {
+                    console.error('❌ API 刪除請求失敗:', apiError)
+                    // 后端删除失败，询问用户是否仅在本地删除
+                    const fallbackMessage = `後端刪除失敗：${apiError instanceof Error ? apiError.message : '未知錯誤'}\n\n是否僅在本地刪除？（注意：刷新頁面後會恢復）`
+                    if (confirm(fallbackMessage)) {
+                        console.log('⚠️ 用戶選擇僅在本地刪除')
+                        // 仅本地删除，不抛出错误
+                    } else {
+                        console.log('❌ 用戶取消本地刪除')
+                        return // 直接返回，不删除
+                    }
+                }
+
+                console.log('🔄 更新本地狀態...')
+                setHomes(prev => {
+                    const updatedHomes = prev.filter(home => home.id !== id)
+                    console.log('🔄 場域列表更新:', {
+                        before: prev.length,
+                        after: updatedHomes.length
+                    })
+                    // 如果刪除的是當前選中的場域，切換到其他場域
+                    if (selectedHome === id) {
+                        const newSelectedHome = updatedHomes.length > 0 ? updatedHomes[0].id : ""
+                        console.log('🔄 切換選中場域:', newSelectedHome)
+                        setSelectedHome(newSelectedHome)
+                    }
+                    return updatedHomes
+                })
                 toast({
                     title: "場域刪除成功",
                     description: "場域已從後端刪除"
                 })
+                console.log('✅ 場域刪除成功，UI 更新完成')
             } else {
                 // 使用 localStorage 刪除
-                setHomes(prev => prev.filter(home => home.id !== id))
+                console.log('💾 使用 localStorage 刪除場域')
+                setHomes(prev => {
+                    const updatedHomes = prev.filter(home => home.id !== id)
+                    // 如果刪除的是當前選中的場域，切換到其他場域
+                    if (selectedHome === id) {
+                        const newSelectedHome = updatedHomes.length > 0 ? updatedHomes[0].id : ""
+                        setSelectedHome(newSelectedHome)
+                    }
+                    return updatedHomes
+                })
                 toast({
                     title: "場域刪除成功",
                     description: "場域已從本地刪除"
                 })
-            }
-
-            if (selectedHome === id && homes.length > 1) {
-                setSelectedHome(homes.find(h => h.id !== id)?.id || "")
+                console.log('✅ 場域刪除成功（本地）')
             }
         } catch (error) {
-            console.error('場域刪除失敗:', error)
+            console.error('❌ 場域刪除失敗:', error)
             toast({
                 title: "刪除失敗",
                 description: error instanceof Error ? error.message : "未知錯誤",
@@ -2838,22 +2926,54 @@ export default function UWBLocationPage() {
     }
 
     const deleteFloor = async (id: string) => {
+        console.log('🗑️ 刪除樓層觸發，ID:', id)
+
+        // 確認對話框
+        const floor = floors.find(f => f.id === id)
+        const confirmMessage = floor
+            ? `確定要刪除樓層「${floor.name}」嗎？此操作無法復原，且會刪除該樓層下的所有閘道器和設備。`
+            : '確定要刪除此樓層嗎？此操作無法復原。'
+
+        if (!confirm(confirmMessage)) {
+            console.log('❌ 用戶取消刪除')
+            return
+        }
+
         try {
+            console.log('🔄 開始刪除樓層，後端可用:', backendAvailable)
             if (backendAvailable) {
                 // 使用 API 刪除
-                await api.floor.delete(id)
+                console.log('📡 使用 API 刪除樓層')
+                try {
+                    await api.floor.delete(id)
+                    console.log('✅ API 刪除請求成功')
+                } catch (apiError) {
+                    console.error('❌ API 刪除請求失敗:', apiError)
+                    // 后端删除失败，询问用户是否仅在本地删除
+                    const fallbackMessage = `後端刪除失敗：${apiError instanceof Error ? apiError.message : '未知錯誤'}\n\n是否僅在本地刪除？（注意：刷新頁面後會恢復）`
+                    if (confirm(fallbackMessage)) {
+                        console.log('⚠️ 用戶選擇僅在本地刪除')
+                        // 仅本地删除，不抛出错误
+                    } else {
+                        console.log('❌ 用戶取消本地刪除')
+                        return // 直接返回，不删除
+                    }
+                }
                 setFloors(prev => prev.filter(floor => floor.id !== id))
                 toast({
                     title: "樓層刪除成功",
                     description: "樓層已從後端刪除"
                 })
+                console.log('✅ 樓層刪除成功')
             } else {
                 // 使用 localStorage 刪除
+                console.log('💾 使用 localStorage 刪除樓層')
                 setFloors(prev => prev.filter(floor => floor.id !== id))
                 toast({
                     title: "樓層刪除成功",
                     description: "樓層已從本地刪除"
                 })
+                console.log('✅ 樓層刪除成功（本地）')
             }
 
             // 同時刪除該樓層的所有閘道器
@@ -2866,7 +2986,7 @@ export default function UWBLocationPage() {
             window.dispatchEvent(storageChangeEvent)
             console.log('📡 已觸發樓層刪除事件')
         } catch (error) {
-            console.error('樓層刪除失敗:', error)
+            console.error('❌ 樓層刪除失敗:', error)
             toast({
                 title: "刪除失敗",
                 description: error instanceof Error ? error.message : "未知錯誤",
@@ -3590,7 +3710,14 @@ export default function UWBLocationPage() {
 
                     {/* 場域選擇 */}
                     <div className="flex items-center gap-4">
-                        <Select value={selectedHome} onValueChange={setSelectedHome}>
+                        <Select
+                            value={selectedHome}
+                            onValueChange={(value) => {
+                                setSelectedHome(value)
+                                // 保存選擇的場域到 localStorage
+                                saveToStorage('selectedHome', value)
+                            }}
+                        >
                             <SelectTrigger className="w-[240px]">
                                 <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
                             </SelectTrigger>
@@ -3874,7 +4001,21 @@ export default function UWBLocationPage() {
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => deleteHome(home.id)}
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault()
+                                                        e.stopPropagation()
+                                                        console.log('🔘 ========== 刪除按鈕點擊事件觸發 ==========')
+                                                        console.log('🔘 刪除按鈕被點擊，場域ID:', home.id)
+                                                        console.log('🔘 場域名稱:', home.name)
+                                                        console.log('🔘 準備調用 deleteHome 函數...')
+                                                        try {
+                                                            deleteHome(home.id)
+                                                            console.log('🔘 deleteHome 函數調用完成')
+                                                        } catch (error) {
+                                                            console.error('🔘 deleteHome 函數調用失敗:', error)
+                                                        }
+                                                    }}
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -3964,7 +4105,12 @@ export default function UWBLocationPage() {
                                                         <Button
                                                             size="sm"
                                                             variant="outline"
-                                                            onClick={() => deleteFloor(floor.id)}
+                                                            onClick={(e) => {
+                                                                e.preventDefault()
+                                                                e.stopPropagation()
+                                                                console.log('🔘 刪除按鈕被點擊，樓層ID:', floor.id)
+                                                                deleteFloor(floor.id)
+                                                            }}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
                                                         </Button>

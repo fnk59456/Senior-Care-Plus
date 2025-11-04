@@ -19,17 +19,30 @@ async function apiRequest<T>(
         ...options,
     }
 
+    console.log(`📡 API 請求: ${options.method || 'GET'} ${url}`)
+
     try {
         const response = await fetch(url, defaultOptions)
+        console.log(`📡 API 響應: ${response.status} ${response.statusText}`)
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}))
-            throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`)
+            const errorMessage = errorData.message || `HTTP ${response.status}: ${response.statusText}`
+            console.error(`❌ API 錯誤: ${errorMessage}`)
+            throw new Error(errorMessage)
         }
 
-        return await response.json()
+        // DELETE 请求可能返回空响应
+        if (options.method === 'DELETE' && response.status === 204) {
+            console.log('✅ DELETE 請求成功（無內容響應）')
+            return undefined as T
+        }
+
+        const data = await response.json()
+        console.log('✅ API 請求成功，返回數據:', data)
+        return data
     } catch (error) {
-        console.error(`API請求失敗 ${endpoint}:`, error)
+        console.error(`❌ API請求失敗 ${endpoint}:`, error)
         throw error
     }
 }
