@@ -800,11 +800,32 @@ export default function UWBLocationPage() {
                     console.log('🔄 開始從後端加載數據...')
                     // 從後端加載數據
                     try {
+                        // 1. 先加載場域數據
                         loadedHomes = await syncHomes()
-                        // 暫時使用本地存儲的樓層數據，因為需要 homeId 參數
-                        loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
+
+                        // 2. 如果有場域，則從後端加載對應的樓層數據
+                        if (loadedHomes.length > 0) {
+                            try {
+                                // 使用第一個場域的 ID 來加載樓層（或使用存儲的 selectedHome）
+                                const storedSelectedHome = loadFromStorage('selectedHome', '')
+                                const homeIdToSync = storedSelectedHome && loadedHomes.find(h => h.id === storedSelectedHome)
+                                    ? storedSelectedHome
+                                    : loadedHomes[0].id
+
+                                loadedFloors = await syncFloors(homeIdToSync)
+                                console.log(`✅ 從後端加載 ${loadedFloors.length} 個樓層`)
+                            } catch (floorError) {
+                                console.warn('後端樓層數據加載失敗，使用本地存儲:', floorError)
+                                // 智能降級：樓層加載失敗時使用 localStorage
+                                loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
+                            }
+                        } else {
+                            // 沒有場域時，使用本地存儲的樓層數據
+                            loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
+                        }
                     } catch (error) {
                         console.warn('後端數據加載失敗，使用本地存儲:', error)
+                        // 智能降級：場域加載失敗時，場域和樓層都從 localStorage 讀取
                         loadedHomes = loadFromStorage('homes', MOCK_HOMES)
                         loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
                     }
