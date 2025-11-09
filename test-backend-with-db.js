@@ -16,6 +16,9 @@ app.use(express.json({ limit: '10mb' })) // 增加請求體大小限制到 10MB
 const DATA_DIR = './test-data'
 const HOMES_FILE = path.join(DATA_DIR, 'homes.json')
 const FLOORS_FILE = path.join(DATA_DIR, 'floors.json')
+const GATEWAYS_FILE = path.join(DATA_DIR, 'gateways.json')
+const ANCHORS_FILE = path.join(DATA_DIR, 'anchors.json')
+const TAGS_FILE = path.join(DATA_DIR, 'tags.json')
 const DEVICES_FILE = path.join(DATA_DIR, 'devices.json')
 const MQTT_MESSAGES_FILE = path.join(DATA_DIR, 'mqtt_messages.json')
 
@@ -53,6 +56,9 @@ const saveData = (filePath, data) => {
 // 加載現有數據
 let homes = loadData(HOMES_FILE)
 let floors = loadData(FLOORS_FILE)
+let gateways = loadData(GATEWAYS_FILE)
+let anchors = loadData(ANCHORS_FILE)
+let tags = loadData(TAGS_FILE)
 let devices = loadData(DEVICES_FILE)
 let mqttMessages = loadData(MQTT_MESSAGES_FILE, [])
 
@@ -364,6 +370,260 @@ app.delete('/api/floors/:id', (req, res) => {
     res.json({ message: '樓層刪除成功', deletedFloor })
 })
 
+// 樓層關聯查詢：根據場域ID獲取樓層
+app.get('/api/homes/:homeId/floors', (req, res) => {
+    console.log('📥 GET /api/homes/:homeId/floors - 獲取場域的樓層列表')
+    const homeId = req.params.homeId
+    const homeFloors = floors.filter(f => f.homeId === homeId)
+    console.log(`返回 ${homeFloors.length} 個樓層 (場域ID: ${homeId})`)
+    res.json(homeFloors)
+})
+
+// 網關管理 API
+
+// 根據樓層ID獲取網關
+app.get('/api/floors/:floorId/gateways', (req, res) => {
+    console.log('📥 GET /api/floors/:floorId/gateways - 獲取樓層的網關列表')
+    const floorId = req.params.floorId
+    const floorGateways = gateways.filter(g => g.floorId === floorId)
+    console.log(`返回 ${floorGateways.length} 個網關 (樓層ID: ${floorId})`)
+    res.json(floorGateways)
+})
+
+// 創建網關
+app.post('/api/gateways', (req, res) => {
+    console.log('📥 POST /api/gateways - 創建網關')
+    console.log('請求數據:', req.body)
+
+    const newGateway = {
+        id: `gw_${Date.now()}`,
+        ...req.body,
+        createdAt: new Date().toISOString()
+    }
+
+    gateways.push(newGateway)
+    saveData(GATEWAYS_FILE, gateways)
+    console.log('✅ 網關創建成功:', newGateway.id)
+
+    res.status(201).json(newGateway)
+})
+
+// 獲取單個網關
+app.get('/api/gateways/:id', (req, res) => {
+    console.log('📥 GET /api/gateways/:id - 獲取網關')
+    const gateway = gateways.find(g => g.id === req.params.id)
+    if (!gateway) {
+        return res.status(404).json({ error: '網關不存在' })
+    }
+    res.json(gateway)
+})
+
+// 更新網關
+app.put('/api/gateways/:id', (req, res) => {
+    console.log('📥 PUT /api/gateways/:id - 更新網關')
+    const gatewayId = req.params.id
+    const gatewayIndex = gateways.findIndex(g => g.id === gatewayId)
+
+    if (gatewayIndex === -1) {
+        return res.status(404).json({ error: '網關不存在' })
+    }
+
+    const updatedGateway = {
+        ...gateways[gatewayIndex],
+        ...req.body,
+        id: gatewayId,
+        createdAt: gateways[gatewayIndex].createdAt
+    }
+
+    gateways[gatewayIndex] = updatedGateway
+    saveData(GATEWAYS_FILE, gateways)
+    console.log('✅ 網關更新成功:', gatewayId)
+
+    res.json(updatedGateway)
+})
+
+// 刪除網關
+app.delete('/api/gateways/:id', (req, res) => {
+    console.log('📥 DELETE /api/gateways/:id - 刪除網關')
+    const gatewayId = req.params.id
+    const gatewayIndex = gateways.findIndex(g => g.id === gatewayId)
+
+    if (gatewayIndex === -1) {
+        return res.status(404).json({ error: '網關不存在' })
+    }
+
+    const deletedGateway = gateways.splice(gatewayIndex, 1)[0]
+    // 同時刪除關聯的錨點和標籤
+    anchors = anchors.filter(a => a.gatewayId !== gatewayId)
+    tags = tags.filter(t => t.gatewayId !== gatewayId)
+    saveData(GATEWAYS_FILE, gateways)
+    saveData(ANCHORS_FILE, anchors)
+    saveData(TAGS_FILE, tags)
+    console.log('✅ 網關刪除成功:', gatewayId)
+
+    res.json({ message: '網關刪除成功', deletedGateway })
+})
+
+// 錨點管理 API
+
+// 根據網關ID獲取錨點
+app.get('/api/gateways/:gatewayId/anchors', (req, res) => {
+    console.log('📥 GET /api/gateways/:gatewayId/anchors - 獲取網關的錨點列表')
+    const gatewayId = req.params.gatewayId
+    const gatewayAnchors = anchors.filter(a => a.gatewayId === gatewayId)
+    console.log(`返回 ${gatewayAnchors.length} 個錨點 (網關ID: ${gatewayId})`)
+    res.json(gatewayAnchors)
+})
+
+// 創建錨點
+app.post('/api/anchors', (req, res) => {
+    console.log('📥 POST /api/anchors - 創建錨點')
+    console.log('請求數據:', req.body)
+
+    const newAnchor = {
+        id: `anchor_${Date.now()}`,
+        ...req.body,
+        createdAt: new Date().toISOString()
+    }
+
+    anchors.push(newAnchor)
+    saveData(ANCHORS_FILE, anchors)
+    console.log('✅ 錨點創建成功:', newAnchor.id)
+
+    res.status(201).json(newAnchor)
+})
+
+// 獲取單個錨點
+app.get('/api/anchors/:id', (req, res) => {
+    console.log('📥 GET /api/anchors/:id - 獲取錨點')
+    const anchor = anchors.find(a => a.id === req.params.id)
+    if (!anchor) {
+        return res.status(404).json({ error: '錨點不存在' })
+    }
+    res.json(anchor)
+})
+
+// 更新錨點
+app.put('/api/anchors/:id', (req, res) => {
+    console.log('📥 PUT /api/anchors/:id - 更新錨點')
+    const anchorId = req.params.id
+    const anchorIndex = anchors.findIndex(a => a.id === anchorId)
+
+    if (anchorIndex === -1) {
+        return res.status(404).json({ error: '錨點不存在' })
+    }
+
+    const updatedAnchor = {
+        ...anchors[anchorIndex],
+        ...req.body,
+        id: anchorId,
+        createdAt: anchors[anchorIndex].createdAt
+    }
+
+    anchors[anchorIndex] = updatedAnchor
+    saveData(ANCHORS_FILE, anchors)
+    console.log('✅ 錨點更新成功:', anchorId)
+
+    res.json(updatedAnchor)
+})
+
+// 刪除錨點
+app.delete('/api/anchors/:id', (req, res) => {
+    console.log('📥 DELETE /api/anchors/:id - 刪除錨點')
+    const anchorId = req.params.id
+    const anchorIndex = anchors.findIndex(a => a.id === anchorId)
+
+    if (anchorIndex === -1) {
+        return res.status(404).json({ error: '錨點不存在' })
+    }
+
+    const deletedAnchor = anchors.splice(anchorIndex, 1)[0]
+    saveData(ANCHORS_FILE, anchors)
+    console.log('✅ 錨點刪除成功:', anchorId)
+
+    res.json({ message: '錨點刪除成功', deletedAnchor })
+})
+
+// 標籤管理 API
+
+// 根據網關ID獲取標籤
+app.get('/api/gateways/:gatewayId/tags', (req, res) => {
+    console.log('📥 GET /api/gateways/:gatewayId/tags - 獲取網關的標籤列表')
+    const gatewayId = req.params.gatewayId
+    const gatewayTags = tags.filter(t => t.gatewayId === gatewayId)
+    console.log(`返回 ${gatewayTags.length} 個標籤 (網關ID: ${gatewayId})`)
+    res.json(gatewayTags)
+})
+
+// 創建標籤
+app.post('/api/tags', (req, res) => {
+    console.log('📥 POST /api/tags - 創建標籤')
+    console.log('請求數據:', req.body)
+
+    const newTag = {
+        id: `tag_${Date.now()}`,
+        ...req.body,
+        createdAt: new Date().toISOString()
+    }
+
+    tags.push(newTag)
+    saveData(TAGS_FILE, tags)
+    console.log('✅ 標籤創建成功:', newTag.id)
+
+    res.status(201).json(newTag)
+})
+
+// 獲取單個標籤
+app.get('/api/tags/:id', (req, res) => {
+    console.log('📥 GET /api/tags/:id - 獲取標籤')
+    const tag = tags.find(t => t.id === req.params.id)
+    if (!tag) {
+        return res.status(404).json({ error: '標籤不存在' })
+    }
+    res.json(tag)
+})
+
+// 更新標籤
+app.put('/api/tags/:id', (req, res) => {
+    console.log('📥 PUT /api/tags/:id - 更新標籤')
+    const tagId = req.params.id
+    const tagIndex = tags.findIndex(t => t.id === tagId)
+
+    if (tagIndex === -1) {
+        return res.status(404).json({ error: '標籤不存在' })
+    }
+
+    const updatedTag = {
+        ...tags[tagIndex],
+        ...req.body,
+        id: tagId,
+        createdAt: tags[tagIndex].createdAt
+    }
+
+    tags[tagIndex] = updatedTag
+    saveData(TAGS_FILE, tags)
+    console.log('✅ 標籤更新成功:', tagId)
+
+    res.json(updatedTag)
+})
+
+// 刪除標籤
+app.delete('/api/tags/:id', (req, res) => {
+    console.log('📥 DELETE /api/tags/:id - 刪除標籤')
+    const tagId = req.params.id
+    const tagIndex = tags.findIndex(t => t.id === tagId)
+
+    if (tagIndex === -1) {
+        return res.status(404).json({ error: '標籤不存在' })
+    }
+
+    const deletedTag = tags.splice(tagIndex, 1)[0]
+    saveData(TAGS_FILE, tags)
+    console.log('✅ 標籤刪除成功:', tagId)
+
+    res.json({ message: '標籤刪除成功', deletedTag })
+})
+
 // MQTT 消息歷史
 app.get('/api/mqtt/messages', (req, res) => {
     console.log('📥 GET /api/mqtt/messages - 獲取MQTT消息歷史')
@@ -377,6 +637,9 @@ app.get('/api/stats', (req, res) => {
     const stats = {
         homes: homes.length,
         floors: floors.length,
+        gateways: gateways.length,
+        anchors: anchors.length,
+        tags: tags.length,
         devices: devices.length,
         mqttMessages: mqttMessages.length,
         mqttConnected: mqttClient ? mqttClient.connected : false,
@@ -411,13 +674,32 @@ app.listen(PORT, () => {
     console.log('  POST   /api/floors')
     console.log('  PUT    /api/floors/:id')
     console.log('  DELETE /api/floors/:id')
-    console.log('  GET    /api/mqtt/messages  ← 新增：查看MQTT消息歷史')
-    console.log('  GET    /api/stats          ← 新增：查看數據統計')
+    console.log('  GET    /api/homes/:homeId/floors  ← 根據場域獲取樓層')
+    console.log('  GET    /api/floors/:floorId/gateways  ← 根據樓層獲取網關')
+    console.log('  POST   /api/gateways')
+    console.log('  GET    /api/gateways/:id')
+    console.log('  PUT    /api/gateways/:id')
+    console.log('  DELETE /api/gateways/:id')
+    console.log('  GET    /api/gateways/:gatewayId/anchors  ← 根據網關獲取錨點')
+    console.log('  POST   /api/anchors')
+    console.log('  GET    /api/anchors/:id')
+    console.log('  PUT    /api/anchors/:id')
+    console.log('  DELETE /api/anchors/:id')
+    console.log('  GET    /api/gateways/:gatewayId/tags  ← 根據網關獲取標籤')
+    console.log('  POST   /api/tags')
+    console.log('  GET    /api/tags/:id')
+    console.log('  PUT    /api/tags/:id')
+    console.log('  DELETE /api/tags/:id')
+    console.log('  GET    /api/mqtt/messages  ← 查看MQTT消息歷史')
+    console.log('  GET    /api/stats          ← 查看數據統計')
     console.log('')
     console.log('💾 數據存儲位置:')
     console.log(`  📁 數據目錄: ${DATA_DIR}`)
     console.log(`  🏠 場域數據: ${HOMES_FILE}`)
     console.log(`  🏢 樓層數據: ${FLOORS_FILE}`)
+    console.log(`  🌐 網關數據: ${GATEWAYS_FILE}`)
+    console.log(`  📍 錨點數據: ${ANCHORS_FILE}`)
+    console.log(`  🏷️  標籤數據: ${TAGS_FILE}`)
     console.log(`  📱 設備數據: ${DEVICES_FILE}`)
     console.log(`  📨 MQTT消息: ${MQTT_MESSAGES_FILE}`)
 })

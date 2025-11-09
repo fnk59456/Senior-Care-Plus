@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react'
 import { gatewayRegistry } from '@/services/gatewayRegistry'
 import { mqttBus } from '@/services/mqttBus'
+import { useDataSync } from '@/hooks/useDataSync'
 // 初始化所有 Store 以註冊路由規則
 import '@/stores/initStores'
 
@@ -96,6 +97,21 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
     const [selectedFloor, setSelectedFloor] = useState("")
     const [selectedGateway, setSelectedGateway] = useState("")
 
+    // 後端狀態管理
+    const [backendAvailable, setBackendAvailable] = useState(false)
+    const [isCheckingBackend, setIsCheckingBackend] = useState(true)
+
+    // 數據同步 Hook - 使用 useCallback 包裝 onError 避免無限循環
+    const handleSyncError = useCallback((error: Error) => {
+        console.warn('數據同步失敗，使用本地存儲:', error)
+        setBackendAvailable(false)
+    }, [])
+
+    const { syncHomes, syncFloors, syncGateways } = useDataSync({
+        enableAutoSync: false,
+        onError: handleSyncError
+    })
+
     // 數據載入輔助函數
     const loadFromStorage = useCallback(<T,>(key: string, defaultValue: T): T => {
         try {
@@ -122,87 +138,69 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
         return defaultValue
     }, [])
 
-    // 數據刷新函數 - 從localStorage重新載入所有數據
-    const refreshData = useCallback(() => {
+    // 數據刷新函數 - 重新載入所有數據（支持後端和localStorage）
+    // 使用 useRef 防止重複調用
+    const isRefreshingRef = useRef(false)
+    const refreshData = useCallback(async () => {
+        // 防止重複調用
+        if (isRefreshingRef.current) {
+            console.log('⚠️ 數據刷新正在進行中，跳過重複調用')
+            return
+        }
+
+        isRefreshingRef.current = true
         console.log('🔄 正在刷新UWBLocationContext數據...')
 
         try {
-            // 載入數據，如果沒有數據則使用默認值
-            const loadedHomes = loadFromStorage<Home[]>('uwb_homes', [])
-            const loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
-            const loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
-            const loadedSelectedHome = loadFromStorage<string>('uwb_selectedHome', '')
+            let loadedHomes: Home[] = []
+            let loadedFloors: Floor[] = []
+            let loadedGateways: Gateway[] = []
+            let loadedSelectedHome = ''
 
-            // 如果沒有數據，使用默認數據
-            if (loadedHomes.length === 0) {
-                console.log('🔄 沒有找到UWB數據，使用默認數據')
-                // 這裡可以添加默認的Gateway數據
-                const defaultGateways: Gateway[] = [
-                    {
-                        id: "gw_1755790261215",
-                        floorId: "floor_1",
-                        name: "GwF9E516B8_142",
-                        macAddress: "GW:F9E516B8",
-                        ipAddress: "192.168.1.100",
-                        status: "online",
-                        createdAt: new Date(),
-                        cloudData: {
-                            gateway_id: 4192540344,
-                            pub_topic: {
-                                health: "UWB/GwF9E516B8_142_Health",
-                                location: "UWB/GwF9E516B8_142_Loca",
-                                message: "UWB/GwF9E516B8_142_Message",
-                                ack_from_node: "UWB/GwF9E516B8_142_Ack",
-                                anchor_config: "",
-                                tag_config: ""
-                            },
-                            sub_topic: {
-                                downlink: ""
-                            },
-                            content: "",
-                            name: "GwF9E516B8_142",
-                            fw_ver: "",
-                            fw_serial: 0,
-                            uwb_hw_com_ok: "",
-                            uwb_joined: "",
-                            uwb_network_id: 0,
-                            connected_ap: "",
-                            wifi_tx_power: 0,
-                            set_wifi_max_tx_power: 0,
-                            ble_scan_time: 0,
-                            ble_scan_pause_time: 0,
-                            battery_voltage: 0,
-                            five_v_plugged: "",
-                            uwb_tx_power_changed: "",
-                            uwb_tx_power: {
-                                boost_norm: 0,
-                                boost_500: 0,
-                                boost_250: 0,
-                                boost_125: 0
-                            },
-                            discard_iot_data_time: 0,
-                            discarded_iot_data: 0,
-                            total_discarded_data: 0,
-                            first_sync: "",
-                            last_sync: "",
-                            current: "",
-                            receivedAt: new Date()
+            if (backendAvailable && !isCheckingBackend) {
+                // 從後端刷新數據
+                try {
+                    loadedHomes = await syncHomes()
+                    if (loadedHomes.length > 0 && selectedHome) {
+                        try {
+                            loadedFloors = await syncFloors(selectedHome)
+                            if (loadedFloors.length > 0) {
+                                try {
+                                    loadedGateways = await syncGateways(loadedFloors[0].id)
+                                } catch {
+                                    loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                                }
+                            } else {
+                                loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                            }
+                        } catch {
+                            loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
+                            loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
                         }
+                    } else {
+                        loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
+                        loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
                     }
-                ]
-
-                setGateways(defaultGateways)
-                console.log('✅ 已設置默認Gateway數據')
+                } catch {
+                    // 降級到 localStorage
+                    loadedHomes = loadFromStorage<Home[]>('uwb_homes', [])
+                    loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
+                    loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                }
             } else {
-                setGateways(loadedGateways)
+                // 從 localStorage 刷新數據
+                loadedHomes = loadFromStorage<Home[]>('uwb_homes', [])
+                loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
+                loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
             }
 
-            // 更新狀態
+            // 設置網關數據（移除硬編碼默認 Gateway）
+            setGateways(loadedGateways)
             setHomes(loadedHomes)
             setFloors(loadedFloors)
-            // setGateways 已經在上面設置了
 
             // 驗證並設置selectedHome
+            loadedSelectedHome = loadFromStorage<string>('uwb_selectedHome', '')
             if (loadedSelectedHome && loadedHomes.find((h: Home) => h.id === loadedSelectedHome)) {
                 setSelectedHome(loadedSelectedHome)
             } else if (loadedHomes.length > 0) {
@@ -215,8 +213,35 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
             console.log(`- 閘道器: ${loadedGateways.length} 個`)
         } catch (error) {
             console.error('❌ UWBLocationContext數據刷新失敗:', error)
+        } finally {
+            isRefreshingRef.current = false
         }
-    }, [loadFromStorage])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [backendAvailable, isCheckingBackend, selectedHome])
+
+    // 檢測後端可用性
+    useEffect(() => {
+        const checkBackendAvailability = async () => {
+            try {
+                setIsCheckingBackend(true)
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'}/health`)
+                if (response.ok) {
+                    setBackendAvailable(true)
+                    console.log('✅ 後端連接可用，使用 API 模式')
+                } else {
+                    setBackendAvailable(false)
+                    console.log('⚠️ 後端連接不可用，使用 localStorage 模式')
+                }
+            } catch (error) {
+                setBackendAvailable(false)
+                console.log('⚠️ 後端連接不可用，使用 localStorage 模式')
+            } finally {
+                setIsCheckingBackend(false)
+            }
+        }
+
+        checkBackendAvailability()
+    }, [])
 
     // ✨ 初始化 MQTT Bus（應用啟動時只執行一次）
     useEffect(() => {
@@ -236,28 +261,144 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
         }
     }, []) // 空依賴數組，只執行一次
 
-    // 從localStorage載入數據 - 只在組件初始化時執行
+    // 從localStorage或後端載入數據 - 支持智能降級
     useEffect(() => {
-        console.log('🚀 UWBLocationContext初始化，開始載入數據...')
+        const initializeData = async () => {
+            // 等待後端檢測完成
+            if (isCheckingBackend) {
+                return
+            }
 
-        // 載入數據
-        const loadedHomes = loadFromStorage<Home[]>('uwb_homes', [])
-        const loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
-        const loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
-        const loadedSelectedHome = loadFromStorage<string>('uwb_selectedHome', '')
+            console.log('🚀 UWBLocationContext初始化，開始載入數據...')
 
-        setHomes(loadedHomes)
-        setFloors(loadedFloors)
-        setGateways(loadedGateways)
+            let loadedHomes: Home[] = []
+            let loadedFloors: Floor[] = []
+            let loadedGateways: Gateway[] = []
+            let loadedSelectedHome = ''
 
-        if (loadedSelectedHome && loadedHomes.find((h: Home) => h.id === loadedSelectedHome)) {
-            setSelectedHome(loadedSelectedHome)
-        } else if (loadedHomes.length > 0) {
-            setSelectedHome(loadedHomes[0].id)
+            if (backendAvailable) {
+                // 從後端加載數據
+                try {
+                    console.log('🔄 從後端加載數據...')
+
+                    // 1. 加載場域
+                    loadedHomes = await syncHomes()
+
+                    // 2. 如果有場域，加載樓層
+                    if (loadedHomes.length > 0) {
+                        try {
+                            const homeIdToSync = loadedHomes[0].id
+                            loadedFloors = await syncFloors(homeIdToSync)
+                            console.log(`✅ 從後端加載 ${loadedFloors.length} 個樓層`)
+                        } catch (floorError) {
+                            console.warn('後端樓層數據加載失敗，使用本地存儲:', floorError)
+                            loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
+                        }
+
+                        // 3. 如果有樓層，加載網關
+                        if (loadedFloors.length > 0) {
+                            try {
+                                const floorIdToSync = loadedFloors[0].id
+                                loadedGateways = await syncGateways(floorIdToSync)
+                                console.log(`✅ 從後端加載 ${loadedGateways.length} 個網關`)
+                            } catch (gatewayError) {
+                                console.warn('後端網關數據加載失敗，使用本地存儲:', gatewayError)
+                                loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                            }
+                        } else {
+                            loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                        }
+                    } else {
+                        loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
+                        loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                    }
+                } catch (error) {
+                    console.warn('後端數據加載失敗，使用本地存儲:', error)
+                    // 降級到 localStorage
+                    loadedHomes = loadFromStorage<Home[]>('uwb_homes', [])
+                    loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
+                    loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                }
+            } else {
+                // 從 localStorage 加載（降級模式）
+                console.log('🔄 從 localStorage 加載數據...')
+                loadedHomes = loadFromStorage<Home[]>('uwb_homes', [])
+                loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
+                loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+            }
+
+            // 設置數據
+            setHomes(loadedHomes)
+            setFloors(loadedFloors)
+            setGateways(loadedGateways)
+
+            // 設置 selectedHome
+            loadedSelectedHome = loadFromStorage<string>('uwb_selectedHome', '')
+            if (loadedSelectedHome && loadedHomes.find((h: Home) => h.id === loadedSelectedHome)) {
+                setSelectedHome(loadedSelectedHome)
+            } else if (loadedHomes.length > 0) {
+                setSelectedHome(loadedHomes[0].id)
+            }
+
+            console.log('✅ UWBLocationContext初始化完成')
+            console.log(`- 養老院: ${loadedHomes.length} 個`)
+            console.log(`- 樓層: ${loadedFloors.length} 個`)
+            console.log(`- 閘道器: ${loadedGateways.length} 個`)
         }
 
-        console.log('✅ UWBLocationContext初始化完成')
-    }, [loadFromStorage])
+        initializeData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [backendAvailable, isCheckingBackend])
+
+    // 當選擇的場域改變時，從後端加載對應的樓層和網關數據
+    useEffect(() => {
+        if (!selectedHome || !backendAvailable || isCheckingBackend) {
+            return
+        }
+
+        const loadDataForHome = async () => {
+            try {
+                console.log(`🔄 場域切換，從後端加載數據 (homeId: ${selectedHome})`)
+
+                // 加載樓層
+                const loadedFloors = await syncFloors(selectedHome)
+                setFloors(loadedFloors)
+                console.log(`✅ 從後端加載 ${loadedFloors.length} 個樓層`)
+
+                // 如果有樓層，加載第一個樓層的網關
+                if (loadedFloors.length > 0) {
+                    try {
+                        const floorIdToSync = loadedFloors[0].id
+                        const loadedGateways = await syncGateways(floorIdToSync)
+                        setGateways(loadedGateways)
+                        console.log(`✅ 從後端加載 ${loadedGateways.length} 個網關`)
+                    } catch (gatewayError) {
+                        console.warn('後端網關數據加載失敗，使用本地存儲:', gatewayError)
+                        const allGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                        const homeGateways = allGateways.filter(g =>
+                            loadedFloors.some(f => f.id === g.floorId)
+                        )
+                        setGateways(homeGateways)
+                    }
+                }
+            } catch (error) {
+                console.warn('後端數據加載失敗，使用本地存儲:', error)
+                // 降級：從 localStorage 讀取
+                const allFloors = loadFromStorage<Floor[]>('uwb_floors', [])
+                const homeFloors = allFloors.filter(f => f.homeId === selectedHome)
+                setFloors(homeFloors)
+
+                const allGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                const homeGateways = allGateways.filter(g =>
+                    homeFloors.some(f => f.id === g.floorId)
+                )
+                setGateways(homeGateways)
+            }
+        }
+
+        loadDataForHome()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedHome, backendAvailable, isCheckingBackend])
 
     // 監聽localStorage變化 - 當其他頁面更新數據時自動同步
     useEffect(() => {
@@ -313,6 +454,11 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
 
     // ✨ 同步 Gateways 到 Gateway Registry
     useEffect(() => {
+        if (gateways.length === 0) {
+            console.log('⚠️ 沒有 Gateway 需要註冊')
+            return
+        }
+
         console.log(`🔄 同步 ${gateways.length} 個 Gateways 到 Registry...`)
 
         // 註冊所有 Gateways
@@ -320,11 +466,7 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
             gatewayRegistry.registerGateway(gateway)
         })
 
-        // 清理：當組件卸載或 gateways 變化時，先清空 Registry
-        return () => {
-            // 不清空，讓 MQTT 連接保持
-            // gatewayRegistry.clear()
-        }
+        console.log(`✅ 已註冊 ${gateways.length} 個 Gateways`)
     }, [gateways])
 
     // ✨ 監聽 Gateway Registry 事件（用於調試）

@@ -7,6 +7,7 @@ import { useAnchorStore } from '@/stores/anchorStore'
 import { useTagStore } from '@/stores/tagStore'
 import { api } from "@/services/api"
 import { useDataSync } from "@/hooks/useDataSync"
+import { gatewayRegistry } from "@/services/gatewayRegistry"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -461,7 +462,8 @@ export default function UWBLocationPage() {
         isLoading: isDataLoading,
         error: dataError,
         syncHomes,
-        syncFloors
+        syncFloors,
+        syncGateways
     } = useDataSync({
         enableAutoSync: false, // 手動控制同步
         onError: (error) => {
@@ -829,13 +831,29 @@ export default function UWBLocationPage() {
                         loadedHomes = loadFromStorage('homes', MOCK_HOMES)
                         loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
                     }
+
+                    // 3. 如果有樓層，則從後端加載對應的網關數據
+                    if (loadedFloors.length > 0) {
+                        try {
+                            // 使用第一個樓層的 ID 來加載網關
+                            const floorIdToSync = loadedFloors[0].id
+                            loadedGateways = await syncGateways(floorIdToSync)
+                            console.log(`✅ 從後端加載 ${loadedGateways.length} 個網關`)
+                        } catch (gatewayError) {
+                            console.warn('後端網關數據加載失敗，使用本地存儲:', gatewayError)
+                            // 智能降級：網關加載失敗時使用 localStorage
+                            loadedGateways = loadFromStorage('gateways', MOCK_GATEWAYS)
+                        }
+                    } else {
+                        // 沒有樓層時，使用本地存儲的網關數據
+                        loadedGateways = loadFromStorage('gateways', MOCK_GATEWAYS)
+                    }
+
                     // 其他數據暫時使用本地存儲
-                    const [gateways, anchors, tags] = await Promise.all([
-                        Promise.resolve(loadFromStorage('gateways', MOCK_GATEWAYS)),
+                    const [anchors, tags] = await Promise.all([
                         Promise.resolve(loadFromStorage('anchors', MOCK_ANCHORS)),
                         Promise.resolve(loadFromStorage('tags', MOCK_TAGS))
                     ])
-                    loadedGateways = gateways
                     loadedAnchors = anchors
                     loadedTags = tags
                 } else {
@@ -932,18 +950,51 @@ export default function UWBLocationPage() {
                 const loadedFloors = await syncFloors(selectedHome)
                 setFloors(loadedFloors)
                 console.log(`✅ 從後端加載 ${loadedFloors.length} 個樓層`)
+
+                // 如果有樓層，加載第一個樓層的網關
+                if (loadedFloors.length > 0) {
+                    try {
+                        const floorIdToSync = loadedFloors[0].id
+                        const loadedGateways = await syncGateways(floorIdToSync)
+                        setGateways(loadedGateways)
+                        console.log(`✅ 從後端加載 ${loadedGateways.length} 個網關`)
+                    } catch (gatewayError) {
+                        console.warn('後端網關數據加載失敗，使用本地存儲:', gatewayError)
+                        const allGateways = loadFromStorage('gateways', MOCK_GATEWAYS)
+                        const floorGateways = allGateways.filter(g => g.floorId === loadedFloors[0].id)
+                        setGateways(floorGateways)
+                    }
+                }
             } catch (error) {
                 console.warn('後端樓層數據加載失敗，使用本地存儲:', error)
                 // 智能降級：從 localStorage 讀取該場域的樓層
                 const allFloors = loadFromStorage('floors', MOCK_FLOORS)
                 const homeFloors = allFloors.filter(f => f.homeId === selectedHome)
                 setFloors(homeFloors)
+
+                // 同時加載該場域的網關
+                const allGateways = loadFromStorage('gateways', MOCK_GATEWAYS)
+                const homeGateways = allGateways.filter(g =>
+                    homeFloors.some(f => f.id === g.floorId)
+                )
+                setGateways(homeGateways)
             }
         }
 
         loadFloorsForHome()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedHome, backendAvailable, isCheckingBackend])
+
+    // 當 Gateways 數據加載完成後，註冊到 GatewayRegistry
+    useEffect(() => {
+        if (gateways.length > 0) {
+            console.log('📡 註冊 Gateways 到 GatewayRegistry...')
+            gateways.forEach(gateway => {
+                gatewayRegistry.registerGateway(gateway)
+            })
+            console.log(`✅ 已註冊 ${gateways.length} 個 Gateways`)
+        }
+    }, [gateways])
 
     // 🚀 智能自動持久化系統 - 狀態聲明
     const [lastSaveTime, setLastSaveTime] = useState<Date>(new Date())
@@ -992,6 +1043,10 @@ export default function UWBLocationPage() {
                 Object.entries(dataToSave).forEach(([key, value]) => {
                     if (key === 'selectedHome' && !value) return // 跳過空值
                     if (key === 'version' || key === 'lastSave') return // 跳過元數據
+                    // 如果後端可用，跳過已後端化的數據（homes, floors, gateways）
+                    if (backendAvailable && ['homes', 'floors', 'gateways'].includes(key)) {
+                        return // 後端化的數據不保存到 localStorage
+                    }
                     saveToStorage(key, value)
                 })
 
@@ -1281,7 +1336,7 @@ export default function UWBLocationPage() {
             }
         })
 
-        cloudClient.on("message", (topic: string, payload: Uint8Array) => {
+        cloudClient.on("message", async (topic: string, payload: Uint8Array) => {
             if (topic !== CLOUD_MQTT_TOPIC) return
             try {
                 const rawMessage = new TextDecoder().decode(payload)
@@ -1399,6 +1454,37 @@ export default function UWBLocationPage() {
                             }
                             return prev
                         })
+
+                        // 檢查是否有對應的系統 Gateway，如果有則更新
+                        const existingSystemGateway = gateways.find(gw =>
+                            gw.cloudData?.gateway_id === gatewayData.gateway_id
+                        )
+
+                        if (existingSystemGateway) {
+                            // 更新系統 Gateway 的 cloudData
+                            const updatedGateway = {
+                                ...existingSystemGateway,
+                                cloudData: gatewayData
+                            }
+                            setGateways(prev => prev.map(gw =>
+                                gw.id === existingSystemGateway.id ? updatedGateway : gw
+                            ))
+
+                            // 重新註冊到 GatewayRegistry（更新 Topic 映射）
+                            gatewayRegistry.updateGateway(updatedGateway)
+
+                            // 如果後端可用，同步更新到後端
+                            if (backendAvailable) {
+                                try {
+                                    await api.gateway.update(existingSystemGateway.id, {
+                                        cloudData: gatewayData
+                                    })
+                                    console.log('✅ 後端 Gateway cloudData 更新成功')
+                                } catch (error) {
+                                    console.warn('後端更新 Gateway cloudData 失敗:', error)
+                                }
+                            }
+                        }
                     }
                 } else {
                     console.log("⚠️ 非 Gateway Topic 數據，內容:", msg.content)
@@ -2322,64 +2408,119 @@ export default function UWBLocationPage() {
         }
     }
 
-    const handleGatewaySubmit = () => {
+    const handleGatewaySubmit = async () => {
         if (!gatewayForm.floorId) return
 
-        if (editingItem) {
-            setGateways(prev => prev.map(gateway =>
-                gateway.id === editingItem.id
-                    ? { ...gateway, ...gatewayForm }
-                    : gateway
-            ))
-        } else {
-            // 查找是否為雲端發現的 Gateway
-            let cloudData = null
-            if (selectedDiscoveredGateway) {
-                cloudData = cloudGatewayData.find(gw => gw.gateway_id === selectedDiscoveredGateway)
-            }
-
-            // 🔍 檢查是否已存在相同的閘道器
-            const existingGateway = gateways.find(gw => {
-                // 檢查 MAC 地址是否重複
-                if (gw.macAddress === gatewayForm.macAddress) {
-                    return true
+        try {
+            if (editingItem) {
+                // 編輯網關
+                if (backendAvailable) {
+                    // 使用 API 更新
+                    const updatedGateway = await api.gateway.update(editingItem.id, gatewayForm)
+                    setGateways(prev => prev.map(gateway =>
+                        gateway.id === editingItem.id ? updatedGateway : gateway
+                    ))
+                    // 重新註冊到 GatewayRegistry
+                    gatewayRegistry.updateGateway(updatedGateway)
+                    toast({
+                        title: "網關更新成功",
+                        description: "網關信息已同步到後端"
+                    })
+                } else {
+                    // 使用 localStorage 更新
+                    const updatedGateway = { ...editingItem, ...gatewayForm }
+                    setGateways(prev => prev.map(gateway =>
+                        gateway.id === editingItem.id ? updatedGateway : gateway
+                    ))
+                    gatewayRegistry.updateGateway(updatedGateway)
+                    toast({
+                        title: "網關更新成功",
+                        description: "網關信息已保存到本地"
+                    })
+                }
+            } else {
+                // 創建新網關
+                // 查找是否為雲端發現的 Gateway
+                let cloudData = null
+                if (selectedDiscoveredGateway) {
+                    cloudData = cloudGatewayData.find(gw => gw.gateway_id === selectedDiscoveredGateway)
                 }
 
-                // 檢查名稱是否重複
-                if (gw.name === gatewayForm.name) {
-                    return true
-                }
+                // 🔍 檢查是否已存在相同的閘道器
+                const existingGateway = gateways.find(gw => {
+                    // 檢查 MAC 地址是否重複
+                    if (gw.macAddress === gatewayForm.macAddress) {
+                        return true
+                    }
 
-                // 如果來自雲端，檢查雲端 gateway_id 是否重複
-                if (cloudData && gw.cloudData?.gateway_id === cloudData.gateway_id) {
-                    return true
-                }
+                    // 檢查名稱是否重複
+                    if (gw.name === gatewayForm.name) {
+                        return true
+                    }
 
-                return false
-            })
+                    // 如果來自雲端，檢查雲端 gateway_id 是否重複
+                    if (cloudData && gw.cloudData?.gateway_id === cloudData.gateway_id) {
+                        return true
+                    }
 
-            if (existingGateway) {
-                console.warn("⚠️ 閘道器已存在，跳過重複新增:", {
-                    existing: existingGateway,
-                    new: gatewayForm
+                    return false
                 })
-                alert(`閘道器已存在！\n名稱: ${existingGateway.name}\nMAC: ${existingGateway.macAddress}`)
-                resetGatewayForm()
-                return
-            }
 
-            const newGateway: Gateway = {
-                id: `gw_${Date.now()}`,
-                ...gatewayForm,
-                status: cloudData?.uwb_joined === "yes" ? "online" : "offline",
-                createdAt: new Date(),
-                cloudData: cloudData || undefined // 保存完整的雲端數據
-            }
+                if (existingGateway) {
+                    console.warn("⚠️ 閘道器已存在，跳過重複新增:", {
+                        existing: existingGateway,
+                        new: gatewayForm
+                    })
+                    toast({
+                        title: "網關已存在",
+                        description: `名稱: ${existingGateway.name}\nMAC: ${existingGateway.macAddress}`,
+                        variant: "destructive"
+                    })
+                    resetGatewayForm()
+                    return
+                }
 
-            console.log("✅ 新增 Gateway，包含雲端數據:", newGateway)
-            setGateways(prev => [...prev, newGateway])
+                if (backendAvailable) {
+                    // 使用 API 創建
+                    const newGateway = await api.gateway.create({
+                        ...gatewayForm,
+                        status: cloudData?.uwb_joined === "yes" ? "online" : "offline",
+                        cloudData: cloudData || undefined
+                    })
+                    setGateways(prev => [...prev, newGateway])
+                    // 註冊到 GatewayRegistry
+                    gatewayRegistry.registerGateway(newGateway)
+                    toast({
+                        title: "網關創建成功",
+                        description: "網關已同步到後端"
+                    })
+                } else {
+                    // 使用 localStorage 創建
+                    const newGateway: Gateway = {
+                        id: `gw_${Date.now()}`,
+                        ...gatewayForm,
+                        status: cloudData?.uwb_joined === "yes" ? "online" : "offline",
+                        createdAt: new Date(),
+                        cloudData: cloudData || undefined // 保存完整的雲端數據
+                    }
+                    console.log("✅ 新增 Gateway，包含雲端數據:", newGateway)
+                    setGateways(prev => [...prev, newGateway])
+                    gatewayRegistry.registerGateway(newGateway)
+                    toast({
+                        title: "網關創建成功",
+                        description: "網關已保存到本地"
+                    })
+                }
+            }
+            resetGatewayForm()
+        } catch (error) {
+            console.error('網關操作失敗:', error)
+            toast({
+                title: "操作失敗",
+                description: error instanceof Error ? error.message : "未知錯誤",
+                variant: "destructive"
+            })
         }
-        resetGatewayForm()
     }
 
     // 重置表單
@@ -2995,10 +3136,49 @@ export default function UWBLocationPage() {
         }
     }
 
-    const deleteGateway = (id: string) => {
-        setGateways(prev => prev.filter(gateway => gateway.id !== id))
-        // 同時刪除該Gateway的所有Anchor
-        setAnchors(prev => prev.filter(anchor => anchor.gatewayId !== id))
+    const deleteGateway = async (id: string) => {
+        const gateway = gateways.find(g => g.id === id)
+        const confirmMessage = gateway
+            ? `確定要刪除網關「${gateway.name}」嗎？此操作無法復原，且會刪除該網關下的所有錨點和標籤。`
+            : '確定要刪除此網關嗎？此操作無法復原。'
+
+        if (!confirm(confirmMessage)) {
+            return
+        }
+
+        try {
+            if (backendAvailable) {
+                // 使用 API 刪除
+                await api.gateway.delete(id)
+                // 從 GatewayRegistry 取消註冊
+                gatewayRegistry.unregisterGateway(id)
+                setGateways(prev => prev.filter(gateway => gateway.id !== id))
+                // 級聯刪除 Anchors 和 Tags
+                setAnchors(prev => prev.filter(anchor => anchor.gatewayId !== id))
+                setTags(prev => prev.filter(tag => tag.gatewayId !== id))
+                toast({
+                    title: "網關刪除成功",
+                    description: "網關已從後端刪除"
+                })
+            } else {
+                // 使用 localStorage 刪除
+                gatewayRegistry.unregisterGateway(id)
+                setGateways(prev => prev.filter(gateway => gateway.id !== id))
+                setAnchors(prev => prev.filter(anchor => anchor.gatewayId !== id))
+                setTags(prev => prev.filter(tag => tag.gatewayId !== id))
+                toast({
+                    title: "網關刪除成功",
+                    description: "網關已從本地刪除"
+                })
+            }
+        } catch (error) {
+            console.error('網關刪除失敗:', error)
+            toast({
+                title: "刪除失敗",
+                description: error instanceof Error ? error.message : "未知錯誤",
+                variant: "destructive"
+            })
+        }
     }
 
     // Anchor配對流程（模擬）
