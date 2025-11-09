@@ -265,11 +265,45 @@ app.delete('/api/homes/:id', (req, res) => {
         return res.status(404).json({ error: '場域不存在' })
     }
 
+    // 級聯刪除：刪除該場域下的所有樓層和網關
+    const floorsToDelete = floors.filter(f => f.homeId === homeId)
+    const floorIds = floorsToDelete.map(f => f.id)
+    const gatewaysToDelete = gateways.filter(g => floorIds.includes(g.floorId))
+
+    if (floorsToDelete.length > 0 || gatewaysToDelete.length > 0) {
+        console.log(`🔄 級聯刪除 ${floorsToDelete.length} 個樓層和 ${gatewaysToDelete.length} 個網關...`)
+
+        // 刪除網關
+        if (gatewaysToDelete.length > 0) {
+            const updatedGateways = gateways.filter(g => !floorIds.includes(g.floorId))
+            gateways.length = 0
+            gateways.push(...updatedGateways)
+            saveData(GATEWAYS_FILE, gateways)
+        }
+
+        // 刪除樓層
+        if (floorsToDelete.length > 0) {
+            const updatedFloors = floors.filter(f => f.homeId !== homeId)
+            floors.length = 0
+            floors.push(...updatedFloors)
+            saveData(FLOORS_FILE, floors)
+        }
+
+        console.log(`✅ 已刪除 ${floorsToDelete.length} 個樓層和 ${gatewaysToDelete.length} 個網關`)
+    }
+
     const deletedHome = homes.splice(homeIndex, 1)[0]
     saveData(HOMES_FILE, homes)
     console.log('✅ 場域刪除成功:', homeId)
 
-    res.json({ message: '場域刪除成功', deletedHome })
+    res.json({
+        message: '場域刪除成功',
+        deletedHome,
+        cascadeDeleted: {
+            floors: floorsToDelete.length,
+            gateways: gatewaysToDelete.length
+        }
+    })
 })
 
 // 樓層管理 API
@@ -363,11 +397,28 @@ app.delete('/api/floors/:id', (req, res) => {
         return res.status(404).json({ error: '樓層不存在' })
     }
 
+    // 級聯刪除：刪除該樓層下的所有網關
+    const gatewaysToDelete = gateways.filter(g => g.floorId === floorId)
+    if (gatewaysToDelete.length > 0) {
+        console.log(`🔄 級聯刪除 ${gatewaysToDelete.length} 個網關...`)
+        const updatedGateways = gateways.filter(g => g.floorId !== floorId)
+        gateways.length = 0
+        gateways.push(...updatedGateways)
+        saveData(GATEWAYS_FILE, gateways)
+        console.log(`✅ 已刪除 ${gatewaysToDelete.length} 個關聯網關`)
+    }
+
     const deletedFloor = floors.splice(floorIndex, 1)[0]
     saveData(FLOORS_FILE, floors)
     console.log('✅ 樓層刪除成功:', floorId)
 
-    res.json({ message: '樓層刪除成功', deletedFloor })
+    res.json({
+        message: '樓層刪除成功',
+        deletedFloor,
+        cascadeDeleted: {
+            gateways: gatewaysToDelete.length
+        }
+    })
 })
 
 // 樓層關聯查詢：根據場域ID獲取樓層
@@ -380,6 +431,13 @@ app.get('/api/homes/:homeId/floors', (req, res) => {
 })
 
 // 網關管理 API
+
+// 獲取所有網關
+app.get('/api/gateways', (req, res) => {
+    console.log('📥 GET /api/gateways - 獲取所有網關列表')
+    console.log(`返回 ${gateways.length} 個網關`)
+    res.json(gateways)
+})
 
 // 根據樓層ID獲取網關
 app.get('/api/floors/:floorId/gateways', (req, res) => {
@@ -394,6 +452,15 @@ app.get('/api/floors/:floorId/gateways', (req, res) => {
 app.post('/api/gateways', (req, res) => {
     console.log('📥 POST /api/gateways - 創建網關')
     console.log('請求數據:', req.body)
+
+    // 驗證 floorId 是否存在
+    if (req.body.floorId) {
+        const floorExists = floors.some(f => f.id === req.body.floorId)
+        if (!floorExists) {
+            console.log('❌ 樓層不存在:', req.body.floorId)
+            return res.status(400).json({ error: '指定的樓層不存在' })
+        }
+    }
 
     const newGateway = {
         id: `gw_${Date.now()}`,
@@ -426,6 +493,15 @@ app.put('/api/gateways/:id', (req, res) => {
 
     if (gatewayIndex === -1) {
         return res.status(404).json({ error: '網關不存在' })
+    }
+
+    // 如果更新 floorId，驗證其是否存在
+    if (req.body.floorId && req.body.floorId !== gateways[gatewayIndex].floorId) {
+        const floorExists = floors.some(f => f.id === req.body.floorId)
+        if (!floorExists) {
+            console.log('❌ 樓層不存在:', req.body.floorId)
+            return res.status(400).json({ error: '指定的樓層不存在' })
+        }
     }
 
     const updatedGateway = {

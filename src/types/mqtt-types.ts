@@ -82,7 +82,7 @@ export interface CloudGatewayData {
         ack_from_node: string
         health: string
     }
-    sub_topic: {
+    sub_topic?: {
         downlink: string
     }
     discard_iot_data_time: number

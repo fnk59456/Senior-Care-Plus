@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react"
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useTranslation } from 'react-i18next'
 // @ts-ignore
 import mqtt from "mqtt"
@@ -8,6 +8,7 @@ import { useTagStore } from '@/stores/tagStore'
 import { api } from "@/services/api"
 import { useDataSync } from "@/hooks/useDataSync"
 import { gatewayRegistry } from "@/services/gatewayRegistry"
+import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -186,7 +187,7 @@ type CloudGatewayData = {
         ack_from_node: string
         health: string
     }
-    sub_topic: {
+    sub_topic?: {
         downlink: string
     }
     discard_iot_data_time: number
@@ -453,17 +454,36 @@ export default function UWBLocationPage() {
     const { t } = useTranslation()
     const { toast } = useToast()
 
-    // 智能切換邏輯：檢測後端可用性
+    // 使用 UWBLocationContext 作為統一數據源
+    const {
+        homes,
+        floors,
+        gateways,
+        selectedHome,
+        setSelectedHome,
+        selectedFloor,
+        setSelectedFloor,
+        selectedGateway,
+        setSelectedGateway,
+        createHome,
+        updateHome,
+        deleteHome,
+        createFloor,
+        updateFloor,
+        deleteFloor,
+        createGateway,
+        updateGateway,
+        deleteGateway
+    } = useUWBLocation()
+
+    // 智能切換邏輯：檢測後端可用性（保留用於其他邏輯判斷）
     const [backendAvailable, setBackendAvailable] = useState(false)
     const [isCheckingBackend, setIsCheckingBackend] = useState(true)
 
-    // 數據同步 Hook
+    // 數據同步 Hook（保留用於 anchors 和 tags）
     const {
-        isLoading: isDataLoading,
-        error: dataError,
-        syncHomes,
-        syncFloors,
-        syncGateways
+        isLoading: _isDataLoading,
+        error: _dataError
     } = useDataSync({
         enableAutoSync: false, // 手動控制同步
         onError: (error) => {
@@ -636,13 +656,28 @@ export default function UWBLocationPage() {
         }
     }
 
-    // 保存到 localStorage 的輔助函數
+    // 保存到 localStorage 的輔助函數（帶錯誤處理和大小檢查）
     const saveToStorage = <T,>(key: string, data: T) => {
         try {
-            localStorage.setItem(`uwb_${key}`, JSON.stringify(data))
-            console.log(`✅ 已保存 ${key} 到 localStorage`)
-        } catch (error) {
-            console.warn(`無法保存 ${key} 到 localStorage:`, error)
+            const dataString = JSON.stringify(data)
+            const dataSize = new Blob([dataString]).size
+
+            // 檢查數據大小（localStorage 通常限制為 5-10MB）
+            if (dataSize > 4 * 1024 * 1024) { // 4MB 警告
+                console.warn(`⚠️ ${key} 數據過大 (${(dataSize / 1024 / 1024).toFixed(2)}MB)，可能導致保存失敗`)
+            }
+
+            localStorage.setItem(`uwb_${key}`, dataString)
+            // 只在開發環境或小數據時記錄日誌
+            if (dataSize < 100 * 1024) { // 小於 100KB 才記錄
+                console.log(`✅ 已保存 ${key} 到 localStorage`)
+            }
+        } catch (error: any) {
+            if (error.name === 'QuotaExceededError') {
+                console.warn(`⚠️ localStorage 配額已滿，無法保存 ${key}。建議清理舊數據或使用後端存儲。`)
+            } else {
+                console.warn(`無法保存 ${key} 到 localStorage:`, error)
+            }
         }
     }
 
@@ -747,19 +782,15 @@ export default function UWBLocationPage() {
             try {
                 const data = JSON.parse(e.target?.result as string)
 
-                // 驗證數據結構
-                if (data.homes && data.floors && data.gateways && data.anchors && data.tags) {
-                    setHomes(data.homes)
-                    setFloors(data.floors)
-                    setGateways(data.gateways)
+                // 驗證數據結構（只導入 anchors 和 tags，homes/floors/gateways 由 Context 管理）
+                if (data.anchors && data.tags) {
                     setAnchors(data.anchors)
                     setTags(data.tags)
-                    if (data.selectedHome) setSelectedHome(data.selectedHome)
                     if (data.cloudGatewayData) setCloudGatewayData(data.cloudGatewayData)
                     if (data.discoveredGateways) setDiscoveredGateways(data.discoveredGateways)
 
-                    console.log('📥 數據已導入')
-                    alert('✅ 數據導入成功！')
+                    console.log('📥 數據已導入（Anchors 和 Tags）')
+                    alert('✅ 數據導入成功！注意：場域、樓層、網關數據由系統統一管理，無法直接導入。')
                 } else {
                     alert('❌ 無效的數據格式')
                 }
@@ -778,223 +809,63 @@ export default function UWBLocationPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [loadError, setLoadError] = useState<string | null>(null)
 
-    // 狀態管理 - 從 localStorage 初始化
-    const [homes, setHomes] = useState<Home[]>([])
-    const [floors, setFloors] = useState<Floor[]>([])
-    const [gateways, setGateways] = useState<Gateway[]>([])
+    // 狀態管理 - 只保留 anchors 和 tags（homes, floors, gateways 從 Context 獲取）
     const [anchors, setAnchors] = useState<AnchorDevice[]>([])
     const [tags, setTags] = useState<TagDevice[]>([])
 
-    // 初始化數據加載 - 智能切換版本
+    // 初始化數據加載 - 只加載 anchors 和 tags（homes, floors, gateways 由 Context 處理）
     useEffect(() => {
         const initializeData = async () => {
             try {
                 setIsLoading(true)
                 setLoadError(null)
 
-                let loadedHomes: Home[]
-                let loadedFloors: Floor[]
-                let loadedGateways: Gateway[]
-                let loadedAnchors: AnchorDevice[]
-                let loadedTags: TagDevice[]
+                // 只加載 anchors 和 tags
+                const loadedAnchors = loadFromStorage('anchors', MOCK_ANCHORS)
+                const loadedTags = loadFromStorage('tags', MOCK_TAGS)
 
-                if (backendAvailable && !isCheckingBackend) {
-                    console.log('🔄 開始從後端加載數據...')
-                    // 從後端加載數據
-                    try {
-                        // 1. 先加載場域數據
-                        loadedHomes = await syncHomes()
-
-                        // 2. 如果有場域，則從後端加載對應的樓層數據
-                        if (loadedHomes.length > 0) {
-                            try {
-                                // 使用第一個場域的 ID 來加載樓層（或使用存儲的 selectedHome）
-                                const storedSelectedHome = loadFromStorage('selectedHome', '')
-                                const homeIdToSync = storedSelectedHome && loadedHomes.find(h => h.id === storedSelectedHome)
-                                    ? storedSelectedHome
-                                    : loadedHomes[0].id
-
-                                loadedFloors = await syncFloors(homeIdToSync)
-                                console.log(`✅ 從後端加載 ${loadedFloors.length} 個樓層`)
-                            } catch (floorError) {
-                                console.warn('後端樓層數據加載失敗，使用本地存儲:', floorError)
-                                // 智能降級：樓層加載失敗時使用 localStorage
-                                loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
-                            }
-                        } else {
-                            // 沒有場域時，使用本地存儲的樓層數據
-                            loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
-                        }
-                    } catch (error) {
-                        console.warn('後端數據加載失敗，使用本地存儲:', error)
-                        // 智能降級：場域加載失敗時，場域和樓層都從 localStorage 讀取
-                        loadedHomes = loadFromStorage('homes', MOCK_HOMES)
-                        loadedFloors = loadFromStorage('floors', MOCK_FLOORS)
-                    }
-
-                    // 3. 如果有樓層，則從後端加載對應的網關數據
-                    if (loadedFloors.length > 0) {
-                        try {
-                            // 使用第一個樓層的 ID 來加載網關
-                            const floorIdToSync = loadedFloors[0].id
-                            loadedGateways = await syncGateways(floorIdToSync)
-                            console.log(`✅ 從後端加載 ${loadedGateways.length} 個網關`)
-                        } catch (gatewayError) {
-                            console.warn('後端網關數據加載失敗，使用本地存儲:', gatewayError)
-                            // 智能降級：網關加載失敗時使用 localStorage
-                            loadedGateways = loadFromStorage('gateways', MOCK_GATEWAYS)
-                        }
-                    } else {
-                        // 沒有樓層時，使用本地存儲的網關數據
-                        loadedGateways = loadFromStorage('gateways', MOCK_GATEWAYS)
-                    }
-
-                    // 其他數據暫時使用本地存儲
-                    const [anchors, tags] = await Promise.all([
-                        Promise.resolve(loadFromStorage('anchors', MOCK_ANCHORS)),
-                        Promise.resolve(loadFromStorage('tags', MOCK_TAGS))
-                    ])
-                    loadedAnchors = anchors
-                    loadedTags = tags
-                } else {
-                    console.log('🔄 開始加載本地存儲數據...')
-                    // 從本地存儲加載數據
-                    const [homes, floors, gateways, anchors, tags] = await Promise.all([
-                        Promise.resolve(loadFromStorage('homes', MOCK_HOMES)),
-                        Promise.resolve(loadFromStorage('floors', MOCK_FLOORS)),
-                        Promise.resolve(loadFromStorage('gateways', MOCK_GATEWAYS)),
-                        Promise.resolve(loadFromStorage('anchors', MOCK_ANCHORS)),
-                        Promise.resolve(loadFromStorage('tags', MOCK_TAGS))
-                    ])
-                    loadedHomes = homes
-                    loadedFloors = floors
-                    loadedGateways = gateways
-                    loadedAnchors = anchors
-                    loadedTags = tags
-                }
-
-                setHomes(loadedHomes)
-                setFloors(loadedFloors)
-                setGateways(loadedGateways)
                 setAnchors(loadedAnchors)
                 setTags(loadedTags)
 
-                // 設置 selectedHome - 優先使用存儲的值，否則使用第一個場域
-                const storedSelectedHome = loadFromStorage('selectedHome', '')
-                const finalSelectedHome = storedSelectedHome && loadedHomes.find(h => h.id === storedSelectedHome)
-                    ? storedSelectedHome
-                    : loadedHomes[0]?.id || ""
-                setSelectedHome(finalSelectedHome)
-
-                // 初始化錨點配對的預設選擇
-                setSelectedHomeForAnchors(finalSelectedHome)
-                if (finalSelectedHome) {
-                    const firstFloor = loadedFloors.find(f => f.homeId === finalSelectedHome)
+                // 初始化錨點配對的預設選擇（使用 Context 的 selectedHome）
+                if (selectedHome) {
+                    setSelectedHomeForAnchors(selectedHome)
+                    const firstFloor = floors.find(f => f.homeId === selectedHome)
                     if (firstFloor) {
                         setSelectedFloorForAnchors(firstFloor.id)
                     }
                 }
 
-                // 初始化標籤管理的預設選擇
-                setSelectedHomeForTags(finalSelectedHome)
-                if (finalSelectedHome) {
-                    const firstFloor = loadedFloors.find(f => f.homeId === finalSelectedHome)
+                // 初始化標籤管理的預設選擇（使用 Context 的 selectedHome）
+                if (selectedHome) {
+                    setSelectedHomeForTags(selectedHome)
+                    const firstFloor = floors.find(f => f.homeId === selectedHome)
                     if (firstFloor) {
                         setSelectedFloorForTags(firstFloor.id)
-
-                        // 移除自動選擇 Gateway 的邏輯，讓用戶手動選擇
-                        // 這樣標籤設備管理頁面就不會在載入時自動連線 MQTT
                     }
                 }
 
-                console.log('✅ 數據加載完成')
-                console.log(`- 場域: ${loadedHomes.length} 個`)
-                console.log(`- 樓層: ${loadedFloors.length} 個`)
-                console.log(`- 閘道器: ${loadedGateways.length} 個`)
+                console.log('✅ 數據加載完成（Anchors 和 Tags）')
                 console.log(`- 錨點: ${loadedAnchors.length} 個`)
                 console.log(`- 標籤: ${loadedTags.length} 個`)
-                console.log(`- 選中場域: ${finalSelectedHome}`)
 
                 setIsLoading(false)
             } catch (error) {
                 console.error('❌ 數據加載失敗:', error)
                 setLoadError(error instanceof Error ? error.message : '未知錯誤')
-
-                // 加載失敗時使用預設數據
-                console.log('🔄 使用預設數據')
-                setHomes(MOCK_HOMES)
-                setFloors(MOCK_FLOORS)
-                setGateways(MOCK_GATEWAYS)
-                setAnchors(MOCK_ANCHORS)
-                setTags(MOCK_TAGS)
-                setSelectedHome(MOCK_HOMES[0]?.id || "")
-
                 setIsLoading(false)
             }
         }
 
-        initializeData()
-    }, [backendAvailable, isCheckingBackend])
-    const [selectedHome, setSelectedHome] = useState<string>("")
+        // 等待 Context 數據加載完成後再初始化
+        if (homes.length > 0 || selectedHome) {
+            initializeData()
+        }
+    }, [selectedHome, homes, floors])
+
     const [activeTab, setActiveTab] = useState(() => loadFromStorage('activeTab', "overview"))
 
-    // 當選擇的場域改變時，從後端加載對應的樓層數據
-    useEffect(() => {
-        if (!selectedHome || !backendAvailable || isCheckingBackend) {
-            return
-        }
-
-        const loadFloorsForHome = async () => {
-            try {
-                console.log(`🔄 場域切換，從後端加載樓層數據 (homeId: ${selectedHome})`)
-                const loadedFloors = await syncFloors(selectedHome)
-                setFloors(loadedFloors)
-                console.log(`✅ 從後端加載 ${loadedFloors.length} 個樓層`)
-
-                // 如果有樓層，加載第一個樓層的網關
-                if (loadedFloors.length > 0) {
-                    try {
-                        const floorIdToSync = loadedFloors[0].id
-                        const loadedGateways = await syncGateways(floorIdToSync)
-                        setGateways(loadedGateways)
-                        console.log(`✅ 從後端加載 ${loadedGateways.length} 個網關`)
-                    } catch (gatewayError) {
-                        console.warn('後端網關數據加載失敗，使用本地存儲:', gatewayError)
-                        const allGateways = loadFromStorage('gateways', MOCK_GATEWAYS)
-                        const floorGateways = allGateways.filter(g => g.floorId === loadedFloors[0].id)
-                        setGateways(floorGateways)
-                    }
-                }
-            } catch (error) {
-                console.warn('後端樓層數據加載失敗，使用本地存儲:', error)
-                // 智能降級：從 localStorage 讀取該場域的樓層
-                const allFloors = loadFromStorage('floors', MOCK_FLOORS)
-                const homeFloors = allFloors.filter(f => f.homeId === selectedHome)
-                setFloors(homeFloors)
-
-                // 同時加載該場域的網關
-                const allGateways = loadFromStorage('gateways', MOCK_GATEWAYS)
-                const homeGateways = allGateways.filter(g =>
-                    homeFloors.some(f => f.id === g.floorId)
-                )
-                setGateways(homeGateways)
-            }
-        }
-
-        loadFloorsForHome()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedHome, backendAvailable, isCheckingBackend])
-
-    // 當 Gateways 數據加載完成後，註冊到 GatewayRegistry
-    useEffect(() => {
-        if (gateways.length > 0) {
-            console.log('📡 註冊 Gateways 到 GatewayRegistry...')
-            gateways.forEach(gateway => {
-                gatewayRegistry.registerGateway(gateway)
-            })
-            console.log(`✅ 已註冊 ${gateways.length} 個 Gateways`)
-        }
-    }, [gateways])
+    // 注意：場域切換時的數據加載和 Gateway 註冊已由 UWBLocationContext 處理
 
     // 🚀 智能自動持久化系統 - 狀態聲明
     const [lastSaveTime, setLastSaveTime] = useState<Date>(new Date())
@@ -1014,7 +885,7 @@ export default function UWBLocationPage() {
     const [selectedDiscoveredGateway, setSelectedDiscoveredGateway] = useState<number | null>(null)
     const cloudClientRef = useRef<mqtt.MqttClient | null>(null)
 
-    // 🚀 智能批量保存函數 - 避免頻繁寫入
+    // 🚀 智能批量保存函數 - 避免頻繁寫入（只保存非後端管理的數據）
     const batchSave = useCallback(() => {
         if (saveTimeoutRef.current) {
             clearTimeout(saveTimeoutRef.current)
@@ -1023,66 +894,90 @@ export default function UWBLocationPage() {
         setPendingSave(true)
         saveTimeoutRef.current = setTimeout(() => {
             try {
-                // 批量保存所有數據
+                // 只保存本地管理的數據（anchors, tags, cloudGatewayData 等）
+                // homes, floors, gateways 由 UWBLocationContext 管理，不在這裡保存
                 const dataToSave = {
-                    homes,
-                    floors,
-                    gateways,
                     anchors,
                     tags,
-                    selectedHome,
                     activeTab,
                     cloudGatewayData,
                     discoveredGateways,
                     globalSerialNo,
-                    version: Date.now(), // 添加版本號
+                    version: Date.now(),
                     lastSave: new Date().toISOString()
                 }
 
                 // 保存到 localStorage
                 Object.entries(dataToSave).forEach(([key, value]) => {
-                    if (key === 'selectedHome' && !value) return // 跳過空值
                     if (key === 'version' || key === 'lastSave') return // 跳過元數據
-                    // 如果後端可用，跳過已後端化的數據（homes, floors, gateways）
-                    if (backendAvailable && ['homes', 'floors', 'gateways'].includes(key)) {
-                        return // 後端化的數據不保存到 localStorage
-                    }
                     saveToStorage(key, value)
                 })
 
-                // 額外保存完整備份和元數據
-                saveToStorage('version', dataToSave.version)
-                saveToStorage('lastSave', dataToSave.lastSave)
-                localStorage.setItem('uwb_full_backup', JSON.stringify(dataToSave))
+                // 保存元數據
+                try {
+                    saveToStorage('version', dataToSave.version)
+                    saveToStorage('lastSave', dataToSave.lastSave)
+                } catch (error) {
+                    console.warn('元數據保存失敗:', error)
+                }
+
+                // 完整備份：只在後端不可用時保存
+                if (!backendAvailable) {
+                    try {
+                        const minimalBackup = {
+                            activeTab: dataToSave.activeTab,
+                            globalSerialNo: dataToSave.globalSerialNo,
+                            version: dataToSave.version,
+                            lastSave: dataToSave.lastSave
+                        }
+                        localStorage.setItem('uwb_full_backup', JSON.stringify(minimalBackup))
+                    } catch (error: any) {
+                        if (error.name === 'QuotaExceededError') {
+                            console.warn('⚠️ localStorage 配額已滿，跳過完整備份保存')
+                        }
+                    }
+                } else {
+                    try {
+                        localStorage.removeItem('uwb_full_backup')
+                    } catch (error) {
+                        // 忽略移除錯誤
+                    }
+                }
 
                 setLastSaveTime(new Date())
                 setPendingSave(false)
-                console.log(`💾 自動保存完成 ${new Date().toLocaleTimeString()} - ${Object.keys(dataToSave).filter(k => !['version', 'lastSave'].includes(k)).length} 個數據類型`)
+                console.log(`💾 自動保存完成 ${new Date().toLocaleTimeString()}`)
             } catch (error) {
                 console.error('❌ 自動保存失敗:', error)
                 setPendingSave(false)
             }
-        }, 500) // 500ms延遲，避免頻繁保存
-    }, [homes, floors, gateways, anchors, tags, selectedHome, activeTab, cloudGatewayData, discoveredGateways])
+        }, 500)
+    }, [anchors, tags, activeTab, cloudGatewayData, discoveredGateways, globalSerialNo, backendAvailable])
 
-    // 監聽所有數據變化，觸發批量保存
+    // 監聽數據變化，觸發批量保存（只監聽本地管理的數據）
     useEffect(() => {
-        if (homes.length > 0 || floors.length > 0 || gateways.length > 0 || anchors.length > 0 || tags.length > 0) {
+        // 只在有實際數據時才保存，避免初始化時觸發
+        if (anchors.length > 0 || tags.length > 0) {
             batchSave()
         }
-    }, [homes, floors, gateways, anchors, tags, batchSave])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [anchors, tags])
 
     useEffect(() => {
-        if (selectedHome || activeTab !== 'overview') {
+        // 只在 activeTab 變化時保存
+        if (activeTab !== 'overview') {
             batchSave()
         }
-    }, [selectedHome, activeTab, batchSave])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab])
 
     useEffect(() => {
+        // 只在有雲端數據時保存
         if (cloudGatewayData.length > 0 || discoveredGateways.length > 0) {
             batchSave()
         }
-    }, [cloudGatewayData, discoveredGateways, batchSave])
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cloudGatewayData, discoveredGateways])
 
     // 自動保存 globalSerialNo
     useEffect(() => {
@@ -1143,7 +1038,7 @@ export default function UWBLocationPage() {
 
     // Anchor配對相關狀態
     const [pairingInProgress, setPairingInProgress] = useState(false)
-    const [selectedGateway, setSelectedGateway] = useState<string>("")
+    const [selectedGatewayForPairing, setSelectedGatewayForPairing] = useState<string>("")
     const [discoveredAnchors, setDiscoveredAnchors] = useState<string[]>([])
 
     // Tag管理相關狀態
@@ -1227,15 +1122,15 @@ export default function UWBLocationPage() {
     })
 
     // 獲取當前選中場域的樓層
-    const currentFloors = floors.filter(floor => floor.homeId === selectedHome)
+    const currentFloors = useMemo(() => floors.filter(floor => floor.homeId === selectedHome), [floors, selectedHome])
 
     // 獲取當前場域的所有閘道器
-    const currentGateways = gateways.filter(gateway =>
+    const currentGateways = useMemo(() => gateways.filter(gateway =>
         currentFloors.some(floor => floor.id === gateway.floorId)
-    )
+    ), [gateways, currentFloors])
 
     // 獲取當前場域的所有錨點
-    const currentAnchors = anchors.filter(anchor => {
+    const currentAnchors = useMemo(() => anchors.filter(anchor => {
         // 檢查錨點是否屬於當前場域的閘道器
         const belongsToCurrentGateway = currentGateways.some(gateway => gateway.id === anchor.gatewayId)
 
@@ -1246,7 +1141,7 @@ export default function UWBLocationPage() {
         })
 
         return belongsToCurrentGateway || belongsToCurrentFloor
-    })
+    }), [anchors, currentGateways, currentFloors, gateways])
 
     // 調試 currentAnchors
     console.log("🏠 currentAnchors 調試:")
@@ -1461,29 +1356,9 @@ export default function UWBLocationPage() {
                         )
 
                         if (existingSystemGateway) {
-                            // 更新系統 Gateway 的 cloudData
-                            const updatedGateway = {
-                                ...existingSystemGateway,
-                                cloudData: gatewayData
-                            }
-                            setGateways(prev => prev.map(gw =>
-                                gw.id === existingSystemGateway.id ? updatedGateway : gw
-                            ))
-
-                            // 重新註冊到 GatewayRegistry（更新 Topic 映射）
-                            gatewayRegistry.updateGateway(updatedGateway)
-
-                            // 如果後端可用，同步更新到後端
-                            if (backendAvailable) {
-                                try {
-                                    await api.gateway.update(existingSystemGateway.id, {
-                                        cloudData: gatewayData
-                                    })
-                                    console.log('✅ 後端 Gateway cloudData 更新成功')
-                                } catch (error) {
-                                    console.warn('後端更新 Gateway cloudData 失敗:', error)
-                                }
-                            }
+                            // 使用 Context 方法更新 Gateway（會自動更新 GatewayRegistry 和後端）
+                            await updateGateway(existingSystemGateway.id, { cloudData: gatewayData })
+                            console.log('✅ Gateway cloudData 更新成功')
                         }
                     }
                 } else {
@@ -2259,58 +2134,24 @@ export default function UWBLocationPage() {
         }
     }, [selectedHomeForTags, selectedFloorForTags, floors])
 
-    // 處理表單提交 - 智能切換版本
+    // 處理表單提交 - 使用 Context 方法
     const handleHomeSubmit = async () => {
         try {
             if (editingItem) {
                 // 編輯場域
-                if (backendAvailable) {
-                    // 使用 API 更新
-                    const updatedHome = await api.home.update(editingItem.id, homeForm)
-                    setHomes(prev => prev.map(home =>
-                        home.id === editingItem.id ? updatedHome : home
-                    ))
-                    toast({
-                        title: "場域更新成功",
-                        description: "場域信息已同步到後端"
-                    })
-                } else {
-                    // 使用 localStorage 更新
-                    setHomes(prev => prev.map(home =>
-                        home.id === editingItem.id
-                            ? { ...home, ...homeForm }
-                            : home
-                    ))
-                    toast({
-                        title: "場域更新成功",
-                        description: "場域信息已保存到本地"
-                    })
-                }
+                await updateHome(editingItem.id, homeForm)
+                toast({
+                    title: "場域更新成功",
+                    description: "場域信息已同步"
+                })
             } else {
                 // 創建新場域
-                if (backendAvailable) {
-                    // 使用 API 創建
-                    const newHome = await api.home.create(homeForm)
-                    setHomes(prev => [...prev, newHome])
-                    setSelectedHome(newHome.id)
-                    toast({
-                        title: "場域創建成功",
-                        description: "場域已同步到後端"
-                    })
-                } else {
-                    // 使用 localStorage 創建
-                    const newHome: Home = {
-                        id: `home_${Date.now()}`,
-                        ...homeForm,
-                        createdAt: new Date()
-                    }
-                    setHomes(prev => [...prev, newHome])
-                    setSelectedHome(newHome.id)
-                    toast({
-                        title: "場域創建成功",
-                        description: "場域已保存到本地"
-                    })
-                }
+                const newHome = await createHome(homeForm)
+                setSelectedHome(newHome.id)
+                toast({
+                    title: "場域創建成功",
+                    description: "場域已創建"
+                })
             }
             resetHomeForm()
         } catch (error) {
@@ -2339,63 +2180,22 @@ export default function UWBLocationPage() {
 
             if (editingItem) {
                 // 編輯樓層
-                if (backendAvailable) {
-                    // 使用 API 更新
-                    const updatedFloor = await api.floor.update(editingItem.id, floorData)
-                    setFloors(prev => prev.map(floor =>
-                        floor.id === editingItem.id ? updatedFloor : floor
-                    ))
-                    toast({
-                        title: "樓層更新成功",
-                        description: "樓層信息已同步到後端"
-                    })
-                } else {
-                    // 使用 localStorage 更新
-                    setFloors(prev => prev.map(floor =>
-                        floor.id === editingItem.id
-                            ? { ...floor, ...floorData }
-                            : floor
-                    ))
-                    toast({
-                        title: "樓層更新成功",
-                        description: "樓層信息已保存到本地"
-                    })
-                }
+                await updateFloor(editingItem.id, floorData)
+                toast({
+                    title: "樓層更新成功",
+                    description: "樓層信息已同步"
+                })
             } else {
                 // 創建新樓層
-                if (backendAvailable) {
-                    // 使用 API 創建
-                    const newFloor = await api.floor.create({
-                        ...floorData,
-                        homeId: selectedHome
-                    })
-                    setFloors(prev => [...prev, newFloor])
-                    toast({
-                        title: "樓層創建成功",
-                        description: "樓層已同步到後端"
-                    })
-                } else {
-                    // 使用 localStorage 創建
-                    const newFloor: Floor = {
-                        id: `floor_${Date.now()}`,
-                        homeId: selectedHome,
-                        ...floorData,
-                        createdAt: new Date()
-                    }
-                    setFloors(prev => [...prev, newFloor])
-                    toast({
-                        title: "樓層創建成功",
-                        description: "樓層已保存到本地"
-                    })
-                }
+                await createFloor({
+                    ...floorData,
+                    homeId: selectedHome
+                })
+                toast({
+                    title: "樓層創建成功",
+                    description: "樓層已創建"
+                })
             }
-
-            // 觸發自定義事件，通知UWBLocationContext數據已更新
-            const storageChangeEvent = new CustomEvent('uwb-storage-change', {
-                detail: { key: 'uwb_floors' }
-            })
-            window.dispatchEvent(storageChangeEvent)
-            console.log('📡 已觸發樓層數據更新事件')
 
             resetFloorForm()
         } catch (error) {
@@ -2414,30 +2214,11 @@ export default function UWBLocationPage() {
         try {
             if (editingItem) {
                 // 編輯網關
-                if (backendAvailable) {
-                    // 使用 API 更新
-                    const updatedGateway = await api.gateway.update(editingItem.id, gatewayForm)
-                    setGateways(prev => prev.map(gateway =>
-                        gateway.id === editingItem.id ? updatedGateway : gateway
-                    ))
-                    // 重新註冊到 GatewayRegistry
-                    gatewayRegistry.updateGateway(updatedGateway)
-                    toast({
-                        title: "網關更新成功",
-                        description: "網關信息已同步到後端"
-                    })
-                } else {
-                    // 使用 localStorage 更新
-                    const updatedGateway = { ...editingItem, ...gatewayForm }
-                    setGateways(prev => prev.map(gateway =>
-                        gateway.id === editingItem.id ? updatedGateway : gateway
-                    ))
-                    gatewayRegistry.updateGateway(updatedGateway)
-                    toast({
-                        title: "網關更新成功",
-                        description: "網關信息已保存到本地"
-                    })
-                }
+                await updateGateway(editingItem.id, gatewayForm)
+                toast({
+                    title: "網關更新成功",
+                    description: "網關信息已同步"
+                })
             } else {
                 // 創建新網關
                 // 查找是否為雲端發現的 Gateway
@@ -2480,37 +2261,17 @@ export default function UWBLocationPage() {
                     return
                 }
 
-                if (backendAvailable) {
-                    // 使用 API 創建
-                    const newGateway = await api.gateway.create({
-                        ...gatewayForm,
-                        status: cloudData?.uwb_joined === "yes" ? "online" : "offline",
-                        cloudData: cloudData || undefined
-                    })
-                    setGateways(prev => [...prev, newGateway])
-                    // 註冊到 GatewayRegistry
-                    gatewayRegistry.registerGateway(newGateway)
-                    toast({
-                        title: "網關創建成功",
-                        description: "網關已同步到後端"
-                    })
-                } else {
-                    // 使用 localStorage 創建
-                    const newGateway: Gateway = {
-                        id: `gw_${Date.now()}`,
-                        ...gatewayForm,
-                        status: cloudData?.uwb_joined === "yes" ? "online" : "offline",
-                        createdAt: new Date(),
-                        cloudData: cloudData || undefined // 保存完整的雲端數據
-                    }
-                    console.log("✅ 新增 Gateway，包含雲端數據:", newGateway)
-                    setGateways(prev => [...prev, newGateway])
-                    gatewayRegistry.registerGateway(newGateway)
-                    toast({
-                        title: "網關創建成功",
-                        description: "網關已保存到本地"
-                    })
-                }
+                // 使用 Context 方法創建
+                const newGateway = await createGateway({
+                    ...gatewayForm,
+                    status: cloudData?.uwb_joined === "yes" ? "online" : "offline",
+                    cloudData: cloudData || undefined
+                })
+                console.log("✅ 新增 Gateway，包含雲端數據:", newGateway)
+                toast({
+                    title: "網關創建成功",
+                    description: "網關已創建"
+                })
             }
             resetGatewayForm()
         } catch (error) {
@@ -2970,92 +2731,23 @@ export default function UWBLocationPage() {
         return result
     }
 
-    // 刪除功能 - 智能切換版本
-    const deleteHome = async (id: string) => {
-        // 立即输出日志，确保函数被调用
-        console.log('🗑️ ========== 刪除場域函數被調用 ==========')
-        console.log('🗑️ 刪除場域觸發，ID:', id)
-        console.log('🗑️ 當前場域列表:', homes.map(h => ({ id: h.id, name: h.name })))
-
-        // 確認對話框
+    // 刪除功能 - 使用 Context 方法（包裝函數用於確認對話框）
+    const handleDeleteHome = async (id: string) => {
         const home = homes.find(h => h.id === id)
-        console.log('🗑️ 找到的場域:', home)
         const confirmMessage = home
             ? `確定要刪除場域「${home.name}」嗎？此操作無法復原，且會刪除該場域下的所有樓層和設備。`
             : '確定要刪除此場域嗎？此操作無法復原。'
 
-        console.log('🗑️ 顯示確認對話框...')
-        const confirmed = confirm(confirmMessage)
-        console.log('🗑️ 用戶確認結果:', confirmed)
-
-        if (!confirmed) {
-            console.log('❌ 用戶取消刪除')
+        if (!confirm(confirmMessage)) {
             return
         }
 
-        console.log('✅ 用戶確認刪除，繼續執行...')
-
         try {
-            console.log('🔄 開始刪除場域，後端可用:', backendAvailable)
-            if (backendAvailable) {
-                // 使用 API 刪除
-                console.log('📡 使用 API 刪除場域')
-                console.log('📡 API 端點:', `${import.meta.env.VITE_API_BASE_URL}/homes/${id}`)
-
-                try {
-                    await api.home.delete(id)
-                    console.log('✅ API 刪除請求成功')
-                } catch (apiError) {
-                    console.error('❌ API 刪除請求失敗:', apiError)
-                    // 后端删除失败，询问用户是否仅在本地删除
-                    const fallbackMessage = `後端刪除失敗：${apiError instanceof Error ? apiError.message : '未知錯誤'}\n\n是否僅在本地刪除？（注意：刷新頁面後會恢復）`
-                    if (confirm(fallbackMessage)) {
-                        console.log('⚠️ 用戶選擇僅在本地刪除')
-                        // 仅本地删除，不抛出错误
-                    } else {
-                        console.log('❌ 用戶取消本地刪除')
-                        return // 直接返回，不删除
-                    }
-                }
-
-                console.log('🔄 更新本地狀態...')
-                setHomes(prev => {
-                    const updatedHomes = prev.filter(home => home.id !== id)
-                    console.log('🔄 場域列表更新:', {
-                        before: prev.length,
-                        after: updatedHomes.length
-                    })
-                    // 如果刪除的是當前選中的場域，切換到其他場域
-                    if (selectedHome === id) {
-                        const newSelectedHome = updatedHomes.length > 0 ? updatedHomes[0].id : ""
-                        console.log('🔄 切換選中場域:', newSelectedHome)
-                        setSelectedHome(newSelectedHome)
-                    }
-                    return updatedHomes
-                })
-                toast({
-                    title: "場域刪除成功",
-                    description: "場域已從後端刪除"
-                })
-                console.log('✅ 場域刪除成功，UI 更新完成')
-            } else {
-                // 使用 localStorage 刪除
-                console.log('💾 使用 localStorage 刪除場域')
-                setHomes(prev => {
-                    const updatedHomes = prev.filter(home => home.id !== id)
-                    // 如果刪除的是當前選中的場域，切換到其他場域
-                    if (selectedHome === id) {
-                        const newSelectedHome = updatedHomes.length > 0 ? updatedHomes[0].id : ""
-                        setSelectedHome(newSelectedHome)
-                    }
-                    return updatedHomes
-                })
-                toast({
-                    title: "場域刪除成功",
-                    description: "場域已從本地刪除"
-                })
-                console.log('✅ 場域刪除成功（本地）')
-            }
+            await deleteHome(id)
+            toast({
+                title: "場域刪除成功",
+                description: "場域已刪除"
+            })
         } catch (error) {
             console.error('❌ 場域刪除失敗:', error)
             toast({
@@ -3066,66 +2758,22 @@ export default function UWBLocationPage() {
         }
     }
 
-    const deleteFloor = async (id: string) => {
-        console.log('🗑️ 刪除樓層觸發，ID:', id)
-
-        // 確認對話框
+    const handleDeleteFloor = async (id: string) => {
         const floor = floors.find(f => f.id === id)
         const confirmMessage = floor
             ? `確定要刪除樓層「${floor.name}」嗎？此操作無法復原，且會刪除該樓層下的所有閘道器和設備。`
             : '確定要刪除此樓層嗎？此操作無法復原。'
 
         if (!confirm(confirmMessage)) {
-            console.log('❌ 用戶取消刪除')
             return
         }
 
         try {
-            console.log('🔄 開始刪除樓層，後端可用:', backendAvailable)
-            if (backendAvailable) {
-                // 使用 API 刪除
-                console.log('📡 使用 API 刪除樓層')
-                try {
-                    await api.floor.delete(id)
-                    console.log('✅ API 刪除請求成功')
-                } catch (apiError) {
-                    console.error('❌ API 刪除請求失敗:', apiError)
-                    // 后端删除失败，询问用户是否仅在本地删除
-                    const fallbackMessage = `後端刪除失敗：${apiError instanceof Error ? apiError.message : '未知錯誤'}\n\n是否僅在本地刪除？（注意：刷新頁面後會恢復）`
-                    if (confirm(fallbackMessage)) {
-                        console.log('⚠️ 用戶選擇僅在本地刪除')
-                        // 仅本地删除，不抛出错误
-                    } else {
-                        console.log('❌ 用戶取消本地刪除')
-                        return // 直接返回，不删除
-                    }
-                }
-                setFloors(prev => prev.filter(floor => floor.id !== id))
-                toast({
-                    title: "樓層刪除成功",
-                    description: "樓層已從後端刪除"
-                })
-                console.log('✅ 樓層刪除成功')
-            } else {
-                // 使用 localStorage 刪除
-                console.log('💾 使用 localStorage 刪除樓層')
-                setFloors(prev => prev.filter(floor => floor.id !== id))
-                toast({
-                    title: "樓層刪除成功",
-                    description: "樓層已從本地刪除"
-                })
-                console.log('✅ 樓層刪除成功（本地）')
-            }
-
-            // 同時刪除該樓層的所有閘道器
-            setGateways(prev => prev.filter(gateway => gateway.floorId !== id))
-
-            // 觸發自定義事件，通知UWBLocationContext數據已更新
-            const storageChangeEvent = new CustomEvent('uwb-storage-change', {
-                detail: { key: 'uwb_floors' }
+            await deleteFloor(id)
+            toast({
+                title: "樓層刪除成功",
+                description: "樓層已刪除"
             })
-            window.dispatchEvent(storageChangeEvent)
-            console.log('📡 已觸發樓層刪除事件')
         } catch (error) {
             console.error('❌ 樓層刪除失敗:', error)
             toast({
@@ -3136,7 +2784,7 @@ export default function UWBLocationPage() {
         }
     }
 
-    const deleteGateway = async (id: string) => {
+    const handleDeleteGateway = async (id: string) => {
         const gateway = gateways.find(g => g.id === id)
         const confirmMessage = gateway
             ? `確定要刪除網關「${gateway.name}」嗎？此操作無法復原，且會刪除該網關下的所有錨點和標籤。`
@@ -3147,30 +2795,14 @@ export default function UWBLocationPage() {
         }
 
         try {
-            if (backendAvailable) {
-                // 使用 API 刪除
-                await api.gateway.delete(id)
-                // 從 GatewayRegistry 取消註冊
-                gatewayRegistry.unregisterGateway(id)
-                setGateways(prev => prev.filter(gateway => gateway.id !== id))
-                // 級聯刪除 Anchors 和 Tags
-                setAnchors(prev => prev.filter(anchor => anchor.gatewayId !== id))
-                setTags(prev => prev.filter(tag => tag.gatewayId !== id))
-                toast({
-                    title: "網關刪除成功",
-                    description: "網關已從後端刪除"
-                })
-            } else {
-                // 使用 localStorage 刪除
-                gatewayRegistry.unregisterGateway(id)
-                setGateways(prev => prev.filter(gateway => gateway.id !== id))
-                setAnchors(prev => prev.filter(anchor => anchor.gatewayId !== id))
-                setTags(prev => prev.filter(tag => tag.gatewayId !== id))
-                toast({
-                    title: "網關刪除成功",
-                    description: "網關已從本地刪除"
-                })
-            }
+            await deleteGateway(id)
+            // 級聯刪除 Anchors 和 Tags（這些不在 Context 中）
+            setAnchors(prev => prev.filter(anchor => anchor.gatewayId !== id))
+            setTags(prev => prev.filter(tag => tag.gatewayId !== id))
+            toast({
+                title: "網關刪除成功",
+                description: "網關已刪除"
+            })
         } catch (error) {
             console.error('網關刪除失敗:', error)
             toast({
@@ -3183,7 +2815,7 @@ export default function UWBLocationPage() {
 
     // Anchor配對流程（模擬）
     const startAnchorPairing = async () => {
-        if (!selectedGateway) return
+        if (!selectedGatewayForPairing) return
 
         setPairingInProgress(true)
         setDiscoveredAnchors([])
@@ -3207,7 +2839,7 @@ export default function UWBLocationPage() {
     const addDiscoveredAnchor = (macAddress: string) => {
         const newAnchor: AnchorDevice = {
             id: `anchor_${Date.now()}`,
-            gatewayId: selectedGateway,
+            gatewayId: selectedGatewayForPairing,
             name: `新錨點 ${macAddress.slice(-5)}`,
             macAddress: macAddress,
             status: 'paired',
@@ -3466,7 +3098,7 @@ export default function UWBLocationPage() {
             }
 
             // 檢查 downlink 是否已包含 UWB/ 前綴
-            const downlinkValue = gateway.cloudData.sub_topic.downlink
+            const downlinkValue = gateway.cloudData.sub_topic?.downlink || ''
             const downlinkTopic = downlinkValue.startsWith('UWB/') ? downlinkValue : `UWB/${downlinkValue}`
 
             console.log(`🔍 MQTT 主題檢查:`)
@@ -3716,30 +3348,12 @@ export default function UWBLocationPage() {
                 }
             }
 
-            if (backendAvailable) {
-                // 使用 API 更新樓層
-                const updatedFloor = await api.floor.update(calibratingFloor.id, floorData)
-                setFloors(prev => prev.map(floor =>
-                    floor.id === calibratingFloor.id ? updatedFloor : floor
-                ))
-                toast({
-                    title: "地圖標定完成",
-                    description: `${calibratingFloor.name} 的地圖已同步到後端`
-                })
-            } else {
-                // 使用 localStorage 更新樓層
-                const updatedFloor: Floor = {
-                    ...calibratingFloor,
-                    ...floorData
-                }
-                setFloors(prev => prev.map(floor =>
-                    floor.id === calibratingFloor.id ? updatedFloor : floor
-                ))
-                toast({
-                    title: "地圖標定完成",
-                    description: `${calibratingFloor.name} 的地圖已保存到本地`
-                })
-            }
+            // 使用 Context 方法更新樓層
+            await updateFloor(calibratingFloor.id, floorData)
+            toast({
+                title: "地圖標定完成",
+                description: `${calibratingFloor.name} 的地圖已保存`
+            })
 
             // 同步更新狀態中的比例值
             setPixelToMeterRatio(calculatedRatio)
@@ -4190,7 +3804,7 @@ export default function UWBLocationPage() {
                                                         console.log('🔘 場域名稱:', home.name)
                                                         console.log('🔘 準備調用 deleteHome 函數...')
                                                         try {
-                                                            deleteHome(home.id)
+                                                            handleDeleteHome(home.id)
                                                             console.log('🔘 deleteHome 函數調用完成')
                                                         } catch (error) {
                                                             console.error('🔘 deleteHome 函數調用失敗:', error)
@@ -4289,7 +3903,7 @@ export default function UWBLocationPage() {
                                                                 e.preventDefault()
                                                                 e.stopPropagation()
                                                                 console.log('🔘 刪除按鈕被點擊，樓層ID:', floor.id)
-                                                                deleteFloor(floor.id)
+                                                                handleDeleteFloor(floor.id)
                                                             }}
                                                         >
                                                             <Trash2 className="h-4 w-4" />
@@ -4525,23 +4139,28 @@ export default function UWBLocationPage() {
                                                             {selectedOrigin && imageLoaded && (() => {
                                                                 const imgElement = mapImageRef.current
 
-                                                                if (!imgElement || imgElement.naturalWidth === 0) {
-                                                                    console.warn('圖片元素未找到或未加載完成')
+                                                                if (!imgElement || imgElement.naturalWidth === 0 || imgElement.naturalHeight === 0) {
+                                                                    // 圖片未加載完成，不顯示標記（避免錯誤）
                                                                     return null
                                                                 }
 
-                                                                const displayCoords = convertNaturalToDisplayCoords(selectedOrigin.x, selectedOrigin.y, imgElement)
+                                                                try {
+                                                                    const displayCoords = convertNaturalToDisplayCoords(selectedOrigin.x, selectedOrigin.y, imgElement)
 
-                                                                return (
-                                                                    <div
-                                                                        className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse shadow-lg"
-                                                                        style={{
-                                                                            left: displayCoords.x,
-                                                                            top: displayCoords.y
-                                                                        }}
-                                                                        title={`原點: 自然座標(${selectedOrigin.x.toFixed(0)}, ${selectedOrigin.y.toFixed(0)}) 顯示座標(${displayCoords.x.toFixed(0)}, ${displayCoords.y.toFixed(0)})`}
-                                                                    />
-                                                                )
+                                                                    return (
+                                                                        <div
+                                                                            className="absolute w-4 h-4 bg-red-500 rounded-full border-2 border-white transform -translate-x-2 -translate-y-2 animate-pulse shadow-lg"
+                                                                            style={{
+                                                                                left: displayCoords.x,
+                                                                                top: displayCoords.y
+                                                                            }}
+                                                                            title={`原點: 自然座標(${selectedOrigin.x.toFixed(0)}, ${selectedOrigin.y.toFixed(0)}) 顯示座標(${displayCoords.x.toFixed(0)}, ${displayCoords.y.toFixed(0)})`}
+                                                                        />
+                                                                    )
+                                                                } catch (error) {
+                                                                    // 座標轉換失敗，不顯示標記
+                                                                    return null
+                                                                }
                                                             })()}
                                                         </div>
                                                         {selectedOrigin && (
@@ -5127,7 +4746,7 @@ export default function UWBLocationPage() {
                                                             <Button
                                                                 size="sm"
                                                                 variant="outline"
-                                                                onClick={() => deleteGateway(gateway.id)}
+                                                                onClick={() => handleDeleteGateway(gateway.id)}
                                                             >
                                                                 <Trash2 className="h-4 w-4" />
                                                             </Button>

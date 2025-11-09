@@ -116,6 +116,11 @@ export const floorAPI = {
 
 // 網關管理API
 export const gatewayAPI = {
+    // 獲取所有網關
+    async getAll(): Promise<Gateway[]> {
+        return apiRequest<Gateway[]>('/gateways')
+    },
+
     // 根據樓層ID獲取網關
     async getByFloorId(floorId: string): Promise<Gateway[]> {
         return apiRequest<Gateway[]>(`/floors/${floorId}/gateways`)

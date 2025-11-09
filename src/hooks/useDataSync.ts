@@ -56,12 +56,14 @@ export function useDataSync(options: UseDataSyncOptions = {}) {
         }
     }, [onError])
 
-    // 同步網關數據
-    const syncGateways = useCallback(async (floorId: string): Promise<Gateway[]> => {
+    // 同步網關數據（支持按樓層或所有）
+    const syncGateways = useCallback(async (floorId?: string): Promise<Gateway[]> => {
         try {
             setIsLoading(true)
             setError(null)
-            const gateways = await api.gateway.getByFloorId(floorId)
+            const gateways = floorId
+                ? await api.gateway.getByFloorId(floorId)
+                : await api.gateway.getAll()
             setLastSyncTime(new Date())
             return gateways
         } catch (err) {
