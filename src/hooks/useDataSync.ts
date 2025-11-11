@@ -76,12 +76,14 @@ export function useDataSync(options: UseDataSyncOptions = {}) {
         }
     }, [onError])
 
-    // 同步錨點數據
-    const syncAnchors = useCallback(async (gatewayId: string): Promise<AnchorDevice[]> => {
+    // 同步錨點數據（支持按網關或所有）
+    const syncAnchors = useCallback(async (gatewayId?: string): Promise<AnchorDevice[]> => {
         try {
             setIsLoading(true)
             setError(null)
-            const anchors = await api.anchor.getByGatewayId(gatewayId)
+            const anchors = gatewayId
+                ? await api.anchor.getByGatewayId(gatewayId)
+                : await api.anchor.getAll()
             setLastSyncTime(new Date())
             return anchors
         } catch (err) {

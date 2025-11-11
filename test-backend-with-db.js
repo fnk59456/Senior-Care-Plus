@@ -542,6 +542,13 @@ app.delete('/api/gateways/:id', (req, res) => {
 
 // 錨點管理 API
 
+// 獲取所有錨點
+app.get('/api/anchors', (req, res) => {
+    console.log('📥 GET /api/anchors - 獲取所有錨點')
+    console.log(`返回 ${anchors.length} 個錨點`)
+    res.json(anchors)
+})
+
 // 根據網關ID獲取錨點
 app.get('/api/gateways/:gatewayId/anchors', (req, res) => {
     console.log('📥 GET /api/gateways/:gatewayId/anchors - 獲取網關的錨點列表')
@@ -555,6 +562,15 @@ app.get('/api/gateways/:gatewayId/anchors', (req, res) => {
 app.post('/api/anchors', (req, res) => {
     console.log('📥 POST /api/anchors - 創建錨點')
     console.log('請求數據:', req.body)
+
+    // 驗證 gatewayId 是否存在
+    if (req.body.gatewayId) {
+        const gatewayExists = gateways.some(g => g.id === req.body.gatewayId)
+        if (!gatewayExists) {
+            console.log('❌ 網關不存在:', req.body.gatewayId)
+            return res.status(400).json({ error: '指定的網關不存在' })
+        }
+    }
 
     const newAnchor = {
         id: `anchor_${Date.now()}`,
@@ -587,6 +603,15 @@ app.put('/api/anchors/:id', (req, res) => {
 
     if (anchorIndex === -1) {
         return res.status(404).json({ error: '錨點不存在' })
+    }
+
+    // 如果更新 gatewayId，驗證其是否存在
+    if (req.body.gatewayId && req.body.gatewayId !== anchors[anchorIndex].gatewayId) {
+        const gatewayExists = gateways.some(g => g.id === req.body.gatewayId)
+        if (!gatewayExists) {
+            console.log('❌ 網關不存在:', req.body.gatewayId)
+            return res.status(400).json({ error: '指定的網關不存在' })
+        }
     }
 
     const updatedAnchor = {

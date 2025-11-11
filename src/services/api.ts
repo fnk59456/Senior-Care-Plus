@@ -152,9 +152,19 @@ export const gatewayAPI = {
 
 // 錨點管理API
 export const anchorAPI = {
+    // 獲取所有錨點
+    async getAll(): Promise<AnchorDevice[]> {
+        return apiRequest<AnchorDevice[]>('/anchors')
+    },
+
     // 根據網關ID獲取錨點
     async getByGatewayId(gatewayId: string): Promise<AnchorDevice[]> {
         return apiRequest<AnchorDevice[]>(`/gateways/${gatewayId}/anchors`)
+    },
+
+    // 根據ID獲取錨點
+    async getById(id: string): Promise<AnchorDevice> {
+        return apiRequest<AnchorDevice>(`/anchors/${id}`)
     },
 
     // 創建新錨點
