@@ -235,6 +235,32 @@ export default function TemperaturePage() {
     return null
   }
 
+  // ✅ 保存消息到 localStorage（持久化存儲）
+  const saveMessageToLocalStorage = (message: RealtimeMessage) => {
+    try {
+      const storageKey = 'temperature_history_messages'
+      const stored = localStorage.getItem(storageKey)
+      const storedMessages = stored ? JSON.parse(stored) : []
+
+      // 添加新消息
+      storedMessages.push({
+        topic: message.topic,
+        payload: message.payload,
+        timestamp: message.timestamp.toISOString(),
+        gateway: message.gateway
+      })
+
+      // 只保留最近 1000 條消息
+      const trimmedMessages = storedMessages
+        .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 1000)
+
+      localStorage.setItem(storageKey, JSON.stringify(trimmedMessages))
+    } catch (error) {
+      console.error('❌ 保存消息到 localStorage 失敗:', error)
+    }
+  }
+
   // ✅ WebSocket/MQTT 實時訂閱 - 支持歷史消息加載
   useEffect(() => {
     let lastProcessedTime = 0
@@ -380,20 +406,129 @@ export default function TemperaturePage() {
     console.log(`🌐 訂閱健康監控主題: ${healthTopicPattern} (模式: ${USE_WEBSOCKET ? 'WebSocket' : 'MQTT'})`)
     console.log(`🔍 選擇的 Gateway: ${selectedGateway}, 健康主題: ${healthTopic}`)
 
-    // 🔧 問題1修復：MQTT 模式下，先從歷史消息緩衝區加載數據
-    if (!USE_WEBSOCKET) {
-      console.log('📚 MQTT 模式：從歷史消息緩衝區加載數據')
+    // 🔧 持久化存儲：從歷史消息加載數據
+    const loadHistoryMessages = async () => {
+      if (USE_WEBSOCKET) {
+        // WebSocket 模式：從 REST API 加載歷史消息
+        console.log('📚 WebSocket 模式：從 REST API 加載歷史消息')
+        try {
+          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
+          const response = await fetch(`${API_BASE_URL}/mqtt/messages`)
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+
+          const allMessages = await response.json()
+          console.log(`📚 從 API 獲取到 ${allMessages.length} 條歷史消息`)
+
+          // 過濾出 300B 設備的 Health 主題消息
+          const healthMessages = allMessages.filter((msg: any) => {
+            const topic = msg.topic || ''
+            const content = msg.message?.content || ''
+            return topic.includes('_Health') && content === '300B'
+          })
+
+          console.log(`📚 過濾後找到 ${healthMessages.length} 條 300B Health 消息`)
+
+          // 處理歷史消息
+          healthMessages.forEach((msg: any) => {
+            const msgTime = new Date(msg.timestamp || msg.message?.timestamp || Date.now()).getTime()
+            const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.message || msg.payload).substring(0, 50)}`
+
+            if (processedMessages.has(msgKey)) {
+              return
+            }
+
+            processedMessages.add(msgKey)
+
+            // 轉換為 RealtimeMessage 格式
+            const message: RealtimeMessage = {
+              topic: msg.topic,
+              payload: msg.message || msg.payload,
+              timestamp: new Date(msg.timestamp || Date.now()),
+              gateway: msg.gateway || undefined
+            }
+
+            // 處理消息（重用下面的處理邏輯）
+            processRealtimeMessage(message, processedMessages)
+            lastProcessedTime = Math.max(lastProcessedTime, msgTime)
+          })
+
+          console.log(`✅ 已加載 ${healthMessages.length} 條歷史消息`)
+        } catch (error) {
+          console.error('❌ 從 REST API 加載歷史消息失敗:', error)
+          // 如果 REST API 失敗，嘗試從 localStorage 加載
+          loadHistoryFromLocalStorage()
+        }
+      } else {
+        // MQTT 模式：從歷史消息緩衝區加載數據
+        console.log('📚 MQTT 模式：從歷史消息緩衝區加載數據')
+        try {
+          const recentMessages = mqttBus.getRecentMessages({
+            contentType: '300B'  // 只加載 300B 設備的消息
+          })
+
+          console.log(`📚 找到 ${recentMessages.length} 條歷史消息`)
+
+          // 處理歷史消息
+          recentMessages.forEach(msg => {
+            const msgTime = msg.timestamp.getTime()
+            const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.payload).substring(0, 50)}`
+
+            if (processedMessages.has(msgKey)) {
+              return
+            }
+
+            processedMessages.add(msgKey)
+
+            // 轉換為 RealtimeMessage 格式
+            const message: RealtimeMessage = {
+              topic: msg.topic,
+              payload: msg.payload,
+              timestamp: msg.timestamp,
+              gateway: msg.gateway
+            }
+
+            // 處理消息（重用下面的處理邏輯）
+            processRealtimeMessage(message, processedMessages)
+            lastProcessedTime = Math.max(lastProcessedTime, msgTime)
+          })
+
+          console.log(`✅ 已加載 ${recentMessages.length} 條歷史消息`)
+        } catch (error) {
+          console.error('❌ 加載歷史消息失敗:', error)
+        }
+      }
+    }
+
+    // 從 localStorage 加載歷史消息（備用方案）
+    const loadHistoryFromLocalStorage = () => {
       try {
-        const recentMessages = mqttBus.getRecentMessages({
-          contentType: '300B'  // 只加載 300B 設備的消息
+        const storageKey = 'temperature_history_messages'
+        const stored = localStorage.getItem(storageKey)
+
+        if (!stored) {
+          console.log('📚 localStorage 中沒有歷史消息')
+          return
+        }
+
+        const storedMessages = JSON.parse(stored)
+        console.log(`📚 從 localStorage 獲取到 ${storedMessages.length} 條歷史消息`)
+
+        // 過濾出 300B 設備的 Health 主題消息
+        const healthMessages = storedMessages.filter((msg: any) => {
+          const topic = msg.topic || ''
+          const content = msg.payload?.content || msg.message?.content || ''
+          return topic.includes('_Health') && content === '300B'
         })
 
-        console.log(`📚 找到 ${recentMessages.length} 條歷史消息`)
+        console.log(`📚 過濾後找到 ${healthMessages.length} 條 300B Health 消息`)
 
         // 處理歷史消息
-        recentMessages.forEach(msg => {
-          const msgTime = msg.timestamp.getTime()
-          const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.payload).substring(0, 50)}`
+        healthMessages.forEach((msg: any) => {
+          const msgTime = new Date(msg.timestamp || Date.now()).getTime()
+          const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.payload || msg.message).substring(0, 50)}`
 
           if (processedMessages.has(msgKey)) {
             return
@@ -404,9 +539,9 @@ export default function TemperaturePage() {
           // 轉換為 RealtimeMessage 格式
           const message: RealtimeMessage = {
             topic: msg.topic,
-            payload: msg.payload,
-            timestamp: msg.timestamp,
-            gateway: msg.gateway
+            payload: msg.payload || msg.message,
+            timestamp: new Date(msg.timestamp || Date.now()),
+            gateway: msg.gateway || undefined
           }
 
           // 處理消息（重用下面的處理邏輯）
@@ -414,11 +549,14 @@ export default function TemperaturePage() {
           lastProcessedTime = Math.max(lastProcessedTime, msgTime)
         })
 
-        console.log(`✅ 已加載 ${recentMessages.length} 條歷史消息`)
+        console.log(`✅ 已從 localStorage 加載 ${healthMessages.length} 條歷史消息`)
       } catch (error) {
-        console.error('❌ 加載歷史消息失敗:', error)
+        console.error('❌ 從 localStorage 加載歷史消息失敗:', error)
       }
     }
+
+    // 立即加載歷史消息
+    loadHistoryMessages()
 
     // 🔧 問題2修復：訂閱實時消息
     const unsubscribe = realtimeDataService.subscribe(healthTopicPattern, (message: RealtimeMessage) => {
@@ -444,6 +582,9 @@ export default function TemperaturePage() {
             .slice(0, 100)
           return newBuffer
         })
+
+        // 保存到 localStorage（持久化存儲）
+        saveMessageToLocalStorage(message)
 
         // 處理消息
         processRealtimeMessage(message, processedMessages)
