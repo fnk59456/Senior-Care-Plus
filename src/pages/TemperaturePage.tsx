@@ -442,12 +442,20 @@ export default function TemperaturePage() {
 
             processedMessages.add(msgKey)
 
+            // 🔧 從 topic 提取 Gateway 信息
+            // Topic 格式：UWB/GWxxxx_Health
+            const gatewayMatch = msg.topic?.match(/GW([A-F0-9]+)/)
+            const gatewayInfo = gatewayMatch ? {
+              id: gatewayMatch[1],  // 例如：16B8
+              name: gatewayMatch[0]  // 例如：GW16B8
+            } : undefined
+
             // 轉換為 RealtimeMessage 格式
             const message: RealtimeMessage = {
               topic: msg.topic,
               payload: msg.message || msg.payload,
               timestamp: new Date(msg.timestamp || Date.now()),
-              gateway: msg.gateway || undefined
+              gateway: msg.gateway || gatewayInfo
             }
 
             // 處理消息（重用下面的處理邏輯）
@@ -536,12 +544,20 @@ export default function TemperaturePage() {
 
           processedMessages.add(msgKey)
 
+          // 🔧 從 topic 提取 Gateway 信息
+          // Topic 格式：UWB/GWxxxx_Health
+          const gatewayMatch = msg.topic?.match(/GW([A-F0-9]+)/)
+          const gatewayInfo = gatewayMatch ? {
+            id: gatewayMatch[1],  // 例如：16B8
+            name: gatewayMatch[0]  // 例如：GW16B8
+          } : undefined
+
           // 轉換為 RealtimeMessage 格式
           const message: RealtimeMessage = {
             topic: msg.topic,
             payload: msg.payload || msg.message,
             timestamp: new Date(msg.timestamp || Date.now()),
-            gateway: msg.gateway || undefined
+            gateway: msg.gateway || gatewayInfo
           }
 
           // 處理消息（重用下面的處理邏輯）
@@ -899,17 +915,30 @@ export default function TemperaturePage() {
                                 // 檢查設備的所有記錄，只要有一條記錄來自選定的 Gateway 就顯示該設備
                                 const deviceRecords = cloudDeviceRecords.filter(record => record.MAC === device.MAC)
 
-                                // 🎯 簡化篩選邏輯：直接使用 MQTT 數據中的 gateway 字段
+                                // 🎯 改进筛选逻辑：匹配 Gateway MAC 地址部分
                                 const hasMatchingRecord = deviceRecords.some(record => {
-                                  // 主要匹配：record.gateway（來自 MQTT 的 gateway 字段）包含選定 Gateway 的名稱
-                                  // 例如：record.gateway = "GwF9E516B8_142", gateway.name = "GwF9E516B8_176"
-                                  // 匹配邏輯：檢查前綴是否相同（去掉最後的數字部分）
-                                  const recordGatewayPrefix = record.gateway?.split('_')[0] || ''
-                                  const selectedGatewayPrefix = gateway.name?.split('_')[0] || ''
+                                  // record.gateway 可能是：
+                                  // 1. "GW16B8" (从 topic 提取)
+                                  // 2. "GwF9E516B8_192" (从 MQTT 消息)
+                                  // gateway.name 格式：GwF9E516B8_192
+                                  // gateway.macAddress 格式：F9:E5:16:B8
 
-                                  const matches = recordGatewayPrefix &&
-                                    selectedGatewayPrefix &&
-                                    recordGatewayPrefix === selectedGatewayPrefix
+                                  const recordGateway = record.gateway || ''
+                                  const gatewayName = gateway.name || ''
+                                  const gatewayMac = gateway.macAddress || ''
+
+                                  // 提取 MAC 地址的最后4位（例如：16B8）
+                                  const macSuffix = gatewayMac.replace(/:/g, '').slice(-4).toUpperCase()
+
+                                  // 检查匹配：
+                                  // 1. record.gateway 包含 MAC 后4位（例如：GW16B8 包含 16B8）
+                                  // 2. 或者 record.gateway 前缀匹配 gateway.name 前缀
+                                  const matches = (
+                                    recordGateway.includes(macSuffix) ||
+                                    recordGateway.toUpperCase().includes(gatewayName.split('_')[0].toUpperCase())
+                                  )
+
+                                  console.log(`🔍 筛选匹配: record.gateway="${recordGateway}", gateway="${gatewayName}", mac="${gatewayMac}", macSuffix="${macSuffix}", matches=${matches}`)
 
                                   return matches
                                 })
