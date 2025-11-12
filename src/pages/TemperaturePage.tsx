@@ -10,6 +10,7 @@ import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { DeviceType } from "@/types/device-types"
 import { useTranslation } from "react-i18next"
+import { realtimeDataService, type RealtimeMessage } from "@/services/realtimeDataService"
 import { mqttBus } from "@/services/mqttBus"
 
 // 體溫範圍
@@ -199,12 +200,15 @@ export default function TemperaturePage() {
   const [cloudDeviceRecords, setCloudDeviceRecords] = useState<CloudDeviceRecord[]>([])
   const [selectedCloudDevice, setSelectedCloudDevice] = useState<string>("")
 
-  // ✅ MQTT Bus 連接狀態
+  // ✅ 實時數據服務連接狀態
   const [cloudConnected, setCloudConnected] = useState(false)
   const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
 
   // 原始 MQTT 數據狀態
   const [cloudMqttData, setCloudMqttData] = useState<CloudMqttData[]>([])
+
+  // 消息緩衝區（用於替代 getRecentMessages）
+  const [messageBuffer, setMessageBuffer] = useState<RealtimeMessage[]>([])
 
   // 動態獲取健康監控MQTT主題
   const getHealthTopic = () => {
@@ -231,245 +235,265 @@ export default function TemperaturePage() {
     return null
   }
 
-  // ✅ 修復頻率問題 - 只在有新消息時更新（參考 HeartRatePage）
+  // ✅ WebSocket/MQTT 實時訂閱 - 支持歷史消息加載
   useEffect(() => {
     let lastProcessedTime = 0
-    let processedMessages = new Set()
-    let lastUpdateTime = 0
+    let processedMessages = new Set<string>()
 
-    const updateMqttData = () => {
-      // 🔧 額外頻率控制：確保至少間隔5秒才更新
-      const now = Date.now()
-      if (now - lastUpdateTime < 5000) {
-        console.log(`⏰ 頻率控制：距離上次更新不足5秒，跳過`)
-        return
+    // 連接實時數據服務
+    realtimeDataService.connect()
+
+    // 獲取健康主題
+    const healthTopic = getHealthTopic()
+
+    // 訂閱健康主題（支持通配符）
+    // 注意：WebSocket 模式使用通配符，MQTT 模式使用具體主題或正則
+    const USE_WEBSOCKET = import.meta.env.VITE_USE_WEBSOCKET === 'true'
+
+    // 處理實時消息的通用函數，供歷史消息與實時訂閱共用
+    const processRealtimeMessage = (message: RealtimeMessage, processedSet: Set<string>) => {
+      const data = message.payload
+      const MAC = data.MAC || data['mac address'] || data.macAddress
+
+      if (!MAC || data.content !== '300B') {
+        return // 只處理 300B 設備的體溫數據
       }
+
+      const skinTemp = parseFloat(data['skin temp']) || 0
+      const roomTemp = parseFloat(data['room temp']) || 0
+      const steps = parseInt(data.steps) || 0
+      const lightSleep = parseInt(data['light sleep (min)']) || 0
+      const deepSleep = parseInt(data['deep sleep (min)']) || 0
+      const batteryLevel = parseInt(data['battery level']) || 0
+
+      // 獲取病患資訊
+      const residentInfo = getResidentInfoByMAC(MAC)
+
+      // 創建設備記錄
+      const cloudDeviceRecord: CloudDeviceRecord = {
+        MAC: MAC,
+        deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${MAC.slice(-8)}`,
+        skin_temp: skinTemp,
+        room_temp: roomTemp,
+        steps: steps,
+        light_sleep: lightSleep,
+        deep_sleep: deepSleep,
+        battery_level: batteryLevel,
+        time: message.timestamp.toISOString(),
+        datetime: message.timestamp,
+        isAbnormal: skinTemp > 0 && (skinTemp > NORMAL_TEMP_MAX || skinTemp < NORMAL_TEMP_MIN),
+        gateway: message.gateway?.name || '',
+        gatewayId: message.gateway?.id || '',
+        topic: message.topic,
+        topicGateway: message.topic?.match(/GW[A-F0-9]+/)?.[0] || '',
+        ...residentInfo
+      }
+
+      // 更新設備記錄
+      setCloudDeviceRecords(prev => {
+        const newRecords = [cloudDeviceRecord, ...prev]
+          .sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
+          .slice(0, 1000)
+        return newRecords
+      })
+
+      // 更新設備列表
+      setCloudDevices(prev => {
+        const existingDevice = prev.find(d => d.MAC === MAC)
+
+        if (existingDevice) {
+          return prev.map(d =>
+            d.MAC === MAC
+              ? {
+                ...d,
+                lastSeen: message.timestamp,
+                recordCount: d.recordCount + 1,
+                ...residentInfo
+              }
+              : d
+          )
+        } else {
+          const newDevice = {
+            MAC: MAC,
+            deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${MAC.slice(-8)}`,
+            lastSeen: message.timestamp,
+            recordCount: 1,
+            gateway: message.gateway?.name || '',
+            gatewayId: message.gateway?.id || '',
+            topic: message.topic,
+            topicGateway: message.topic?.match(/GW[A-F0-9]+/)?.[0] || '',
+            ...residentInfo
+          }
+          return [...prev, newDevice]
+        }
+      })
+
+      // 更新原始 MQTT 數據
+      const formattedData: CloudMqttData = {
+        content: data.content || 'unknown',
+        MAC: MAC,
+        receivedAt: message.timestamp,
+        gateway_id: message.gateway?.id || '',
+        hr: data.hr || '',
+        SpO2: data.SpO2 || '',
+        bp_syst: data['bp syst'] || '',
+        bp_diast: data['bp diast'] || '',
+        skin_temp: data['skin temp'] || '',
+        room_temp: data['room temp'] || '',
+        steps: data.steps || '',
+        battery_level: data['battery level'] || '',
+        name: data.name || '',
+        temp: data.temp || '',
+        humi: data.humi || '',
+        button: data.button || '',
+        msg_idx: data['msg idx'] || '',
+        ack: data.ack || ''
+      }
+
+      setCloudMqttData(prev => {
+        const combined = [formattedData, ...prev]
+          .sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime())
+          .slice(0, 50)
+        return combined
+      })
+
+      // 自動選擇第一個設備
+      setSelectedCloudDevice(prev => {
+        if (!prev) {
+          return MAC
+        }
+        return prev
+      })
+    }
+
+    // 🔧 問題2修復：WebSocket 模式使用正確的通配符格式
+    // 實際主題格式：UWB/GWxxxx_Health，所以通配符應該是 UWB/*_Health 或 UWB/GW*_Health
+    let healthTopicPattern: string | RegExp
+    if (selectedGateway && healthTopic) {
+      healthTopicPattern = healthTopic  // 使用具體主題
+    } else if (USE_WEBSOCKET) {
+      healthTopicPattern = 'UWB/*_Health'  // WebSocket 通配符：匹配所有 Health 主題
+    } else {
+      healthTopicPattern = /^UWB\/GW.*_Health$/  // MQTT 正則格式
+    }
+
+    console.log(`🌐 訂閱健康監控主題: ${healthTopicPattern} (模式: ${USE_WEBSOCKET ? 'WebSocket' : 'MQTT'})`)
+    console.log(`🔍 選擇的 Gateway: ${selectedGateway}, 健康主題: ${healthTopic}`)
+
+    // 🔧 問題1修復：MQTT 模式下，先從歷史消息緩衝區加載數據
+    if (!USE_WEBSOCKET) {
+      console.log('📚 MQTT 模式：從歷史消息緩衝區加載數據')
       try {
-        const recentMessages = mqttBus.getRecentMessages()
-        console.log(`🔍 檢查 MQTT 消息: 總數 ${recentMessages.length}, 最後處理時間: ${new Date(lastProcessedTime).toLocaleTimeString()}`)
+        const recentMessages = mqttBus.getRecentMessages({
+          contentType: '300B'  // 只加載 300B 設備的消息
+        })
 
-        // 只處理新的消息（避免重複處理）
-        const newMessages = recentMessages.filter(msg => {
+        console.log(`📚 找到 ${recentMessages.length} 條歷史消息`)
+
+        // 處理歷史消息
+        recentMessages.forEach(msg => {
           const msgTime = msg.timestamp.getTime()
-          const msgKey = `${msg.topic}-${msgTime}`
-          const isNew = msgTime > lastProcessedTime && !processedMessages.has(msgKey)
+          const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.payload).substring(0, 50)}`
 
-          if (isNew) {
-            console.log(`✅ 新消息: ${msg.topic} at ${msg.timestamp.toLocaleTimeString()}`)
+          if (processedMessages.has(msgKey)) {
+            return
           }
 
-          return isNew
+          processedMessages.add(msgKey)
+
+          // 轉換為 RealtimeMessage 格式
+          const message: RealtimeMessage = {
+            topic: msg.topic,
+            payload: msg.payload,
+            timestamp: msg.timestamp,
+            gateway: msg.gateway
+          }
+
+          // 處理消息（重用下面的處理邏輯）
+          processRealtimeMessage(message, processedMessages)
+          lastProcessedTime = Math.max(lastProcessedTime, msgTime)
         })
 
-        if (newMessages.length === 0) {
-          console.log(`⏭️ 沒有新消息，跳過更新`)
-          return // 沒有新消息，不更新
+        console.log(`✅ 已加載 ${recentMessages.length} 條歷史消息`)
+      } catch (error) {
+        console.error('❌ 加載歷史消息失敗:', error)
+      }
+    }
+
+    // 🔧 問題2修復：訂閱實時消息
+    const unsubscribe = realtimeDataService.subscribe(healthTopicPattern, (message: RealtimeMessage) => {
+      try {
+        const msgTime = message.timestamp.getTime()
+        const msgKey = `${message.topic}-${msgTime}-${JSON.stringify(message.payload).substring(0, 50)}`
+
+        // 檢查是否為重複消息
+        if (processedMessages.has(msgKey)) {
+          console.log(`⏭️ 重複消息已跳過: ${message.topic}`)
+          return
         }
 
-        console.log(`🔄 處理 ${newMessages.length} 條新 MQTT 消息`)
+        // 標記為已處理
+        processedMessages.add(msgKey)
+        console.log(`✅ 收到新消息: ${message.topic} at ${message.timestamp.toLocaleTimeString()}`)
+        console.log(`📦 消息內容:`, message.payload)
 
-        // 更新最後處理時間
-        lastProcessedTime = Math.max(...newMessages.map(msg => msg.timestamp.getTime()))
-
-        // 標記已處理的消息
-        newMessages.forEach(msg => {
-          const msgKey = `${msg.topic}-${msg.timestamp.getTime()}`
-          processedMessages.add(msgKey)
-          console.log(`📝 標記已處理: ${msgKey}`)
+        // 更新消息緩衝區（保留最近 100 條）
+        setMessageBuffer(prev => {
+          const newBuffer = [message, ...prev]
+            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+            .slice(0, 100)
+          return newBuffer
         })
+
+        // 處理消息
+        processRealtimeMessage(message, processedMessages)
+        lastProcessedTime = msgTime
 
         // 清理過期的處理記錄（保留最近1小時）
         const oneHourAgo = Date.now() - 60 * 60 * 1000
         const keysToDelete: string[] = []
         processedMessages.forEach((key) => {
           const keyStr = String(key)
-          const timestamp = parseInt(keyStr.split('-').pop() || '0')
+          const timestamp = parseInt(keyStr.split('-')[1] || '0')
           if (timestamp < oneHourAgo) {
             keysToDelete.push(keyStr)
           }
         })
         keysToDelete.forEach((key: string) => processedMessages.delete(key))
-
-        const formattedData = newMessages.map(msg => ({
-          content: msg.payload?.content || 'unknown',
-          MAC: msg.payload?.MAC || msg.payload?.['mac address'] || '',
-          receivedAt: msg.timestamp,
-          topic: msg.topic,
-          gateway: msg.gateway?.name || '',
-          // 健康數據字段
-          hr: msg.payload?.hr || '',
-          SpO2: msg.payload?.SpO2 || '',
-          bp_syst: msg.payload?.['bp syst'] || '',
-          bp_diast: msg.payload?.['bp diast'] || '',
-          skin_temp: msg.payload?.['skin temp'] || '',
-          room_temp: msg.payload?.['room temp'] || '',
-          steps: msg.payload?.steps || '',
-          battery_level: msg.payload?.['battery level'] || '',
-          // 尿布數據字段
-          name: msg.payload?.name || '',
-          temp: msg.payload?.temp || '',
-          humi: msg.payload?.humi || '',
-          button: msg.payload?.button || '',
-          msg_idx: msg.payload?.['msg idx'] || '',
-          ack: msg.payload?.ack || ''
-        }))
-
-        // ✅ 只顯示體溫相關的 MQTT 數據 (僅 300B 設備)
-        const temperatureData = formattedData.filter(data =>
-          data.content === '300B'
-        )
-
-        // 只添加新的體溫數據
-        if (temperatureData.length > 0) {
-          setCloudMqttData(prev => {
-            const combined = [...temperatureData, ...prev]
-              .sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime())
-              .slice(0, 50) // 限制總數
-            return combined
-          })
-        }
-
-        // ✅ 只處理體溫相關的數據 (300B 設備)
-        const healthMessages = newMessages.filter(msg => {
-          const isHealthMessage = msg.payload?.content === '300B' && msg.payload?.MAC
-          if (isHealthMessage) {
-            console.log('✅ 處理 300B 體溫消息:', {
-              MAC: msg.payload?.MAC,
-              topic: msg.topic,
-              gateway: msg.gateway?.name
-            })
-          } else {
-            console.log('⏭️ 跳過非體溫消息:', {
-              content: msg.payload?.content,
-              MAC: msg.payload?.MAC,
-              topic: msg.topic
-            })
-          }
-          return isHealthMessage
-        })
-
-        healthMessages.forEach(msg => {
-          const data = msg.payload
-          const MAC = data.MAC || data['mac address'] || data.macAddress
-
-          if (MAC) {
-            const skinTemp = parseFloat(data['skin temp']) || 0
-            const roomTemp = parseFloat(data['room temp']) || 0
-            const steps = parseInt(data.steps) || 0
-            const lightSleep = parseInt(data['light sleep (min)']) || 0
-            const deepSleep = parseInt(data['deep sleep (min)']) || 0
-            const batteryLevel = parseInt(data['battery level']) || 0
-
-            // 獲取病患資訊
-            const residentInfo = getResidentInfoByMAC(MAC)
-
-            // 創建設備記錄
-            const cloudDeviceRecord: CloudDeviceRecord = {
-              MAC: MAC,
-              deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${MAC.slice(-8)}`,
-              skin_temp: skinTemp,
-              room_temp: roomTemp,
-              steps: steps,
-              light_sleep: lightSleep,
-              deep_sleep: deepSleep,
-              battery_level: batteryLevel,
-              time: msg.timestamp.toISOString(),
-              datetime: msg.timestamp, // 使用實際的 MQTT 時間戳
-              isAbnormal: skinTemp > 0 && (skinTemp > NORMAL_TEMP_MAX || skinTemp < NORMAL_TEMP_MIN),
-              // 添加 Gateway 資訊
-              gateway: msg.gateway?.name || '',
-              gatewayId: msg.gateway?.id || '',
-              topic: msg.topic,
-              // 🔧 從 topic 中提取 Gateway 識別符作為備用
-              topicGateway: msg.topic?.match(/GW[A-F0-9]+/)?.[0] || '',
-              // 添加病患資訊
-              ...residentInfo
-            }
-
-            // 更新設備記錄
-            setCloudDeviceRecords(prev => {
-              const newRecords = [cloudDeviceRecord, ...prev]
-                .sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
-                .slice(0, 1000)
-              return newRecords
-            })
-
-            // 更新設備列表
-            setCloudDevices(prev => {
-              const existingDevice = prev.find(d => d.MAC === MAC)
-
-              if (existingDevice) {
-                return prev.map(d =>
-                  d.MAC === MAC
-                    ? {
-                      ...d,
-                      lastSeen: msg.timestamp, // 使用實際的 MQTT 時間戳
-                      recordCount: d.recordCount + 1,
-                      // 更新病患資訊
-                      ...residentInfo
-                    }
-                    : d
-                )
-              } else {
-                const newDevice = {
-                  MAC: MAC,
-                  deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${MAC.slice(-8)}`,
-                  lastSeen: msg.timestamp, // 使用實際的 MQTT 時間戳
-                  recordCount: 1,
-                  // 添加 Gateway 資訊
-                  gateway: msg.gateway?.name || '',
-                  gatewayId: msg.gateway?.id || '',
-                  topic: msg.topic,
-                  // 🔧 從 topic 中提取 Gateway 識別符作為備用
-                  topicGateway: msg.topic?.match(/GW[A-F0-9]+/)?.[0] || '',
-                  // 添加病患資訊
-                  ...residentInfo
-                }
-                return [...prev, newDevice]
-              }
-            })
-
-            // 自動選擇第一個設備
-            setSelectedCloudDevice(prev => {
-              if (!prev) {
-                return MAC
-              }
-              return prev
-            })
-          }
-        })
-
-        // 更新最後更新時間
-        lastUpdateTime = Date.now()
-        console.log(`✅ 更新完成，下次更新時間: ${new Date(lastUpdateTime + 5000).toLocaleTimeString()}`)
       } catch (error) {
-        console.error('Error processing MQTT data:', error)
+        console.error('❌ 處理實時消息失敗:', error)
       }
+    })
+
+    // 清理函數：取消訂閱
+    return () => {
+      console.log('🔌 取消訂閱健康監控主題')
+      unsubscribe()
     }
+  }, [selectedGateway]) // 當 Gateway 改變時重新訂閱
 
-    // 初始載入
-    updateMqttData()
-
-    // 降低更新頻率到 10 秒
-    const interval = setInterval(updateMqttData, 10000)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  // ✅ 監聽 MQTT Bus 連接狀態
+  // ✅ 監聽實時數據服務連接狀態
   useEffect(() => {
-    const unsubscribe = mqttBus.onStatusChange((status) => {
+    const unsubscribe = realtimeDataService.onStatusChange((status) => {
       setCloudConnected(status === 'connected')
-      setCloudConnectionStatus(status === 'connected' ? t('pages:temperature.connectionStatus.connected') :
-        status === 'connecting' ? t('pages:temperature.connectionStatus.connecting') :
-          status === 'reconnecting' ? t('pages:temperature.connectionStatus.reconnecting') :
-            status === 'error' ? t('pages:temperature.connectionStatus.connectionError') : t('pages:temperature.connectionStatus.disconnected'))
+      setCloudConnectionStatus(
+        status === 'connected' ? t('pages:temperature.connectionStatus.connected') :
+          status === 'connecting' ? t('pages:temperature.connectionStatus.connecting') :
+            status === 'reconnecting' ? t('pages:temperature.connectionStatus.reconnecting') :
+              status === 'error' ? t('pages:temperature.connectionStatus.connectionError') :
+                t('pages:temperature.connectionStatus.disconnected')
+      )
+      console.log(`📊 實時數據服務狀態變更: ${status}`)
     })
 
     // 初始化狀態
-    const currentStatus = mqttBus.getStatus()
+    const currentStatus = realtimeDataService.getStatus()
     setCloudConnected(currentStatus === 'connected')
-    setCloudConnectionStatus(currentStatus === 'connected' ? t('pages:temperature.connectionStatus.connected') : t('pages:temperature.connectionStatus.disconnected'))
+    setCloudConnectionStatus(
+      currentStatus === 'connected'
+        ? t('pages:temperature.connectionStatus.connected')
+        : t('pages:temperature.connectionStatus.disconnected')
+    )
 
     return unsubscribe
   }, [t])
@@ -568,11 +592,20 @@ export default function TemperaturePage() {
           <div className="font-semibold">{t('pages:temperature.connectionStatus.title')}</div>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span>{t('pages:temperature.connectionStatus.cloudMqtt')}:</span>
+              <span>
+                {import.meta.env.VITE_USE_WEBSOCKET === 'true'
+                  ? '🌐 WebSocket 連接狀態'
+                  : '📡 MQTT 連接狀態'}
+              </span>
               <span className={cloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                 {cloudConnectionStatus}
               </span>
             </div>
+            {import.meta.env.VITE_USE_WEBSOCKET === 'true' && (
+              <div className="text-xs text-blue-600 mt-1">
+                💡 使用 WebSocket 模式：數據通過後端 WebSocket 服務實時推送
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -4,9 +4,32 @@ import cors from 'cors'
 import fs from 'fs'
 import path from 'path'
 import mqtt from 'mqtt'
+import { WebSocketServer } from 'ws'
+import http from 'http'
 
 const app = express()
 const PORT = 3001
+const WS_PORT = 3002
+
+// ==================== 測試消息配置 ====================
+// 💡 直接修改下面的值來控制測試消息
+// true = 啟用測試消息，false = 禁用測試消息
+const ENABLE_TEST_MESSAGES = false  // ← 在這裡修改：true 或 false
+
+// 測試消息發送間隔（毫秒）
+// 5000 = 每 5 秒發送一次，10000 = 每 10 秒發送一次
+const TEST_MESSAGE_INTERVAL = 5000  // ← 在這裡修改間隔時間（毫秒）
+
+// 注意：也可以通過環境變量控制（環境變量優先級更高）
+// Windows: $env:ENABLE_TEST_MESSAGES="false"; node test-backend-with-db.js
+// Linux/Mac: ENABLE_TEST_MESSAGES=false node test-backend-with-db.js
+const ENABLE_TEST_MESSAGES_FINAL = process.env.ENABLE_TEST_MESSAGES !== undefined
+    ? process.env.ENABLE_TEST_MESSAGES !== 'false'
+    : ENABLE_TEST_MESSAGES
+const TEST_MESSAGE_INTERVAL_FINAL = process.env.TEST_MESSAGE_INTERVAL
+    ? parseInt(process.env.TEST_MESSAGE_INTERVAL, 10)
+    : TEST_MESSAGE_INTERVAL
+// ======================================================
 
 // 中間件
 app.use(cors())
@@ -74,11 +97,21 @@ const saveMqttMessage = (topic, message) => {
     console.log(`📝 MQTT 消息已保存: ${topic}`)
 }
 
-// MQTT 連接
-const MQTT_URL = 'ws://localhost:8083/mqtt'
+// MQTT 連接配置
+// 優先使用環境變量，如果沒有則使用默認的云端 MQTT 服務器
+// 💡 如果需要使用本地 MQTT，請設置環境變量：MQTT_URL=ws://localhost:8083/mqtt
+const MQTT_URL = process.env.MQTT_URL || process.env.VITE_MQTT_URL || 'wss://067ec32ef1344d3bb20c4e53abdde99a.s1.eu.hivemq.cloud:8884/mqtt'
+const MQTT_USERNAME = process.env.MQTT_USERNAME || process.env.VITE_MQTT_USERNAME || 'testweb1'
+const MQTT_PASSWORD = process.env.MQTT_PASSWORD || process.env.VITE_MQTT_PASSWORD || 'Aa000000'
+
+console.log('🔧 MQTT 配置:')
+console.log(`  📡 MQTT URL: ${MQTT_URL}`)
+console.log(`  👤 用戶名: ${MQTT_USERNAME}`)
+console.log(`  🔐 密碼: ${'*'.repeat(MQTT_PASSWORD.length)}`)
+
 const MQTT_OPTIONS = {
-    username: 'test',
-    password: 'test',
+    username: MQTT_USERNAME,
+    password: MQTT_PASSWORD,
     clientId: `backend-server-${Math.random().toString(16).slice(2, 8)}`,
     clean: true,
     reconnectPeriod: 5000,
@@ -86,6 +119,103 @@ const MQTT_OPTIONS = {
 }
 
 let mqttClient = null
+
+// ==================== WebSocket 服務器 ====================
+const wss = new WebSocketServer({ port: WS_PORT })
+const wsClients = new Set()
+
+// 消息去重機制
+const messageDeduplication = new Map()
+
+// 清理過期的去重記錄（每5分鐘執行一次）
+setInterval(() => {
+    const oneHourAgo = Date.now() - 60 * 60 * 1000
+    let cleanedCount = 0
+    for (const [id, timestamp] of messageDeduplication.entries()) {
+        if (timestamp < oneHourAgo) {
+            messageDeduplication.delete(id)
+            cleanedCount++
+        }
+    }
+    if (cleanedCount > 0) {
+        console.log(`🧹 清理了 ${cleanedCount} 條過期的去重記錄`)
+    }
+}, 5 * 60 * 1000)
+
+wss.on('connection', (ws) => {
+    console.log('✅ 前端 WebSocket 連接已建立')
+    wsClients.add(ws)
+
+    // 發送歡迎消息
+    ws.send(JSON.stringify({
+        type: 'connected',
+        message: '歡迎連接到後端 WebSocket 服務',
+        timestamp: new Date().toISOString(),
+        clientCount: wsClients.size
+    }))
+
+    ws.on('message', (data) => {
+        try {
+            const message = JSON.parse(data.toString())
+            console.log('📥 收到前端消息:', message)
+
+            // 處理前端訂閱請求等
+            if (message.type === 'subscribe') {
+                ws.send(JSON.stringify({
+                    type: 'subscribed',
+                    topics: message.topics,
+                    timestamp: new Date().toISOString()
+                }))
+            }
+        } catch (error) {
+            console.error('❌ 處理前端消息失敗:', error)
+        }
+    })
+
+    ws.on('close', () => {
+        console.log('🔌 前端 WebSocket 連接已關閉')
+        wsClients.delete(ws)
+        console.log(`📊 當前連接數: ${wsClients.size}`)
+    })
+
+    ws.on('error', (error) => {
+        console.error('❌ WebSocket 錯誤:', error)
+        wsClients.delete(ws)
+    })
+})
+
+// 廣播消息到所有連接的前端客戶端
+const broadcastToClients = (message) => {
+    const messageStr = JSON.stringify(message)
+    let successCount = 0
+    let failCount = 0
+
+    wsClients.forEach(client => {
+        try {
+            if (client.readyState === 1) { // OPEN
+                client.send(messageStr)
+                successCount++
+            } else {
+                failCount++
+            }
+        } catch (error) {
+            console.error('❌ 發送消息到客戶端失敗:', error)
+            failCount++
+            wsClients.delete(client)
+        }
+    })
+
+    if (successCount > 0) {
+        console.log(`📤 已推送消息到 ${successCount} 個前端客戶端`)
+    }
+    if (failCount > 0) {
+        console.log(`⚠️ ${failCount} 個客戶端發送失敗`)
+    }
+}
+
+console.log(`🚀 WebSocket 服務器已啟動，監聽端口: ${WS_PORT}`)
+
+// ==================== MQTT 連接 ====================
 
 // 連接 MQTT
 const connectMQTT = () => {
@@ -112,11 +242,70 @@ const connectMQTT = () => {
                     console.log('✅ 已訂閱設備狀態主題: UWB/device/+/status')
                 }
             })
+
+            // 訂閱所有 UWB 相關主題（用於室內定位）
+            mqttClient.subscribe('UWB/#', (err) => {
+                if (err) {
+                    console.error('❌ 訂閱 UWB 主題失敗:', err)
+                } else {
+                    console.log('✅ 已訂閱 UWB 主題: UWB/#')
+                }
+            })
         })
 
         mqttClient.on('message', (topic, message) => {
-            console.log(`📨 收到MQTT消息 [${topic}]:`, message.toString())
-            saveMqttMessage(topic, message)
+            try {
+                const messageStr = message.toString()
+                console.log(`📨 收到MQTT消息 [${topic}]:`, messageStr.substring(0, 100))
+
+                // 解析消息（支持容错处理）
+                let parsedMessage
+                try {
+                    parsedMessage = JSON.parse(messageStr)
+                    console.log(`✅ JSON 解析成功，内容类型: ${parsedMessage.content || 'unknown'}`)
+                } catch (parseError) {
+                    // 尝试清理可能的外层引号
+                    const cleanedStr = messageStr.trim().replace(/^'|'$/g, '')
+                    console.log(`⚠️ JSON 解析失败，尝试清理后重新解析: ${cleanedStr.substring(0, 100)}`)
+                    try {
+                        parsedMessage = JSON.parse(cleanedStr)
+                        console.log(`✅ 清理后解析成功，内容类型: ${parsedMessage.content || 'unknown'}`)
+                    } catch (secondError) {
+                        console.error(`❌ 清理后仍然解析失败: ${secondError.message}`)
+                        console.error(`❌ 原始消息: ${messageStr}`)
+                        return // 跳过无法解析的消息
+                    }
+                }
+
+                // 生成消息 ID（用於去重）
+                const messageId = `${topic}-${parsedMessage.timestamp || Date.now()}-${JSON.stringify(parsedMessage).substring(0, 50)}`
+
+                // 檢查是否為重複消息
+                if (messageDeduplication.has(messageId)) {
+                    console.log(`⏭️ 重複消息已跳過: ${messageId.substring(0, 50)}...`)
+                    return
+                }
+
+                // 記錄消息（用於去重）
+                messageDeduplication.set(messageId, Date.now())
+
+                // 保存到文件
+                saveMqttMessage(topic, message)
+
+                // 通過 WebSocket 推送到所有前端客戶端
+                console.log(`🔄 準備推送消息到前端，當前連接數: ${wsClients.size}`)
+                broadcastToClients({
+                    type: 'mqtt_message',
+                    topic,
+                    payload: parsedMessage,
+                    timestamp: new Date().toISOString(),
+                    messageId: messageId.substring(0, 50)
+                })
+
+            } catch (error) {
+                console.error('❌ 處理 MQTT 消息失敗:', error)
+                console.error('❌ 錯誤堆棧:', error.stack)
+            }
         })
 
         mqttClient.on('error', (error) => {
@@ -135,39 +324,46 @@ const connectMQTT = () => {
 // 啟動 MQTT 連接
 connectMQTT()
 
-// 定期發布測試數據
-setInterval(() => {
-    if (mqttClient && mqttClient.connected) {
-        const testData = {
-            tagId: `test_tag_${Math.floor(Math.random() * 1000)}`,
-            position: {
-                x: Math.random() * 100,
-                y: Math.random() * 100,
-                z: 0
-            },
-            floorId: 'test_floor_123',
-            timestamp: new Date().toISOString(),
-            signalStrength: -60 - Math.random() * 20,
-            batteryLevel: 80 + Math.random() * 20
+// 定期發布測試數據（可通過 ENABLE_TEST_MESSAGES_FINAL 開關控制）
+if (ENABLE_TEST_MESSAGES_FINAL) {
+    setInterval(() => {
+        if (mqttClient && mqttClient.connected) {
+            const testData = {
+                tagId: `test_tag_${Math.floor(Math.random() * 1000)}`,
+                position: {
+                    x: Math.random() * 100,
+                    y: Math.random() * 100,
+                    z: 0
+                },
+                floorId: 'test_floor_123',
+                timestamp: new Date().toISOString(),
+                signalStrength: -60 - Math.random() * 20,
+                batteryLevel: 80 + Math.random() * 20
+            }
+
+            mqttClient.publish('UWB/location/test_tag', JSON.stringify(testData))
+            console.log(`📤 發布測試位置數據: ${testData.tagId}`)
+
+            // 發布設備狀態
+            const deviceStatus = {
+                deviceId: `test_device_${Math.floor(Math.random() * 100)}`,
+                deviceType: 'gateway',
+                status: 'online',
+                lastSeen: new Date().toISOString(),
+                batteryLevel: 70 + Math.random() * 30,
+                signalStrength: -70 - Math.random() * 10
+            }
+
+            mqttClient.publish('UWB/device/test_device/status', JSON.stringify(deviceStatus))
+            console.log(`📤 發布設備狀態: ${deviceStatus.deviceId}`)
         }
+    }, TEST_MESSAGE_INTERVAL_FINAL)
 
-        mqttClient.publish('UWB/location/test_tag', JSON.stringify(testData))
-        console.log(`📤 發布測試位置數據: ${testData.tagId}`)
-
-        // 發布設備狀態
-        const deviceStatus = {
-            deviceId: `test_device_${Math.floor(Math.random() * 100)}`,
-            deviceType: 'gateway',
-            status: 'online',
-            lastSeen: new Date().toISOString(),
-            batteryLevel: 70 + Math.random() * 30,
-            signalStrength: -70 - Math.random() * 10
-        }
-
-        mqttClient.publish('UWB/device/test_device/status', JSON.stringify(deviceStatus))
-        console.log(`📤 發布設備狀態: ${deviceStatus.deviceId}`)
-    }
-}, 5000)
+    console.log(`✅ 測試消息已啟用，發送間隔: ${TEST_MESSAGE_INTERVAL_FINAL}ms (${TEST_MESSAGE_INTERVAL_FINAL / 1000}秒)`)
+} else {
+    console.log('⚠️  測試消息已禁用')
+    console.log('💡 提示: 在 test-backend-with-db.js 中將 ENABLE_TEST_MESSAGES 設為 true 來啟用')
+}
 
 // API 路由
 
@@ -762,8 +958,11 @@ app.use((error, req, res, next) => {
 
 // 啟動服務器
 app.listen(PORT, () => {
+    console.log('================================================')
     console.log('🚀 測試後端服務器已啟動 (帶數據庫存儲)')
     console.log(`📡 REST API: http://localhost:${PORT}/api`)
+    console.log(`🌐 WebSocket: ws://localhost:${WS_PORT}`)
+    console.log('================================================')
     console.log('📋 可用端點:')
     console.log('  GET    /api/health')
     console.log('  GET    /api/homes')
@@ -793,6 +992,22 @@ app.listen(PORT, () => {
     console.log('  DELETE /api/tags/:id')
     console.log('  GET    /api/mqtt/messages  ← 查看MQTT消息歷史')
     console.log('  GET    /api/stats          ← 查看數據統計')
+    console.log('')
+    console.log('🌐 WebSocket 功能:')
+    console.log('  ✅ MQTT 消息實時推送到前端')
+    console.log('  ✅ 消息去重機制（防止重複消息）')
+    console.log('  ✅ 支持多客戶端同時連接')
+    console.log('  ✅ 自動清理過期的去重記錄')
+    console.log('')
+    console.log('🧪 測試消息配置:')
+    if (ENABLE_TEST_MESSAGES_FINAL) {
+        console.log(`  ✅ 測試消息已啟用`)
+        console.log(`  ⏱️  發送間隔: ${TEST_MESSAGE_INTERVAL_FINAL}ms (${TEST_MESSAGE_INTERVAL_FINAL / 1000}秒)`)
+        console.log(`  💡 提示: 在 test-backend-with-db.js 第 18 行將 ENABLE_TEST_MESSAGES 設為 false 來禁用`)
+    } else {
+        console.log(`  ⚠️  測試消息已禁用`)
+        console.log(`  💡 提示: 在 test-backend-with-db.js 第 18 行將 ENABLE_TEST_MESSAGES 設為 true 來啟用`)
+    }
     console.log('')
     console.log('💾 數據存儲位置:')
     console.log(`  📁 數據目錄: ${DATA_DIR}`)

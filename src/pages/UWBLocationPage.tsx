@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 // @ts-ignore
 import mqtt from "mqtt"
 import { mqttBus } from '@/services/mqttBus'
+import { realtimeDataService } from '@/services/realtimeDataService'
 import { useAnchorStore } from '@/stores/anchorStore'
 import { useTagStore } from '@/stores/tagStore'
 import { api } from "@/services/api"
@@ -1069,7 +1070,7 @@ export default function UWBLocationPage() {
     const [selectedFloorForAnchors, setSelectedFloorForAnchors] = useState<string>("")
     const [currentAnchorTopic, setCurrentAnchorTopic] = useState<string>("")
     const [currentAckTopic, setCurrentAckTopic] = useState<string>("") // 新增：當前 Ack 主題
-    const anchorCloudClientRef = useRef<mqtt.MqttClient | null>(null)
+    // anchorCloudClientRef 已移除，现在使用 realtimeDataService
     const anchorMapContainerRef = useRef<HTMLDivElement>(null)
     const anchorMapImageRef = useRef<HTMLImageElement>(null)
 
@@ -1205,75 +1206,53 @@ export default function UWBLocationPage() {
     // 獲取在線的Gateway列表（用於Anchor配對）
     const onlineGateways = currentGateways.filter(gw => gw.status === 'online')
 
-    // 雲端 MQTT 連接
+    // 雲端 Gateway 數據連接（支持 WebSocket 和 MQTT）
     useEffect(() => {
         // 檢查是否已經有連線，避免重複連線
-        if (cloudClientRef.current && cloudConnected) {
-            console.log("⚠️ 雲端 MQTT 已連線，跳過重複連線")
+        if (cloudConnected && realtimeDataService.isConnected()) {
+            console.log("⚠️ 雲端連接已連線，跳過重複連線")
             return
         }
+
+        const USE_WEBSOCKET = import.meta.env.VITE_USE_WEBSOCKET === 'true'
+        console.log(`🌐 使用 ${USE_WEBSOCKET ? 'WebSocket' : 'MQTT'} 連接雲端 Gateway 數據`)
 
         setCloudConnectionStatus("連接中...")
         setCloudError("")
 
-        const cloudClient = mqtt.connect(CLOUD_MQTT_URL, {
-            ...CLOUD_MQTT_OPTIONS,
-            reconnectPeriod: 5000,
-            connectTimeout: 15000,
-            keepalive: 60,
-            clean: true,
-            clientId: `uwb-web-client-${Math.random().toString(16).slice(2, 8)}`
-        })
-        cloudClientRef.current = cloudClient
+        // 使用統一實時數據服務
+        realtimeDataService.connect()
 
-        cloudClient.on("connect", () => {
-            console.log("雲端 MQTT 已連接，Client ID:", cloudClient.options.clientId)
-            setCloudConnected(true)
-            setCloudConnectionStatus("已連線")
-            setCloudError("")
-            setCloudReconnectAttempts(0)
-        })
+        // 監聽連接狀態
+        const unsubscribeStatus = realtimeDataService.onStatusChange((status) => {
+            console.log(`📊 雲端連接狀態變更: ${status}`)
 
-        cloudClient.on("reconnect", () => {
-            console.log("雲端 MQTT 重新連接中...")
-            setCloudConnected(false)
-            setCloudReconnectAttempts(prev => prev + 1)
-            setCloudConnectionStatus(`重新連接中... (第${cloudReconnectAttempts + 1}次嘗試)`)
-        })
-
-        cloudClient.on("close", () => {
-            console.log("雲端 MQTT 連接關閉")
-            setCloudConnected(false)
-            setCloudConnectionStatus("連接已關閉")
-        })
-
-        cloudClient.on("error", (error) => {
-            console.error("雲端 MQTT 連接錯誤:", error)
-            setCloudConnected(false)
-            setCloudError(error.message || "連接錯誤")
-            setCloudConnectionStatus("連接錯誤")
-        })
-
-        cloudClient.on("offline", () => {
-            console.log("雲端 MQTT 離線")
-            setCloudConnected(false)
-            setCloudConnectionStatus("離線")
-        })
-
-        cloudClient.subscribe(CLOUD_MQTT_TOPIC, (err) => {
-            if (err) {
-                console.error("雲端 MQTT 訂閱失敗:", err)
+            if (status === 'connected') {
+                setCloudConnected(true)
+                setCloudConnectionStatus("已連線")
+                setCloudError("")
+                setCloudReconnectAttempts(0)
+            } else if (status === 'connecting' || status === 'reconnecting') {
+                setCloudConnected(false)
+                setCloudReconnectAttempts(prev => prev + 1)
+                setCloudConnectionStatus(`重新連接中... (第${cloudReconnectAttempts + 1}次嘗試)`)
+            } else if (status === 'error') {
+                setCloudConnected(false)
+                setCloudError("連接錯誤")
+                setCloudConnectionStatus("連接錯誤")
             } else {
-                console.log("已訂閱雲端主題:", CLOUD_MQTT_TOPIC)
+                setCloudConnected(false)
+                setCloudConnectionStatus(status === 'disconnected' ? "已斷開" : "離線")
             }
         })
 
-        cloudClient.on("message", async (topic: string, payload: Uint8Array) => {
-            if (topic !== CLOUD_MQTT_TOPIC) return
+        // 訂閱 Gateway Topic
+        const unsubscribe = realtimeDataService.subscribe(CLOUD_MQTT_TOPIC, async (message) => {
             try {
-                const rawMessage = new TextDecoder().decode(payload)
-                const msg = JSON.parse(rawMessage)
-                console.log("收到雲端 Gateway MQTT 消息:", msg)
+                // WebSocket 消息格式：{ topic, payload, timestamp, gateway }
+                // MQTT 消息格式：{ topic, payload, timestamp, gateway }
+                const msg = message.payload || message
+                console.log("收到雲端 Gateway 消息:", msg)
 
                 // 處理 Gateway Topic 數據
                 if (msg.content === "gateway topic") {
@@ -1403,26 +1382,22 @@ export default function UWBLocationPage() {
                 }
 
             } catch (error) {
-                console.error('雲端 Gateway MQTT 訊息解析錯誤:', error)
+                console.error('雲端 Gateway 訊息解析錯誤:', error)
             }
         })
 
         return () => {
-            console.log("清理雲端 Gateway MQTT 連接")
-            if (cloudClientRef.current) {
-                cloudClientRef.current.end()
-            }
+            console.log("清理雲端 Gateway 連接")
+            unsubscribe()
+            unsubscribeStatus()
+            // 注意：不在这里断开 realtimeDataService，因为可能被其他组件使用
         }
     }, []) // 空依賴數組，只在組件掛載時執行一次
 
     // Anchor 雲端 MQTT 連接 - 根據選擇的 Gateway 動態訂閱
     useEffect(() => {
         if (!selectedGatewayForAnchors) {
-            // 如果沒有選擇 Gateway，清理連接
-            if (anchorCloudClientRef.current) {
-                anchorCloudClientRef.current.end()
-                anchorCloudClientRef.current = null
-            }
+            // 如果沒有選擇 Gateway，清理狀態
             setAnchorCloudConnected(false)
             setAnchorCloudConnectionStatus("未選擇閘道器")
             setCurrentAnchorTopic("")
@@ -1486,23 +1461,184 @@ export default function UWBLocationPage() {
         console.log(`${gatewayConfig.source}的閘道器，使用 anchor topic:`, anchorTopic)
         console.log(`${gatewayConfig.source}的閘道器，使用 ack topic:`, ackTopic)
 
-        // ✅ 使用 MQTT Bus 取數據，避免本地直連（最小侵入：在此提前返回，阻止後續直連代碼執行）
+        // ✅ 使用統一實時數據服務（支持 WebSocket 和 MQTT）
         setCurrentAnchorTopic(anchorTopic)
         setCurrentAckTopic(ackTopic)
         setAnchorCloudError("")
         setAnchorCloudConnectionStatus('連接中...')
 
+        const USE_WEBSOCKET = import.meta.env.VITE_USE_WEBSOCKET === 'true'
+        console.log(`🌐 使用 ${USE_WEBSOCKET ? 'WebSocket' : 'MQTT'} 連接 Anchor 數據`)
+
+        // 確保連接
+        realtimeDataService.connect()
+
+        // 監聽連接狀態
+        const unsubscribeStatus = realtimeDataService.onStatusChange((status) => {
+            if (status === 'connected') {
+                setAnchorCloudConnected(true)
+                setAnchorCloudConnectionStatus('已連線')
+                setAnchorCloudError("")
+            } else if (status === 'connecting' || status === 'reconnecting') {
+                setAnchorCloudConnected(false)
+                setAnchorCloudConnectionStatus('連接中...')
+            } else if (status === 'error') {
+                setAnchorCloudConnected(false)
+                setAnchorCloudError("連接錯誤")
+                setAnchorCloudConnectionStatus("連接錯誤")
+            } else {
+                setAnchorCloudConnected(false)
+                setAnchorCloudConnectionStatus(status === 'disconnected' ? "已斷開" : "離線")
+            }
+        })
+
+        // 訂閱 Anchor Config 主題
+        const unsubscribeAnchor = realtimeDataService.subscribe(anchorTopic, (message) => {
+            try {
+                const msg = message.payload || message
+                console.log("📨 收到 Anchor Config 消息:", msg)
+
+                // 處理 Anchor Config 數據
+                if (msg.content === "config" && msg.node === "ANCHOR") {
+                    const anchorData: CloudAnchorData = {
+                        content: msg.content,
+                        gateway_id: msg["gateway id"] || msg.gateway_id || 0,
+                        node: msg.node || "",
+                        name: msg.name || "",
+                        id: msg.id || 0,
+                        fw_update: msg["fw update"] || msg.fw_update || 0,
+                        led: msg.led || 0,
+                        ble: msg.ble || 0,
+                        initiator: msg.initiator || 0,
+                        position: {
+                            x: msg.position?.x || 0,
+                            y: msg.position?.y || 0,
+                            z: msg.position?.z || 0
+                        },
+                        receivedAt: message.timestamp || new Date()
+                    }
+
+                    // 更新原始數據列表
+                    setCloudAnchorData(prev => {
+                        const newData = [anchorData, ...prev].slice(0, 50)
+                        return newData
+                    })
+
+                    // 處理發現的 Anchor 列表
+                    if (anchorData.id && anchorData.name) {
+                        setDiscoveredCloudAnchors(prev => {
+                            const existingAnchor = prev.find(a => a.id === anchorData.id)
+
+                            if (existingAnchor) {
+                                // 更新現有 Anchor
+                                return prev.map(a =>
+                                    a.id === anchorData.id
+                                        ? {
+                                            ...a,
+                                            name: anchorData.name,
+                                            gateway_id: anchorData.gateway_id,
+                                            fw_update: anchorData.fw_update,
+                                            led: anchorData.led,
+                                            ble: anchorData.ble,
+                                            initiator: anchorData.initiator,
+                                            position: anchorData.position,
+                                            lastSeen: new Date(),
+                                            recordCount: a.recordCount + 1,
+                                            isOnline: true
+                                        }
+                                        : a
+                                )
+                            } else {
+                                // 添加新 Anchor
+                                const newAnchor: DiscoveredCloudAnchor = {
+                                    id: anchorData.id,
+                                    name: anchorData.name,
+                                    gateway_id: anchorData.gateway_id,
+                                    fw_update: anchorData.fw_update,
+                                    led: anchorData.led,
+                                    ble: anchorData.ble,
+                                    initiator: anchorData.initiator,
+                                    position: anchorData.position,
+                                    lastSeen: new Date(),
+                                    recordCount: 1,
+                                    isOnline: true
+                                }
+                                return [...prev, newAnchor]
+                            }
+                        })
+                    }
+                }
+            } catch (error) {
+                console.error('Anchor 訊息解析錯誤:', error)
+            }
+        })
+
+        // 訂閱 Ack 主題
+        const unsubscribeAck = realtimeDataService.subscribe(ackTopic, (message) => {
+            try {
+                const msg = message.payload || message
+                console.log("📨 收到 Ack 消息:", msg)
+
+                // 更新 Ack 數據列表
+                setCloudAckData(prev => {
+                    const newData = [{ ...msg, receivedAt: message.timestamp || new Date(), topic: message.topic }, ...prev].slice(0, 50)
+                    return newData
+                })
+
+                // 顯示 Ack 通知
+                try {
+                    const notificationData: AckNotificationData = {
+                        gatewayId: msg['gateway id']?.toString() || msg.gateway_id?.toString() || 'Unknown',
+                        command: msg.command || 'Unknown',
+                        node: msg.node || 'Unknown',
+                        id: msg.id?.toString() || 'Unknown',
+                        idHex: msg.id ? `0x${parseInt(msg.id.toString()).toString(16).toUpperCase()}` : 'Unknown',
+                        receivedAt: new Date().toISOString(),
+                        topic: message.topic
+                    }
+
+                    toast({
+                        title: t('pages:uwbLocation.notifications.ackReceived', 'Ack 消息接收'),
+                        description: (
+                            <AckNotification
+                                data={notificationData}
+                            />
+                        ),
+                        duration: 5000,
+                    })
+                } catch (error) {
+                    console.error('創建 Ack 通知時發生錯誤:', error)
+                }
+            } catch (error) {
+                console.error('Ack 訊息解析錯誤:', error)
+            }
+        })
+
         let timer: any
         const update = () => {
-            // 從 Anchor Store 取得最近配置
+            // 從 Anchor Store 取得最近配置（如果使用 MQTT Bus，數據會自動存儲）
             const configs = useAnchorStore.getState().getConfigsByTopic(anchorTopic, 60 * 1000)
-            setCloudAnchorData(configs.map(c => ({ ...(c.payload || {}), receivedAt: c.receivedAt, topic: c.topic })) as any)
-            // Ack 仍由 ackStore 全域通知；此處僅保留頁面內列表顯示（沿用 Bus buffer 方案）
-            const since = new Date(Date.now() - 60 * 1000)
-            const all = mqttBus.getRecentMessages()
-            const ackMsgs = all.filter(m => m.topic === ackTopic && m.timestamp >= since)
-            const mappedAcks = ackMsgs.map(m => ({ ...(m.payload || {}), receivedAt: m.timestamp, topic: m.topic }))
-            setCloudAckData(mappedAcks as any)
+            setCloudAnchorData(prev => {
+                // 合併新數據和 Store 數據
+                const storeData = configs.map(c => ({ ...(c.payload || {}), receivedAt: c.receivedAt, topic: c.topic })) as any
+                // 去重合併
+                const allData = [...prev, ...storeData]
+                const unique = Array.from(new Map(allData.map(item => [item.id || item.name, item])).values())
+                return unique.slice(0, 50)
+            })
+
+            // Ack 數據（如果使用 MQTT Bus）
+            if (!USE_WEBSOCKET) {
+                const since = new Date(Date.now() - 60 * 1000)
+                const all = mqttBus.getRecentMessages()
+                const ackMsgs = all.filter(m => m.topic === ackTopic && m.timestamp >= since)
+                const mappedAcks = ackMsgs.map(m => ({ ...(m.payload || {}), receivedAt: m.timestamp, topic: m.topic }))
+                setCloudAckData(prev => {
+                    const merged = [...prev, ...mappedAcks]
+                    const unique = Array.from(new Map(merged.map(item => [item.id || item.topic, item])).values())
+                    return unique.slice(0, 50)
+                })
+            }
 
             // 建立「雲端已發現但系統未加入」清單，驅動「加入系統」按鈕
             try {
@@ -1555,280 +1691,11 @@ export default function UWBLocationPage() {
 
         return () => {
             if (timer) clearInterval(timer)
+            unsubscribeAnchor()
+            unsubscribeAck()
+            unsubscribeStatus()
         }
-
-        // 檢查是否已經連接到相同的主題，避免重複連接
-        if (anchorCloudClientRef.current &&
-            currentAnchorTopic === anchorTopic &&
-            currentAckTopic === ackTopic &&
-            (anchorCloudConnected || anchorCloudConnectionStatus === "連接中...")) {
-            console.log("⚠️ 已連接到相同主題或正在連接中，跳過重複連接:", anchorTopic, ackTopic)
-            console.log("- 當前狀態:", anchorCloudConnectionStatus)
-            console.log("- 連接狀態:", anchorCloudConnected)
-            return
-        }
-
-        // 如果有現有連接，先清理
-        if (anchorCloudClientRef.current) {
-            console.log("清理現有 Anchor MQTT 連接")
-            anchorCloudClientRef.current?.end()
-            anchorCloudClientRef.current = null
-        }
-
-        setCurrentAnchorTopic(anchorTopic)
-        setCurrentAckTopic(ackTopic)
-        setAnchorCloudConnectionStatus("連接中...")
-        setAnchorCloudError("")
-
-        console.log("🚀 開始連接 Anchor MQTT")
-        console.log("- MQTT URL:", CLOUD_MQTT_URL)
-        console.log("- MQTT 用戶名:", CLOUD_MQTT_OPTIONS.username)
-        console.log("- 訂閱主題:", anchorTopic, ackTopic)
-        console.log("- Client ID 前綴: uwb-anchor-client-")
-        console.log("- 觸發原因: selectedGatewayForAnchors 變化或數據更新")
-
-        const anchorClient = mqtt.connect(CLOUD_MQTT_URL, {
-            ...CLOUD_MQTT_OPTIONS,
-            reconnectPeriod: 3000,     // 縮短重連間隔
-            connectTimeout: 30000,     // 增加連接超時時間
-            keepalive: 30,             // 縮短心跳間隔
-            clean: true,
-            resubscribe: true,         // 重連時自動重新訂閱
-            clientId: `uwb-anchor-client-${Math.random().toString(16).slice(2, 8)}`
-        })
-
-        console.log("Anchor MQTT Client 已創建，Client ID:", anchorClient.options.clientId)
-        // @ts-ignore - legacy direct MQTT path is deprecated after MQTT Bus migration
-        anchorCloudClientRef.current = anchorClient
-
-        anchorClient.on("connect", () => {
-            console.log("✅ Anchor 雲端 MQTT 已連接成功！")
-            console.log("- Client ID:", anchorClient.options.clientId)
-            console.log("- 準備訂閱主題:", anchorTopic)
-            setAnchorCloudConnected(true)
-            setAnchorCloudConnectionStatus("已連線")
-            setAnchorCloudError("")
-        })
-
-        anchorClient.on("reconnect", () => {
-            console.log("Anchor 雲端 MQTT 重新連接中...")
-            setAnchorCloudConnected(false)
-            setAnchorCloudConnectionStatus("重新連接中...")
-        })
-
-        anchorClient.on("close", () => {
-            console.log("Anchor 雲端 MQTT 連接關閉")
-            setAnchorCloudConnected(false)
-            setAnchorCloudConnectionStatus("連接已關閉")
-        })
-
-        anchorClient.on("error", (error) => {
-            console.error("❌ Anchor 雲端 MQTT 連接錯誤:", error)
-            console.error("- 錯誤類型:", error.name)
-            console.error("- 錯誤消息:", error.message)
-            console.error("- 可能原因: HiveMQ 連接限制或網絡問題")
-
-            setAnchorCloudConnected(false)
-            setAnchorCloudError(`${error.message} (可能是雲端服務限制)`)
-            setAnchorCloudConnectionStatus("連接錯誤 - 雲端服務問題")
-        })
-
-        anchorClient.on("offline", () => {
-            console.log("Anchor 雲端 MQTT 離線")
-            setAnchorCloudConnected(false)
-            setAnchorCloudConnectionStatus("離線")
-        })
-
-        // 訂閱 Anchor 配置主題
-        anchorClient.subscribe(anchorTopic, (err) => {
-            if (err) {
-                console.error("❌ Anchor 雲端 MQTT 訂閱失敗:", err)
-                console.error("- 訂閱主題:", anchorTopic)
-                console.error("- 錯誤詳情:", err)
-                setAnchorCloudError(`訂閱失敗: ${err.message}`)
-                setAnchorCloudConnectionStatus("訂閱失敗")
-            } else {
-                console.log("✅ 已成功訂閱 Anchor 主題:", anchorTopic)
-            }
-        })
-
-        // 訂閱 Ack 主題
-        anchorClient.subscribe(ackTopic, (err) => {
-            if (err) {
-                console.error("❌ Ack 雲端 MQTT 訂閱失敗:", err)
-                console.error("- 訂閱主題:", ackTopic)
-                console.error("- 錯誤詳情:", err)
-                setAnchorCloudError(`Ack 訂閱失敗: ${err.message}`)
-                setAnchorCloudConnectionStatus("Ack 訂閱失敗")
-            } else {
-                console.log("✅ 已成功訂閱 Ack 主題:", ackTopic)
-                console.log("- 等待接收 Anchor 和 Ack 數據...")
-                setAnchorCloudConnectionStatus("已連線並訂閱")
-            }
-        })
-
-        anchorClient.on("message", (topic: string, payload: Uint8Array) => {
-            console.log("📨 收到 MQTT 消息")
-            console.log("- 接收主題:", topic)
-            console.log("- 預期主題:", anchorTopic, ackTopic)
-            console.log("- 主題匹配:", topic === anchorTopic || topic === ackTopic)
-
-            if (topic !== anchorTopic && topic !== ackTopic) {
-                console.log("⚠️ 主題不匹配，忽略消息")
-                return
-            }
-
-            try {
-                const rawMessage = new TextDecoder().decode(payload)
-                console.log("📄 原始消息內容:", rawMessage)
-                const msg = JSON.parse(rawMessage)
-                console.log("📋 解析後的 JSON:", msg)
-
-                // 處理 Anchor Config 數據
-                if (topic === anchorTopic && msg.content === "config" && msg.node === "ANCHOR") {
-                    console.log("處理 Anchor Config 數據...")
-
-                    const anchorData: CloudAnchorData = {
-                        content: msg.content,
-                        gateway_id: msg["gateway id"] || 0,
-                        node: msg.node || "",
-                        name: msg.name || "",
-                        id: msg.id || 0,
-                        fw_update: msg["fw update"] || 0,
-                        led: msg.led || 0,
-                        ble: msg.ble || 0,
-                        initiator: msg.initiator || 0,
-                        position: {
-                            x: msg.position?.x || 0,
-                            y: msg.position?.y || 0,
-                            z: msg.position?.z || 0
-                        },
-                        receivedAt: new Date()
-                    }
-
-                    console.log("解析的 Anchor 數據:", anchorData)
-
-                    // 更新原始數據列表
-                    setCloudAnchorData(prev => {
-                        const newData = [anchorData, ...prev].slice(0, 50)
-                        return newData
-                    })
-
-                    // 檢查並更新發現的 Anchor 列表
-                    if (anchorData.id && anchorData.name) {
-                        setDiscoveredCloudAnchors(prev => {
-                            // 調試：打印當前數組和新 ID
-                            console.log("🔍 去重檢查:")
-                            console.log("- 新 Anchor ID:", anchorData.id, "類型:", typeof anchorData.id)
-                            console.log("- 現有數組 IDs:", prev.map(a => `${a.id} (${typeof a.id})`))
-
-                            const existingAnchor = prev.find(a => {
-                                const match = a.id === anchorData.id
-                                console.log(`  比較: ${a.id} === ${anchorData.id} ? ${match}`)
-                                return match
-                            })
-
-                            if (existingAnchor) {
-                                // 更新現有 Anchor
-                                console.log("✅ 找到現有 Anchor，執行更新")
-                                const updatedAnchors = prev.map(a =>
-                                    a.id === anchorData.id
-                                        ? {
-                                            ...a,
-                                            name: anchorData.name,
-                                            gateway_id: anchorData.gateway_id,
-                                            fw_update: anchorData.fw_update,
-                                            led: anchorData.led,
-                                            ble: anchorData.ble,
-                                            initiator: anchorData.initiator,
-                                            position: anchorData.position,
-                                            lastSeen: new Date(),
-                                            recordCount: a.recordCount + 1,
-                                            isOnline: true
-                                        }
-                                        : a
-                                )
-                                console.log("📊 更新現有 Anchor，總數:", updatedAnchors.length)
-                                return updatedAnchors
-                            } else {
-                                // 添加新 Anchor
-                                console.log("➕ 未找到現有 Anchor，添加新的")
-                                const newAnchor: DiscoveredCloudAnchor = {
-                                    id: anchorData.id,
-                                    name: anchorData.name,
-                                    gateway_id: anchorData.gateway_id,
-                                    fw_update: anchorData.fw_update,
-                                    led: anchorData.led,
-                                    ble: anchorData.ble,
-                                    initiator: anchorData.initiator,
-                                    position: anchorData.position,
-                                    lastSeen: new Date(),
-                                    recordCount: 1,
-                                    isOnline: true
-                                }
-                                const updatedAnchors = [...prev, newAnchor]
-                                console.log("📊 添加新 Anchor:", newAnchor.name, "總數:", updatedAnchors.length)
-                                return updatedAnchors
-                            }
-                        })
-                    }
-                }
-                // 處理 Ack 數據
-                else if (topic === ackTopic) {
-                    console.log("處理 Ack 數據...")
-
-                    const ackData = {
-                        ...msg,
-                        receivedAt: new Date(),
-                        topic: topic
-                    }
-
-                    console.log("解析的 Ack 數據:", ackData)
-
-                    // 更新 Ack 原始數據列表
-                    setCloudAckData(prev => {
-                        const newData = [ackData, ...prev].slice(0, 50)
-                        return newData
-                    })
-
-                    // 顯示 Ack 通知
-                    try {
-                        const notificationData: AckNotificationData = {
-                            gatewayId: msg['gateway id']?.toString() || 'Unknown',
-                            command: msg.command || 'Unknown',
-                            node: msg.node || 'Unknown',
-                            id: msg.id?.toString() || 'Unknown',
-                            idHex: msg.id ? `0x${parseInt(msg.id.toString()).toString(16).toUpperCase()}` : 'Unknown',
-                            receivedAt: new Date().toISOString(),
-                            topic: topic
-                        }
-
-                        toast({
-                            title: t('pages:uwbLocation.notifications.ackReceived', 'Ack 消息接收'),
-                            description: (
-                                <AckNotification
-                                    data={notificationData}
-                                />
-                            ),
-                            duration: 5000,
-                        })
-                    } catch (error) {
-                        console.error('創建 Ack 通知時發生錯誤:', error)
-                    }
-                } else {
-                    console.log("⚠️ 非預期數據，主題:", topic, "內容:", msg.content, "節點:", msg.node)
-                }
-
-            } catch (error) {
-                console.error('Anchor 雲端 MQTT 訊息解析錯誤:', error)
-            }
-        })
-
-        return () => {
-            console.log("清理 Anchor 雲端 MQTT 連接")
-            anchorClient.end()
-        }
-    }, [selectedGatewayForAnchors]) // 只在選擇的 Gateway 改變時重新連接，避免 cloudGatewayData 觸發循環
+    }, [selectedGatewayForAnchors, cloudGatewayData, currentGateways, currentAnchors]) // 依賴項
 
     // 監聽養老院和樓層變化，自動更新錨點配對的選擇
     useEffect(() => {
@@ -4697,11 +4564,12 @@ export default function UWBLocationPage() {
                                 <Button
                                     variant="outline"
                                     onClick={() => {
-                                        if (cloudClientRef.current) {
-                                            console.log("手動重連雲端MQTT...")
-                                            setCloudConnectionStatus("手動重連中...")
-                                            cloudClientRef.current.reconnect()
-                                        }
+                                        console.log("手動重連雲端連接...")
+                                        setCloudConnectionStatus("手動重連中...")
+                                        realtimeDataService.disconnect()
+                                        setTimeout(() => {
+                                            realtimeDataService.connect()
+                                        }, 1000)
                                     }}
                                     disabled={cloudConnected}
                                 >
@@ -5068,12 +4936,12 @@ export default function UWBLocationPage() {
                                         console.log("🔄 手動重連 Anchor MQTT...")
                                         console.log("- 當前選擇的 Gateway:", selectedGatewayForAnchors)
 
-                                        // 強制清理現有連接
-                                        if (anchorCloudClientRef.current) {
-                                            console.log("- 清理現有連接")
-                                            anchorCloudClientRef.current.end()
-                                            anchorCloudClientRef.current = null
-                                        }
+                                        // 強制重新連接（realtimeDataService 會自動處理）
+                                        console.log("- 觸發重新連接")
+                                        realtimeDataService.disconnect()
+                                        setTimeout(() => {
+                                            realtimeDataService.connect()
+                                        }, 1000)
 
                                         // 重置狀態
                                         setAnchorCloudConnected(false)

@@ -20,7 +20,7 @@
       "set_wifi_max_tx_power": 13.75,
       "ble_scan_time": 5,
       "ble_scan_pause_time": 20,
-      "battery_voltage": 3.118,
+      "battery_voltage": 3.122,
       "five_v_plugged": "no",
       "uwb_tx_power_changed": "no",
       "uwb_tx_power": {
@@ -44,14 +44,14 @@
       "discarded_iot_data": 0,
       "total_discarded_data": 0,
       "first_sync": "2025-295 07:49:51.06",
-      "last_sync": "2025-316 00:06:07.08",
-      "current": "2025-316 00:06:18.05",
-      "receivedAt": "2025-11-11T16:06:19.629Z"
+      "last_sync": "2025-316 15:12:17.08",
+      "current": "2025-316 15:12:18.03",
+      "receivedAt": "2025-11-12T07:12:22.023Z"
     },
     "createdAt": "2025-11-11T14:57:54.837Z"
   },
   {
-    "id": "gw_1762876639768",
+    "id": "gw_1762927889423",
     "name": "GwF9E516B8_192",
     "macAddress": "GW:F9E516B8",
     "ipAddress": "192.168.1.100",
@@ -95,10 +95,10 @@
       "discarded_iot_data": 0,
       "total_discarded_data": 16,
       "first_sync": "2025-313 19:26:08.70",
-      "last_sync": "2025-316 00:06:10.05",
-      "current": "2025-316 00:06:12.08",
-      "receivedAt": "2025-11-11T16:06:13.723Z"
+      "last_sync": "2025-316 15:12:00.10",
+      "current": "2025-316 15:12:12.11",
+      "receivedAt": "2025-11-12T07:12:15.434Z"
     },
-    "createdAt": "2025-11-11T15:57:19.768Z"
+    "createdAt": "2025-11-12T06:11:29.423Z"
   }
 ]
