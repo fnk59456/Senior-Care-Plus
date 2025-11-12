@@ -44,9 +44,9 @@
       "discarded_iot_data": 0,
       "total_discarded_data": 0,
       "first_sync": "2025-295 07:49:51.06",
-      "last_sync": "2025-316 15:12:17.08",
-      "current": "2025-316 15:12:18.03",
-      "receivedAt": "2025-11-12T07:12:22.023Z"
+      "last_sync": "2025-316 22:40:42.05",
+      "current": "2025-316 22:43:18.08",
+      "receivedAt": "2025-11-12T14:43:17.890Z"
     },
     "createdAt": "2025-11-11T14:57:54.837Z"
   },
@@ -95,9 +95,9 @@
       "discarded_iot_data": 0,
       "total_discarded_data": 16,
       "first_sync": "2025-313 19:26:08.70",
-      "last_sync": "2025-316 15:12:00.10",
-      "current": "2025-316 15:12:12.11",
-      "receivedAt": "2025-11-12T07:12:15.434Z"
+      "last_sync": "2025-316 22:43:10.02",
+      "current": "2025-316 22:43:12.04",
+      "receivedAt": "2025-11-12T14:43:12.156Z"
     },
     "createdAt": "2025-11-12T06:11:29.423Z"
   }
