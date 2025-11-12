@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { mqttBus } from "@/services/mqttBus"
+import { realtimeDataService, type RealtimeMessage } from "@/services/realtimeDataService"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -354,160 +355,373 @@ export default function LocationPage() {
     }
   }, [handleWheel])
 
-  // ✅ 使用 MQTT Bus 處理位置數據
-  useEffect(() => {
-    let lastProcessedTime = 0
-    let processedMessages = new Set()
-    let lastUpdateTime = 0
+  // ✅ 保存消息到 localStorage（持久化存儲）
+  const saveMessageToLocalStorage = (message: RealtimeMessage) => {
+    try {
+      const storageKey = 'location_history_messages'
+      const stored = localStorage.getItem(storageKey)
+      const storedMessages = stored ? JSON.parse(stored) : []
 
-    const updateLocationData = () => {
-      // 🔧 頻率控制：確保至少間隔2秒才更新
-      const now = Date.now()
-      if (now - lastUpdateTime < 2000) {
+      // 添加新消息
+      storedMessages.push({
+        topic: message.topic,
+        payload: message.payload,
+        timestamp: message.timestamp.toISOString(),
+        gateway: message.gateway
+      })
+
+      // 只保留最近 1000 條消息
+      const trimmedMessages = storedMessages
+        .sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 1000)
+
+      localStorage.setItem(storageKey, JSON.stringify(trimmedMessages))
+    } catch (error) {
+      console.error('❌ 保存消息到 localStorage 失敗:', error)
+    }
+  }
+
+  // ✅ 從 localStorage 加載歷史消息（備用方案）
+  const loadHistoryFromLocalStorage = () => {
+    try {
+      const storageKey = 'location_history_messages'
+      const stored = localStorage.getItem(storageKey)
+
+      if (!stored) {
+        console.log('📚 localStorage 中沒有歷史消息')
         return
       }
 
+      const storedMessages = JSON.parse(stored)
+      console.log(`📚 從 localStorage 獲取到 ${storedMessages.length} 條歷史消息`)
+
+      // 過濾出 location 消息
+      const locationMessages = storedMessages.filter((msg: any) => {
+        const topic = msg.topic || ''
+        const content = msg.payload?.content || msg.message?.content || ''
+        return topic.includes('_Loca') && content === 'location'
+      })
+
+      console.log(`📚 過濾後找到 ${locationMessages.length} 條 location 消息`)
+
+      return locationMessages
+    } catch (error) {
+      console.error('❌ 從 localStorage 加載歷史消息失敗:', error)
+      return []
+    }
+  }
+
+  // ✅ 使用實時數據服務處理位置數據
+  useEffect(() => {
+    let lastProcessedTime = 0
+    let processedMessages = new Set<string>()
+
+    // 連接實時數據服務
+    realtimeDataService.connect()
+
+    const USE_WEBSOCKET = import.meta.env.VITE_USE_WEBSOCKET === 'true'
+
+    // 處理實時消息的通用函數，供歷史消息與實時訂閱共用
+    const processLocationMessage = (message: RealtimeMessage, processedSet: Set<string>) => {
+      const data = message.payload
+
+      if (data.content !== 'location' || !data.id || !data.position) {
+        return // 只處理 location 數據
+      }
+
+      const deviceId = String(data.id)
+
+      // ✅ 添加 Gateway 篩選：只處理來自選定 Gateway 的位置消息
+      if (selectedGateway) {
+        const gateway = gateways.find(gw => gw.id === selectedGateway)
+        if (gateway) {
+          // 檢查消息是否來自選定的 Gateway
+          const msgGateway = message.gateway?.name || ''
+          const gatewayMac = gateway.macAddress || ''
+
+          // 提取 MAC 地址的最后4位（例如：16B8）
+          const macSuffix = gatewayMac.replace(/:/g, '').slice(-4).toUpperCase()
+
+          // 检查匹配：
+          // 1. msgGateway 包含 MAC 后4位（例如：GW16B8 包含 16B8）
+          // 2. 或者 msgGateway 前缀匹配 gateway.name 前缀
+          const matches = (
+            msgGateway.includes(macSuffix) ||
+            msgGateway.toUpperCase().includes(gateway.name.split('_')[0].toUpperCase())
+          )
+
+          if (!matches) {
+            console.log(`⏭️ 跳過非選定 Gateway 的位置消息:`, {
+              deviceId,
+              msgGateway,
+              selectedGateway: gateway.name,
+              macSuffix
+            })
+            return // 跳過此消息
+          }
+
+          console.log(`✅ 處理選定 Gateway 的位置消息:`, {
+            deviceId,
+            msgGateway,
+            selectedGateway: gateway.name,
+            macSuffix
+          })
+        }
+      }
+
+      // 獲取病患資訊
+      const residentInfo = getResidentInfoByMAC(deviceId)
+
+      setPatients(prev => ({
+        ...prev,
+        [deviceId]: {
+          id: deviceId,
+          name: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備-${deviceId}`,
+          position: {
+            x: data.position.x,
+            y: data.position.y,
+            quality: data.position.quality || 0,
+            z: data.position.z,
+          },
+          updatedAt: message.timestamp.getTime(),
+          gatewayId: selectedGateway,
+          deviceId: residentInfo?.deviceType ? devices.find(d => d.hardwareId === deviceId)?.id : undefined,
+          deviceType: residentInfo?.deviceType,
+          residentId: residentInfo?.residentId,
+          residentName: residentInfo?.residentName,
+          residentStatus: residentInfo?.residentStatus,
+          residentRoom: residentInfo?.residentRoom,
+          // 添加 Gateway 資訊用於調試
+          gateway: message.gateway?.name || '',
+          topic: message.topic
+        },
+      }))
+    }
+
+    // 🔧 持久化存儲：從歷史消息加載數據
+    const loadHistoryMessages = async () => {
+      if (USE_WEBSOCKET) {
+        // WebSocket 模式：從 REST API 加載歷史消息
+        console.log('📚 WebSocket 模式：從 REST API 加載歷史消息')
+        try {
+          const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
+          const response = await fetch(`${API_BASE_URL}/mqtt/messages`)
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+
+          const allMessages = await response.json()
+          console.log(`📚 從 API 獲取到 ${allMessages.length} 條歷史消息`)
+
+          // 過濾出 location 主題消息
+          const locationMessages = allMessages.filter((msg: any) => {
+            const topic = msg.topic || ''
+            const content = msg.message?.content || ''
+            return topic.includes('_Loca') && content === 'location'
+          })
+
+          console.log(`📚 過濾後找到 ${locationMessages.length} 條 location 消息`)
+
+          // 處理歷史消息
+          locationMessages.forEach((msg: any) => {
+            const msgTime = new Date(msg.timestamp || msg.message?.timestamp || Date.now()).getTime()
+            const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.message || msg.payload).substring(0, 50)}`
+
+            if (processedMessages.has(msgKey)) {
+              return
+            }
+
+            processedMessages.add(msgKey)
+
+            // 🔧 從 topic 提取 Gateway 信息
+            // Topic 格式：UWB/GWxxxx_Loca
+            const gatewayMatch = msg.topic?.match(/GW([A-F0-9]+)/)
+            const gatewayInfo = gatewayMatch ? {
+              id: gatewayMatch[1],  // 例如：16B8
+              name: gatewayMatch[0]  // 例如：GW16B8
+            } : undefined
+
+            // 轉換為 RealtimeMessage 格式
+            const message: RealtimeMessage = {
+              topic: msg.topic,
+              payload: msg.message || msg.payload,
+              timestamp: new Date(msg.timestamp || Date.now()),
+              gateway: msg.gateway || gatewayInfo
+            }
+
+            // 處理消息（重用下面的處理邏輯）
+            processLocationMessage(message, processedMessages)
+            lastProcessedTime = Math.max(lastProcessedTime, msgTime)
+          })
+
+          console.log(`✅ 已加載 ${locationMessages.length} 條歷史消息`)
+        } catch (error) {
+          console.error('❌ 從 REST API 加載歷史消息失敗:', error)
+          // 如果 REST API 失敗，嘗試從 localStorage 加載
+          const localMessages = loadHistoryFromLocalStorage()
+          if (localMessages.length > 0) {
+            localMessages.forEach((msg: any) => {
+              const msgTime = new Date(msg.timestamp || Date.now()).getTime()
+              const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.payload || msg.message).substring(0, 50)}`
+
+              if (processedMessages.has(msgKey)) {
+                return
+              }
+
+              processedMessages.add(msgKey)
+
+              // 🔧 從 topic 提取 Gateway 信息
+              const gatewayMatch = msg.topic?.match(/GW([A-F0-9]+)/)
+              const gatewayInfo = gatewayMatch ? {
+                id: gatewayMatch[1],
+                name: gatewayMatch[0]
+              } : undefined
+
+              const message: RealtimeMessage = {
+                topic: msg.topic,
+                payload: msg.payload || msg.message,
+                timestamp: new Date(msg.timestamp || Date.now()),
+                gateway: msg.gateway || gatewayInfo
+              }
+
+              processLocationMessage(message, processedMessages)
+              lastProcessedTime = Math.max(lastProcessedTime, msgTime)
+            })
+          }
+        }
+      } else {
+        // MQTT 模式：從歷史消息緩衝區加載數據
+        console.log('📚 MQTT 模式：從歷史消息緩衝區加載數據')
+        try {
+          const recentMessages = mqttBus.getRecentMessages({
+            contentType: 'location'  // 只加載 location 消息
+          })
+
+          console.log(`📚 找到 ${recentMessages.length} 條歷史消息`)
+
+          // 處理歷史消息
+          recentMessages.forEach(msg => {
+            const msgTime = msg.timestamp.getTime()
+            const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.payload).substring(0, 50)}`
+
+            if (processedMessages.has(msgKey)) {
+              return
+            }
+
+            processedMessages.add(msgKey)
+
+            // 轉換為 RealtimeMessage 格式
+            const message: RealtimeMessage = {
+              topic: msg.topic,
+              payload: msg.payload,
+              timestamp: msg.timestamp,
+              gateway: msg.gateway
+            }
+
+            // 處理消息（重用下面的處理邏輯）
+            processLocationMessage(message, processedMessages)
+            lastProcessedTime = Math.max(lastProcessedTime, msgTime)
+          })
+
+          console.log(`✅ 已加載 ${recentMessages.length} 條歷史消息`)
+        } catch (error) {
+          console.error('❌ 加載歷史消息失敗:', error)
+        }
+      }
+    }
+
+    // 立即加載歷史消息
+    loadHistoryMessages()
+
+    // 訂閱實時消息
+    let locationTopicPattern: string | RegExp
+    if (selectedGateway) {
+      const gateway = gateways.find(gw => gw.id === selectedGateway)
+      if (gateway?.cloudData?.pub_topic?.location) {
+        locationTopicPattern = gateway.cloudData.pub_topic.location
+      } else if (gateway) {
+        const gatewayName = gateway.name.replace(/\s+/g, '')
+        locationTopicPattern = `UWB/GW${gatewayName}_Loca`
+      } else {
+        locationTopicPattern = USE_WEBSOCKET ? 'UWB/*_Loca' : /^UWB\/GW.*_Loca$/
+      }
+    } else {
+      locationTopicPattern = USE_WEBSOCKET ? 'UWB/*_Loca' : /^UWB\/GW.*_Loca$/
+    }
+
+    console.log(`🌐 訂閱位置主題: ${locationTopicPattern} (模式: ${USE_WEBSOCKET ? 'WebSocket' : 'MQTT'})`)
+
+    const unsubscribe = realtimeDataService.subscribe(locationTopicPattern, (message: RealtimeMessage) => {
       try {
-        const recentMessages = mqttBus.getRecentMessages()
+        const msgTime = message.timestamp.getTime()
+        const msgKey = `${message.topic}-${msgTime}-${JSON.stringify(message.payload).substring(0, 50)}`
 
-        // 只處理新的位置消息
-        const newMessages = recentMessages.filter(msg => {
-          const msgTime = msg.timestamp.getTime()
-          const msgKey = `${msg.topic}-${msgTime}`
-          const isNew = msgTime > lastProcessedTime && !processedMessages.has(msgKey)
-          return isNew && msg.payload?.content === "location" && msg.payload?.id && msg.payload?.position
-        })
-
-        if (newMessages.length === 0) {
+        // 檢查是否為重複消息
+        if (processedMessages.has(msgKey)) {
+          console.log(`⏭️ 重複消息已跳過: ${message.topic}`)
           return
         }
 
-        // 更新最後處理時間
-        lastProcessedTime = Math.max(...newMessages.map(msg => msg.timestamp.getTime()))
+        // 標記為已處理
+        processedMessages.add(msgKey)
+        console.log(`✅ 收到新位置消息: ${message.topic} at ${message.timestamp.toLocaleTimeString()}`)
 
-        // 標記已處理的消息
-        newMessages.forEach(msg => {
-          const msgKey = `${msg.topic}-${msg.timestamp.getTime()}`
-          processedMessages.add(msgKey)
-        })
+        // 保存到 localStorage（持久化存儲）
+        saveMessageToLocalStorage(message)
+
+        // 處理消息
+        processLocationMessage(message, processedMessages)
+        lastProcessedTime = msgTime
 
         // 清理過期的處理記錄（保留最近1小時）
         const oneHourAgo = Date.now() - 60 * 60 * 1000
         const keysToDelete: string[] = []
         processedMessages.forEach((key) => {
           const keyStr = String(key)
-          const timestamp = parseInt(keyStr.split('-').pop() || '0')
+          const timestamp = parseInt(keyStr.split('-')[1] || '0')
           if (timestamp < oneHourAgo) {
             keysToDelete.push(keyStr)
           }
         })
         keysToDelete.forEach((key: string) => processedMessages.delete(key))
-
-        // 處理位置消息
-        newMessages.forEach(msg => {
-          const data = msg.payload
-          const deviceId = String(data.id)
-
-          // ✅ 添加 Gateway 篩選：只處理來自選定 Gateway 的位置消息
-          if (selectedGateway) {
-            const gateway = gateways.find(gw => gw.id === selectedGateway)
-            if (gateway) {
-              // 檢查消息是否來自選定的 Gateway
-              const msgGateway = msg.gateway?.name || ''
-              const msgTopicGateway = msg.topic?.match(/GW[A-F0-9]+/)?.[0] || ''
-
-              // 使用前綴匹配邏輯（類似 HeartRatePage）
-              const msgGatewayPrefix = msgGateway?.split('_')[0] || ''
-              const selectedGatewayPrefix = gateway.name?.split('_')[0] || ''
-
-              const isFromSelectedGateway = msgGatewayPrefix &&
-                selectedGatewayPrefix &&
-                msgGatewayPrefix === selectedGatewayPrefix
-
-              if (!isFromSelectedGateway) {
-                console.log(`⏭️ 跳過非選定 Gateway 的位置消息:`, {
-                  deviceId,
-                  msgGateway,
-                  msgTopicGateway,
-                  selectedGateway: gateway.name,
-                  msgGatewayPrefix,
-                  selectedGatewayPrefix
-                })
-                return // 跳過此消息
-              }
-
-              console.log(`✅ 處理選定 Gateway 的位置消息:`, {
-                deviceId,
-                msgGateway,
-                selectedGateway: gateway.name,
-                msgGatewayPrefix,
-                selectedGatewayPrefix
-              })
-            }
-          }
-
-          // 獲取病患資訊
-          const residentInfo = getResidentInfoByMAC(deviceId)
-
-          setPatients(prev => ({
-            ...prev,
-            [deviceId]: {
-              id: deviceId,
-              name: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備-${deviceId}`,
-              position: {
-                x: data.position.x,
-                y: data.position.y,
-                quality: data.position.quality || 0,
-                z: data.position.z,
-              },
-              updatedAt: msg.timestamp.getTime(),
-              gatewayId: selectedGateway,
-              deviceId: residentInfo?.deviceType ? devices.find(d => d.hardwareId === deviceId)?.id : undefined,
-              deviceType: residentInfo?.deviceType,
-              residentId: residentInfo?.residentId,
-              residentName: residentInfo?.residentName,
-              residentStatus: residentInfo?.residentStatus,
-              residentRoom: residentInfo?.residentRoom,
-              // 添加 Gateway 資訊用於調試
-              gateway: msg.gateway?.name || '',
-              topic: msg.topic
-            },
-          }))
-        })
-
-        // 更新最後更新時間
-        lastUpdateTime = Date.now()
       } catch (error) {
-        console.error('Error processing location data:', error)
+        console.error('❌ 處理實時位置消息失敗:', error)
       }
+    })
+
+    // 清理函數：取消訂閱
+    return () => {
+      console.log('🔌 取消訂閱位置主題')
+      unsubscribe()
     }
+  }, [selectedGateway, devices, getResidentForDevice, gateways])
 
-    // 初始載入
-    updateLocationData()
-
-    // 每5秒檢查一次新消息
-    const interval = setInterval(updateLocationData, 5000)
-
-    return () => clearInterval(interval)
-  }, [selectedGateway, devices, getResidentForDevice])
-
-  // ✅ 監聽 MQTT Bus 連接狀態
+  // ✅ 監聽實時數據服務連接狀態
   useEffect(() => {
-    const unsubscribe = mqttBus.onStatusChange((status) => {
+    const unsubscribe = realtimeDataService.onStatusChange((status) => {
       setCloudConnected(status === 'connected')
-      setCloudConnectionStatus(status === 'connected' ? t('pages:location.connectionStatus.connected') :
-        status === 'connecting' ? t('pages:location.connectionStatus.connecting') :
-          status === 'reconnecting' ? t('pages:location.connectionStatus.reconnecting') :
-            status === 'error' ? t('pages:location.connectionStatus.connectionError') : t('pages:location.connectionStatus.disconnected'))
+      setCloudConnectionStatus(
+        status === 'connected' ? t('pages:location.connectionStatus.connected') :
+          status === 'connecting' ? t('pages:location.connectionStatus.connecting') :
+            status === 'reconnecting' ? t('pages:location.connectionStatus.reconnecting') :
+              status === 'error' ? t('pages:location.connectionStatus.connectionError') :
+                t('pages:location.connectionStatus.disconnected')
+      )
+      console.log(`📊 實時數據服務狀態變更: ${status}`)
     })
 
     // 初始化狀態
-    const currentStatus = mqttBus.getStatus()
+    const currentStatus = realtimeDataService.getStatus()
     setCloudConnected(currentStatus === 'connected')
-    setCloudConnectionStatus(currentStatus === 'connected' ? t('pages:location.connectionStatus.connected') : t('pages:location.connectionStatus.disconnected'))
+    setCloudConnectionStatus(
+      currentStatus === 'connected'
+        ? t('pages:location.connectionStatus.connected')
+        : t('pages:location.connectionStatus.disconnected')
+    )
 
     return unsubscribe
-  }, [])
+  }, [t])
 
   // ✅ Gateway 切換時清除位置數據
   useEffect(() => {
@@ -661,7 +875,9 @@ export default function LocationPage() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center">
               <Wifi className="mr-2 h-5 w-5" />
-              {t('pages:location.mqttStatus.title')}
+              {import.meta.env.VITE_USE_WEBSOCKET === 'true'
+                ? '🌐 WebSocket 連接狀態'
+                : '📡 MQTT 連接狀態'}
             </div>
             <Button
               onClick={refreshData}
@@ -696,6 +912,11 @@ export default function LocationPage() {
               <span className="text-sm">{onlinePatients.length}</span>
             </div>
           </div>
+          {import.meta.env.VITE_USE_WEBSOCKET === 'true' && (
+            <div className="text-xs text-blue-600 mt-2">
+              💡 使用 WebSocket 模式：數據通過後端 WebSocket 服務實時推送
+            </div>
+          )}
         </CardContent>
       </Card>
 

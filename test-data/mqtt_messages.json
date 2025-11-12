@@ -448,5 +448,1112 @@
       "current": "2025-316 19:35:32.02"
     },
     "timestamp": "2025-11-12T11:35:34.385Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:45:49.363Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "300B",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "D7:2A:09:35:D6:F7",
+      "SOS": 0,
+      "hr": 0,
+      "SpO2": 0,
+      "bp syst": 0,
+      "bp diast": 0,
+      "skin temp": 0,
+      "room temp": 27.04,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 0,
+      "wear": 0,
+      "battery level": 70,
+      "serial no": 297975
+    },
+    "timestamp": "2025-11-12T11:45:50.650Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "diaper DV1",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "C5:C6:E3:19:47:43",
+      "name": "DV1_194743",
+      "fw ver": 2.01,
+      "temp": 27.09,
+      "humi": 48.88,
+      "button": 0,
+      "mssg idx": 35450,
+      "ack": 0,
+      "battery level": 98,
+      "serial no": 297976
+    },
+    "timestamp": "2025-11-12T11:45:51.960Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E516B8_192",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "no",
+      "UWB Network ID": 24015,
+      "connected AP": "Epictech",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:45:51.98"
+    },
+    "timestamp": "2025-11-12T11:45:54.418Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E93C7C_211",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "yes",
+      "UWB Network ID": 24015,
+      "connected AP": "Kwan&Hong",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:45:57.56"
+    },
+    "timestamp": "2025-11-12T11:46:00.343Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:46:01.374Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Health",
+    "message": {
+      "content": "diaper DV1",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "C5:D6:FB:1B:85:23",
+      "name": "DV1_1B8523",
+      "fw ver": 2.01,
+      "temp": 18.01,
+      "humi": 67.13,
+      "button": 0,
+      "mssg idx": 19703,
+      "ack": 0,
+      "battery level": 77,
+      "serial no": 130372
+    },
+    "timestamp": "2025-11-12T11:46:03.013Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "ble scanned node",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "ANCHOR": {
+        "DW30C5": {
+          "initiator": "yes",
+          "UWB": "active"
+        }
+      },
+      "TAG": {},
+      "GW": {},
+      "serial no": 130373
+    },
+    "timestamp": "2025-11-12T11:46:06.295Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:46:13.382Z"
+  },
+  {
+    "topic": "UWB/UWB_Gateway",
+    "message": {
+      "content": "gateway topic",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "name": "GwF9E516B8_192",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "no",
+      "UWB Network ID": 24015,
+      "connected AP": "Epictech",
+      "Wifi tx power(dBm)": 13,
+      "set Wifi max tx power(dBm)": 13.75,
+      "ble scan time": 5,
+      "ble scan pause time": 20,
+      "300B update time": 20,
+      "diaper DV1 update time": 20,
+      "battery voltage": 0.284,
+      "5V plugged": "no",
+      "uwb tx power changed": "no",
+      "uwb tx power": {
+        "boost norm(5.0~30.5dB)": 6.5,
+        "boost 500(5.0~30.5dB)": 9,
+        "boost 250(5.0~30.5dB)": 11.5,
+        "boost 125(5.0~30.5dB)": 14
+      },
+      "tx power configChange every anchor": "no",
+      "tx power configChange every tag": "no",
+      "tag config pub": "yes",
+      "QoS": 0,
+      "pub topic": {
+        "anchor config": "UWB/GW16B8_AncConf",
+        "tag config": "UWB/GW16B8_TagConf",
+        "location": "UWB/GW16B8_Loca",
+        "message": "UWB/GW16B8_Message",
+        "ack from node": "UWB/GW16B8_Ack",
+        "health": "UWB/GW16B8_Health"
+      },
+      "sub topic": {
+        "downlink": "UWB/GW16B8_Dwlink"
+      },
+      "discard IOT data time(0.1s)": 30,
+      "discarded IOT data": 0,
+      "total discarded data": 16,
+      "1st sync": "2025-313 19:26:08.70",
+      "last sync": "2025-316 19:45:55.05",
+      "current": "2025-316 19:46:12.06"
+    },
+    "timestamp": "2025-11-12T11:46:14.701Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "300B",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "D7:2A:09:35:D6:F7",
+      "SOS": 0,
+      "hr": 0,
+      "SpO2": 0,
+      "bp syst": 0,
+      "bp diast": 0,
+      "skin temp": 0,
+      "room temp": 27.04,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 0,
+      "wear": 0,
+      "battery level": 70,
+      "serial no": 297977
+    },
+    "timestamp": "2025-11-12T11:46:16.794Z"
+  },
+  {
+    "topic": "UWB/UWB_Gateway",
+    "message": {
+      "content": "gateway topic",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "name": "GwF9E93C7C_211",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "yes",
+      "UWB Network ID": 24015,
+      "connected AP": "Kwan&Hong",
+      "Wifi tx power(dBm)": 13,
+      "set Wifi max tx power(dBm)": 13.75,
+      "ble scan time": 5,
+      "ble scan pause time": 20,
+      "300B update time": 20,
+      "diaper DV1 update time": 20,
+      "battery voltage": 3.118,
+      "5V plugged": "no",
+      "uwb tx power changed": "no",
+      "uwb tx power": {
+        "boost norm(5.0~30.5dB)": 7,
+        "boost 500(5.0~30.5dB)": 9.5,
+        "boost 250(5.0~30.5dB)": 12,
+        "boost 125(5.0~30.5dB)": 14.5
+      },
+      "tx power configChange every anchor": "no",
+      "tx power configChange every tag": "no",
+      "tag config pub": "no",
+      "QoS": 0,
+      "pub topic": {
+        "anchor config": "UWB/GW3C7C_AncConf",
+        "tag config": "UWB/GW3C7C_TagConf",
+        "location": "UWB/GW3C7C_Loca",
+        "message": "UWB/GW3C7C_Message",
+        "ack from node": "UWB/GW3C7C_Ack",
+        "health": "UWB/GW3C7C_Health"
+      },
+      "sub topic": {
+        "downlink": "UWB/GW3C7C_Dwlink"
+      },
+      "discard IOT data time(0.1s)": 30,
+      "discarded IOT data": 0,
+      "total discarded data": 0,
+      "1st sync": "2025-295 07:49:51.06",
+      "last sync": "2025-316 19:46:07.06",
+      "current": "2025-316 19:46:18.02"
+    },
+    "timestamp": "2025-11-12T11:46:20.361Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:46:25.406Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Health",
+    "message": {
+      "content": "diaper DV1",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "C5:D6:FB:1B:85:23",
+      "name": "DV1_1B8523",
+      "fw ver": 2.01,
+      "temp": 18.01,
+      "humi": 67.1,
+      "button": 0,
+      "mssg idx": 19704,
+      "ack": 0,
+      "battery level": 77,
+      "serial no": 130374
+    },
+    "timestamp": "2025-11-12T11:46:30.044Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E516B8_192",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "no",
+      "UWB Network ID": 24015,
+      "connected AP": "Epictech",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:46:31.98"
+    },
+    "timestamp": "2025-11-12T11:46:34.366Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:46:37.333Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E93C7C_211",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "yes",
+      "UWB Network ID": 24015,
+      "connected AP": "Kwan&Hong",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:46:37.60"
+    },
+    "timestamp": "2025-11-12T11:46:40.395Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:46:49.331Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Health",
+    "message": {
+      "content": "300B",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "D4:5D:0B:35:72:F7",
+      "SOS": 0,
+      "hr": 72,
+      "SpO2": 96,
+      "bp syst": 114,
+      "bp diast": 75,
+      "skin temp": 0,
+      "room temp": 22.01,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 0,
+      "wear": 1,
+      "battery level": 100,
+      "serial no": 130375
+    },
+    "timestamp": "2025-11-12T11:46:50.467Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Health",
+    "message": {
+      "content": "diaper DV1",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "C5:D6:FB:1B:85:23",
+      "name": "DV1_1B8523",
+      "fw ver": 2.01,
+      "temp": 18.04,
+      "humi": 67.12,
+      "button": 0,
+      "mssg idx": 19706,
+      "ack": 0,
+      "battery level": 77,
+      "serial no": 130376
+    },
+    "timestamp": "2025-11-12T11:46:54.065Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E516B8_192",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "no",
+      "UWB Network ID": 24015,
+      "connected AP": "Epictech",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:46:52.04"
+    },
+    "timestamp": "2025-11-12T11:46:54.527Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E93C7C_211",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "yes",
+      "UWB Network ID": 24015,
+      "connected AP": "Kwan&Hong",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:46:57.57"
+    },
+    "timestamp": "2025-11-12T11:47:00.348Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:47:01.355Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "300B",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "D7:2A:09:35:D6:F7",
+      "SOS": 0,
+      "hr": 0,
+      "SpO2": 0,
+      "bp syst": 0,
+      "bp diast": 0,
+      "skin temp": 0,
+      "room temp": 27.04,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 1,
+      "wear": 0,
+      "battery level": 70,
+      "serial no": 297978
+    },
+    "timestamp": "2025-11-12T11:47:07.054Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Message",
+    "message": {
+      "content": "ble scanned node",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "ANCHOR": {
+        "DW4210": {
+          "initiator": "no",
+          "UWB": "active"
+        },
+        "DW5B05": {
+          "initiator": "no",
+          "UWB": "active"
+        },
+        "DW4C0B": {
+          "initiator": "no",
+          "UWB": "active"
+        },
+        "DW8E97": {
+          "initiator": "no",
+          "UWB": "active"
+        }
+      },
+      "TAG": {},
+      "GW": {
+        "UWB_Gateway5878": {
+          "UWB Network ID": 24015,
+          "SSID": "Epicte"
+        },
+        "UWB_GatewayC65C": {
+          "UWB Network ID": 24015,
+          "SSID": "Epicte"
+        },
+        "UWB_Gateway3DD4": {
+          "UWB Network ID": 24015,
+          "SSID": "Epicte"
+        }
+      },
+      "serial no": 297979
+    },
+    "timestamp": "2025-11-12T11:47:08.464Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:47:13.364Z"
+  },
+  {
+    "topic": "UWB/UWB_Gateway",
+    "message": {
+      "content": "gateway topic",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "name": "GwF9E516B8_192",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "no",
+      "UWB Network ID": 24015,
+      "connected AP": "Epictech",
+      "Wifi tx power(dBm)": 13,
+      "set Wifi max tx power(dBm)": 13.75,
+      "ble scan time": 5,
+      "ble scan pause time": 20,
+      "300B update time": 20,
+      "diaper DV1 update time": 20,
+      "battery voltage": 0.284,
+      "5V plugged": "no",
+      "uwb tx power changed": "no",
+      "uwb tx power": {
+        "boost norm(5.0~30.5dB)": 6.5,
+        "boost 500(5.0~30.5dB)": 9,
+        "boost 250(5.0~30.5dB)": 11.5,
+        "boost 125(5.0~30.5dB)": 14
+      },
+      "tx power configChange every anchor": "no",
+      "tx power configChange every tag": "no",
+      "tag config pub": "yes",
+      "QoS": 0,
+      "pub topic": {
+        "anchor config": "UWB/GW16B8_AncConf",
+        "tag config": "UWB/GW16B8_TagConf",
+        "location": "UWB/GW16B8_Loca",
+        "message": "UWB/GW16B8_Message",
+        "ack from node": "UWB/GW16B8_Ack",
+        "health": "UWB/GW16B8_Health"
+      },
+      "sub topic": {
+        "downlink": "UWB/GW16B8_Dwlink"
+      },
+      "discard IOT data time(0.1s)": 30,
+      "discarded IOT data": 0,
+      "total discarded data": 16,
+      "1st sync": "2025-313 19:26:08.70",
+      "last sync": "2025-316 19:46:55.07",
+      "current": "2025-316 19:47:12.02"
+    },
+    "timestamp": "2025-11-12T11:47:14.808Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Health",
+    "message": {
+      "content": "diaper DV1",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "C5:D6:FB:1B:85:23",
+      "name": "DV1_1B8523",
+      "fw ver": 2.01,
+      "temp": 18.04,
+      "humi": 67.08,
+      "button": 0,
+      "mssg idx": 19707,
+      "ack": 0,
+      "battery level": 77,
+      "serial no": 130377
+    },
+    "timestamp": "2025-11-12T11:47:15.111Z"
+  },
+  {
+    "topic": "UWB/UWB_Gateway",
+    "message": {
+      "content": "gateway topic",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "name": "GwF9E93C7C_211",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "yes",
+      "UWB Network ID": 24015,
+      "connected AP": "Kwan&Hong",
+      "Wifi tx power(dBm)": 13,
+      "set Wifi max tx power(dBm)": 13.75,
+      "ble scan time": 5,
+      "ble scan pause time": 20,
+      "300B update time": 20,
+      "diaper DV1 update time": 20,
+      "battery voltage": 3.118,
+      "5V plugged": "no",
+      "uwb tx power changed": "no",
+      "uwb tx power": {
+        "boost norm(5.0~30.5dB)": 7,
+        "boost 500(5.0~30.5dB)": 9.5,
+        "boost 250(5.0~30.5dB)": 12,
+        "boost 125(5.0~30.5dB)": 14.5
+      },
+      "tx power configChange every anchor": "no",
+      "tx power configChange every tag": "no",
+      "tag config pub": "no",
+      "QoS": 0,
+      "pub topic": {
+        "anchor config": "UWB/GW3C7C_AncConf",
+        "tag config": "UWB/GW3C7C_TagConf",
+        "location": "UWB/GW3C7C_Loca",
+        "message": "UWB/GW3C7C_Message",
+        "ack from node": "UWB/GW3C7C_Ack",
+        "health": "UWB/GW3C7C_Health"
+      },
+      "sub topic": {
+        "downlink": "UWB/GW3C7C_Dwlink"
+      },
+      "discard IOT data time(0.1s)": 30,
+      "discarded IOT data": 0,
+      "total discarded data": 0,
+      "1st sync": "2025-295 07:49:51.06",
+      "last sync": "2025-316 19:47:07.04",
+      "current": "2025-316 19:47:18.06"
+    },
+    "timestamp": "2025-11-12T11:47:20.504Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:47:25.378Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "300B",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "D7:2A:09:35:D6:F7",
+      "SOS": 0,
+      "hr": 0,
+      "SpO2": 0,
+      "bp syst": 0,
+      "bp diast": 0,
+      "skin temp": 0,
+      "room temp": 27.04,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 0,
+      "wear": 0,
+      "battery level": 70,
+      "serial no": 297980
+    },
+    "timestamp": "2025-11-12T11:47:30.175Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "diaper DV1",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "C5:C6:E3:19:47:43",
+      "name": "DV1_194743",
+      "fw ver": 2.01,
+      "temp": 27.09,
+      "humi": 48.87,
+      "button": 0,
+      "mssg idx": 35457,
+      "ack": 0,
+      "battery level": 98,
+      "serial no": 297981
+    },
+    "timestamp": "2025-11-12T11:47:31.087Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E516B8_192",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "no",
+      "UWB Network ID": 24015,
+      "connected AP": "Epictech",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:47:32.03"
+    },
+    "timestamp": "2025-11-12T11:47:34.471Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:47:37.404Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Health",
+    "message": {
+      "content": "300B",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "D4:5D:0B:35:72:F7",
+      "SOS": 0,
+      "hr": 71,
+      "SpO2": 96,
+      "bp syst": 117,
+      "bp diast": 76,
+      "skin temp": 0,
+      "room temp": 22.08,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 0,
+      "wear": 1,
+      "battery level": 100,
+      "serial no": 130378
+    },
+    "timestamp": "2025-11-12T11:47:39.664Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E93C7C_211",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "yes",
+      "UWB Network ID": 24015,
+      "connected AP": "Kwan&Hong",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:47:37.53"
+    },
+    "timestamp": "2025-11-12T11:47:40.281Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:48:37.389Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E93C7C_211",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "yes",
+      "UWB Network ID": 24015,
+      "connected AP": "Kwan&Hong",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:48:36.72"
+    },
+    "timestamp": "2025-11-12T11:48:40.377Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "300B",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "D7:2A:09:35:D6:F7",
+      "SOS": 0,
+      "hr": 0,
+      "SpO2": 0,
+      "bp syst": 0,
+      "bp diast": 0,
+      "skin temp": 0,
+      "room temp": 27.04,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 0,
+      "wear": 0,
+      "battery level": 70,
+      "serial no": 297985
+    },
+    "timestamp": "2025-11-12T11:48:44.523Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "diaper DV1",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "C5:C6:E3:19:47:43",
+      "name": "DV1_194743",
+      "fw ver": 2.01,
+      "temp": 27.09,
+      "humi": 48.92,
+      "button": 0,
+      "mssg idx": 35461,
+      "ack": 0,
+      "battery level": 98,
+      "serial no": 297986
+    },
+    "timestamp": "2025-11-12T11:48:45.163Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW30C5",
+      "id": 12485,
+      "id(Hex)": "0x30C5",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 59.65,
+        "y": -69.24,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-11-12T11:48:49.343Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Message",
+    "message": {
+      "content": "heartbeat",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "GW",
+      "name": "GwF9E516B8_192",
+      "fw ver": "0.82838s",
+      "fw serial": 0,
+      "UWB HW Com OK": "yes",
+      "UWB Joined": "no",
+      "UWB Network ID": 24015,
+      "connected AP": "Epictech",
+      "anchor cfg stack": 0,
+      "current": "2025-316 19:48:52.01"
+    },
+    "timestamp": "2025-11-12T11:48:54.450Z"
+  },
+  {
+    "topic": "UWB/GW3C7C_Health",
+    "message": {
+      "content": "300B",
+      "gateway id": 4192812156,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "D4:5D:0B:35:72:F7",
+      "SOS": 0,
+      "hr": 77,
+      "SpO2": 99,
+      "bp syst": 116,
+      "bp diast": 77,
+      "skin temp": 0,
+      "room temp": 23.08,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 0,
+      "wear": 1,
+      "battery level": 100,
+      "serial no": 130383
+    },
+    "timestamp": "2025-11-12T11:48:56.094Z"
   }
 ]
