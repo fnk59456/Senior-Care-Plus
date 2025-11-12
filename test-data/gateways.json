@@ -20,7 +20,7 @@
       "set_wifi_max_tx_power": 13.75,
       "ble_scan_time": 5,
       "ble_scan_pause_time": 20,
-      "battery_voltage": 3.1,
+      "battery_voltage": 3.118,
       "five_v_plugged": "no",
       "uwb_tx_power_changed": "no",
       "uwb_tx_power": {
@@ -44,9 +44,9 @@
       "discarded_iot_data": 0,
       "total_discarded_data": 0,
       "first_sync": "2025-295 07:49:51.06",
-      "last_sync": "2025-315 23:43:12.10",
-      "current": "2025-315 23:43:18.06",
-      "receivedAt": "2025-11-11T15:43:19.638Z"
+      "last_sync": "2025-316 00:06:07.08",
+      "current": "2025-316 00:06:18.05",
+      "receivedAt": "2025-11-11T16:06:19.629Z"
     },
     "createdAt": "2025-11-11T14:57:54.837Z"
   },
@@ -95,9 +95,9 @@
       "discarded_iot_data": 0,
       "total_discarded_data": 16,
       "first_sync": "2025-313 19:26:08.70",
-      "last_sync": "2025-315 23:57:00.09",
-      "current": "2025-315 23:57:12.02",
-      "receivedAt": "2025-11-11T15:57:14.346Z"
+      "last_sync": "2025-316 00:06:10.05",
+      "current": "2025-316 00:06:12.08",
+      "receivedAt": "2025-11-11T16:06:13.723Z"
     },
     "createdAt": "2025-11-11T15:57:19.768Z"
   }

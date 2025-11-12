@@ -726,7 +726,12 @@
             "localMqtt": "Local MQTT",
             "cloudMqtt": "Cloud MQTT",
             "error": "Error",
-            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service"
+            "hint": "Hint: Local MQTT needs to run on localhost:9001, Cloud MQTT will automatically connect to HiveMQ cloud service",
+            "connected": "Connected",
+            "disconnected": "Disconnected",
+            "connecting": "Connecting...",
+            "reconnecting": "Reconnecting...",
+            "connectionError": "Connection Error"
         }
     },
     "settings": {

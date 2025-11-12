@@ -1,11 +1,8 @@
-import { useEffect, useRef, useState } from "react"
-// @ts-ignore
-import mqtt from "mqtt"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { Thermometer, TrendingUp, Clock, AlertTriangle, MapPin, Baby, Activity, Watch, Settings } from "lucide-react"
 import { useLocation } from "react-router-dom"
@@ -13,36 +10,11 @@ import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { DeviceType } from "@/types/device-types"
 import { useTranslation } from "react-i18next"
-
-// 本地 MQTT 設置
-const MQTT_URL = "ws://localhost:9001"
-const MQTT_TOPIC = "GW17F5_Health"
-
-// 雲端 MQTT 設置
-const CLOUD_MQTT_URL = `${import.meta.env.VITE_MQTT_PROTOCOL}://${import.meta.env.VITE_MQTT_BROKER}:${import.meta.env.VITE_MQTT_PORT}/mqtt`
-const CLOUD_MQTT_OPTIONS = {
-  username: import.meta.env.VITE_MQTT_USERNAME,
-  password: import.meta.env.VITE_MQTT_PASSWORD
-}
+import { mqttBus } from "@/services/mqttBus"
 
 // 體溫範圍
 const NORMAL_TEMP_MIN = 36.0
 const NORMAL_TEMP_MAX = 37.5
-
-// 用戶
-const USERS = [
-  { id: "E001", name: "張三" },
-  { id: "E002", name: "李四" },
-  { id: "E003", name: "王五" },
-  { id: "E004", name: "趙六" },
-  { id: "E005", name: "錢七" }
-]
-
-// 根據患者名稱獲取用戶ID
-const getUserIdByName = (patientName: string): string => {
-  const user = USERS.find(u => u.name === patientName)
-  return user ? user.id : "E001" // 默認返回張三
-}
 
 type TemperatureRecord = {
   id: string
@@ -74,6 +46,11 @@ type CloudDeviceRecord = {
   time: string
   datetime: Date
   isAbnormal: boolean
+  // Gateway 相關資訊
+  gateway?: string
+  gatewayId?: string
+  topic?: string
+  topicGateway?: string
   // 病患相關資訊
   residentId?: string
   residentName?: string
@@ -88,6 +65,11 @@ type CloudDevice = {
   deviceName: string
   lastSeen: Date
   recordCount: number
+  // Gateway 相關資訊
+  gateway?: string
+  gatewayId?: string
+  topic?: string
+  topicGateway?: string
   // 病患相關資訊
   residentId?: string
   residentName?: string
@@ -207,39 +189,22 @@ export default function TemperaturePage() {
     }
   }
 
-  const [selectedUser, setSelectedUser] = useState<string>(() => {
-    // 如果從HealthPage傳遞了患者名稱，則使用該患者，否則默認選擇張三
-    return patientName ? getUserIdByName(patientName) : "E001"
-  })
   const [activeTab, setActiveTab] = useState<string>("today")
-  const [temperatureRecords, setTemperatureRecords] = useState<TemperatureRecord[]>([])
-  const [connected, setConnected] = useState(false)
   const [filteredRecords, setFilteredRecords] = useState<TemperatureRecord[]>([])
   const [recordFilter, setRecordFilter] = useState<string>("all")
   const [timeRange, setTimeRange] = useState<string>("1day")
-  const clientRef = useRef<mqtt.MqttClient | null>(null)
-
-  // 雲端 MQTT 相關狀態
-  const [cloudConnected, setCloudConnected] = useState(false)
-  const [cloudMqttData, setCloudMqttData] = useState<CloudMqttData[]>([])
-  const cloudClientRef = useRef<mqtt.MqttClient | null>(null)
 
   // 雲端設備管理狀態
   const [cloudDevices, setCloudDevices] = useState<CloudDevice[]>([])
   const [cloudDeviceRecords, setCloudDeviceRecords] = useState<CloudDeviceRecord[]>([])
   const [selectedCloudDevice, setSelectedCloudDevice] = useState<string>("")
 
-  // 連線狀態和錯誤信息
-  const [localConnectionStatus, setLocalConnectionStatus] = useState<string>("未連線")
+  // ✅ MQTT Bus 連接狀態
+  const [cloudConnected, setCloudConnected] = useState(false)
   const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
-  const [localError, setLocalError] = useState<string>("")
-  const [cloudError, setCloudError] = useState<string>("")
-  const [reconnectAttempts, setReconnectAttempts] = useState(0)
-  const [cloudReconnectAttempts, setCloudReconnectAttempts] = useState(0)
 
-  // 當前MQTT標籤頁狀態
-  const connectionTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [currentMqttTab, setCurrentMqttTab] = useState<string>("local")
+  // 原始 MQTT 數據狀態
+  const [cloudMqttData, setCloudMqttData] = useState<CloudMqttData[]>([])
 
   // 動態獲取健康監控MQTT主題
   const getHealthTopic = () => {
@@ -266,445 +231,262 @@ export default function TemperaturePage() {
     return null
   }
 
-  // MQTT連接
+  // ✅ 修復頻率問題 - 只在有新消息時更新（參考 HeartRatePage）
   useEffect(() => {
-    setLocalConnectionStatus("連接中...")
-    setLocalError("")
+    let lastProcessedTime = 0
+    let processedMessages = new Set()
+    let lastUpdateTime = 0
 
-    const client = mqtt.connect(MQTT_URL, {
-      reconnectPeriod: 3000,
-      connectTimeout: 10000,
-      keepalive: 60
-    })
-    clientRef.current = client
-
-    client.on("connect", () => {
-      console.log("本地 MQTT 已連接")
-      setConnected(true)
-      setLocalConnectionStatus("已連線")
-      setLocalError("")
-      setReconnectAttempts(0)
-    })
-
-    client.on("reconnect", () => {
-      console.log("本地 MQTT 重新連接中...")
-      setConnected(false)
-      setReconnectAttempts(prev => prev + 1)
-      setLocalConnectionStatus(`重新連接中... (第${reconnectAttempts + 1}次嘗試)`)
-    })
-
-    client.on("close", () => {
-      console.log("本地 MQTT 連接關閉")
-      setConnected(false)
-      setLocalConnectionStatus("連接已關閉")
-    })
-
-    client.on("error", (error) => {
-      console.error("本地 MQTT 連接錯誤:", error)
-      setConnected(false)
-      setLocalError(error.message || "連接錯誤")
-      setLocalConnectionStatus("連接錯誤")
-    })
-
-    client.on("offline", () => {
-      console.log("本地 MQTT 離線")
-      setConnected(false)
-      setLocalConnectionStatus("離線")
-    })
-
-    client.subscribe(MQTT_TOPIC, (err) => {
-      if (err) {
-        console.error("訂閱失敗:", err)
-      } else {
-        console.log("已訂閱主題:", MQTT_TOPIC)
-      }
-    })
-
-    client.on("message", (topic: string, payload: Uint8Array) => {
-      if (topic !== MQTT_TOPIC) return
-      try {
-        const msg = JSON.parse(new TextDecoder().decode(payload))
-        console.log("收到MQTT消息:", msg) // 添加調試日誌
-
-        if (msg.content === "temperature" && msg.id && msg.temperature) {
-          // 修復時間解析問題
-          let datetime: Date
-          try {
-            // 嘗試解析不同的時間格式
-            if (msg.time) {
-              // 將空格替換為T，確保ISO格式兼容性
-              const isoTime = msg.time.replace(' ', 'T')
-              datetime = new Date(isoTime)
-
-              // 如果解析失敗，嘗試其他方法
-              if (isNaN(datetime.getTime())) {
-                datetime = new Date(msg.time)
-              }
-
-              // 如果還是失敗，使用當前時間
-              if (isNaN(datetime.getTime())) {
-                console.warn("時間解析失敗，使用當前時間:", msg.time)
-                datetime = new Date()
-              }
-            } else {
-              datetime = new Date()
-            }
-          } catch (e) {
-            console.error("時間解析錯誤:", e, "原始時間:", msg.time)
-            datetime = new Date()
-          }
-
-          const record: TemperatureRecord = {
-            id: msg.id,
-            name: msg.name || msg.id,
-            temperature: msg.temperature.value,
-            time: msg.time,
-            datetime: datetime,
-            isAbnormal: msg.temperature.is_abnormal || msg.temperature.value > NORMAL_TEMP_MAX || msg.temperature.value < NORMAL_TEMP_MIN,
-            room_temp: msg.temperature.room_temp
-          }
-
-          console.log("處理的體溫記錄:", record) // 添加調試日誌
-          console.log("記錄時間:", datetime, "是否有效:", !isNaN(datetime.getTime()))
-
-          setTemperatureRecords(prev => {
-            // 避免重複記錄
-            const existing = prev.find(r => r.id === record.id && r.time === record.time)
-            if (existing) {
-              console.log("記錄已存在，跳過")
-              return prev
-            }
-
-            // 添加新記錄並按時間排序
-            const newRecords = [...prev, record].sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
-
-            console.log("添加新記錄，總記錄數:", newRecords.length)
-
-            // 限制記錄數量（保留最近1000條）
-            return newRecords.slice(0, 1000)
-          })
-        } else {
-          console.log("消息格式不符合體溫數據要求:", msg)
-        }
-      } catch (e) {
-        console.error("MQTT message parse error:", e)
-      }
-    })
-
-    return () => {
-      console.log("清理本地MQTT連接")
-      client.end()
-    }
-  }, [])
-
-  // 雲端 MQTT 連接
-  useEffect(() => {
-    // 清理之前的超時
-    if (connectionTimeoutRef.current) {
-      clearTimeout(connectionTimeoutRef.current)
-    }
-
-    // 如果沒有選擇閘道器，不建立連接
-    if (!selectedGateway) {
-      if (cloudClientRef.current) {
-        console.log("清理雲端MQTT連接 - 未選擇閘道器")
-        cloudClientRef.current.end(true)
-        cloudClientRef.current = null
-      }
-      setCloudConnected(false)
-      setCloudConnectionStatus("未選擇閘道器")
-      return
-    }
-
-    // 防抖：延遲500ms再建立連接，避免頻繁切換
-    connectionTimeoutRef.current = setTimeout(() => {
-      setCloudConnectionStatus("連接中...")
-      setCloudError("")
-
-      // 如果已有連接，先清理
-      if (cloudClientRef.current) {
-        console.log("清理舊的雲端MQTT連接 - 準備重新連接")
-        cloudClientRef.current.end(true)
-        cloudClientRef.current = null
-      }
-
-      const cloudClient = mqtt.connect(CLOUD_MQTT_URL, {
-        ...CLOUD_MQTT_OPTIONS,
-        reconnectPeriod: 5000,
-        connectTimeout: 15000,
-        keepalive: 60,
-        clean: true,
-        clientId: `web-client-${Math.random().toString(16).slice(2, 8)}`
-      })
-      cloudClientRef.current = cloudClient
-
-      cloudClient.on("connect", () => {
-        console.log("雲端 MQTT 已連接，Client ID:", cloudClient.options.clientId)
-        setCloudConnected(true)
-        setCloudConnectionStatus("已連線")
-        setCloudError("")
-        setCloudReconnectAttempts(0)
-      })
-
-      cloudClient.on("reconnect", () => {
-        console.log("雲端 MQTT 重新連接中...")
-        setCloudConnected(false)
-        setCloudReconnectAttempts(prev => prev + 1)
-        setCloudConnectionStatus(`重新連接中... (第${cloudReconnectAttempts + 1}次嘗試)`)
-      })
-
-      cloudClient.on("close", () => {
-        console.log("雲端 MQTT 連接關閉")
-        setCloudConnected(false)
-        setCloudConnectionStatus("連接已關閉")
-      })
-
-      cloudClient.on("error", (error) => {
-        console.error("雲端 MQTT 連接錯誤:", error)
-        setCloudConnected(false)
-        setCloudError(error.message || "連接錯誤")
-        setCloudConnectionStatus("連接錯誤")
-      })
-
-      cloudClient.on("offline", () => {
-        console.log("雲端 MQTT 離線")
-        setCloudConnected(false)
-        setCloudConnectionStatus("離線")
-      })
-
-      // 獲取健康監控主題
-      const healthTopic = getHealthTopic()
-      if (!healthTopic) {
-        console.error("無法獲取健康監控主題，跳過訂閱")
+    const updateMqttData = () => {
+      // 🔧 額外頻率控制：確保至少間隔5秒才更新
+      const now = Date.now()
+      if (now - lastUpdateTime < 5000) {
+        console.log(`⏰ 頻率控制：距離上次更新不足5秒，跳過`)
         return
       }
+      try {
+        const recentMessages = mqttBus.getRecentMessages()
+        console.log(`🔍 檢查 MQTT 消息: 總數 ${recentMessages.length}, 最後處理時間: ${new Date(lastProcessedTime).toLocaleTimeString()}`)
 
-      cloudClient.subscribe(healthTopic, (err) => {
-        if (err) {
-          console.error("雲端 MQTT 訂閱失敗:", err)
-        } else {
-          console.log("已訂閱雲端主題:", healthTopic)
+        // 只處理新的消息（避免重複處理）
+        const newMessages = recentMessages.filter(msg => {
+          const msgTime = msg.timestamp.getTime()
+          const msgKey = `${msg.topic}-${msgTime}`
+          const isNew = msgTime > lastProcessedTime && !processedMessages.has(msgKey)
+
+          if (isNew) {
+            console.log(`✅ 新消息: ${msg.topic} at ${msg.timestamp.toLocaleTimeString()}`)
+          }
+
+          return isNew
+        })
+
+        if (newMessages.length === 0) {
+          console.log(`⏭️ 沒有新消息，跳過更新`)
+          return // 沒有新消息，不更新
         }
-      })
 
-      cloudClient.on("message", (topic: string, payload: Uint8Array) => {
-        const healthTopic = getHealthTopic()
-        if (!healthTopic || topic !== healthTopic) return
-        try {
-          const rawMessage = new TextDecoder().decode(payload)
-          const msg = JSON.parse(rawMessage)
-          console.log("收到雲端 MQTT 消息:", msg)
+        console.log(`🔄 處理 ${newMessages.length} 條新 MQTT 消息`)
 
-          // 處理雲端 MQTT 數據
-          const cloudData: CloudMqttData = {
-            content: msg.content || "",
-            gateway_id: msg["gateway id"] || "",
-            MAC: msg.MAC || "",
-            receivedAt: new Date()
+        // 更新最後處理時間
+        lastProcessedTime = Math.max(...newMessages.map(msg => msg.timestamp.getTime()))
+
+        // 標記已處理的消息
+        newMessages.forEach(msg => {
+          const msgKey = `${msg.topic}-${msg.timestamp.getTime()}`
+          processedMessages.add(msgKey)
+          console.log(`📝 標記已處理: ${msgKey}`)
+        })
+
+        // 清理過期的處理記錄（保留最近1小時）
+        const oneHourAgo = Date.now() - 60 * 60 * 1000
+        const keysToDelete: string[] = []
+        processedMessages.forEach((key) => {
+          const keyStr = String(key)
+          const timestamp = parseInt(keyStr.split('-').pop() || '0')
+          if (timestamp < oneHourAgo) {
+            keysToDelete.push(keyStr)
           }
+        })
+        keysToDelete.forEach((key: string) => processedMessages.delete(key))
 
-          // 添加詳細的調試信息
-          console.log("==== 雲端MQTT數據解析 ====")
-          console.log("原始數據:", msg)
-          console.log("Content:", msg.content)
-          console.log("MAC:", msg.MAC)
-          console.log("Skin temp:", msg["skin temp"])
-          console.log("所有可能的溫度字段:", {
-            "skin temp": msg["skin temp"],
-            "skin_temp": msg.skin_temp,
-            "temp": msg.temp,
-            "temperature": msg.temperature
-          })
+        const formattedData = newMessages.map(msg => ({
+          content: msg.payload?.content || 'unknown',
+          MAC: msg.payload?.MAC || msg.payload?.['mac address'] || '',
+          receivedAt: msg.timestamp,
+          topic: msg.topic,
+          gateway: msg.gateway?.name || '',
+          // 健康數據字段
+          hr: msg.payload?.hr || '',
+          SpO2: msg.payload?.SpO2 || '',
+          bp_syst: msg.payload?.['bp syst'] || '',
+          bp_diast: msg.payload?.['bp diast'] || '',
+          skin_temp: msg.payload?.['skin temp'] || '',
+          room_temp: msg.payload?.['room temp'] || '',
+          steps: msg.payload?.steps || '',
+          battery_level: msg.payload?.['battery level'] || '',
+          // 尿布數據字段
+          name: msg.payload?.name || '',
+          temp: msg.payload?.temp || '',
+          humi: msg.payload?.humi || '',
+          button: msg.payload?.button || '',
+          msg_idx: msg.payload?.['msg idx'] || '',
+          ack: msg.payload?.ack || ''
+        }))
 
-          // 根據 content 判斷數據類型並提取相應字段
-          if (msg.content === "300B") {
-            console.log("處理300B數據...")
-            // 體溫心率數據處理
-            cloudData.SOS = msg.SOS || ""
-            cloudData.hr = msg.hr || ""
-            cloudData.SpO2 = msg.SpO2 || ""
-            cloudData.bp_syst = msg["bp syst"] || ""
-            cloudData.bp_diast = msg["bp diast"] || ""
-            cloudData.skin_temp = msg["skin temp"] || ""
-            cloudData.room_temp = msg["room temp"] || ""
-            cloudData.steps = msg.steps || ""
-            cloudData.light_sleep = msg["light sleep (min)"] || ""
-            cloudData.deep_sleep = msg["deep sleep (min)"] || ""
-            cloudData.wake_time = msg["wake time"] || ""
-            cloudData.move = msg.move || ""
-            cloudData.wear = msg.wear || ""
-            cloudData.battery_level = msg["battery level"] || ""
-            cloudData.serial_no = msg["serial no"] || ""
+        // ✅ 只顯示體溫相關的 MQTT 數據 (僅 300B 設備)
+        const temperatureData = formattedData.filter(data =>
+          data.content === '300B'
+        )
 
-            // 檢查設備記錄創建條件
-            console.log("檢查設備記錄創建條件:")
-            console.log("- MAC存在:", !!msg.MAC)
-            console.log("- skin temp存在:", !!msg["skin temp"])
-            console.log("- skin temp值:", msg["skin temp"])
-
-            // 放寬條件：只要有MAC就創建設備記錄，溫度可能為0或空
-            if (msg.MAC) {
-              const skinTemp = parseFloat(msg["skin temp"]) || 0
-              const roomTemp = parseFloat(msg["room temp"]) || 0
-              const steps = parseInt(msg.steps) || 0
-              const lightSleep = parseInt(msg["light sleep (min)"]) || 0
-              const deepSleep = parseInt(msg["deep sleep (min)"]) || 0
-              const batteryLevel = parseInt(msg["battery level"]) || 0
-
-              // 獲取病患資訊
-              const residentInfo = getResidentInfoByMAC(msg.MAC)
-
-              console.log("創建設備記錄:")
-              console.log("- MAC:", msg.MAC)
-              console.log("- 皮膚溫度:", skinTemp)
-              console.log("- 環境溫度:", roomTemp)
-              console.log("- 病患資訊:", residentInfo)
-
-              const cloudDeviceRecord: CloudDeviceRecord = {
-                MAC: msg.MAC,
-                deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${msg.MAC.slice(-8)}`,
-                skin_temp: skinTemp,
-                room_temp: roomTemp,
-                steps: steps,
-                light_sleep: lightSleep,
-                deep_sleep: deepSleep,
-                battery_level: batteryLevel,
-                time: new Date().toISOString(),
-                datetime: new Date(),
-                isAbnormal: skinTemp > 0 && (skinTemp > NORMAL_TEMP_MAX || skinTemp < NORMAL_TEMP_MIN),
-                // 添加病患資訊
-                ...residentInfo
-              }
-
-              console.log("設備記錄:", cloudDeviceRecord)
-
-              // 更新雲端設備記錄
-              setCloudDeviceRecords(prev => {
-                const newRecords = [cloudDeviceRecord, ...prev]
-                  .sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
-                  .slice(0, 1000)
-                console.log("更新後的設備記錄數量:", newRecords.length)
-                return newRecords
-              })
-
-              // 更新設備列表
-              setCloudDevices(prev => {
-                const existingDevice = prev.find(d => d.MAC === msg.MAC)
-                console.log("現有設備:", existingDevice)
-
-                if (existingDevice) {
-                  const updatedDevices = prev.map(d =>
-                    d.MAC === msg.MAC
-                      ? {
-                        ...d,
-                        lastSeen: new Date(),
-                        recordCount: d.recordCount + 1,
-                        // 更新病患資訊
-                        ...residentInfo
-                      }
-                      : d
-                  )
-                  console.log("更新現有設備，總設備數:", updatedDevices.length)
-                  return updatedDevices
-                } else {
-                  const newDevice: CloudDevice = {
-                    MAC: msg.MAC,
-                    deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${msg.MAC.slice(-8)}`,
-                    lastSeen: new Date(),
-                    recordCount: 1,
-                    // 添加病患資訊
-                    ...residentInfo
-                  }
-                  const updatedDevices = [...prev, newDevice]
-                  console.log("添加新設備:", newDevice)
-                  console.log("更新後總設備數:", updatedDevices.length)
-                  return updatedDevices
-                }
-              })
-
-              // 如果還沒有選擇設備，自動選擇第一個
-              setSelectedCloudDevice(prev => {
-                if (!prev) {
-                  console.log("自動選擇設備:", msg.MAC)
-                  return msg.MAC
-                }
-                return prev
-              })
-            } else {
-              console.log("⚠️ 300B數據缺少MAC字段，無法創建設備記錄")
-            }
-          } else if (msg.content === "diaper DV1") {
-            // 尿布數據處理
-            cloudData.name = msg.name || ""
-            cloudData.fw_ver = msg["fw ver"] || ""
-            cloudData.temp = msg.temp || ""
-            cloudData.humi = msg.humi || ""
-            cloudData.button = msg.button || ""
-            cloudData.msg_idx = msg["msg idx"] || ""
-            cloudData.ack = msg.ack || ""
-            cloudData.battery_level = msg["battery level"] || ""
-            cloudData.serial_no = msg["serial no"] || ""
-          } else {
-            // 其他類型數據，提取所有可能的字段
-            cloudData.SOS = msg.SOS || ""
-            cloudData.hr = msg.Sos || ""
-            cloudData.SpO2 = msg.SpO2 || ""
-            cloudData.bp_syst = msg["bp syst"] || ""
-            cloudData.bp_diast = msg["bp diast"] || ""
-            cloudData.skin_temp = msg["skin temp"] || ""
-            cloudData.room_temp = msg["room temp"] || ""
-            cloudData.steps = msg.steps || ""
-            cloudData.light_sleep = msg["light sleep (min)"] || ""
-            cloudData.deep_sleep = msg["deep sleep (min)"] || ""
-            cloudData.wake_time = msg["wake time"] || ""
-            cloudData.move = msg.move || ""
-            cloudData.wear = msg.wear || ""
-            cloudData.battery_level = msg["battery level"] || ""
-            cloudData.serial_no = msg["serial no"] || ""
-            cloudData.name = msg.name || ""
-            cloudData.fw_ver = msg["fw ver"] || ""
-            cloudData.temp = msg.temp || ""
-            cloudData.humi = msg.humi || ""
-            cloudData.button = msg.button || ""
-            cloudData.msg_idx = msg["msg idx"] || ""
-            cloudData.ack = msg.ack || ""
-          }
-
+        // 只添加新的體溫數據
+        if (temperatureData.length > 0) {
           setCloudMqttData(prev => {
-            const newData = [cloudData, ...prev].slice(0, 50)
-            return newData
+            const combined = [...temperatureData, ...prev]
+              .sort((a, b) => b.receivedAt.getTime() - a.receivedAt.getTime())
+              .slice(0, 50) // 限制總數
+            return combined
           })
-
-        } catch (error) {
-          console.error('雲端 MQTT 訊息解析錯誤:', error)
         }
-      })
-    }, 500) // 500ms防抖延遲
 
-    // 清理函數
-    return () => {
-      if (connectionTimeoutRef.current) {
-        clearTimeout(connectionTimeoutRef.current)
-      }
-      if (cloudClientRef.current) {
-        console.log("清理雲端 MQTT 連接")
-        cloudClientRef.current.end(true)
-        cloudClientRef.current = null
+        // ✅ 只處理體溫相關的數據 (300B 設備)
+        const healthMessages = newMessages.filter(msg => {
+          const isHealthMessage = msg.payload?.content === '300B' && msg.payload?.MAC
+          if (isHealthMessage) {
+            console.log('✅ 處理 300B 體溫消息:', {
+              MAC: msg.payload?.MAC,
+              topic: msg.topic,
+              gateway: msg.gateway?.name
+            })
+          } else {
+            console.log('⏭️ 跳過非體溫消息:', {
+              content: msg.payload?.content,
+              MAC: msg.payload?.MAC,
+              topic: msg.topic
+            })
+          }
+          return isHealthMessage
+        })
+
+        healthMessages.forEach(msg => {
+          const data = msg.payload
+          const MAC = data.MAC || data['mac address'] || data.macAddress
+
+          if (MAC) {
+            const skinTemp = parseFloat(data['skin temp']) || 0
+            const roomTemp = parseFloat(data['room temp']) || 0
+            const steps = parseInt(data.steps) || 0
+            const lightSleep = parseInt(data['light sleep (min)']) || 0
+            const deepSleep = parseInt(data['deep sleep (min)']) || 0
+            const batteryLevel = parseInt(data['battery level']) || 0
+
+            // 獲取病患資訊
+            const residentInfo = getResidentInfoByMAC(MAC)
+
+            // 創建設備記錄
+            const cloudDeviceRecord: CloudDeviceRecord = {
+              MAC: MAC,
+              deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${MAC.slice(-8)}`,
+              skin_temp: skinTemp,
+              room_temp: roomTemp,
+              steps: steps,
+              light_sleep: lightSleep,
+              deep_sleep: deepSleep,
+              battery_level: batteryLevel,
+              time: msg.timestamp.toISOString(),
+              datetime: msg.timestamp, // 使用實際的 MQTT 時間戳
+              isAbnormal: skinTemp > 0 && (skinTemp > NORMAL_TEMP_MAX || skinTemp < NORMAL_TEMP_MIN),
+              // 添加 Gateway 資訊
+              gateway: msg.gateway?.name || '',
+              gatewayId: msg.gateway?.id || '',
+              topic: msg.topic,
+              // 🔧 從 topic 中提取 Gateway 識別符作為備用
+              topicGateway: msg.topic?.match(/GW[A-F0-9]+/)?.[0] || '',
+              // 添加病患資訊
+              ...residentInfo
+            }
+
+            // 更新設備記錄
+            setCloudDeviceRecords(prev => {
+              const newRecords = [cloudDeviceRecord, ...prev]
+                .sort((a, b) => b.datetime.getTime() - a.datetime.getTime())
+                .slice(0, 1000)
+              return newRecords
+            })
+
+            // 更新設備列表
+            setCloudDevices(prev => {
+              const existingDevice = prev.find(d => d.MAC === MAC)
+
+              if (existingDevice) {
+                return prev.map(d =>
+                  d.MAC === MAC
+                    ? {
+                      ...d,
+                      lastSeen: msg.timestamp, // 使用實際的 MQTT 時間戳
+                      recordCount: d.recordCount + 1,
+                      // 更新病患資訊
+                      ...residentInfo
+                    }
+                    : d
+                )
+              } else {
+                const newDevice = {
+                  MAC: MAC,
+                  deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${MAC.slice(-8)}`,
+                  lastSeen: msg.timestamp, // 使用實際的 MQTT 時間戳
+                  recordCount: 1,
+                  // 添加 Gateway 資訊
+                  gateway: msg.gateway?.name || '',
+                  gatewayId: msg.gateway?.id || '',
+                  topic: msg.topic,
+                  // 🔧 從 topic 中提取 Gateway 識別符作為備用
+                  topicGateway: msg.topic?.match(/GW[A-F0-9]+/)?.[0] || '',
+                  // 添加病患資訊
+                  ...residentInfo
+                }
+                return [...prev, newDevice]
+              }
+            })
+
+            // 自動選擇第一個設備
+            setSelectedCloudDevice(prev => {
+              if (!prev) {
+                return MAC
+              }
+              return prev
+            })
+          }
+        })
+
+        // 更新最後更新時間
+        lastUpdateTime = Date.now()
+        console.log(`✅ 更新完成，下次更新時間: ${new Date(lastUpdateTime + 5000).toLocaleTimeString()}`)
+      } catch (error) {
+        console.error('Error processing MQTT data:', error)
       }
     }
-  }, [selectedGateway, CLOUD_MQTT_URL, CLOUD_MQTT_OPTIONS, devices, residents, getResidentForDevice])
 
-  // 獲取當前用戶的記錄（本地MQTT）
-  const currentUserRecords = temperatureRecords.filter(record => record.id === selectedUser)
+    // 初始載入
+    updateMqttData()
 
-  // 獲取當前雲端設備的記錄，轉換為TemperatureRecord格式
-  const currentCloudDeviceRecords: TemperatureRecord[] = selectedCloudDevice && cloudDeviceRecords.length > 0
+    // 降低更新頻率到 10 秒
+    const interval = setInterval(updateMqttData, 10000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // ✅ 監聽 MQTT Bus 連接狀態
+  useEffect(() => {
+    const unsubscribe = mqttBus.onStatusChange((status) => {
+      setCloudConnected(status === 'connected')
+      setCloudConnectionStatus(status === 'connected' ? t('pages:temperature.connectionStatus.connected') :
+        status === 'connecting' ? t('pages:temperature.connectionStatus.connecting') :
+          status === 'reconnecting' ? t('pages:temperature.connectionStatus.reconnecting') :
+            status === 'error' ? t('pages:temperature.connectionStatus.connectionError') : t('pages:temperature.connectionStatus.disconnected'))
+    })
+
+    // 初始化狀態
+    const currentStatus = mqttBus.getStatus()
+    setCloudConnected(currentStatus === 'connected')
+    setCloudConnectionStatus(currentStatus === 'connected' ? t('pages:temperature.connectionStatus.connected') : t('pages:temperature.connectionStatus.disconnected'))
+
+    return unsubscribe
+  }, [t])
+
+  // ✅ Gateway 切換時清除設備選擇
+  useEffect(() => {
+    setSelectedCloudDevice('')
+  }, [selectedGateway])
+
+  // ✅ 恢復舊版本的數據轉換邏輯
+  const currentCloudDeviceRecords = selectedCloudDevice && cloudDeviceRecords.length > 0
     ? cloudDeviceRecords
       .filter(record => record.MAC === selectedCloudDevice)
       .map(record => ({
         id: record.MAC,
-        name: record.deviceName,
-        temperature: record.skin_temp || 0, // 如果沒有皮膚溫度，使用0
+        name: record.residentName ? `${record.residentName} (${record.residentRoom})` : record.deviceName,
+        temperature: record.skin_temp || 0,
         time: record.time,
         datetime: record.datetime,
         isAbnormal: record.isAbnormal,
@@ -712,133 +494,11 @@ export default function TemperaturePage() {
       }))
     : []
 
-  console.log("當前選中用戶:", selectedUser)
-  console.log("本地MQTT溫度記錄數:", temperatureRecords.length)
-  console.log("當前用戶記錄數:", currentUserRecords.length)
-  console.log("當前雲端設備:", selectedCloudDevice)
-  console.log("雲端設備記錄數:", currentCloudDeviceRecords.length)
-
-  // 打印每個用戶的記錄數量
-  const userRecordCounts = USERS.map(user => {
-    const count = temperatureRecords.filter(r => r.id === user.id).length
-    return `${user.name}(${user.id}): ${count}筆`
-  }).join(", ")
-  console.log("各用戶記錄數:", userRecordCounts)
-
-  // 根據選中的日期過濾記錄
-  const getFilteredByDate = (records: TemperatureRecord[]) => {
-    console.log("開始日期過濾，原始記錄數:", records.length)
-    console.log("當前選中的日期標籤:", activeTab)
-    console.log("當前MQTT標籤頁:", currentMqttTab)
-
-    const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000)
-    const dayBeforeYesterday = new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000)
-
-    console.log("日期參考點:")
-    console.log("今天:", today.toLocaleDateString())
-    console.log("昨天:", yesterday.toLocaleDateString())
-    console.log("前天:", dayBeforeYesterday.toLocaleDateString())
-
-    let filtered: TemperatureRecord[] = []
-
-    // 放寬條件：過濾掉溫度為0或無效的記錄（但保留有效溫度記錄）
-    const validRecords = records.filter(r => {
-      // 對於雲端數據，允許溫度為0（因為可能沒有溫度感應器）
-      // 對於本地數據，要求有有效溫度
-      if (currentMqttTab === "cloud") {
-        return true // 雲端數據全部保留
-      }
-      return r.temperature > 0 // 本地數據要求有效溫度
-    })
-
-    console.log("有效記錄數（過濾後）:", validRecords.length)
-
-    // 由於模擬器數據可能是歷史數據，我們需要更靈活的過濾
-    if (activeTab === "today") {
-      // 如果沒有今天的數據，顯示最新的一天數據
-      filtered = validRecords.filter(r => {
-        const recordDate = new Date(r.datetime.getFullYear(), r.datetime.getMonth(), r.datetime.getDate())
-        return recordDate.getTime() === today.getTime()
-      })
-
-      // 如果今天沒有數據，取最新一天的數據
-      if (filtered.length === 0 && validRecords.length > 0) {
-        const latestRecord = validRecords[0] // 已按時間排序
-        const latestDate = new Date(latestRecord.datetime.getFullYear(), latestRecord.datetime.getMonth(), latestRecord.datetime.getDate())
-        filtered = validRecords.filter(r => {
-          const recordDate = new Date(r.datetime.getFullYear(), r.datetime.getMonth(), r.datetime.getDate())
-          return recordDate.getTime() === latestDate.getTime()
-        })
-        console.log("今天無數據，使用最新日期:", latestDate.toLocaleDateString(), "記錄數:", filtered.length)
-      }
-    } else if (activeTab === "yesterday") {
-      filtered = validRecords.filter(r => {
-        const recordDate = new Date(r.datetime.getFullYear(), r.datetime.getMonth(), r.datetime.getDate())
-        return recordDate.getTime() === yesterday.getTime()
-      })
-
-      // 如果昨天沒有數據，取第二新的一天數據
-      if (filtered.length === 0 && validRecords.length > 0) {
-        const uniqueDates = [...new Set(validRecords.map(r => {
-          const d = new Date(r.datetime.getFullYear(), r.datetime.getMonth(), r.datetime.getDate())
-          return d.getTime()
-        }))].sort((a, b) => b - a)
-
-        if (uniqueDates.length > 1) {
-          const secondLatestDate = uniqueDates[1]
-          filtered = validRecords.filter(r => {
-            const recordDate = new Date(r.datetime.getFullYear(), r.datetime.getMonth(), r.datetime.getDate())
-            return recordDate.getTime() === secondLatestDate
-          })
-          console.log("昨天無數據，使用第二新日期:", new Date(secondLatestDate).toLocaleDateString(), "記錄數:", filtered.length)
-        }
-      }
-    } else if (activeTab === "dayBefore") {
-      filtered = validRecords.filter(r => {
-        const recordDate = new Date(r.datetime.getFullYear(), r.datetime.getMonth(), r.datetime.getDate())
-        return recordDate.getTime() === dayBeforeYesterday.getTime()
-      })
-
-      // 如果前天沒有數據，取第三新的一天數據
-      if (filtered.length === 0 && validRecords.length > 0) {
-        const uniqueDates = [...new Set(validRecords.map(r => {
-          const d = new Date(r.datetime.getFullYear(), r.datetime.getMonth(), r.datetime.getDate())
-          return d.getTime()
-        }))].sort((a, b) => b - a)
-
-        if (uniqueDates.length > 2) {
-          const thirdLatestDate = uniqueDates[2]
-          filtered = validRecords.filter(r => {
-            const recordDate = new Date(r.datetime.getFullYear(), r.datetime.getMonth(), r.datetime.getDate())
-            return recordDate.getTime() === thirdLatestDate
-          })
-          console.log("前天無數據，使用第三新日期:", new Date(thirdLatestDate).toLocaleDateString(), "記錄數:", filtered.length)
-        }
-      }
-    } else {
-      filtered = validRecords.filter(r => r.datetime >= today)
-    }
-
-    console.log("過濾後記錄數:", filtered.length)
-    if (filtered.length > 0) {
-      console.log("第一筆記錄時間:", filtered[0].datetime.toLocaleString())
-      console.log("最後一筆記錄時間:", filtered[filtered.length - 1].datetime.toLocaleString())
-    }
-
-    return filtered
-  }
-
-  // 根據當前MQTT標籤頁選擇數據源
-  const currentRecords = currentMqttTab === "cloud" ? currentCloudDeviceRecords : currentUserRecords
-  const dateFilteredRecords = getFilteredByDate(currentRecords)
-
   // 根據時間範圍和狀態過濾記錄
   useEffect(() => {
-    let filtered = [...dateFilteredRecords]
+    let filtered = [...currentCloudDeviceRecords]
 
-    // 根據時間範圍過濾
+    // 時間範圍過濾
     if (timeRange !== "1day") {
       const now = new Date()
       const days = timeRange === "3day" ? 3 : 7
@@ -846,7 +506,7 @@ export default function TemperaturePage() {
       filtered = filtered.filter(r => r.datetime >= cutoff)
     }
 
-    // 根據狀態過濾
+    // 狀態過濾
     if (recordFilter === "high") {
       filtered = filtered.filter(r => r.temperature > NORMAL_TEMP_MAX)
     } else if (recordFilter === "low") {
@@ -854,11 +514,11 @@ export default function TemperaturePage() {
     }
 
     setFilteredRecords(filtered)
-  }, [dateFilteredRecords, recordFilter, timeRange])
+  }, [currentCloudDeviceRecords, recordFilter, timeRange])
 
   // 準備圖表數據
-  const chartData: ChartDataPoint[] = dateFilteredRecords
-    .slice(0, 144) // 24小時 * 6個點/小時 = 144個數據點
+  const chartData = currentCloudDeviceRecords
+    .slice(0, 144)
     .reverse()
     .map(record => ({
       time: record.time,
@@ -866,14 +526,6 @@ export default function TemperaturePage() {
       temperature: record.temperature,
       isAbnormal: record.isAbnormal
     }))
-
-  console.log("圖表數據準備:")
-  console.log("- 使用的數據源:", currentMqttTab)
-  console.log("- 日期過濾後記錄數:", dateFilteredRecords.length)
-  console.log("- 圖表數據點數:", chartData.length)
-  if (chartData.length > 0) {
-    console.log("- 溫度範圍:", Math.min(...chartData.map(d => d.temperature)), "至", Math.max(...chartData.map(d => d.temperature)))
-  }
 
   // 獲取選中日期的字符串
   const getDateString = () => {
@@ -916,105 +568,21 @@ export default function TemperaturePage() {
           <div className="font-semibold">{t('pages:temperature.connectionStatus.title')}</div>
           <div className="space-y-1">
             <div className="flex items-center justify-between">
-              <span>{t('pages:temperature.connectionStatus.localMqtt')} ({MQTT_URL}):</span>
-              <span className={connected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
-                {localConnectionStatus}
-              </span>
-            </div>
-            {localError && (
-              <div className="text-xs text-red-500 ml-4">
-                {t('pages:temperature.connectionStatus.error')}: {localError}
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              <span>{t('pages:temperature.connectionStatus.cloudMqtt')} ({CLOUD_MQTT_URL.split('.')[0]}...):</span>
+              <span>{t('pages:temperature.connectionStatus.cloudMqtt')}:</span>
               <span className={cloudConnected ? "text-green-600 font-medium" : "text-red-500 font-medium"}>
                 {cloudConnectionStatus}
               </span>
-            </div>
-            {cloudError && (
-              <div className="text-xs text-red-500 ml-4">
-                {t('pages:temperature.connectionStatus.error')}: {cloudError}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center justify-between mt-3">
-            <div className="text-xs text-gray-500">
-              {t('pages:temperature.connectionStatus.hint')}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (clientRef.current) {
-                    console.log("手動重連本地MQTT...")
-                    setLocalConnectionStatus("手動重連中...")
-                    clientRef.current.reconnect()
-                  }
-                }}
-                disabled={connected}
-              >
-                {t('pages:temperature.reconnectLocal')}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (cloudClientRef.current) {
-                    console.log("手動重連雲端MQTT...")
-                    setCloudConnectionStatus("手動重連中...")
-                    cloudClientRef.current.reconnect()
-                  }
-                }}
-                disabled={cloudConnected}
-              >
-                {t('pages:temperature.reconnectCloud')}
-              </Button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 主要功能標籤頁 */}
-      <Tabs defaultValue="local" className="w-full" value={currentMqttTab} onValueChange={setCurrentMqttTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="local">{t('pages:temperature.tabs.local')}</TabsTrigger>
+      {/* 雲端 MQTT 標籤頁 */}
+      <Tabs defaultValue="cloud" className="w-full">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="cloud">{t('pages:temperature.tabs.cloud')}</TabsTrigger>
         </TabsList>
 
-        {/* 本地 MQTT 標籤頁 */}
-        <TabsContent value="local" className="space-y-6">
-          {/* 患者選擇 */}
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg flex items-center">
-                  <Avatar className="mr-3 h-8 w-8">
-                    <AvatarFallback>{USERS.find(u => u.id === selectedUser)?.name[0] || "?"}</AvatarFallback>
-                  </Avatar>
-                  {t('pages:temperature.patientSelection.title')}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Select value={selectedUser} onValueChange={setSelectedUser}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t('pages:temperature.patientSelection.selectPatient')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {USERS.map(user => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {t('pages:temperature.patientSelection.patient')}：{user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* 雲端 MQTT 標籤頁 */}
         <TabsContent value="cloud" className="space-y-6">
           {/* 設備選擇和狀態 */}
           <Card>
@@ -1148,32 +716,62 @@ export default function TemperaturePage() {
                         <SelectValue placeholder={t('pages:temperature.cloudDeviceMonitoring.selectCloudDevice')} />
                       </SelectTrigger>
                       <SelectContent>
-                        {cloudDevices.map(device => {
-                          const statusInfo = getStatusInfo(device.residentStatus)
-                          return (
-                            <SelectItem key={device.MAC} value={device.MAC}>
-                              <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-2">
-                                  {getDeviceTypeIcon(device.deviceType)}
-                                  <span>{device.residentName || device.deviceName}</span>
-                                  {device.residentRoom && (
-                                    <span className="text-xs text-muted-foreground">
-                                      ({device.residentRoom})
+                        {cloudDevices
+                          .filter(device => {
+                            // ✅ 如果選擇了 Gateway，只顯示該 Gateway 的設備
+                            if (selectedGateway) {
+                              const gateway = gateways.find(gw => gw.id === selectedGateway)
+                              if (gateway) {
+                                // 檢查設備的所有記錄，只要有一條記錄來自選定的 Gateway 就顯示該設備
+                                const deviceRecords = cloudDeviceRecords.filter(record => record.MAC === device.MAC)
+
+                                // 🎯 簡化篩選邏輯：直接使用 MQTT 數據中的 gateway 字段
+                                const hasMatchingRecord = deviceRecords.some(record => {
+                                  // 主要匹配：record.gateway（來自 MQTT 的 gateway 字段）包含選定 Gateway 的名稱
+                                  // 例如：record.gateway = "GwF9E516B8_142", gateway.name = "GwF9E516B8_176"
+                                  // 匹配邏輯：檢查前綴是否相同（去掉最後的數字部分）
+                                  const recordGatewayPrefix = record.gateway?.split('_')[0] || ''
+                                  const selectedGatewayPrefix = gateway.name?.split('_')[0] || ''
+
+                                  const matches = recordGatewayPrefix &&
+                                    selectedGatewayPrefix &&
+                                    recordGatewayPrefix === selectedGatewayPrefix
+
+                                  return matches
+                                })
+
+                                return hasMatchingRecord
+                              }
+                            }
+                            // 如果沒有選擇 Gateway，顯示所有設備
+                            return true
+                          })
+                          .map(device => {
+                            const statusInfo = getStatusInfo(device.residentStatus)
+                            return (
+                              <SelectItem key={device.MAC} value={device.MAC}>
+                                <div className="flex items-center justify-between w-full">
+                                  <div className="flex items-center gap-2">
+                                    {getDeviceTypeIcon(device.deviceType)}
+                                    <span>{device.residentName || device.deviceName}</span>
+                                    {device.residentRoom && (
+                                      <span className="text-xs text-muted-foreground">
+                                        ({device.residentRoom})
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`px-2 py-1 rounded-full text-xs ${statusInfo.bgColor}`}>
+                                      {statusInfo.badge}
                                     </span>
-                                  )}
+                                    <span className="text-xs text-muted-foreground">
+                                      {device.recordCount} {t('pages:temperature.cloudDeviceMonitoring.records')}
+                                    </span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className={`px-2 py-1 rounded-full text-xs ${statusInfo.bgColor}`}>
-                                    {statusInfo.badge}
-                                  </span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {device.recordCount} {t('pages:temperature.cloudDeviceMonitoring.records')}
-                                  </span>
-                                </div>
-                              </div>
-                            </SelectItem>
-                          )
-                        })}
+                              </SelectItem>
+                            )
+                          })}
                       </SelectContent>
                     </Select>
                   </div>
@@ -1390,7 +988,7 @@ export default function TemperaturePage() {
                 <span className="flex items-center">
                   <TrendingUp className="mr-2 h-5 w-5" />
                   {t('pages:temperature.temperatureChart.title')}
-                  {currentMqttTab === "cloud" && selectedCloudDevice && (
+                  {selectedCloudDevice && (
                     <span className="ml-2 text-sm font-normal text-blue-600">
                       - {(() => {
                         const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
@@ -1398,11 +996,6 @@ export default function TemperaturePage() {
                           ? `${device.residentName} (${device.residentRoom})`
                           : device?.deviceName || t('pages:temperature.temperatureChart.cloudDevice')
                       })()}
-                    </span>
-                  )}
-                  {currentMqttTab === "local" && (
-                    <span className="ml-2 text-sm font-normal text-green-600">
-                      - {USERS.find(u => u.id === selectedUser)?.name || t('pages:temperature.temperatureChart.localUser')}
                     </span>
                   )}
                 </span>
@@ -1421,7 +1014,7 @@ export default function TemperaturePage() {
                         interval="preserveStartEnd"
                       />
                       <YAxis
-                        domain={currentMqttTab === "cloud" ? ['dataMin - 1', 'dataMax + 1'] : [34, 40]}
+                        domain={['dataMin - 1', 'dataMax + 1']}
                         tick={{ fontSize: 12 }}
                         label={{ value: t('pages:temperature.temperatureChart.yAxisLabel'), angle: -90, position: 'insideLeft' }}
                       />
@@ -1447,14 +1040,10 @@ export default function TemperaturePage() {
                   <div className="text-center">
                     <Thermometer className="mx-auto h-12 w-12 mb-4 opacity-50" />
                     <p>{t('pages:temperature.temperatureChart.noData', { date: getDateString() })}</p>
-                    {currentMqttTab === "cloud" ? (
-                      <div className="text-sm space-y-1">
-                        <p>{t('pages:temperature.temperatureChart.cloudSimulatorCheck')}</p>
-                        <p>{t('pages:temperature.temperatureChart.selectValidDevice')}</p>
-                      </div>
-                    ) : (
-                      <p className="text-sm">{t('pages:temperature.temperatureChart.localSimulatorCheck')}</p>
-                    )}
+                    <div className="text-sm space-y-1">
+                      <p>{t('pages:temperature.temperatureChart.cloudSimulatorCheck')}</p>
+                      <p>{t('pages:temperature.temperatureChart.selectValidDevice')}</p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1467,7 +1056,7 @@ export default function TemperaturePage() {
               <CardTitle className="flex items-center">
                 <Clock className="mr-2 h-5 w-5" />
                 {t('pages:temperature.temperatureRecords.title')}
-                {currentMqttTab === "cloud" && selectedCloudDevice && (
+                {selectedCloudDevice && (
                   <span className="ml-2 text-sm font-normal text-blue-600">
                     - {(() => {
                       const device = cloudDevices.find(d => d.MAC === selectedCloudDevice)
@@ -1475,11 +1064,6 @@ export default function TemperaturePage() {
                         ? `${device.residentName} (${device.residentRoom})`
                         : device?.deviceName || t('pages:temperature.temperatureChart.cloudDevice')
                     })()}
-                  </span>
-                )}
-                {currentMqttTab === "local" && (
-                  <span className="ml-2 text-sm font-normal text-green-600">
-                    - {USERS.find(u => u.id === selectedUser)?.name || t('pages:temperature.temperatureChart.localUser')}
                   </span>
                 )}
               </CardTitle>
@@ -1585,10 +1169,10 @@ export default function TemperaturePage() {
                   <div className="text-center py-8 text-muted-foreground">
                     <Clock className="mx-auto h-8 w-8 mb-2 opacity-50" />
                     <p>{t('pages:temperature.temperatureRecords.noRecords')}</p>
-                    {currentMqttTab === "cloud" && !selectedCloudDevice && (
+                    {!selectedCloudDevice && (
                       <p className="text-sm mt-2">{t('pages:temperature.temperatureRecords.selectCloudDeviceFirst')}</p>
                     )}
-                    {currentMqttTab === "cloud" && selectedCloudDevice && currentCloudDeviceRecords.length === 0 && (
+                    {selectedCloudDevice && currentCloudDeviceRecords.length === 0 && (
                       <p className="text-sm mt-2">{t('pages:temperature.temperatureRecords.selectedDeviceNoData')}</p>
                     )}
                   </div>

@@ -726,7 +726,12 @@
             "localMqtt": "本地 MQTT",
             "cloudMqtt": "雲端 MQTT",
             "error": "錯誤",
-            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務"
+            "hint": "提示：本地MQTT需要運行在localhost:9001，雲端MQTT會自動連接到HiveMQ雲服務",
+            "connected": "已連線",
+            "disconnected": "未連線",
+            "connecting": "連接中...",
+            "reconnecting": "重新連接中...",
+            "connectionError": "連接錯誤"
         }
     },
     "settings": {
