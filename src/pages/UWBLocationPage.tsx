@@ -478,8 +478,9 @@ export default function UWBLocationPage() {
     } = useUWBLocation()
 
     // 智能切換邏輯：檢測後端可用性（保留用於其他邏輯判斷）
-    const [backendAvailable, setBackendAvailable] = useState(false)
-    const [isCheckingBackend, setIsCheckingBackend] = useState(true)
+    // 默認假設後端可用，在實際 API 調用失敗時再降級
+    const [backendAvailable, setBackendAvailable] = useState(true)
+    const [isCheckingBackend, setIsCheckingBackend] = useState(false)
 
     // 數據同步 Hook（保留用於 anchors 和 tags）
     const {
@@ -494,25 +495,6 @@ export default function UWBLocationPage() {
             setBackendAvailable(false)
         }
     })
-
-    // 檢測後端可用性
-    useEffect(() => {
-        const checkBackendAvailability = async () => {
-            try {
-                setIsCheckingBackend(true)
-                await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'}/health`)
-                setBackendAvailable(true)
-                console.log('✅ 後端連接可用，使用 API 模式')
-            } catch (error) {
-                setBackendAvailable(false)
-                console.log('⚠️ 後端連接不可用，使用 localStorage 模式')
-            } finally {
-                setIsCheckingBackend(false)
-            }
-        }
-
-        checkBackendAvailability()
-    }, [])
 
     // 從 localStorage 加載數據的輔助函數（含智能恢復）
     const loadFromStorage = <T,>(key: string, defaultValue: T): T => {

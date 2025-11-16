@@ -143,8 +143,9 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
     const [selectedGateway, setSelectedGateway] = useState("")
 
     // 後端狀態管理
-    const [backendAvailable, setBackendAvailable] = useState(false)
-    const [isCheckingBackend, setIsCheckingBackend] = useState(true)
+    // 默認假設後端可用，在實際 API 調用失敗時再降級
+    const [backendAvailable, setBackendAvailable] = useState(true)
+    const [isCheckingBackend, setIsCheckingBackend] = useState(false)
 
     // 數據同步 Hook - 使用 useCallback 包裝 onError 避免無限循環
     const handleSyncError = useCallback((error: Error) => {
@@ -299,29 +300,6 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [syncHomes, syncFloors, syncGateways, loadFromStorage])
 
-    // 檢測後端可用性
-    useEffect(() => {
-        const checkBackendAvailability = async () => {
-            try {
-                setIsCheckingBackend(true)
-                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'}/health`)
-                if (response.ok) {
-                    setBackendAvailable(true)
-                    console.log('✅ 後端連接可用，使用 API 模式')
-                } else {
-                    setBackendAvailable(false)
-                    console.log('⚠️ 後端連接不可用，使用 localStorage 模式')
-                }
-            } catch (error) {
-                setBackendAvailable(false)
-                console.log('⚠️ 後端連接不可用，使用 localStorage 模式')
-            } finally {
-                setIsCheckingBackend(false)
-            }
-        }
-
-        checkBackendAvailability()
-    }, [])
 
     // ✨ 初始化 MQTT Bus（應用啟動時只執行一次）
     useEffect(() => {

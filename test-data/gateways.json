@@ -1,70 +1,19 @@
 [
   {
-    "id": "gw_1762873074837",
-    "name": "GwF9E93C7C_211",
-    "macAddress": "GW:F9E93C7C",
+    "id": "gw_1763227337762",
+    "name": "GwF9E516B8_197",
+    "macAddress": "GW:F9E516B8",
     "ipAddress": "192.168.1.100",
-    "floorId": "floor_1762700106523",
+    "floorId": "floor_1759425596164",
     "status": "online",
     "cloudData": {
       "content": "gateway topic",
-      "gateway_id": 4192812156,
-      "name": "GwF9E93C7C_211",
+      "gateway_id": 4192540344,
+      "name": "GwF9E516B8_197",
       "fw_ver": "0.82838s",
       "fw_serial": 0,
       "uwb_hw_com_ok": "yes",
       "uwb_joined": "yes",
-      "uwb_network_id": 24015,
-      "connected_ap": "Kwan&Hong",
-      "wifi_tx_power": 13,
-      "set_wifi_max_tx_power": 13.75,
-      "ble_scan_time": 5,
-      "ble_scan_pause_time": 20,
-      "battery_voltage": 3.122,
-      "five_v_plugged": "no",
-      "uwb_tx_power_changed": "no",
-      "uwb_tx_power": {
-        "boost_norm": 7,
-        "boost_500": 9.5,
-        "boost_250": 12,
-        "boost_125": 14.5
-      },
-      "pub_topic": {
-        "anchor_config": "UWB/GW3C7C_AncConf",
-        "tag_config": "UWB/GW3C7C_TagConf",
-        "location": "UWB/GW3C7C_Loca",
-        "message": "UWB/GW3C7C_Message",
-        "ack_from_node": "UWB/GW3C7C_Ack",
-        "health": "UWB/GW3C7C_Health"
-      },
-      "sub_topic": {
-        "downlink": "UWB/GW3C7C_Dwlink"
-      },
-      "discard_iot_data_time": 30,
-      "discarded_iot_data": 0,
-      "total_discarded_data": 0,
-      "first_sync": "2025-295 07:49:51.06",
-      "last_sync": "2025-316 22:40:42.05",
-      "current": "2025-316 22:43:18.08",
-      "receivedAt": "2025-11-12T14:43:17.890Z"
-    },
-    "createdAt": "2025-11-11T14:57:54.837Z"
-  },
-  {
-    "id": "gw_1762927889423",
-    "name": "GwF9E516B8_192",
-    "macAddress": "GW:F9E516B8",
-    "ipAddress": "192.168.1.100",
-    "floorId": "floor_1759425596164",
-    "status": "offline",
-    "cloudData": {
-      "content": "gateway topic",
-      "gateway_id": 4192540344,
-      "name": "GwF9E516B8_192",
-      "fw_ver": "0.82838s",
-      "fw_serial": 0,
-      "uwb_hw_com_ok": "yes",
-      "uwb_joined": "no",
       "uwb_network_id": 24015,
       "connected_ap": "Epictech",
       "wifi_tx_power": 13,
@@ -93,12 +42,12 @@
       },
       "discard_iot_data_time": 30,
       "discarded_iot_data": 0,
-      "total_discarded_data": 16,
-      "first_sync": "2025-313 19:26:08.70",
-      "last_sync": "2025-316 22:43:10.02",
-      "current": "2025-316 22:43:12.04",
-      "receivedAt": "2025-11-12T14:43:12.156Z"
+      "total_discarded_data": 0,
+      "first_sync": "2025-318 16:07:26.55",
+      "last_sync": "2025-319 23:29:36.00",
+      "current": "2025-319 23:29:36.01",
+      "receivedAt": "2025-11-15T15:29:42.213Z"
     },
-    "createdAt": "2025-11-12T06:11:29.423Z"
+    "createdAt": "2025-11-15T17:22:17.762Z"
   }
 ]
