@@ -4886,7 +4886,7 @@ export default function UWBLocationPage() {
                                         <SelectContent>
                                             {/* 顯示該樓層下的系統閘道器 */}
                                             {currentGateways
-                                                .filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online')
+                                                .filter(gw => gw.floorId === selectedFloorForAnchors)
                                                 .map(gateway => {
                                                     // 提取 gateway ID（如果 MAC 地址包含 GW: 前綴）
                                                     const gatewayIdFromMac = gateway.macAddress.startsWith('GW:')
@@ -4904,7 +4904,7 @@ export default function UWBLocationPage() {
                                                 })}
 
                                             {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
-                                            {currentGateways.filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online').length === 0 && (
+                                            {currentGateways.filter(gw => gw.floorId === selectedFloorForAnchors).length === 0 && (
                                                 <div className="px-2 py-1.5 text-sm text-gray-500">
                                                     {t('pages:uwbLocation.anchorPairing.noAvailableGateways')}
                                                 </div>
