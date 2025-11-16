@@ -1,0 +1,58 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Data
+data/
+*.db
+*.mv.db
+*.trace.db
+
+# MQTT
+mqtt-simulator-*/
+mosquitto/data/
+mosquitto/log/
+
+# Backup
+backup/
+
+# Environment
+.env
+.env.local
+
+# Railway
+.railway/
+
+# Test output
+compile_output.txt
+test_backend.sh
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Heap dumps and process files
+*.hprof
+*.pid

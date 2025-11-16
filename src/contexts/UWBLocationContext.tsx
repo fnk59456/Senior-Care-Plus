@@ -724,7 +724,39 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
         if (backendAvailable) {
             try {
                 console.log('📡 調用後端 API 創建 Gateway...')
-                const newGateway = await api.gateway.create(gatewayData)
+
+                // 驗證必需字段
+                if (!gatewayData.floorId || !gatewayData.name || !gatewayData.macAddress) {
+                    throw new Error('缺少必需字段: floorId, name, macAddress 都是必需的')
+                }
+
+                // 只發送後端期望的字段，移除後端不接受的字段（ipAddress, status, lastSeen）
+                // 構建請求數據，只包含後端期望的字段
+                const requestData: any = {
+                    floorId: String(gatewayData.floorId).trim(),
+                    name: String(gatewayData.name).trim(),
+                    macAddress: String(gatewayData.macAddress).trim()
+                }
+
+                // 可選字段：只在有值時添加
+                if ((gatewayData as any).firmwareVersion) {
+                    requestData.firmwareVersion = String((gatewayData as any).firmwareVersion).trim()
+                }
+
+                // cloudData: 暫時不發送，因為可能導致後端解析失敗
+                // 後端可能不支持複雜的 cloudData 對象，或者需要特定的格式
+                // 如果後端需要 cloudData，應該在創建後單獨更新
+                // requestData.cloudData = null  // 暫時註釋掉，測試是否可以不發送此字段
+
+                console.log('📤 發送給後端的數據:', requestData)
+                console.log('📤 請求數據 JSON:', JSON.stringify(requestData, null, 2))
+                console.log('📤 請求數據類型檢查:', {
+                    floorId: typeof requestData.floorId,
+                    name: typeof requestData.name,
+                    macAddress: typeof requestData.macAddress
+                })
+
+                const newGateway = await api.gateway.create(requestData)
                 console.log('✅ 後端 API 返回:', newGateway)
 
                 setGateways(prev => {
@@ -732,6 +764,7 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
                     // 後端可用時，不保存 gateways 到 localStorage
                     return updated
                 })
+
                 // 註冊到 GatewayRegistry
                 gatewayRegistry.registerGateway(newGateway)
                 console.log('✅ Gateway 已創建並註冊到 Registry')
