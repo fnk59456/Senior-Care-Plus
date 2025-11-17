@@ -491,6 +491,9 @@ export default function LocationPage() {
           residentName: residentInfo?.residentName,
           residentStatus: residentInfo?.residentStatus,
           residentRoom: residentInfo?.residentRoom,
+          // 添加 Gateway 資訊用於調試
+          gateway: message.gateway?.name || '',
+          topic: message.topic
         },
       }))
     }
@@ -850,7 +853,7 @@ export default function LocationPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {gateways
-                    .filter(gw => gw.floorId === selectedFloor)
+                    .filter(gw => gw.floorId === selectedFloor && gw.status === 'online')
                     .map(gateway => (
                       <SelectItem key={gateway.id} value={gateway.id}>
                         <div className="flex items-center gap-2">

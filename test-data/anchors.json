@@ -1,1 +1,130 @@
-[]
+[
+  {
+    "id": "anchor_1763389833697",
+    "gatewayId": "gw_1763388640261",
+    "name": "DW4C0B",
+    "macAddress": "ANCHOR:19467",
+    "status": "active",
+    "position": {
+      "x": -0.3,
+      "y": -3.8,
+      "z": 1.25
+    },
+    "lastSeen": "2025-11-17T14:30:31.811Z",
+    "cloudData": {
+      "content": "config",
+      "gateway_id": 4192540344,
+      "node": "ANCHOR",
+      "name": "DW4C0B",
+      "id": 19467,
+      "fw_update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 0,
+      "position": {
+        "x": -0.3,
+        "y": -3.8,
+        "z": 1.25
+      },
+      "receivedAt": "2025-11-17T14:30:31.811Z"
+    },
+    "cloudGatewayId": 4192540344,
+    "createdAt": "2025-11-17T14:30:33.697Z"
+  },
+  {
+    "id": "anchor_1763389835172",
+    "gatewayId": "gw_1763388640261",
+    "name": "DW8E97",
+    "macAddress": "ANCHOR:36503",
+    "status": "active",
+    "position": {
+      "x": -2.3,
+      "y": 0.7,
+      "z": 2.6
+    },
+    "lastSeen": "2025-11-17T14:30:33.800Z",
+    "cloudData": {
+      "content": "config",
+      "gateway_id": 4192540344,
+      "node": "ANCHOR",
+      "name": "DW8E97",
+      "id": 36503,
+      "fw_update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 0,
+      "position": {
+        "x": -2.3,
+        "y": 0.7,
+        "z": 2.6
+      },
+      "receivedAt": "2025-11-17T14:30:33.800Z"
+    },
+    "cloudGatewayId": 4192540344,
+    "createdAt": "2025-11-17T14:30:35.172Z"
+  },
+  {
+    "id": "anchor_1763389836894",
+    "gatewayId": "gw_1763388640261",
+    "name": "DW4210",
+    "macAddress": "ANCHOR:16912",
+    "status": "active",
+    "position": {
+      "x": 1.7,
+      "y": -3.8,
+      "z": 1.15
+    },
+    "lastSeen": "2025-11-17T14:30:35.260Z",
+    "cloudData": {
+      "content": "config",
+      "gateway_id": 4192540344,
+      "node": "ANCHOR",
+      "name": "DW4210",
+      "id": 16912,
+      "fw_update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 1.7,
+        "y": -3.8,
+        "z": 1.15
+      },
+      "receivedAt": "2025-11-17T14:30:35.260Z"
+    },
+    "cloudGatewayId": 4192540344,
+    "createdAt": "2025-11-17T14:30:36.894Z"
+  },
+  {
+    "id": "anchor_1763389838606",
+    "gatewayId": "gw_1763388640261",
+    "name": "DW4C0B",
+    "macAddress": "ANCHOR:19467",
+    "status": "active",
+    "position": {
+      "x": 15.267945547046132,
+      "y": 47.18435124339646,
+      "z": 1.25
+    },
+    "lastSeen": "2025-11-17T14:30:36.986Z",
+    "cloudData": {
+      "content": "config",
+      "gateway_id": 4192540344,
+      "node": "ANCHOR",
+      "name": "DW4C0B",
+      "id": 19467,
+      "fw_update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 0,
+      "position": {
+        "x": -0.3,
+        "y": -3.8,
+        "z": 1.25
+      },
+      "receivedAt": "2025-11-17T14:30:36.986Z"
+    },
+    "cloudGatewayId": 4192540344,
+    "createdAt": "2025-11-17T14:30:38.606Z"
+  }
+]

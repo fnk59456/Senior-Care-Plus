@@ -205,56 +205,15 @@ export class GatewayRegistry {
                 downlink: subTopics?.downlink,
             }
         } else {
-            // 本地模式：從 MAC 地址提取後4位生成 topics
-            const macSuffix = this.extractMacSuffix(gateway)
+            // 本地模式：使用命名規則
+            const gwName = gateway.name.replace(/\s+/g, '')
             return {
-                health: `UWB/GW${macSuffix}_Health`,
-                location: `UWB/GW${macSuffix}_Loca`,
-                ack: `UWB/GW${macSuffix}_Ack`,
-                message: `UWB/GW${macSuffix}_Message`,
-                tagConfig: `UWB/GW${macSuffix}_TagConf`,
-                anchorConfig: `UWB/GW${macSuffix}_AncConf`,
-                downlink: `UWB/GW${macSuffix}_Downlink`,
+                health: `UWB/GW${gwName}_Health`,
+                location: `UWB/GW${gwName}_Loca`,
+                ack: `UWB/GW${gwName}_Ack`,
+                message: `UWB/GW${gwName}_Message`,
             }
         }
-    }
-
-    /**
-     * 從 Gateway 的 name 或 macAddress 中提取 MAC 地址的後4位
-     *
-     * 規則：
-     * - name = "GwF9E516B8_197" → 提取 "F9E516B8" → 後4位 "16B8"
-     * - macAddress = "GW:F9E516B8" → 提取 "F9E516B8" → 後4位 "16B8"
-     *
-     * @param gateway Gateway 對象
-     * @returns MAC 地址的後4位（大寫，無冒號）
-     */
-    private extractMacSuffix(gateway: Gateway): string {
-        let macAddress = ''
-
-        // 優先從 macAddress 字段提取
-        if (gateway.macAddress) {
-            // 移除 "GW:" 前綴和所有冒號，轉為大寫
-            macAddress = gateway.macAddress.replace(/^GW:/i, '').replace(/:/g, '').toUpperCase()
-        } else if (gateway.name) {
-            // 從 name 中提取：GwF9E516B8_197 → F9E516B8
-            // 匹配模式：Gw + 8位十六進制數字 + 下劃線 + 數字
-            const match = gateway.name.match(/^Gw([0-9A-Fa-f]{8})_/i)
-            if (match) {
-                macAddress = match[1].toUpperCase()
-            }
-        }
-
-        // 提取後4位
-        if (macAddress.length >= 4) {
-            const suffix = macAddress.slice(-4).toUpperCase()
-            console.log(`🔧 從 Gateway ${gateway.name} 提取 MAC 後綴: ${macAddress} → ${suffix}`)
-            return suffix
-        }
-
-        // 如果無法提取，回退到使用 name（去除空格）
-        console.warn(`⚠️ 無法從 Gateway ${gateway.name} 提取 MAC 地址，使用 name 作為後綴`)
-        return gateway.name.replace(/\s+/g, '')
     }
 
     /**

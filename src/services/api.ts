@@ -128,12 +128,9 @@ export const gatewayAPI = {
 
     // 創建新網關
     async create(gatewayData: Omit<Gateway, 'id' | 'createdAt'>): Promise<Gateway> {
-        const requestBody = JSON.stringify(gatewayData)
-        console.log('📤 請求體:', requestBody)
-
         return apiRequest<Gateway>('/gateways', {
             method: 'POST',
-            body: requestBody,
+            body: JSON.stringify(gatewayData),
         })
     },
 

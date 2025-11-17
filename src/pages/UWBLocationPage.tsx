@@ -3172,31 +3172,29 @@ export default function UWBLocationPage() {
             console.log(`- Serial No: ${anchorConfigForm.serial_no}`)
             console.log(`- 配置參數:`, anchorConfigForm)
 
-            // 使用雲端 MQTT 客戶端發送
-            if (cloudClientRef.current && cloudConnected) {
-                const messageJson = JSON.stringify(configMessage)
+            // 使用現有 MQTT Bus 發送
+            if (!mqttBus.isConnected()) {
+                console.error('❌ MQTT Bus 未連線')
+                alert('MQTT Bus 未連線，無法發送配置')
+                return false
+            }
 
-                cloudClientRef.current.publish(downlinkTopic, messageJson, (error) => {
-                    if (error) {
-                        console.error('❌ 發送配置失敗:', error)
-                        alert('發送配置失敗: ' + error.message)
-                    } else {
-                        console.log('✅ Anchor 配置已成功發送到雲端')
-                        alert(t('pages:uwbLocation.anchorCalibration.coordinatesSentToCloud', { name: anchor.name }))
+            try {
+                await mqttBus.publish(downlinkTopic, configMessage, 1)
+                console.log('✅ Anchor 配置已成功發送到雲端')
+                alert(t('pages:uwbLocation.anchorCalibration.coordinatesSentToCloud', { name: anchor.name }))
 
-                        // 發送成功後，更新全域 serial_no 為下一個值
-                        const nextSerial = anchorConfigForm.serial_no >= 9999 ? 1306 : anchorConfigForm.serial_no + 1
-                        setGlobalSerialNo(nextSerial)
-                        console.log(`📡 Serial No 已更新: ${anchorConfigForm.serial_no} → ${nextSerial}`)
+                // 發送成功後，更新全域 serial_no 為下一個值
+                const nextSerial = anchorConfigForm.serial_no >= 9999 ? 1306 : anchorConfigForm.serial_no + 1
+                setGlobalSerialNo(nextSerial)
+                console.log(`📡 Serial No 已更新: ${anchorConfigForm.serial_no} → ${nextSerial}`)
 
-                        // 記錄發送的完整訊息
-                        console.log('📤 發送的完整訊息:')
-                        console.log(JSON.stringify(configMessage, null, 2))
-                    }
-                })
-            } else {
-                console.error('❌ 雲端 MQTT 未連接')
-                alert('雲端 MQTT 未連接，無法發送配置')
+                // 記錄發送的完整訊息
+                console.log('📤 發送的完整訊息:')
+                console.log(JSON.stringify(configMessage, null, 2))
+            } catch (error: any) {
+                console.error('❌ 發送配置失敗:', error)
+                alert('發送配置失敗: ' + (error?.message || error))
                 return false
             }
 
@@ -4886,7 +4884,7 @@ export default function UWBLocationPage() {
                                         <SelectContent>
                                             {/* 顯示該樓層下的系統閘道器 */}
                                             {currentGateways
-                                                .filter(gw => gw.floorId === selectedFloorForAnchors)
+                                                .filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online')
                                                 .map(gateway => {
                                                     // 提取 gateway ID（如果 MAC 地址包含 GW: 前綴）
                                                     const gatewayIdFromMac = gateway.macAddress.startsWith('GW:')
@@ -4904,7 +4902,7 @@ export default function UWBLocationPage() {
                                                 })}
 
                                             {/* 如果該樓層沒有閘道器，顯示提示訊息 */}
-                                            {currentGateways.filter(gw => gw.floorId === selectedFloorForAnchors).length === 0 && (
+                                            {currentGateways.filter(gw => gw.floorId === selectedFloorForAnchors && gw.status === 'online').length === 0 && (
                                                 <div className="px-2 py-1.5 text-sm text-gray-500">
                                                     {t('pages:uwbLocation.anchorPairing.noAvailableGateways')}
                                                 </div>
