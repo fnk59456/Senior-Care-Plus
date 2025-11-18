@@ -10,6 +10,8 @@ import { api } from "@/services/api"
 import { useDataSync } from "@/hooks/useDataSync"
 import { gatewayRegistry } from "@/services/gatewayRegistry"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
+import { FlattenedAnchorData } from '@/types/iot-devices'
+import { runAnchorPipeline, type RawAnchorInput, type PipelineError, serializeAnchor, deserializeAnchor, type AnchorLike } from '@/utils/dataflowNormalizer'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -134,6 +136,91 @@ interface AnchorDevice {
     // 新增：關聯的 Gateway 雲端 ID
     cloudGatewayId?: number
 }
+
+const toRawAnchorInput = (anchor: AnchorDevice): RawAnchorInput => ({
+    id: anchor.id,
+    gatewayId: anchor.gatewayId,
+    name: anchor.name,
+    macAddress: anchor.macAddress,
+    status: anchor.status,
+    isBound: anchor.status === 'active' || anchor.status === 'paired',
+    lastSeen: anchor.lastSeen,
+    position: anchor.position,
+    cloudData: anchor.cloudData,
+    cloudGatewayId: anchor.cloudGatewayId,
+})
+
+const ensureDateValue = (value?: Date | string): Date | undefined => {
+    if (!value) return undefined
+    if (value instanceof Date) {
+        return Number.isNaN(value.getTime()) ? undefined : value
+    }
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed
+}
+
+const normalizeAnchorStatus = (status?: string): AnchorDevice['status'] => {
+    if (!status) return 'unpaired'
+    const normalized = status.toLowerCase()
+    if (normalized === 'online' || normalized === 'active') return 'active'
+    if (normalized === 'error') return 'error'
+    if (normalized === 'calibrating') return 'calibrating'
+    return 'unpaired'
+}
+
+const mapFlattenedAnchorToUI = (
+    flattened: FlattenedAnchorData | undefined,
+    fallback: AnchorDevice
+): AnchorDevice => {
+    if (!flattened) {
+        return {
+            ...fallback,
+            lastSeen: ensureDateValue(fallback.lastSeen),
+        }
+    }
+
+    // 使用顶层字段（保持原样）
+    return {
+        ...fallback,
+        id: flattened.id || fallback.id,
+        gatewayId: flattened.gatewayId ?? fallback.gatewayId,
+        name: flattened.name || fallback.name,
+        macAddress: flattened.macAddress || fallback.macAddress,
+        status: normalizeAnchorStatus(flattened.status) ?? fallback.status,
+        position: flattened.position ?? fallback.position, // 保持 position 对象原样
+        signalStrength: typeof flattened.rssi === 'number' ? flattened.rssi : fallback.signalStrength,
+        batteryLevel: flattened.battery_voltage ?? fallback.batteryLevel,
+        lastSeen: ensureDateValue(flattened.lastSeen) ?? ensureDateValue(fallback.lastSeen),
+        cloudGatewayId: flattened.cloudGatewayId ?? fallback.cloudGatewayId,
+        // 从 extra_data.raw_anchor.cloudData 或反序列化的 cloudData 获取完整 cloudData
+        cloudData: flattened.extra_data?.raw_anchor?.cloudData ?? fallback.cloudData,
+    }
+}
+
+const isFlattenedAnchorRecord = (value: any): value is FlattenedAnchorData => {
+    return Boolean(value && typeof value === 'object' && (value.device_type === 'anchor' || value.id) && value.name)
+}
+
+const reviveAnchorDevice = (anchor: AnchorDevice): AnchorDevice => ({
+    ...anchor,
+    lastSeen: anchor.lastSeen ? ensureDateValue(anchor.lastSeen) : undefined,
+    createdAt: anchor.createdAt instanceof Date ? anchor.createdAt : new Date(anchor.createdAt),
+})
+
+const anchorLikeToAnchorDevice = (anchor: AnchorLike): AnchorDevice => ({
+    id: anchor.id,
+    gatewayId: anchor.gatewayId || '',
+    name: anchor.name,
+    macAddress: anchor.macAddress || '',
+    status: normalizeAnchorStatus(anchor.status) ?? 'unpaired',
+    position: anchor.position,
+    signalStrength: typeof anchor.cloudData?.rssi === 'number' ? anchor.cloudData?.rssi : undefined,
+    batteryLevel: anchor.cloudData?.battery_voltage,
+    lastSeen: anchor.lastSeen ? new Date(anchor.lastSeen) : undefined,
+    createdAt: anchor.createdAt ? new Date(anchor.createdAt) : new Date(),
+    cloudData: anchor.cloudData as CloudAnchorData | undefined,
+    cloudGatewayId: anchor.cloudData?.gateway_id,
+})
 
 interface TagDevice {
     id: string
@@ -460,6 +547,8 @@ export default function UWBLocationPage() {
         homes,
         floors,
         gateways,
+        flattenedGateways,
+        gatewayPipelineErrors,
         selectedHome,
         setSelectedHome,
         selectedFloor,
@@ -531,6 +620,24 @@ export default function UWBLocationPage() {
 
             return defaultValue
         }
+
+const loadAnchorsFromStorage = (): AnchorDevice[] => {
+    try {
+        const stored = localStorage.getItem('anchors')
+        if (!stored) return []
+        const data = JSON.parse(stored)
+        if (!Array.isArray(data)) return []
+        return data.map(item => {
+            if (isFlattenedAnchorRecord(item)) {
+                return reviveAnchorDevice(anchorLikeToAnchorDevice(deserializeAnchor(item)))
+            }
+            return reviveAnchorDevice(item)
+        })
+    } catch (error) {
+        console.error('讀取 anchors 失敗:', error)
+        return []
+    }
+}
     }
 
     // 恢復 Date 對象的輔助函數
@@ -666,6 +773,15 @@ export default function UWBLocationPage() {
         }
     }
 
+    const persistAnchorsToStorage = (anchors: AnchorDevice[]) => {
+        const flattened = anchors.map(anchor => serializeAnchor(anchor))
+        try {
+            localStorage.setItem('anchors', JSON.stringify(flattened))
+        } catch (error) {
+            console.error('保存 anchors 失敗:', error)
+        }
+    }
+
     // 手動強制保存
     const forceSave = () => {
         if (saveTimeoutRef.current) {
@@ -769,7 +885,7 @@ export default function UWBLocationPage() {
 
                 // 驗證數據結構（只導入 anchors 和 tags，homes/floors/gateways 由 Context 管理）
                 if (data.anchors && data.tags) {
-                    setAnchors(data.anchors)
+                    applyAnchorUpdate(data.anchors)
                     setTags(data.tags)
                     if (data.cloudGatewayData) setCloudGatewayData(data.cloudGatewayData)
                     if (data.discoveredGateways) setDiscoveredGateways(data.discoveredGateways)
@@ -796,7 +912,41 @@ export default function UWBLocationPage() {
 
     // 狀態管理 - 只保留 anchors 和 tags（homes, floors, gateways 從 Context 獲取）
     const [anchors, setAnchors] = useState<AnchorDevice[]>([])
+    const [flattenedAnchors, setFlattenedAnchors] = useState<FlattenedAnchorData[]>([])
+    const [anchorPipelineErrors, setAnchorPipelineErrors] = useState<PipelineError[]>([])
+    const normalizeAnchorsDataset = useCallback((rawAnchors: AnchorDevice[]): AnchorDevice[] => {
+        if (rawAnchors.length === 0) {
+            setFlattenedAnchors([])
+            setAnchorPipelineErrors([])
+            return rawAnchors
+        }
+        const { flattened, errors } = runAnchorPipeline(rawAnchors.map(toRawAnchorInput))
+        setFlattenedAnchors(flattened)
+        setAnchorPipelineErrors(errors)
+        const flattenedMap = new Map(flattened.map(item => [item.device_id, item]))
+        return rawAnchors.map(anchor => mapFlattenedAnchorToUI(flattenedMap.get(anchor.id), anchor))
+    }, [setFlattenedAnchors, setAnchorPipelineErrors])
+    const applyAnchorUpdate = useCallback((updater: AnchorDevice[] | ((prev: AnchorDevice[]) => AnchorDevice[])) => {
+        if (typeof updater === 'function') {
+            setAnchors(prev => {
+                const next = (updater as (prev: AnchorDevice[]) => AnchorDevice[])(prev)
+                return normalizeAnchorsDataset(next)
+            })
+        } else {
+            setAnchors(normalizeAnchorsDataset(updater))
+        }
+    }, [normalizeAnchorsDataset])
     const [tags, setTags] = useState<TagDevice[]>([])
+    useEffect(() => {
+        if (gatewayPipelineErrors.length > 0) {
+            console.warn('⚠️ Gateway DataFlow 驗證警告:', gatewayPipelineErrors)
+        }
+    }, [gatewayPipelineErrors])
+    useEffect(() => {
+        if (anchorPipelineErrors.length > 0) {
+            console.warn('⚠️ Anchor DataFlow 驗證警告:', anchorPipelineErrors)
+        }
+    }, [anchorPipelineErrors])
 
     // 初始化數據加載 - 只加載 anchors 和 tags（homes, floors, gateways 由 Context 處理）
     useEffect(() => {
@@ -832,12 +982,13 @@ export default function UWBLocationPage() {
                 } else {
                     // ✅ 後端不可用：智能降級到 localStorage
                     console.log('🔄 後端不可用，從 localStorage 加載數據（Anchors 和 Tags，智能降級模式）...')
-                    loadedAnchors = loadFromStorage('anchors', MOCK_ANCHORS)
+                    const storedAnchors = loadAnchorsFromStorage()
+                    loadedAnchors = storedAnchors.length > 0 ? storedAnchors : MOCK_ANCHORS
                     loadedTags = loadFromStorage('tags', MOCK_TAGS)
                     console.log(`📦 從 localStorage 加載: ${loadedAnchors.length} 錨點, ${loadedTags.length} 標籤`)
                 }
 
-                setAnchors(loadedAnchors)
+                applyAnchorUpdate(loadedAnchors)
                 setTags(loadedTags)
 
                 // 初始化錨點配對的預設選擇（使用 Context 的 selectedHome）
@@ -929,7 +1080,7 @@ export default function UWBLocationPage() {
 
                 // ✅ 只在後端不可用時保存 anchors
                 if (!backendAvailable) {
-                    saveToStorage('anchors', anchors)
+                    persistAnchorsToStorage(anchors)
                     console.log('📦 後端不可用，anchors 已保存到 localStorage')
                 }
 
@@ -2488,7 +2639,7 @@ export default function UWBLocationPage() {
                 console.log('🌐 調用後端 API 創建雲端 Anchor...')
                 const newAnchor = await api.anchor.create(anchorData)
                 console.log('✅ 後端返回的 Anchor 數據:', newAnchor)
-                setAnchors(prev => [...prev, newAnchor])
+                applyAnchorUpdate(prev => [...prev, newAnchor])
                 toast({
                     title: "成功",
                     description: "雲端錨點已添加到系統",
@@ -2510,7 +2661,7 @@ export default function UWBLocationPage() {
                 createdAt: new Date()
             }
             console.log("✅ 加入雲端 Anchor 到系統:", newAnchor)
-            setAnchors(prev => {
+            applyAnchorUpdate(prev => {
                 const updated = [...prev, newAnchor]
                 console.log("📊 更新後錨點總數:", updated.length)
                 return updated
@@ -2729,7 +2880,7 @@ export default function UWBLocationPage() {
         try {
             await deleteGateway(id)
             // 級聯刪除 Anchors 和 Tags（這些不在 Context 中）
-            setAnchors(prev => prev.filter(anchor => anchor.gatewayId !== id))
+            applyAnchorUpdate(prev => prev.filter(anchor => anchor.gatewayId !== id))
             setTags(prev => prev.filter(tag => tag.gatewayId !== id))
             toast({
                 title: "網關刪除成功",
@@ -2792,7 +2943,7 @@ export default function UWBLocationPage() {
                 console.log('🌐 調用後端 API 創建 Anchor...')
                 const newAnchor = await api.anchor.create(anchorData)
                 console.log('✅ 後端返回的 Anchor 數據:', newAnchor)
-                setAnchors(prev => [...prev, newAnchor])
+                applyAnchorUpdate(prev => [...prev, newAnchor])
                 setDiscoveredAnchors(prev => prev.filter(mac => mac !== macAddress))
                 toast({
                     title: "成功",
@@ -2815,7 +2966,7 @@ export default function UWBLocationPage() {
                 ...anchorData,
                 createdAt: new Date()
             }
-            setAnchors(prev => [...prev, newAnchor])
+            applyAnchorUpdate(prev => [...prev, newAnchor])
             setDiscoveredAnchors(prev => prev.filter(mac => mac !== macAddress))
             // batchSave 會自動保存到 localStorage
             console.log('📦 Anchor 已創建並保存到 localStorage:', newAnchor.id)
@@ -2861,7 +3012,7 @@ export default function UWBLocationPage() {
             // ✅ 後端可用：調用 API 刪除
             try {
                 await api.anchor.delete(id)
-                setAnchors(prev => prev.filter(anchor => anchor.id !== id))
+                applyAnchorUpdate(prev => prev.filter(anchor => anchor.id !== id))
                 toast({
                     title: "成功",
                     description: "錨點已刪除",
@@ -2877,7 +3028,7 @@ export default function UWBLocationPage() {
             }
         } else {
             // ✅ 後端不可用：本地刪除
-            setAnchors(prev => prev.filter(anchor => anchor.id !== id))
+            applyAnchorUpdate(prev => prev.filter(anchor => anchor.id !== id))
             // batchSave 會自動保存到 localStorage
             console.log('📦 Anchor 已從 localStorage 刪除:', id)
         }
@@ -3000,14 +3151,14 @@ export default function UWBLocationPage() {
             // ✅ 後端可用：調用 API 更新
             try {
                 const updatedAnchor = await api.anchor.update(calibratingAnchor.id, { position: newPosition })
-                setAnchors(prev => prev.map(a =>
+                applyAnchorUpdate(prev => prev.map(a =>
                     a.id === calibratingAnchor.id ? updatedAnchor : a
                 ))
                 console.log('✅ Anchor 座標已更新並保存到後端:', calibratingAnchor.id)
             } catch (error) {
                 console.error('❌ 更新 Anchor 座標失敗:', error)
                 // 即使 API 失敗，也更新本地 state
-                setAnchors(prev => prev.map(a =>
+                applyAnchorUpdate(prev => prev.map(a =>
                     a.id === calibratingAnchor.id
                         ? { ...a, position: newPosition }
                         : a
@@ -3015,7 +3166,7 @@ export default function UWBLocationPage() {
             }
         } else {
             // ✅ 後端不可用：本地更新
-            setAnchors(prev => prev.map(a =>
+            applyAnchorUpdate(prev => prev.map(a =>
                 a.id === calibratingAnchor.id
                     ? { ...a, position: newPosition }
                     : a
@@ -3082,14 +3233,14 @@ export default function UWBLocationPage() {
             // ✅ 後端可用：調用 API 更新
             try {
                 const updatedAnchor = await api.anchor.update(calibratingAnchor.id, { position: finalCoords })
-                setAnchors(prev => prev.map(anchor =>
+                applyAnchorUpdate(prev => prev.map(anchor =>
                     anchor.id === calibratingAnchor.id ? updatedAnchor : anchor
                 ))
                 console.log('✅ Anchor 座標已更新並保存到後端:', calibratingAnchor.id)
             } catch (error) {
                 console.error('❌ 更新 Anchor 座標失敗:', error)
                 // 即使 API 失敗，也更新本地 state
-                setAnchors(prev => prev.map(anchor =>
+                applyAnchorUpdate(prev => prev.map(anchor =>
                     anchor.id === calibratingAnchor.id
                         ? { ...anchor, position: finalCoords }
                         : anchor
@@ -3097,7 +3248,7 @@ export default function UWBLocationPage() {
             }
         } else {
             // ✅ 後端不可用：本地更新
-            setAnchors(prev => prev.map(anchor =>
+            applyAnchorUpdate(prev => prev.map(anchor =>
                 anchor.id === calibratingAnchor.id
                     ? { ...anchor, position: finalCoords }
                     : anchor
@@ -5618,7 +5769,7 @@ export default function UWBLocationPage() {
                                                     if (confirm('確定要清理所有舊的錨點數據嗎？這將移除不屬於當前場域的錨點。')) {
                                                         const currentAnchorIds = currentAnchors.map(a => a.id)
                                                         const filteredAnchors = anchors.filter(anchor => currentAnchorIds.includes(anchor.id))
-                                                        setAnchors(filteredAnchors)
+                                                        applyAnchorUpdate(filteredAnchors)
                                                         console.log('🧹 已清理舊錨點數據，保留錨點數量:', filteredAnchors.length)
                                                     }
                                                 }}

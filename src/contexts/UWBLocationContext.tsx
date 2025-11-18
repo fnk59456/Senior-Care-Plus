@@ -3,6 +3,8 @@ import { gatewayRegistry } from '@/services/gatewayRegistry'
 import { mqttBus } from '@/services/mqttBus'
 import { useDataSync } from '@/hooks/useDataSync'
 import { api } from '@/services/api'
+import type { FlattenedGatewayData } from '@/types/iot-devices'
+import { serializeGateway, deserializeGateway, type GatewayLike, runGatewayPipeline, type RawGatewayInput, type PipelineError } from '@/utils/dataflowNormalizer'
 // 初始化所有 Store 以註冊路由規則
 import '@/stores/initStores'
 
@@ -97,10 +99,107 @@ interface Gateway {
     cloudData?: CloudGatewayData
 }
 
+const isFlattenedGatewayRecord = (value: any): value is FlattenedGatewayData => {
+    return Boolean(value && typeof value === 'object' && (value.device_type === 'gateway' || value.id) && value.name)
+}
+
+const reviveGatewayDates = (gateway: Gateway): Gateway => ({
+    ...gateway,
+    createdAt: gateway.createdAt instanceof Date ? gateway.createdAt : new Date(gateway.createdAt),
+    lastSeen: gateway.lastSeen ? (gateway.lastSeen instanceof Date ? gateway.lastSeen : new Date(gateway.lastSeen)) : undefined,
+})
+
+const gatewayLikeToGateway = (data: GatewayLike): Gateway => ({
+    id: data.id,
+    floorId: data.floorId || '',
+    name: data.name,
+    macAddress: data.macAddress || '',
+    ipAddress: data.ipAddress || '',
+    status: (data.status as Gateway['status']) || 'offline',
+    lastSeen: data.lastSeen ? new Date(data.lastSeen) : undefined,
+    createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+    cloudData: data.cloudData as CloudGatewayData | undefined,
+})
+
+type GatewayStatus = Gateway['status']
+
+const toRawGatewayInput = (gateway: Gateway): RawGatewayInput => ({
+    id: gateway.id,
+    name: gateway.name,
+    floorId: gateway.floorId,
+    macAddress: gateway.macAddress,
+    ipAddress: gateway.ipAddress,
+    status: gateway.status,
+    createdAt: gateway.createdAt,
+    lastSeen: gateway.lastSeen,
+    cloudData: gateway.cloudData,
+})
+
+const mapFlattenedGatewayToUI = (
+    flattened: FlattenedGatewayData | undefined,
+    fallback: Gateway
+): Gateway => {
+    if (!flattened) {
+        return {
+            ...fallback,
+            createdAt: ensureDate(fallback.createdAt) ?? new Date(),
+            lastSeen: ensureDate(fallback.lastSeen),
+        }
+    }
+
+    // 如果 flattened 有 extra_data.raw_gateway，使用 deserializeGateway 来获取完整的 cloudData
+    // 否则，从 extra_data.raw_gateway.cloudData 中获取
+    let cloudData = fallback.cloudData
+    if (flattened.extra_data?.raw_gateway?.cloudData) {
+        cloudData = flattened.extra_data.raw_gateway.cloudData
+    } else {
+        // 尝试反序列化以获取 cloudData
+        try {
+            const deserialized = deserializeGateway(flattened)
+            cloudData = deserialized.cloudData
+        } catch (error) {
+            console.warn('⚠️ 反序列化 gateway 失败，使用 fallback cloudData:', error)
+        }
+    }
+
+    // 使用顶层字段（保持原样）
+    return {
+        ...fallback,
+        id: flattened.id || fallback.id,
+        floorId: flattened.floorId ?? fallback.floorId ?? '',
+        name: flattened.name || fallback.name,
+        ipAddress: flattened.ipAddress || fallback.ipAddress,
+        macAddress: flattened.macAddress || fallback.macAddress,
+        status: normalizeGatewayStatus(flattened.status) ?? fallback.status,
+        createdAt: ensureDate(flattened.createdAt) ?? ensureDate(fallback.createdAt) ?? new Date(),
+        lastSeen: ensureDate(flattened.lastSeen) ?? ensureDate(fallback.lastSeen),
+        cloudData: cloudData, // 确保 cloudData 被传递
+    }
+}
+
+const ensureDate = (value: Date | string | undefined): Date | undefined => {
+    if (!value) return undefined
+    if (value instanceof Date) {
+        return Number.isNaN(value.getTime()) ? undefined : value
+    }
+    const parsed = new Date(value)
+    return Number.isNaN(parsed.getTime()) ? undefined : parsed
+}
+
+const normalizeGatewayStatus = (status?: string): GatewayStatus => {
+    if (!status) return 'offline'
+    const normalized = status.toLowerCase()
+    if (normalized === 'online' || normalized === 'connected') return 'online'
+    if (normalized === 'error') return 'error'
+    return 'offline'
+}
+
 interface UWBLocationState {
     homes: Home[]
     floors: Floor[]
     gateways: Gateway[]
+    flattenedGateways: FlattenedGatewayData[]
+    gatewayPipelineErrors: PipelineError[]
     selectedHome: string
     selectedFloor: string
     selectedGateway: string
@@ -138,6 +237,57 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
     const [homes, setHomes] = useState<Home[]>([])
     const [floors, setFloors] = useState<Floor[]>([])
     const [gateways, setGateways] = useState<Gateway[]>([])
+    const [flattenedGateways, setFlattenedGateways] = useState<FlattenedGatewayData[]>([])
+    const [gatewayPipelineErrors, setGatewayPipelineErrors] = useState<PipelineError[]>([])
+
+    const normalizeGatewaysDataset = useCallback((rawGateways: Gateway[]): Gateway[] => {
+        if (rawGateways.length === 0) {
+            setFlattenedGateways([])
+            setGatewayPipelineErrors([])
+            return rawGateways
+        }
+
+        const rawInputs: RawGatewayInput[] = rawGateways.map(toRawGatewayInput)
+        const { flattened, errors } = runGatewayPipeline(rawInputs)
+        setFlattenedGateways(flattened)
+        setGatewayPipelineErrors(errors)
+        // 创建多个 key 的映射，支持通过 id、macAddress、name 查找
+        const flattenedMap = new Map<string, FlattenedGatewayData>()
+        flattened.forEach(item => {
+            flattenedMap.set(item.id, item) // 使用顶层 id
+            if (item.macAddress) flattenedMap.set(item.macAddress, item) // 使用顶层 macAddress
+            if (item.name) flattenedMap.set(item.name, item) // 使用顶层 name
+        })
+
+        return rawGateways.map(gateway => {
+            // 尝试通过多个可能的 key 查找扁平化数据
+            const flattened = flattenedMap.get(gateway.id)
+                || flattenedMap.get(gateway.macAddress)
+                || flattenedMap.get(gateway.name)
+
+            // 如果找到了扁平化数据，使用顶层 id
+            if (flattened) {
+                return mapFlattenedGatewayToUI(flattened, {
+                    ...gateway,
+                    id: flattened.id || gateway.id, // 使用顶层 id
+                })
+            }
+
+            // 如果没找到，使用原始 gateway
+            return mapFlattenedGatewayToUI(undefined, gateway)
+        })
+    }, [setFlattenedGateways, setGatewayPipelineErrors])
+
+    const applyGatewayUpdate = useCallback((updater: Gateway[] | ((prev: Gateway[]) => Gateway[])) => {
+        if (typeof updater === 'function') {
+            setGateways(prev => {
+                const next = (updater as (prev: Gateway[]) => Gateway[])(prev)
+                return normalizeGatewaysDataset(next)
+            })
+        } else {
+            setGateways(normalizeGatewaysDataset(updater))
+        }
+    }, [normalizeGatewaysDataset])
     const [selectedHome, setSelectedHome] = useState("")
     const [selectedFloor, setSelectedFloor] = useState("")
     const [selectedGateway, setSelectedGateway] = useState("")
@@ -204,6 +354,48 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
             }
         }
     }, [])
+
+    const loadGatewaysFromStorage = useCallback((): Gateway[] => {
+        try {
+            const stored = localStorage.getItem('uwb_gateways')
+            if (!stored) return []
+            const data = JSON.parse(stored)
+            if (!Array.isArray(data)) return []
+
+                // 数据迁移：确保所有数据都是标准化的格式
+                const migratedData = data.map(item => {
+                    if (isFlattenedGatewayRecord(item)) {
+                        // 确保 raw_gateway 中的 id 与顶层 id 一致
+                        if (item.extra_data?.raw_gateway && item.id) {
+                            // 使用顶层 id，确保与后端存储的 id 一致
+                            item.extra_data.raw_gateway.id = item.id
+                        }
+                        return reviveGatewayDates(gatewayLikeToGateway(deserializeGateway(item)))
+                    }
+                // 旧格式数据：尝试转换为新格式
+                if (item.id && item.macAddress && !isFlattenedGatewayRecord(item)) {
+                    // 只在开发环境显示迁移提示，避免生产环境产生过多日志
+                    if (process.env.NODE_ENV === 'development') {
+                        console.log('🔄 检测到旧格式 gateway 数据，正在自动迁移...', item.id)
+                    }
+                    // 如果 id 是 macAddress 格式，需要重新序列化
+                    const serialized = serializeGateway(item as any)
+                    return reviveGatewayDates(gatewayLikeToGateway(deserializeGateway(serialized)))
+                }
+                return reviveGatewayDates(item)
+            })
+
+            return migratedData
+        } catch (error) {
+            console.error('讀取網關存儲失敗:', error)
+            return []
+        }
+    }, [])
+
+    const persistGatewaysToStorage = useCallback((gateways: Gateway[]) => {
+        const flattened = gateways.map(gateway => serializeGateway(gateway))
+        saveToStorage('uwb_gateways', flattened)
+    }, [saveToStorage])
 
     // 數據刷新函數 - 重新載入所有數據（支持後端和localStorage）
     // 使用 useRef 防止重複調用和存儲最新狀態
@@ -272,11 +464,11 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
                 console.log('🔄 後端不可用，從 localStorage 刷新數據（智能降級模式）...')
                 loadedHomes = loadFromStorage<Home[]>('uwb_homes', [])
                 loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
-                loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                loadedGateways = loadGatewaysFromStorage()
             }
 
             // 設置網關數據（移除硬編碼默認 Gateway）
-            setGateways(loadedGateways)
+            applyGatewayUpdate(loadedGateways)
             setHomes(loadedHomes)
             setFloors(loadedFloors)
 
@@ -298,7 +490,7 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
             isRefreshingRef.current = false
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [syncHomes, syncFloors, syncGateways, loadFromStorage])
+    }, [syncHomes, syncFloors, syncGateways, loadFromStorage, loadGatewaysFromStorage])
 
 
     // ✨ 初始化 MQTT Bus（應用啟動時只執行一次）
@@ -380,14 +572,14 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
                 console.log('🔄 後端不可用，從 localStorage 加載數據（智能降級模式）...')
                 loadedHomes = loadFromStorage<Home[]>('uwb_homes', [])
                 loadedFloors = loadFromStorage<Floor[]>('uwb_floors', [])
-                loadedGateways = loadFromStorage<Gateway[]>('uwb_gateways', [])
+                loadedGateways = loadGatewaysFromStorage()
                 console.log(`📦 從 localStorage 加載: ${loadedHomes.length} 場域, ${loadedFloors.length} 樓層, ${loadedGateways.length} 網關`)
             }
 
             // 設置數據
             setHomes(loadedHomes)
             setFloors(loadedFloors)
-            setGateways(loadedGateways)
+            applyGatewayUpdate(loadedGateways)
 
             // 設置 selectedHome
             loadedSelectedHome = loadFromStorage<string>('uwb_selectedHome', '')
@@ -405,7 +597,7 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
 
         initializeData()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [backendAvailable, isCheckingBackend])
+    }, [backendAvailable, isCheckingBackend, loadGatewaysFromStorage])
 
     // 當選擇的場域改變時，從後端加載對應的樓層和網關數據
     useEffect(() => {
@@ -431,17 +623,17 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
                 // 加載所有網關（不按樓層過濾）
                 try {
                     const loadedGateways = await syncGateways()
-                    setGateways(loadedGateways)
+                    applyGatewayUpdate(loadedGateways)
                     console.log(`✅ 從後端加載所有網關: ${loadedGateways.length} 個`)
                 } catch (gatewayError) {
                     console.error('⚠️ 後端網關加載失敗，保持空數組:', gatewayError)
-                    setGateways([]) // 不降級
+                    applyGatewayUpdate([]) // 不降級
                 }
             } catch (error) {
                 console.error('❌ 場域數據加載失敗:', error)
                 // 即使失敗，在後端可用時也不降級
                 setFloors([])
-                setGateways([])
+                applyGatewayUpdate([])
             }
         }
 
@@ -628,18 +820,17 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
                 saveToStorage('uwb_floors', updated)
             }
 
-            setGateways(gatewayPrev => {
+            applyGatewayUpdate(gatewayPrev => {
                 const updatedGateways = gatewayPrev.filter(g => !relatedFloorIds.includes(g.floorId))
-                // 只在後端不可用時保存
                 if (!backendAvailable) {
-                    saveToStorage('uwb_gateways', updatedGateways)
+                    persistGatewaysToStorage(updatedGateways)
                 }
                 return updatedGateways
             })
 
             return updated
         })
-    }, [backendAvailable, selectedHome, saveToStorage])
+    }, [backendAvailable, selectedHome, saveToStorage, persistGatewaysToStorage])
 
     // Floor CRUD
     const createFloor = useCallback(async (floorData: Omit<Floor, 'id' | 'createdAt'>): Promise<Floor> => {
@@ -703,18 +894,17 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
             }
 
             // 級聯刪除相關的網關
-            setGateways(gatewayPrev => {
+            applyGatewayUpdate(gatewayPrev => {
                 const updatedGateways = gatewayPrev.filter(g => g.floorId !== id)
-                // 只在後端不可用時保存
                 if (!backendAvailable) {
-                    saveToStorage('uwb_gateways', updatedGateways)
+                    persistGatewaysToStorage(updatedGateways)
                 }
                 return updatedGateways
             })
 
             return updated
         })
-    }, [backendAvailable, saveToStorage])
+    }, [backendAvailable, saveToStorage, persistGatewaysToStorage])
 
     // Gateway CRUD
     const createGateway = useCallback(async (gatewayData: Omit<Gateway, 'id' | 'createdAt'>): Promise<Gateway> => {
@@ -727,9 +917,8 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
                 const newGateway = await api.gateway.create(gatewayData)
                 console.log('✅ 後端 API 返回:', newGateway)
 
-                setGateways(prev => {
+                applyGatewayUpdate(prev => {
                     const updated = [...prev, newGateway]
-                    // 後端可用時，不保存 gateways 到 localStorage
                     return updated
                 })
                 // 註冊到 GatewayRegistry
@@ -747,23 +936,22 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
                 ...gatewayData,
                 createdAt: new Date()
             }
-            setGateways(prev => {
+            applyGatewayUpdate(prev => {
                 const updated = [...prev, newGateway]
-                saveToStorage('uwb_gateways', updated)
+                persistGatewaysToStorage(updated)
                 return updated
             })
             // 註冊到 GatewayRegistry
             gatewayRegistry.registerGateway(newGateway)
             return newGateway
         }
-    }, [backendAvailable, saveToStorage])
+    }, [backendAvailable, persistGatewaysToStorage])
 
     const updateGateway = useCallback(async (id: string, gatewayData: Partial<Gateway>): Promise<Gateway> => {
         if (backendAvailable) {
             const updatedGateway = await api.gateway.update(id, gatewayData)
-            setGateways(prev => {
+            applyGatewayUpdate(prev => {
                 const updated = prev.map(gateway => gateway.id === id ? updatedGateway : gateway)
-                // 後端可用時，不保存 gateways 到 localStorage
                 return updated
             })
             // 更新 GatewayRegistry
@@ -771,40 +959,53 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
             return updatedGateway
         } else {
             let newGateway: Gateway
-            setGateways(prev => {
+            applyGatewayUpdate(prev => {
                 const updatedGateway = prev.find(g => g.id === id)
                 if (!updatedGateway) throw new Error('網關不存在')
                 newGateway = { ...updatedGateway, ...gatewayData }
                 const updated = prev.map(gateway => gateway.id === id ? newGateway : gateway)
-                saveToStorage('uwb_gateways', updated)
+                persistGatewaysToStorage(updated)
                 return updated
             })
             // 更新 GatewayRegistry
             gatewayRegistry.updateGateway(newGateway!)
             return newGateway!
         }
-    }, [backendAvailable, saveToStorage])
+    }, [backendAvailable, persistGatewaysToStorage])
 
     const deleteGateway = useCallback(async (id: string): Promise<void> => {
-        if (backendAvailable) {
-            await api.gateway.delete(id)
+        // 查找对应的 gateway，确保使用正确的 device_id
+        const gateway = gateways.find(g => g.id === id || g.macAddress === id)
+        if (!gateway) {
+            throw new Error(`找不到 ID 為 ${id} 的網關`)
         }
-        // 從 GatewayRegistry 取消註冊
-        gatewayRegistry.unregisterGateway(id)
-        setGateways(prev => {
-            const updated = prev.filter(g => g.id !== id)
-            // 只在後端不可用時保存
+
+        // 使用 gateway.id（应该是 device_id）进行删除
+        const deviceId = gateway.id
+
+        if (backendAvailable) {
+            await api.gateway.delete(deviceId)
+        }
+        // 從 GatewayRegistry 取消註冊（使用 deviceId 和 macAddress）
+        gatewayRegistry.unregisterGateway(deviceId)
+        if (gateway.macAddress) {
+            gatewayRegistry.unregisterGateway(gateway.macAddress)
+        }
+        applyGatewayUpdate(prev => {
+            const updated = prev.filter(g => g.id !== deviceId && g.macAddress !== id)
             if (!backendAvailable) {
-                saveToStorage('uwb_gateways', updated)
+                persistGatewaysToStorage(updated)
             }
             return updated
         })
-    }, [backendAvailable, saveToStorage])
+    }, [backendAvailable, persistGatewaysToStorage, gateways])
 
     const value: UWBLocationState = {
         homes,
         floors,
         gateways,
+        flattenedGateways,
+        gatewayPipelineErrors,
         selectedHome,
         selectedFloor,
         selectedGateway,
@@ -812,7 +1013,6 @@ export const UWBLocationProvider: React.FC<UWBLocationProviderProps> = ({ childr
         setSelectedFloor,
         setSelectedGateway,
         refreshData,
-        // CRUD 方法
         createHome,
         updateHome,
         deleteHome,

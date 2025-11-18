@@ -1,5 +1,7 @@
 // API服務層 - 處理與後端的通信
 import { Home, Floor, Gateway, AnchorDevice, TagDevice } from '@/types/device-types'
+import type { FlattenedGatewayData, FlattenedAnchorData } from '@/types/iot-devices'
+import { serializeGateway, deserializeGateway, serializeAnchor, deserializeAnchor } from '@/utils/dataflowNormalizer'
 
 // API基礎配置
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'
@@ -45,6 +47,44 @@ async function apiRequest<T>(
         console.error(`❌ API請求失敗 ${endpoint}:`, error)
         throw error
     }
+}
+
+const shouldSerializeGatewayPayload = (data: any): boolean => {
+    return Boolean(data && typeof data === 'object' && 'cloudData' in data)
+}
+
+const isFlattenedGatewayPayload = (data: any): data is FlattenedGatewayData => {
+    // 新的格式使用顶层 id 和 name，device_type 是可选的
+    return Boolean(data && typeof data === 'object' && (data.device_type === 'gateway' || (data.id && data.name)))
+}
+
+const parseGatewayResponse = (data: any): any => {
+    if (Array.isArray(data)) {
+        return data.map(item => parseGatewayResponse(item))
+    }
+    if (isFlattenedGatewayPayload(data)) {
+        return deserializeGateway(data)
+    }
+    return data
+}
+
+const shouldSerializeAnchorPayload = (data: any): boolean => {
+    return Boolean(data && typeof data === 'object' && 'cloudData' in data)
+}
+
+const isFlattenedAnchorPayload = (data: any): data is FlattenedAnchorData => {
+    // 新的格式使用顶层 id 和 name，device_type 是可选的
+    return Boolean(data && typeof data === 'object' && (data.device_type === 'anchor' || (data.id && data.name)))
+}
+
+const parseAnchorResponse = (data: any): any => {
+    if (Array.isArray(data)) {
+        return data.map(item => parseAnchorResponse(item))
+    }
+    if (isFlattenedAnchorPayload(data)) {
+        return deserializeAnchor(data)
+    }
+    return data
 }
 
 // 場域管理API
@@ -118,28 +158,38 @@ export const floorAPI = {
 export const gatewayAPI = {
     // 獲取所有網關
     async getAll(): Promise<Gateway[]> {
-        return apiRequest<Gateway[]>('/gateways')
+        const data = await apiRequest<any[]>('/gateways')
+        return parseGatewayResponse(data)
     },
 
     // 根據樓層ID獲取網關
     async getByFloorId(floorId: string): Promise<Gateway[]> {
-        return apiRequest<Gateway[]>(`/floors/${floorId}/gateways`)
+        const data = await apiRequest<any[]>(`/floors/${floorId}/gateways`)
+        return parseGatewayResponse(data)
     },
 
     // 創建新網關
     async create(gatewayData: Omit<Gateway, 'id' | 'createdAt'>): Promise<Gateway> {
-        return apiRequest<Gateway>('/gateways', {
+        const payload = shouldSerializeGatewayPayload(gatewayData)
+            ? serializeGateway(gatewayData as any)
+            : gatewayData
+        const data = await apiRequest<any>('/gateways', {
             method: 'POST',
-            body: JSON.stringify(gatewayData),
+            body: JSON.stringify(payload),
         })
+        return parseGatewayResponse(data)
     },
 
     // 更新網關
     async update(id: string, gatewayData: Partial<Gateway>): Promise<Gateway> {
-        return apiRequest<Gateway>(`/gateways/${id}`, {
+        const payload = shouldSerializeGatewayPayload(gatewayData)
+            ? serializeGateway({ ...(gatewayData as any), id } as any)
+            : gatewayData
+        const data = await apiRequest<any>(`/gateways/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(gatewayData),
+            body: JSON.stringify(payload),
         })
+        return parseGatewayResponse(data)
     },
 
     // 刪除網關
@@ -154,33 +204,44 @@ export const gatewayAPI = {
 export const anchorAPI = {
     // 獲取所有錨點
     async getAll(): Promise<AnchorDevice[]> {
-        return apiRequest<AnchorDevice[]>('/anchors')
+        const data = await apiRequest<any[]>('/anchors')
+        return parseAnchorResponse(data)
     },
 
     // 根據網關ID獲取錨點
     async getByGatewayId(gatewayId: string): Promise<AnchorDevice[]> {
-        return apiRequest<AnchorDevice[]>(`/gateways/${gatewayId}/anchors`)
+        const data = await apiRequest<any[]>(`/gateways/${gatewayId}/anchors`)
+        return parseAnchorResponse(data)
     },
 
     // 根據ID獲取錨點
     async getById(id: string): Promise<AnchorDevice> {
-        return apiRequest<AnchorDevice>(`/anchors/${id}`)
+        const data = await apiRequest<any>(`/anchors/${id}`)
+        return parseAnchorResponse(data)
     },
 
     // 創建新錨點
     async create(anchorData: Omit<AnchorDevice, 'id' | 'createdAt'>): Promise<AnchorDevice> {
-        return apiRequest<AnchorDevice>('/anchors', {
+        const payload = shouldSerializeAnchorPayload(anchorData)
+            ? serializeAnchor(anchorData as any)
+            : anchorData
+        const data = await apiRequest<any>('/anchors', {
             method: 'POST',
-            body: JSON.stringify(anchorData),
+            body: JSON.stringify(payload),
         })
+        return parseAnchorResponse(data)
     },
 
     // 更新錨點
     async update(id: string, anchorData: Partial<AnchorDevice>): Promise<AnchorDevice> {
-        return apiRequest<AnchorDevice>(`/anchors/${id}`, {
+        const payload = shouldSerializeAnchorPayload(anchorData)
+            ? serializeAnchor({ ...(anchorData as any), id } as any)
+            : anchorData
+        const data = await apiRequest<any>(`/anchors/${id}`, {
             method: 'PUT',
-            body: JSON.stringify(anchorData),
+            body: JSON.stringify(payload),
         })
+        return parseAnchorResponse(data)
     },
 
     // 刪除錨點

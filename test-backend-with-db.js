@@ -50,12 +50,29 @@ if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true })
 }
 
+// 過濾 extra_data 的輔助函數
+const removeExtraData = (item) => {
+    if (Array.isArray(item)) {
+        return item.map(removeExtraData)
+    }
+    if (item && typeof item === 'object') {
+        const { extra_data, ...rest } = item
+        return rest
+    }
+    return item
+}
+
 // 數據加載函數
 const loadData = (filePath, defaultValue = []) => {
     try {
         if (fs.existsSync(filePath)) {
             const data = fs.readFileSync(filePath, 'utf8')
-            return JSON.parse(data)
+            const parsed = JSON.parse(data)
+            // 如果是 gateways 或 anchors 文件，過濾掉 extra_data
+            if (filePath.includes('gateways.json') || filePath.includes('anchors.json')) {
+                return removeExtraData(parsed)
+            }
+            return parsed
         }
     } catch (error) {
         console.error(`加載數據文件失敗 ${filePath}:`, error)
@@ -66,7 +83,12 @@ const loadData = (filePath, defaultValue = []) => {
 // 數據保存函數
 const saveData = (filePath, data) => {
     try {
-        const jsonString = JSON.stringify(data, null, 2)
+        // 如果是 gateways 或 anchors 文件，在保存前過濾掉 extra_data
+        let dataToSave = data
+        if (filePath.includes('gateways.json') || filePath.includes('anchors.json')) {
+            dataToSave = removeExtraData(data)
+        }
+        const jsonString = JSON.stringify(dataToSave, null, 2)
         console.log(`💾 準備保存數據到 ${filePath}, 大小: ${jsonString.length} bytes`)
         fs.writeFileSync(filePath, jsonString)
         console.log(`✅ 數據已保存到 ${filePath}`)
@@ -632,7 +654,9 @@ app.get('/api/homes/:homeId/floors', (req, res) => {
 app.get('/api/gateways', (req, res) => {
     console.log('📥 GET /api/gateways - 獲取所有網關列表')
     console.log(`返回 ${gateways.length} 個網關`)
-    res.json(gateways)
+    // 確保返回的數據不包含 extra_data
+    const gatewaysWithoutExtra = gateways.map(g => removeExtraData(g))
+    res.json(gatewaysWithoutExtra)
 })
 
 // 根據樓層ID獲取網關
@@ -641,7 +665,9 @@ app.get('/api/floors/:floorId/gateways', (req, res) => {
     const floorId = req.params.floorId
     const floorGateways = gateways.filter(g => g.floorId === floorId)
     console.log(`返回 ${floorGateways.length} 個網關 (樓層ID: ${floorId})`)
-    res.json(floorGateways)
+    // 確保返回的數據不包含 extra_data
+    const gatewaysWithoutExtra = floorGateways.map(g => removeExtraData(g))
+    res.json(gatewaysWithoutExtra)
 })
 
 // 創建網關
@@ -658,9 +684,12 @@ app.post('/api/gateways', (req, res) => {
         }
     }
 
+    // 过滤掉 extra_data 字段
+    const { extra_data, ...gatewayDataWithoutExtra } = req.body
+
     const newGateway = {
         id: `gw_${Date.now()}`,
-        ...req.body,
+        ...gatewayDataWithoutExtra,
         createdAt: new Date().toISOString()
     }
 
@@ -678,7 +707,8 @@ app.get('/api/gateways/:id', (req, res) => {
     if (!gateway) {
         return res.status(404).json({ error: '網關不存在' })
     }
-    res.json(gateway)
+    // 確保返回的數據不包含 extra_data
+    res.json(removeExtraData(gateway))
 })
 
 // 更新網關
@@ -700,9 +730,12 @@ app.put('/api/gateways/:id', (req, res) => {
         }
     }
 
+    // 过滤掉 extra_data 字段
+    const { extra_data, ...updateDataWithoutExtra } = req.body
+
     const updatedGateway = {
         ...gateways[gatewayIndex],
-        ...req.body,
+        ...updateDataWithoutExtra,
         id: gatewayId,
         createdAt: gateways[gatewayIndex].createdAt
     }
@@ -742,7 +775,9 @@ app.delete('/api/gateways/:id', (req, res) => {
 app.get('/api/anchors', (req, res) => {
     console.log('📥 GET /api/anchors - 獲取所有錨點')
     console.log(`返回 ${anchors.length} 個錨點`)
-    res.json(anchors)
+    // 確保返回的數據不包含 extra_data
+    const anchorsWithoutExtra = anchors.map(a => removeExtraData(a))
+    res.json(anchorsWithoutExtra)
 })
 
 // 根據網關ID獲取錨點
@@ -751,7 +786,9 @@ app.get('/api/gateways/:gatewayId/anchors', (req, res) => {
     const gatewayId = req.params.gatewayId
     const gatewayAnchors = anchors.filter(a => a.gatewayId === gatewayId)
     console.log(`返回 ${gatewayAnchors.length} 個錨點 (網關ID: ${gatewayId})`)
-    res.json(gatewayAnchors)
+    // 確保返回的數據不包含 extra_data
+    const anchorsWithoutExtra = gatewayAnchors.map(a => removeExtraData(a))
+    res.json(anchorsWithoutExtra)
 })
 
 // 創建錨點
@@ -768,9 +805,12 @@ app.post('/api/anchors', (req, res) => {
         }
     }
 
+    // 过滤掉 extra_data 字段
+    const { extra_data, ...anchorDataWithoutExtra } = req.body
+
     const newAnchor = {
         id: `anchor_${Date.now()}`,
-        ...req.body,
+        ...anchorDataWithoutExtra,
         createdAt: new Date().toISOString()
     }
 
@@ -788,7 +828,8 @@ app.get('/api/anchors/:id', (req, res) => {
     if (!anchor) {
         return res.status(404).json({ error: '錨點不存在' })
     }
-    res.json(anchor)
+    // 確保返回的數據不包含 extra_data
+    res.json(removeExtraData(anchor))
 })
 
 // 更新錨點
@@ -810,9 +851,12 @@ app.put('/api/anchors/:id', (req, res) => {
         }
     }
 
+    // 过滤掉 extra_data 字段
+    const { extra_data, ...updateDataWithoutExtra } = req.body
+
     const updatedAnchor = {
         ...anchors[anchorIndex],
-        ...req.body,
+        ...updateDataWithoutExtra,
         id: anchorId,
         createdAt: anchors[anchorIndex].createdAt
     }
