@@ -31,6 +31,7 @@ export class MQTTBus {
     // 訂閱管理
     private subscriptions = new Map<string, Set<MessageHandler>>()
     private activeTopics = new Set<string>()
+    private manualTopicRefs = new Map<string, number>()
 
     // 消息緩衝和路由
     private messageBuffer: RingBuffer<MQTTMessage>
@@ -133,6 +134,17 @@ export class MQTTBus {
         console.log(`📋 準備訂閱 ${topics.length} 個 Topics`)
 
         topics.forEach(topic => this.subscribeToTopic(topic))
+
+        // 訂閱手動註冊的 Topic（例如前端直接訂閱 UWB/UWB_Gateway）
+        const manualTopics = Array.from(this.manualTopicRefs.keys())
+        if (manualTopics.length > 0) {
+            console.log(`📋 訂閱 ${manualTopics.length} 個手動 Topics`)
+            manualTopics.forEach(topic => {
+                if (!this.activeTopics.has(topic)) {
+                    this.subscribeToTopic(topic)
+                }
+            })
+        }
     }
 
     /**
@@ -350,6 +362,15 @@ export class MQTTBus {
         }
         this.subscriptions.get(topicOrPattern)!.add(handler)
 
+        // 管理手動 Topic 引用計數
+        const currentRefs = this.manualTopicRefs.get(topicOrPattern) || 0
+        this.manualTopicRefs.set(topicOrPattern, currentRefs + 1)
+
+        // 如果已連線但尚未真正訂閱 MQTT Topic，立即訂閱
+        if (this.status === 'connected' && !this.activeTopics.has(topicOrPattern)) {
+            this.subscribeToTopic(topicOrPattern)
+        }
+
         // 返回取消訂閱函數
         return () => {
             const handlers = this.subscriptions.get(topicOrPattern)
@@ -357,6 +378,22 @@ export class MQTTBus {
                 handlers.delete(handler)
                 if (handlers.size === 0) {
                     this.subscriptions.delete(topicOrPattern)
+                }
+            }
+
+            // 更新手動 Topic 引用計數
+            const refs = this.manualTopicRefs.get(topicOrPattern)
+            if (refs !== undefined) {
+                if (refs <= 1) {
+                    this.manualTopicRefs.delete(topicOrPattern)
+
+                    // 若該 Topic 不再需要，且不是 GatewayRegistry 仍在使用的 topic，取消訂閱
+                    const stillUsedByGateway = gatewayRegistry.getAllActiveTopics().includes(topicOrPattern)
+                    if (!stillUsedByGateway) {
+                        this.unsubscribeFromTopic(topicOrPattern)
+                    }
+                } else {
+                    this.manualTopicRefs.set(topicOrPattern, refs - 1)
                 }
             }
         }
