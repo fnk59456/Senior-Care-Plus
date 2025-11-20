@@ -621,23 +621,23 @@ export default function UWBLocationPage() {
             return defaultValue
         }
 
-const loadAnchorsFromStorage = (): AnchorDevice[] => {
-    try {
-        const stored = localStorage.getItem('anchors')
-        if (!stored) return []
-        const data = JSON.parse(stored)
-        if (!Array.isArray(data)) return []
-        return data.map(item => {
-            if (isFlattenedAnchorRecord(item)) {
-                return reviveAnchorDevice(anchorLikeToAnchorDevice(deserializeAnchor(item)))
+        const loadAnchorsFromStorage = (): AnchorDevice[] => {
+            try {
+                const stored = localStorage.getItem('anchors')
+                if (!stored) return []
+                const data = JSON.parse(stored)
+                if (!Array.isArray(data)) return []
+                return data.map(item => {
+                    if (isFlattenedAnchorRecord(item)) {
+                        return reviveAnchorDevice(anchorLikeToAnchorDevice(deserializeAnchor(item)))
+                    }
+                    return reviveAnchorDevice(item)
+                })
+            } catch (error) {
+                console.error('讀取 anchors 失敗:', error)
+                return []
             }
-            return reviveAnchorDevice(item)
-        })
-    } catch (error) {
-        console.error('讀取 anchors 失敗:', error)
-        return []
-    }
-}
+        }
     }
 
     // 恢復 Date 對象的輔助函數
@@ -1506,7 +1506,10 @@ const loadAnchorsFromStorage = (): AnchorDevice[] => {
 
                         if (existingSystemGateway) {
                             // 使用 Context 方法更新 Gateway（會自動更新 GatewayRegistry 和後端）
-                            await updateGateway(existingSystemGateway.id, { cloudData: gatewayData })
+                            await updateGateway(existingSystemGateway.id, {
+                                cloudData: gatewayData,
+                                status: gatewayData.uwb_joined === "yes" ? "online" : "offline"
+                            })
                             console.log('✅ Gateway cloudData 更新成功')
                         }
                     }
