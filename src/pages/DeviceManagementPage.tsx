@@ -20,20 +20,16 @@ import {
   Upload,
   Wifi,
   Filter,
-  TestTube,
-  Bug
+  Activity
 } from "lucide-react"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { useDeviceDiscovery } from "@/contexts/DeviceDiscoveryContext"
-import { useDeviceMonitoring } from "@/contexts/DeviceMonitoringContext"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { DeviceType, DeviceStatus, DeviceUIDGenerator } from "@/types/device-types"
 import DeviceBindingModal from "@/components/DeviceBindingModal"
 import DeviceDiscoveryModal from "@/components/DeviceDiscoveryModal"
-import DeviceMonitoringControls from "@/components/DeviceMonitoringControls"
-import DeviceMonitoringStatus from "@/components/DeviceMonitoringStatus"
-import DeviceMonitoringTest from "@/components/DeviceMonitoringTest"
-import DeviceMonitoringDebug from "@/components/DeviceMonitoringDebug"
+import { mqttBus } from "@/services/mqttBus"
+import type { RealTimeDeviceData } from "@/contexts/DeviceMonitoringContext"
 import DeviceMonitorCard from "@/components/DeviceMonitorCard"
 import DeviceInfoModal from "@/components/DeviceInfoModal"
 
@@ -50,12 +46,9 @@ export default function DeviceManagementPage() {
   } = useDeviceManagement()
 
   const { startDiscovery } = useDeviceDiscovery()
-  const { selectedGateway } = useUWBLocation()
-  const {
-    realTimeDevices,
-    startMonitoring,
-    stopMonitoring
-  } = useDeviceMonitoring()
+  const { selectedGateway, gateways, setSelectedGateway } = useUWBLocation()
+  const [realTimeDevices, setRealTimeDevices] = useState<Map<string, RealTimeDeviceData>>(new Map())
+  const [isMonitoring, setIsMonitoring] = useState(false)
 
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedFilter, setSelectedFilter] = useState<DeviceType | "all">("all")
@@ -73,10 +66,7 @@ export default function DeviceManagementPage() {
   const [showDeviceInfoModal, setShowDeviceInfoModal] = useState(false)
   const [selectedDeviceInfo, setSelectedDeviceInfo] = useState<any>(null)
 
-  // 新增：監控控制面板狀態
-  const [showControls, setShowControls] = useState(false)
-  const [showTest, setShowTest] = useState(false)
-  const [showDebug, setShowDebug] = useState(false)
+
 
   // 新增設備的狀態
   const [newDevice, setNewDevice] = useState({
@@ -87,6 +77,132 @@ export default function DeviceManagementPage() {
     deviceId: "",
     gatewayId: ""
   })
+
+  // 監聽 MQTT Bus 連接狀態
+  useEffect(() => {
+    const unsubscribe = mqttBus.onStatusChange((status) => {
+      setIsMonitoring(status === 'connected')
+    })
+
+    // 初始化狀態
+    const currentStatus = mqttBus.getStatus()
+    setIsMonitoring(currentStatus === 'connected')
+
+    return unsubscribe
+  }, [])
+
+  // 處理 MQTT 數據
+  useEffect(() => {
+    let lastProcessedTime = 0
+    let processedMessages = new Set<string>()
+    let lastUpdateTime = 0
+
+    const updateMqttData = () => {
+      // 頻率控制：確保至少間隔2秒才更新
+      const now = Date.now()
+      if (now - lastUpdateTime < 2000) {
+        return
+      }
+
+      try {
+        const recentMessages = mqttBus.getRecentMessages()
+
+        // 只處理新的消息
+        const newMessages = recentMessages.filter(msg => {
+          const msgTime = msg.timestamp.getTime()
+          const msgKey = `${msg.topic}-${msgTime}`
+          const isNew = msgTime > lastProcessedTime && !processedMessages.has(msgKey)
+          return isNew
+        })
+
+        if (newMessages.length === 0) return
+
+        // 更新最後處理時間
+        lastProcessedTime = Math.max(...newMessages.map(msg => msg.timestamp.getTime()))
+
+        // 標記已處理的消息
+        newMessages.forEach(msg => {
+          const msgKey = `${msg.topic}-${msg.timestamp.getTime()}`
+          processedMessages.add(msgKey)
+        })
+
+        // 清理過期的處理記錄
+        const oneHourAgo = Date.now() - 60 * 60 * 1000
+        processedMessages.forEach((key) => {
+          const timestamp = parseInt(key.split('-').pop() || '0')
+          if (timestamp < oneHourAgo) {
+            processedMessages.delete(key)
+          }
+        })
+
+        // 更新設備狀態
+        setRealTimeDevices(prev => {
+          const next = new Map(prev)
+          let hasChanges = false
+
+          newMessages.forEach(msg => {
+            const data = msg.payload
+            // 嘗試從多個字段獲取 MAC 或 ID
+            const mac = data.MAC || data['mac address'] || data.macAddress || data.hardwareId
+            const id = data.id || data['device id'] || data.device_id
+
+            if (!mac && !id) return
+
+            // 查找對應的設備
+            const device = devices.find(d => {
+              // 檢查 MAC/HardwareID
+              if (mac && (d.hardwareId === mac || d.deviceUid.includes(mac) || (d.deviceUid && d.deviceUid.endsWith(mac)))) {
+                return true
+              }
+              // 檢查 ID (針對 UWB Tag)
+              if (id && d.deviceUid === `TAG:${id}`) {
+                return true
+              }
+              return false
+            })
+
+            if (device) {
+              const batteryLevel = data['battery level'] || data.battery_level || data.battery
+              const status = DeviceStatus.ACTIVE // 收到消息即視為活躍
+
+              const existing = next.get(device.id)
+              const newData: RealTimeDeviceData = {
+                deviceId: device.id,
+                deviceUid: device.deviceUid,
+                batteryLevel: batteryLevel !== undefined ? parseInt(batteryLevel) : (existing?.batteryLevel || 0),
+                status: status,
+                lastSeen: msg.timestamp,
+                signalStrength: data.rssi || existing?.signalStrength,
+                position: data.position ? {
+                  x: data.position.x || 0,
+                  y: data.position.y || 0,
+                  z: data.position.z || 0,
+                  quality: data.position.quality || 0
+                } : existing?.position
+              }
+
+              next.set(device.id, newData)
+              hasChanges = true
+            }
+          })
+
+          return hasChanges ? next : prev
+        })
+
+        lastUpdateTime = Date.now()
+      } catch (error) {
+        console.error('Error processing MQTT data:', error)
+      }
+    }
+
+    // 初始載入
+    updateMqttData()
+
+    // 定時更新
+    const interval = setInterval(updateMqttData, 2000)
+
+    return () => clearInterval(interval)
+  }, [devices])
 
   // 🚀 持久化系統狀態
   const [lastSaveTime, setLastSaveTime] = useState<Date>(new Date())
@@ -351,38 +467,7 @@ export default function DeviceManagementPage() {
     return matchesSearch && matchesFilter
   })
 
-  // 獲取設備圖標
-  const getDeviceIcon = (deviceType: DeviceType) => {
-    switch (deviceType) {
-      case DeviceType.SMARTWATCH_300B: return Watch
-      case DeviceType.DIAPER_SENSOR: return Baby
-      case DeviceType.PEDOMETER: return Settings
-      case DeviceType.UWB_TAG: return MapPin
-      default: return Settings
-    }
-  }
 
-  // 獲取設備狀態徽章
-  const getDeviceStatusBadge = (status: DeviceStatus) => {
-    const colors = {
-      [DeviceStatus.ACTIVE]: 'bg-green-100 text-green-800',
-      [DeviceStatus.INACTIVE]: 'bg-yellow-100 text-yellow-800',
-      [DeviceStatus.OFFLINE]: 'bg-gray-100 text-gray-800',
-      [DeviceStatus.ERROR]: 'bg-red-100 text-red-800'
-    }
-
-    const labels = {
-      [DeviceStatus.ACTIVE]: t('status:device.status.active'),
-      [DeviceStatus.INACTIVE]: t('status:device.status.inactive'),
-      [DeviceStatus.OFFLINE]: t('status:device.status.offline'),
-      [DeviceStatus.ERROR]: t('status:device.status.error')
-    }
-
-    return {
-      className: colors[status],
-      label: labels[status]
-    }
-  }
 
   // 處理新增設備
   const handleAddDevice = () => {
@@ -525,25 +610,7 @@ export default function DeviceManagementPage() {
     }
   }
 
-  // 新增：監控相關函數
-  const handleStartMonitoring = async () => {
-    if (!selectedGateway) {
-      alert('請先選擇一個Gateway')
-      return
-    }
-    try {
-      await startMonitoring(selectedGateway)
-      console.log('監控已啟動')
-    } catch (error) {
-      console.error('啟動監控失敗:', error)
-      alert('啟動監控失敗')
-    }
-  }
 
-  const handleStopMonitoring = () => {
-    stopMonitoring()
-    console.log('監控已停止')
-  }
 
 
   // 獲取實時數據
@@ -700,50 +767,24 @@ export default function DeviceManagementPage() {
 
       {/* 設備管理內容 */}
       <>
-        {/* 監控控制面板 */}
+        {/* 監控狀態顯示 */}
         <div className="space-y-6">
-          {/* 監控狀態和控制按鈕 */}
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">{t('pages:deviceManagement.monitoring.title')}</h3>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowControls(!showControls)}
-                className="gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                {showControls ? t('pages:deviceManagement.monitoring.hideControls') : t('pages:deviceManagement.monitoring.showControls')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowTest(!showTest)}
-                className="gap-2"
-              >
-                <TestTube className="h-4 w-4" />
-                {showTest ? t('pages:deviceManagement.monitoring.hideTest') : t('pages:deviceManagement.monitoring.showTest')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowDebug(!showDebug)}
-                className="gap-2"
-              >
-                <Bug className="h-4 w-4" />
-                {showDebug ? t('pages:deviceManagement.monitoring.hideDebug') : t('pages:deviceManagement.monitoring.showDebug')}
-              </Button>
+            <div className="flex items-center gap-2">
+              {isMonitoring ? (
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                  <Activity className="w-3 h-3 mr-1 animate-pulse" />
+                  {t('pages:diaperMonitoring.connectionStatus.connected')}
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-gray-500">
+                  <Wifi className="w-3 h-3 mr-1" />
+                  {t('pages:diaperMonitoring.connectionStatus.disconnected')}
+                </Badge>
+              )}
             </div>
           </div>
-
-          {/* 監控狀態 */}
-          <DeviceMonitoringStatus />
-
-          {/* 監控控制面板 */}
-          {showControls && <DeviceMonitoringControls />}
-
-          {/* 測試面板 */}
-          {showTest && <DeviceMonitoringTest />}
-
-          {/* 調試面板 */}
-          {showDebug && <DeviceMonitoringDebug />}
 
           {/* 監控統計概覽 */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -843,16 +884,27 @@ export default function DeviceManagementPage() {
 
         {/* 新增設備按鈕 */}
         <div className="flex justify-end gap-2">
+          <Select value={selectedGateway} onValueChange={setSelectedGateway}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="選擇 Gateway" />
+            </SelectTrigger>
+            <SelectContent>
+              {gateways.map((gateway) => (
+                <SelectItem key={gateway.id} value={gateway.id}>
+                  {gateway.name || gateway.macAddress || gateway.id}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Button
             variant="outline"
-            onClick={async () => {
+            onClick={() => {
               if (!selectedGateway) {
                 alert('請先選擇一個Gateway')
                 return
               }
               try {
-                // 同時啟動監控和設備發現
-                await handleStartMonitoring()
                 startDiscovery(selectedGateway)
               } catch (error) {
                 console.error('啟動失敗:', error)

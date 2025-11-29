@@ -217,6 +217,15 @@ export default function DeviceDiscoveryModal() {
                                                                     <div>MAC地址: {device.macAddress}</div>
                                                                 )}
                                                                 <div>閘道器ID: {device.gatewayId}</div>
+                                                                {device.firmwareVersion && (
+                                                                    <div>韌體版本: {device.firmwareVersion}</div>
+                                                                )}
+                                                                {device.ledStatus !== undefined && (
+                                                                    <div>LED狀態: {device.ledStatus}</div>
+                                                                )}
+                                                                {device.bleStatus !== undefined && (
+                                                                    <div>BLE狀態: {device.bleStatus}</div>
+                                                                )}
                                                                 <div className="flex items-center gap-4">
                                                                     <div className="flex items-center gap-1">
                                                                         <Signal className="h-4 w-4" />

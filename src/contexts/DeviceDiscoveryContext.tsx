@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react'
 import { DeviceType, DeviceUID } from '@/types/device-types'
 import { useDeviceManagement } from './DeviceManagementContext'
-import { useDeviceMonitoring } from './DeviceMonitoringContext'
+import { mqttBus } from "@/services/mqttBus"
 
 // 發現的設備接口
 interface DiscoveredDevice {
@@ -16,6 +16,10 @@ interface DiscoveredDevice {
     signalStrength?: number
     batteryLevel?: number
     rawData: any
+    // UWB Tag 特有欄位
+    firmwareVersion?: string
+    ledStatus?: number
+    bleStatus?: number
 }
 
 // 設備發現上下文類型
@@ -44,14 +48,24 @@ export function DeviceDiscoveryProvider({ children }: { children: React.ReactNod
     const [showDiscoveryModal, setShowDiscoveryModal] = useState(false)
 
     const { addDevice, devices } = useDeviceManagement()
-    const { debugMessages } = useDeviceMonitoring()
+
 
     // 根據topic和content識別設備類型
     const identifyDeviceType = useCallback((topic: string, content: string): DeviceType | null => {
-        if (topic.includes('Loca') && content === 'location') {
+        const lowerTopic = topic.toLowerCase()
+
+        if (lowerTopic.includes('loca') && content === 'location') {
             return DeviceType.UWB_TAG
         }
-        if (topic.includes('Health')) {
+        // 新增：支援 TagConf
+        if (lowerTopic.includes('tagconf') && content === 'config') {
+            return DeviceType.UWB_TAG
+        }
+        // 新增：支援 Message (電量等資訊)
+        if (lowerTopic.includes('message') && content === 'info') {
+            return DeviceType.UWB_TAG
+        }
+        if (lowerTopic.includes('health')) {
             if (content === 'diaper DV1') {
                 return DeviceType.DIAPER_SENSOR
             }
@@ -89,14 +103,19 @@ export function DeviceDiscoveryProvider({ children }: { children: React.ReactNod
         if (!deviceType) return null
 
         // 提取基本信息
-        const deviceId = message['device id'] || message.device_id || message.deviceId
+        const deviceId = message['device id'] || message.device_id || message.deviceId || message.id
         const macAddress = message['mac address'] || message.mac_address || message.macAddress || message.MAC
         const gatewayId = message['gateway id'] || message.gateway_id || message.gatewayId
         const signalStrength = message['signal strength'] || message.signal_strength || message.signalStrength
 
         // 提取電量信息
-        const batteryLevel = message['battery level'] || message.battery_level || message.battery || 0
-        const normalizedBatteryLevel = Math.max(0, Math.min(100, Number(batteryLevel) || 0))
+        const rawBatteryLevel = message['battery level'] || message.battery_level || message.battery
+        const batteryLevel = rawBatteryLevel !== undefined ? Math.max(0, Math.min(100, Number(rawBatteryLevel) || 0)) : undefined
+
+        // 提取 UWB Tag 特有信息
+        const firmwareVersion = message['fw update'] || message.fw_update || message['fw ver'] || message.fw_ver
+        const ledStatus = message.led
+        const bleStatus = message.ble
 
         if (!macAddress && !deviceId) return null
 
@@ -109,7 +128,10 @@ export function DeviceDiscoveryProvider({ children }: { children: React.ReactNod
             gatewayId: gatewayId?.toString() || 'unknown',
             macAddress,
             signalStrength,
-            batteryLevel: normalizedBatteryLevel,
+            batteryLevel,
+            firmwareVersion,
+            ledStatus,
+            bleStatus,
             rawData: message
         }
     }, [identifyDeviceType, generateDeviceUID])
@@ -146,9 +168,20 @@ export function DeviceDiscoveryProvider({ children }: { children: React.ReactNod
             const existingIndex = prev.findIndex(d => d.deviceUid === device.deviceUid)
 
             if (existingIndex >= 0) {
-                // 更新現有設備信息
+                // 更新現有設備信息，只更新非 undefined 的欄位
+                const existingDevice = prev[existingIndex]
+                const updatedDevice = { ...existingDevice, lastSeen: new Date() }
+
+                // 遍歷新設備的屬性，如果有值則更新
+                Object.keys(device).forEach(key => {
+                    const value = (device as any)[key]
+                    if (value !== undefined && value !== null && value !== '' && key !== 'id') {
+                        (updatedDevice as any)[key] = value
+                    }
+                })
+
                 const updated = [...prev]
-                updated[existingIndex] = { ...device, lastSeen: new Date() }
+                updated[existingIndex] = updatedDevice
                 return updated
             } else {
                 // 添加新設備
@@ -223,25 +256,47 @@ export function DeviceDiscoveryProvider({ children }: { children: React.ReactNod
     React.useEffect(() => {
         if (!isDiscovering) return
 
-        // 從現有的MQTT消息中提取設備信息
-        const latestMessages = debugMessages.slice(-10) // 只處理最新的10條消息
+        const checkForNewDevices = () => {
+            // 從全域 MQTT Bus 獲取最近的消息
+            const recentMessages = mqttBus.getRecentMessages()
 
-        latestMessages.forEach(msg => {
-            if (msg.parsedData) {
-                const deviceInfo = extractDeviceInfo(msg.topic, msg.parsedData)
-                if (deviceInfo) {
-                    const discoveredDevice: DiscoveredDevice = {
-                        id: `${deviceInfo.deviceUid}_${Date.now()}`,
-                        name: `${deviceInfo.deviceType}_${deviceInfo.hardwareId}`,
-                        lastSeen: new Date(),
-                        ...deviceInfo
-                    } as DiscoveredDevice
+            // 只處理最近 10 秒內的消息，避免處理過舊的數據
+            const now = Date.now()
+            const tenSecondsAgo = now - 10000
 
-                    addDiscoveredDevice(discoveredDevice)
+            const validMessages = recentMessages.filter(msg =>
+                msg.timestamp.getTime() > tenSecondsAgo
+            )
+
+            validMessages.forEach(msg => {
+                // 嘗試解析消息內容
+                // 注意：mqttBus 的消息 payload 已經是解析後的對象
+                const payload = msg.payload
+
+                if (payload) {
+                    const deviceInfo = extractDeviceInfo(msg.topic, payload)
+                    if (deviceInfo) {
+                        const discoveredDevice: DiscoveredDevice = {
+                            id: `${deviceInfo.deviceUid}_${Date.now()}`,
+                            name: `${deviceInfo.deviceType}_${deviceInfo.hardwareId}`,
+                            lastSeen: new Date(),
+                            ...deviceInfo
+                        } as DiscoveredDevice
+
+                        addDiscoveredDevice(discoveredDevice)
+                    }
                 }
-            }
-        })
-    }, [debugMessages, isDiscovering, extractDeviceInfo, addDiscoveredDevice])
+            })
+        }
+
+        // 初始檢查
+        checkForNewDevices()
+
+        // 定時輪詢 (每 2 秒檢查一次)
+        const interval = setInterval(checkForNewDevices, 2000)
+
+        return () => clearInterval(interval)
+    }, [isDiscovering, extractDeviceInfo, addDiscoveredDevice])
 
     const value: DeviceDiscoveryContextType = {
         discoveredDevices,
