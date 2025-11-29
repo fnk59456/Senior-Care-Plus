@@ -1379,6 +1379,25 @@ export default function UWBLocationPage() {
             }
         })
 
+        // 🔧 改進：防抖機制，用於延遲 API 更新
+        const gatewayUpdateTimers = new Map<string, NodeJS.Timeout>()
+        const GATEWAY_UPDATE_DEBOUNCE_MS = 5000 // 5秒防抖，避免頻繁 API 調用
+
+        // 檢查 pub_topic 是否有變化（關鍵字段，影響 GatewayRegistry）
+        const hasPubTopicChanged = (oldData: CloudGatewayData | undefined, newData: CloudGatewayData): boolean => {
+            if (!oldData?.pub_topic) return true // 如果舊數據沒有 pub_topic，視為變化
+            const oldTopics = oldData.pub_topic
+            const newTopics = newData.pub_topic
+            return (
+                oldTopics.health !== newTopics.health ||
+                oldTopics.location !== newTopics.location ||
+                oldTopics.anchor_config !== newTopics.anchor_config ||
+                oldTopics.tag_config !== newTopics.tag_config ||
+                oldTopics.ack_from_node !== newTopics.ack_from_node ||
+                oldTopics.message !== newTopics.message
+            )
+        }
+
         // 訂閱 Gateway Topic
         const unsubscribe = realtimeDataService.subscribe(CLOUD_MQTT_TOPIC, async (message) => {
             try {
@@ -1499,18 +1518,58 @@ export default function UWBLocationPage() {
                             return prev
                         })
 
-                        // 檢查是否有對應的系統 Gateway，如果有則更新
+                        // 🔧 改進：檢查是否有對應的系統 Gateway
                         const existingSystemGateway = gateways.find(gw =>
                             gw.cloudData?.gateway_id === gatewayData.gateway_id
                         )
 
                         if (existingSystemGateway) {
-                            // 使用 Context 方法更新 Gateway（會自動更新 GatewayRegistry 和後端）
-                            await updateGateway(existingSystemGateway.id, {
+                            // ✅ 立即更新 GatewayRegistry（確保 MQTT 監聽能立即啟動）
+                            // 這是關鍵：GatewayRegistry 需要 cloudData.pub_topic 來提取 topics
+                            const updatedGateway: Gateway = {
+                                ...existingSystemGateway,
                                 cloudData: gatewayData,
                                 status: gatewayData.uwb_joined === "yes" ? "online" : "offline"
-                            })
-                            console.log('✅ Gateway cloudData 更新成功')
+                            }
+
+                            // 立即更新 GatewayRegistry（同步操作，不阻塞）
+                            gatewayRegistry.updateGateway(updatedGateway)
+                            console.log('✅ GatewayRegistry 已立即更新，MQTT 監聽可立即啟動')
+
+                            // 🔧 改進：只在關鍵數據變化時才調用 API，並使用防抖機制
+                            const oldCloudData = existingSystemGateway.cloudData
+                            const pubTopicChanged = hasPubTopicChanged(oldCloudData, gatewayData)
+                            const statusChanged = existingSystemGateway.status !== updatedGateway.status
+
+                            // 如果 pub_topic 變化或狀態變化，需要更新後端和 Context state
+                            if (pubTopicChanged || statusChanged) {
+                                // 清除之前的定時器
+                                const existingTimer = gatewayUpdateTimers.get(existingSystemGateway.id)
+                                if (existingTimer) {
+                                    clearTimeout(existingTimer)
+                                }
+
+                                // 設置新的防抖定時器
+                                const timer = setTimeout(async () => {
+                                    try {
+                                        // 使用 Context 方法更新 Gateway（會更新 Context state 和後端）
+                                        await updateGateway(existingSystemGateway.id, {
+                                            cloudData: gatewayData,
+                                            status: updatedGateway.status
+                                        })
+                                        console.log('✅ Gateway Context 和後端更新成功（防抖後）')
+                                    } catch (error) {
+                                        console.error('❌ Gateway 後端更新失敗:', error)
+                                    } finally {
+                                        gatewayUpdateTimers.delete(existingSystemGateway.id)
+                                    }
+                                }, GATEWAY_UPDATE_DEBOUNCE_MS)
+
+                                gatewayUpdateTimers.set(existingSystemGateway.id, timer)
+                                console.log(`⏰ Gateway 後端更新已延遲（${GATEWAY_UPDATE_DEBOUNCE_MS}ms 防抖）`)
+                            } else {
+                                console.log('⏭️ Gateway 數據無關鍵變化，跳過後端更新')
+                            }
                         }
                     }
                 } else {
@@ -1524,11 +1583,14 @@ export default function UWBLocationPage() {
 
         return () => {
             console.log("清理雲端 Gateway 連接")
+            // 清除所有防抖定時器
+            gatewayUpdateTimers.forEach(timer => clearTimeout(timer))
+            gatewayUpdateTimers.clear()
             unsubscribe()
             unsubscribeStatus()
             // 注意：不在这里断开 realtimeDataService，因为可能被其他组件使用
         }
-    }, []) // 空依賴數組，只在組件掛載時執行一次
+    }, [gateways, updateGateway]) // 添加依賴，確保能訪問最新的 gateways
 
     // Anchor 雲端 MQTT 連接 - 根據選擇的 Gateway 動態訂閱
     useEffect(() => {
