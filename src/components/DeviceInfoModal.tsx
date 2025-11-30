@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Device, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
 import { useTranslation } from 'react-i18next'
 import {
@@ -16,8 +17,12 @@ import {
     Calendar,
     User,
     Hash,
-    Tag
+    Tag,
+    Edit,
+    Save,
+    X
 } from 'lucide-react'
+import { useDeviceManagement } from '@/contexts/DeviceManagementContext'
 
 interface DeviceInfoModalProps {
     isOpen: boolean
@@ -27,6 +32,35 @@ interface DeviceInfoModalProps {
 
 export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoModalProps) {
     const { t } = useTranslation()
+    const { updateDevice } = useDeviceManagement()
+    const [isEditingName, setIsEditingName] = useState(false)
+    const [editedName, setEditedName] = useState(device?.name || '')
+
+    // 初始化編輯名稱 - Hooks 必須在條件返回之前調用
+    React.useEffect(() => {
+        if (device && isOpen) {
+            setEditedName(device.name)
+            setIsEditingName(false)
+        }
+    }, [device, isOpen])
+
+    // 處理保存名稱
+    const handleSaveName = () => {
+        if (!device) return
+        if (editedName.trim() && editedName !== device.name) {
+            updateDevice(device.id, { name: editedName.trim() })
+        }
+        setIsEditingName(false)
+    }
+
+    // 處理取消編輯
+    const handleCancelEdit = () => {
+        if (!device) return
+        setEditedName(device.name)
+        setIsEditingName(false)
+    }
+
+    // 條件返回必須在所有 Hooks 之後
     if (!device) return null
 
     // 獲取設備圖標
@@ -85,8 +119,50 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                         <CardContent className="space-y-3">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.deviceName')}</label>
-                                    <p className="text-sm font-semibold">{device.name}</p>
+                                    <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                                        {t('pages:deviceManagement.deviceInfo.deviceName')}
+                                        {!isEditingName && (
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-6 w-6 p-0"
+                                                onClick={() => setIsEditingName(true)}
+                                                title={t('pages:deviceManagement.deviceInfo.editName') || '編輯名稱'}
+                                            >
+                                                <Edit className="h-3 w-3" />
+                                            </Button>
+                                        )}
+                                    </label>
+                                    {isEditingName ? (
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <Input
+                                                value={editedName}
+                                                onChange={(e) => setEditedName(e.target.value)}
+                                                className="text-sm"
+                                                autoFocus
+                                            />
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 w-8 p-0"
+                                                onClick={handleSaveName}
+                                                title={t('common:actions.save') || '保存'}
+                                            >
+                                                <Save className="h-4 w-4 text-green-600" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-8 w-8 p-0"
+                                                onClick={handleCancelEdit}
+                                                title={t('common:actions.cancel') || '取消'}
+                                            >
+                                                <X className="h-4 w-4 text-red-600" />
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm font-semibold">{device.name}</p>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.status')}</label>

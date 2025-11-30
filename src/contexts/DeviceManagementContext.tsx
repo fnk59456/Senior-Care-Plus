@@ -641,8 +641,10 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
 
             // 如果設備不存在，自動創建
             if (!existingDevice) {
-                // 使用 Loca topic 中的 id(Hex) 作為設備名稱，如果沒有則使用默認名稱
-                const deviceName = tagHexId || `${DEVICE_TYPE_CONFIG[DeviceType.UWB_TAG].label} ${tagId}`
+                // 使用格式：UWB定位標籤 ${id(Hex)}，如果沒有 id(Hex) 則使用默認名稱
+                const deviceName = tagHexId
+                    ? `${DEVICE_TYPE_CONFIG[DeviceType.UWB_TAG].label} ${tagHexId}`
+                    : `${DEVICE_TYPE_CONFIG[DeviceType.UWB_TAG].label} ${tagId}`
 
                 const newDevice: Device = {
                     id: `D${Date.now()}`,
@@ -696,10 +698,8 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                 if (firmwareVersion !== undefined) {
                     updates.firmwareVersion = firmwareVersion
                 }
-                // 使用 Loca topic 中的 id(Hex) 更新設備名稱（如果存在且不同）
-                if (tagHexId && existingDevice.name !== tagHexId) {
-                    updates.name = tagHexId
-                }
+                // 移除自動更新設備名稱的功能，允許用戶手動編輯設備名稱
+                // 設備名稱不會再自動更新，用戶可以在設備資訊頁面自行修改
                 if (gatewayId && existingDevice.gatewayId !== gatewayId.toString()) {
                     updates.gatewayId = gatewayId.toString()
                 }
