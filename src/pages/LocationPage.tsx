@@ -102,8 +102,13 @@ export default function LocationPage() {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapImageRef = useRef<HTMLImageElement>(null)
 
+  // ✅ 使用 useRef 持久化消息處理狀態，避免每次重新創建
+  const processedMessagesRef = useRef<Set<string>>(new Set())
+  const lastProcessedTimeRef = useRef<number>(0)
+  const historyLoadedRef = useRef<string>('') // 跟踪已加载历史消息的 gateway
+
   // 根據MAC地址獲取病患資訊
-  const getResidentInfoByMAC = (mac: string) => {
+  const getResidentInfoByMAC = useCallback((mac: string) => {
     // 查找設備：先嘗試hardwareId，再嘗試deviceUid
     const device = devices.find(d =>
       d.hardwareId === mac ||
@@ -126,7 +131,7 @@ export default function LocationPage() {
     }
 
     return null
-  }
+  }, [devices, getResidentForDevice])
 
   // 簡化的座標轉換函數 - 只計算基礎座標，讓CSS變換處理縮放和平移
   const convertRealToDisplayCoords = (x: number, y: number, floor: any, imgElement: HTMLImageElement) => {
@@ -413,16 +418,18 @@ export default function LocationPage() {
 
   // ✅ 使用實時數據服務處理位置數據
   useEffect(() => {
-    let lastProcessedTime = 0
-    let processedMessages = new Set<string>()
-
     // 連接實時數據服務
     realtimeDataService.connect()
 
     const USE_WEBSOCKET = import.meta.env.VITE_USE_WEBSOCKET === 'true'
 
+    // ✅ 獲取當前 gateway 對應的設備和網關數據（在 effect 內部獲取最新值）
+    const currentDevices = devices
+    const currentGateways = gateways
+    const currentGetResidentForDevice = getResidentForDevice
+
     // 處理實時消息的通用函數，供歷史消息與實時訂閱共用
-    const processLocationMessage = (message: RealtimeMessage, processedSet: Set<string>) => {
+    const processLocationMessage = (message: RealtimeMessage) => {
       const data = message.payload
 
       if (data.content !== 'location' || !data.id || !data.position) {
@@ -433,7 +440,7 @@ export default function LocationPage() {
 
       // ✅ 添加 Gateway 篩選：只處理來自選定 Gateway 的位置消息
       if (selectedGateway) {
-        const gateway = gateways.find(gw => gw.id === selectedGateway)
+        const gateway = currentGateways.find(gw => gw.id === selectedGateway)
         if (gateway) {
           // 檢查消息是否來自選定的 Gateway
           const msgGateway = message.gateway?.name || ''
@@ -460,46 +467,82 @@ export default function LocationPage() {
             return // 跳過此消息
           }
 
-          console.log(`✅ 處理選定 Gateway 的位置消息:`, {
-            deviceId,
-            msgGateway,
-            selectedGateway: gateway.name,
-            macSuffix
-          })
+          // ✅ 減少日誌輸出（只在處理前幾條消息時輸出）
+          if (processedMessagesRef.current.size < 5) {
+            console.log(`✅ 處理選定 Gateway 的位置消息:`, {
+              deviceId,
+              msgGateway,
+              selectedGateway: gateway.name,
+              macSuffix
+            })
+          }
         }
       }
 
       // 獲取病患資訊
-      const residentInfo = getResidentInfoByMAC(deviceId)
+      const device = currentDevices.find(d =>
+        d.hardwareId === deviceId ||
+        d.deviceUid === deviceId ||
+        d.deviceUid === `TAG:${deviceId}` ||
+        d.deviceUid === `UWB_TAG:${deviceId}`
+      )
+      const residentInfo = device ? currentGetResidentForDevice(device.id) : null
 
-      setPatients(prev => ({
-        ...prev,
-        [deviceId]: {
-          id: deviceId,
-          name: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備-${deviceId}`,
-          position: {
-            x: data.position.x,
-            y: data.position.y,
-            quality: data.position.quality || 0,
-            z: data.position.z,
+      setPatients(prev => {
+        // ✅ 只有當位置真正變化時才更新，減少不必要的狀態更新
+        const existing = prev[deviceId]
+        const newPosition = {
+          x: data.position.x,
+          y: data.position.y,
+          quality: data.position.quality || 0,
+          z: data.position.z,
+        }
+
+        // 如果位置沒有明顯變化（小於 0.1 米），且時間很近（5秒內），跳過更新
+        if (existing) {
+          const positionDiff = Math.sqrt(
+            Math.pow(newPosition.x - existing.position.x, 2) +
+            Math.pow(newPosition.y - existing.position.y, 2)
+          )
+          const timeDiff = message.timestamp.getTime() - existing.updatedAt
+
+          if (positionDiff < 0.1 && timeDiff < 5000) {
+            return prev // 位置變化太小，不更新
+          }
+        }
+
+        return {
+          ...prev,
+          [deviceId]: {
+            id: deviceId,
+            name: residentInfo ? `${residentInfo.name} (${residentInfo.room})` : `設備-${deviceId}`,
+            position: newPosition,
+            updatedAt: message.timestamp.getTime(),
+            gatewayId: selectedGateway,
+            deviceId: device?.id,
+            deviceType: device?.deviceType,
+            residentId: residentInfo?.id,
+            residentName: residentInfo?.name,
+            residentStatus: residentInfo?.status,
+            residentRoom: residentInfo?.room,
+            gateway: message.gateway?.name || '',
+            topic: message.topic
           },
-          updatedAt: message.timestamp.getTime(),
-          gatewayId: selectedGateway,
-          deviceId: residentInfo?.deviceType ? devices.find(d => d.hardwareId === deviceId)?.id : undefined,
-          deviceType: residentInfo?.deviceType,
-          residentId: residentInfo?.residentId,
-          residentName: residentInfo?.residentName,
-          residentStatus: residentInfo?.residentStatus,
-          residentRoom: residentInfo?.residentRoom,
-          // 添加 Gateway 資訊用於調試
-          gateway: message.gateway?.name || '',
-          topic: message.topic
-        },
-      }))
+        }
+      })
     }
 
     // 🔧 持久化存儲：從歷史消息加載數據
     const loadHistoryMessages = async () => {
+      // ✅ 檢查是否已經為當前 gateway 加載過歷史消息
+      if (historyLoadedRef.current === selectedGateway) {
+        console.log(`⏭️ Gateway ${selectedGateway} 的歷史消息已加載，跳過重複加載`)
+        return
+      }
+
+      // ✅ 標記當前 gateway 已加載
+      historyLoadedRef.current = selectedGateway || ''
+
       if (USE_WEBSOCKET) {
         // WebSocket 模式：從 REST API 加載歷史消息
         console.log('📚 WebSocket 模式：從 REST API 加載歷史消息')
@@ -524,15 +567,16 @@ export default function LocationPage() {
           console.log(`📚 過濾後找到 ${locationMessages.length} 條 location 消息`)
 
           // 處理歷史消息
+          let processedCount = 0
           locationMessages.forEach((msg: any) => {
             const msgTime = new Date(msg.timestamp || msg.message?.timestamp || Date.now()).getTime()
             const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.message || msg.payload).substring(0, 50)}`
 
-            if (processedMessages.has(msgKey)) {
+            if (processedMessagesRef.current.has(msgKey)) {
               return
             }
 
-            processedMessages.add(msgKey)
+            processedMessagesRef.current.add(msgKey)
 
             // 🔧 從 topic 提取 Gateway 信息
             // Topic 格式：UWB/GWxxxx_Loca
@@ -550,26 +594,28 @@ export default function LocationPage() {
               gateway: msg.gateway || gatewayInfo
             }
 
-            // 處理消息（重用下面的處理邏輯）
-            processLocationMessage(message, processedMessages)
-            lastProcessedTime = Math.max(lastProcessedTime, msgTime)
+            // 處理消息
+            processLocationMessage(message)
+            lastProcessedTimeRef.current = Math.max(lastProcessedTimeRef.current, msgTime)
+            processedCount++
           })
 
-          console.log(`✅ 已加載 ${locationMessages.length} 條歷史消息`)
+          console.log(`✅ 已加載 ${processedCount} 條新歷史消息（總共 ${locationMessages.length} 條）`)
         } catch (error) {
           console.error('❌ 從 REST API 加載歷史消息失敗:', error)
           // 如果 REST API 失敗，嘗試從 localStorage 加載
           const localMessages = loadHistoryFromLocalStorage()
-          if (localMessages.length > 0) {
+          if (localMessages && localMessages.length > 0) {
+            let processedCount = 0
             localMessages.forEach((msg: any) => {
               const msgTime = new Date(msg.timestamp || Date.now()).getTime()
               const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.payload || msg.message).substring(0, 50)}`
 
-              if (processedMessages.has(msgKey)) {
+              if (processedMessagesRef.current.has(msgKey)) {
                 return
               }
 
-              processedMessages.add(msgKey)
+              processedMessagesRef.current.add(msgKey)
 
               // 🔧 從 topic 提取 Gateway 信息
               const gatewayMatch = msg.topic?.match(/GW([A-F0-9]+)/)
@@ -585,9 +631,11 @@ export default function LocationPage() {
                 gateway: msg.gateway || gatewayInfo
               }
 
-              processLocationMessage(message, processedMessages)
-              lastProcessedTime = Math.max(lastProcessedTime, msgTime)
+              processLocationMessage(message)
+              lastProcessedTimeRef.current = Math.max(lastProcessedTimeRef.current, msgTime)
+              processedCount++
             })
+            console.log(`✅ 從 localStorage 加載 ${processedCount} 條新歷史消息`)
           }
         }
       } else {
@@ -601,15 +649,16 @@ export default function LocationPage() {
           console.log(`📚 找到 ${recentMessages.length} 條歷史消息`)
 
           // 處理歷史消息
+          let processedCount = 0
           recentMessages.forEach(msg => {
             const msgTime = msg.timestamp.getTime()
             const msgKey = `${msg.topic}-${msgTime}-${JSON.stringify(msg.payload).substring(0, 50)}`
 
-            if (processedMessages.has(msgKey)) {
+            if (processedMessagesRef.current.has(msgKey)) {
               return
             }
 
-            processedMessages.add(msgKey)
+            processedMessagesRef.current.add(msgKey)
 
             // 轉換為 RealtimeMessage 格式
             const message: RealtimeMessage = {
@@ -619,25 +668,31 @@ export default function LocationPage() {
               gateway: msg.gateway
             }
 
-            // 處理消息（重用下面的處理邏輯）
-            processLocationMessage(message, processedMessages)
-            lastProcessedTime = Math.max(lastProcessedTime, msgTime)
+            // 處理消息
+            processLocationMessage(message)
+            lastProcessedTimeRef.current = Math.max(lastProcessedTimeRef.current, msgTime)
+            processedCount++
           })
 
-          console.log(`✅ 已加載 ${recentMessages.length} 條歷史消息`)
+          console.log(`✅ 已加載 ${processedCount} 條新歷史消息（總共 ${recentMessages.length} 條）`)
         } catch (error) {
           console.error('❌ 加載歷史消息失敗:', error)
         }
       }
     }
 
-    // 立即加載歷史消息
-    loadHistoryMessages()
+    // ✅ 只在 selectedGateway 變化時加載歷史消息
+    if (selectedGateway) {
+      loadHistoryMessages()
+    } else {
+      // 清空已加載標記
+      historyLoadedRef.current = ''
+    }
 
     // 訂閱實時消息
     let locationTopicPattern: string | RegExp
     if (selectedGateway) {
-      const gateway = gateways.find(gw => gw.id === selectedGateway)
+      const gateway = currentGateways.find(gw => gw.id === selectedGateway)
       if (gateway?.cloudData?.pub_topic?.location) {
         locationTopicPattern = gateway.cloudData.pub_topic.location
       } else if (gateway) {
@@ -658,33 +713,36 @@ export default function LocationPage() {
         const msgKey = `${message.topic}-${msgTime}-${JSON.stringify(message.payload).substring(0, 50)}`
 
         // 檢查是否為重複消息
-        if (processedMessages.has(msgKey)) {
-          console.log(`⏭️ 重複消息已跳過: ${message.topic}`)
-          return
+        if (processedMessagesRef.current.has(msgKey)) {
+          return // 靜默跳過，減少日誌輸出
         }
 
         // 標記為已處理
-        processedMessages.add(msgKey)
-        console.log(`✅ 收到新位置消息: ${message.topic} at ${message.timestamp.toLocaleTimeString()}`)
+        processedMessagesRef.current.add(msgKey)
+
+        // ✅ 減少日誌輸出頻率（每10條消息輸出一次）
+        if (processedMessagesRef.current.size % 10 === 0) {
+          console.log(`✅ 收到新位置消息: ${message.topic} at ${message.timestamp.toLocaleTimeString()} (已處理 ${processedMessagesRef.current.size} 條)`)
+        }
 
         // 保存到 localStorage（持久化存儲）
         saveMessageToLocalStorage(message)
 
         // 處理消息
-        processLocationMessage(message, processedMessages)
-        lastProcessedTime = msgTime
+        processLocationMessage(message)
+        lastProcessedTimeRef.current = msgTime
 
         // 清理過期的處理記錄（保留最近1小時）
         const oneHourAgo = Date.now() - 60 * 60 * 1000
         const keysToDelete: string[] = []
-        processedMessages.forEach((key) => {
+        processedMessagesRef.current.forEach((key) => {
           const keyStr = String(key)
           const timestamp = parseInt(keyStr.split('-')[1] || '0')
           if (timestamp < oneHourAgo) {
             keysToDelete.push(keyStr)
           }
         })
-        keysToDelete.forEach((key: string) => processedMessages.delete(key))
+        keysToDelete.forEach((key: string) => processedMessagesRef.current.delete(key))
       } catch (error) {
         console.error('❌ 處理實時位置消息失敗:', error)
       }
@@ -695,7 +753,9 @@ export default function LocationPage() {
       console.log('🔌 取消訂閱位置主題')
       unsubscribe()
     }
-  }, [selectedGateway, devices, getResidentForDevice, gateways])
+    // ✅ 只依賴 selectedGateway，其他值在 effect 內部獲取最新引用
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedGateway])
 
   // ✅ 監聽實時數據服務連接狀態
   useEffect(() => {
@@ -723,11 +783,15 @@ export default function LocationPage() {
     return unsubscribe
   }, [t])
 
-  // ✅ Gateway 切換時清除位置數據
+  // ✅ Gateway 切換時清除位置數據和處理狀態
   useEffect(() => {
     console.log(`🔄 Gateway 切換，清除舊的位置數據:`, selectedGateway)
     setPatients({})
     setDeviceOnlineStatus({}) // 同時清除設備狀態緩存
+    // ✅ 清除已處理消息記錄，允許重新加載歷史消息
+    processedMessagesRef.current.clear()
+    lastProcessedTimeRef.current = 0
+    historyLoadedRef.current = '' // 重置歷史消息加載標記
   }, [selectedGateway])
 
   // ✅ 方案一：設備狀態緩存更新 - 只在 patients 變化時重新計算在線狀態
