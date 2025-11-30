@@ -612,6 +612,7 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             }
 
             // 從 location 提取數據
+            let tagHexId: string | undefined
             if (tagData.location) {
                 const loc = tagData.location
                 if (loc.position) {
@@ -623,6 +624,10 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                     }
                 }
                 if (loc.time) lastData.time = loc.time
+                // 提取 id(Hex) 作為設備名稱
+                if (loc['id(Hex)']) {
+                    tagHexId = loc['id(Hex)']
+                }
             }
 
             // 從 config 提取數據
@@ -636,11 +641,14 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
 
             // 如果設備不存在，自動創建
             if (!existingDevice) {
+                // 使用 Loca topic 中的 id(Hex) 作為設備名稱，如果沒有則使用默認名稱
+                const deviceName = tagHexId || `${DEVICE_TYPE_CONFIG[DeviceType.UWB_TAG].label} ${tagId}`
+
                 const newDevice: Device = {
                     id: `D${Date.now()}`,
                     deviceUid,
                     deviceType: DeviceType.UWB_TAG,
-                    name: tagData.config?.name || `${DEVICE_TYPE_CONFIG[DeviceType.UWB_TAG].label} ${tagId}`,
+                    name: deviceName,
                     hardwareId: tagId.toString(),
                     status: DeviceStatus.ACTIVE,
                     gatewayId: gatewayId?.toString(),
@@ -688,8 +696,9 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                 if (firmwareVersion !== undefined) {
                     updates.firmwareVersion = firmwareVersion
                 }
-                if (tagData.config?.name && existingDevice.name !== tagData.config.name) {
-                    updates.name = tagData.config.name
+                // 使用 Loca topic 中的 id(Hex) 更新設備名稱（如果存在且不同）
+                if (tagHexId && existingDevice.name !== tagHexId) {
+                    updates.name = tagHexId
                 }
                 if (gatewayId && existingDevice.gatewayId !== gatewayId.toString()) {
                     updates.gatewayId = gatewayId.toString()
