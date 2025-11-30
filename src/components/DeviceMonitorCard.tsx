@@ -67,13 +67,17 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
         // 確保電量在有效範圍內
         const normalizedLevel = Math.max(0, Math.min(100, finalLevel))
 
-        console.log(`🔋 DeviceMonitorCard ${device.name} 電量:`, {
-            realTime: realTimeLevel,
-            device: deviceLevel,
-            final: finalLevel,
-            normalized: normalizedLevel,
-            hasRealTimeData: !!device.realTimeData
-        })
+        // 移除頻繁的調試日誌，避免影響其他日誌閱讀
+        // 如需調試，可使用條件判斷：只在開發環境或特定情況下輸出
+        // if (process.env.NODE_ENV === 'development' && /* 其他條件 */) {
+        //     console.log(`🔋 DeviceMonitorCard ${device.name} 電量:`, {
+        //         realTime: realTimeLevel,
+        //         device: deviceLevel,
+        //         final: finalLevel,
+        //         normalized: normalizedLevel,
+        //         hasRealTimeData: !!device.realTimeData
+        //     })
+        // }
 
         return normalizedLevel
     }

@@ -25,11 +25,10 @@ import {
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { useDeviceDiscovery } from "@/contexts/DeviceDiscoveryContext"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
+import { useDeviceMonitoring } from "@/contexts/DeviceMonitoringContext"
 import { DeviceType, DeviceStatus, DeviceUIDGenerator } from "@/types/device-types"
 import DeviceBindingModal from "@/components/DeviceBindingModal"
 import DeviceDiscoveryModal from "@/components/DeviceDiscoveryModal"
-import { mqttBus } from "@/services/mqttBus"
-import type { RealTimeDeviceData } from "@/contexts/DeviceMonitoringContext"
 import DeviceMonitorCard from "@/components/DeviceMonitorCard"
 import DeviceInfoModal from "@/components/DeviceInfoModal"
 
@@ -39,7 +38,6 @@ export default function DeviceManagementPage() {
     devices,
     residents,
     addDevice,
-    updateDevice,
     removeDevice,
     getDeviceTypeSummary,
     getDeviceStatusSummary
@@ -47,26 +45,18 @@ export default function DeviceManagementPage() {
 
   const { startDiscovery } = useDeviceDiscovery()
   const { selectedGateway, gateways, setSelectedGateway } = useUWBLocation()
-  const [realTimeDevices, setRealTimeDevices] = useState<Map<string, RealTimeDeviceData>>(new Map())
-  const [isMonitoring, setIsMonitoring] = useState(false)
+  const { realTimeDevices, isMonitoring } = useDeviceMonitoring()
 
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedFilter, setSelectedFilter] = useState<DeviceType | "all">("all")
   const [showAddModal, setShowAddModal] = useState(false)
-  const [showReplaceModal, setShowReplaceModal] = useState(false)
-  const [selectedDevice, setSelectedDevice] = useState<any>(null)
-  const [newHardwareId, setNewHardwareId] = useState("")
-
 
   // 新增：綁定模態框狀態
   const [showBindingModal, setShowBindingModal] = useState(false)
   const [bindingDevice, setBindingDevice] = useState<any>(null)
-
   // 新增：設備資訊模態框狀態
   const [showDeviceInfoModal, setShowDeviceInfoModal] = useState(false)
   const [selectedDeviceInfo, setSelectedDeviceInfo] = useState<any>(null)
-
-
 
   // 新增設備的狀態
   const [newDevice, setNewDevice] = useState({
@@ -78,131 +68,8 @@ export default function DeviceManagementPage() {
     gatewayId: ""
   })
 
-  // 監聽 MQTT Bus 連接狀態
-  useEffect(() => {
-    const unsubscribe = mqttBus.onStatusChange((status) => {
-      setIsMonitoring(status === 'connected')
-    })
-
-    // 初始化狀態
-    const currentStatus = mqttBus.getStatus()
-    setIsMonitoring(currentStatus === 'connected')
-
-    return unsubscribe
-  }, [])
-
-  // 處理 MQTT 數據
-  useEffect(() => {
-    let lastProcessedTime = 0
-    let processedMessages = new Set<string>()
-    let lastUpdateTime = 0
-
-    const updateMqttData = () => {
-      // 頻率控制：確保至少間隔2秒才更新
-      const now = Date.now()
-      if (now - lastUpdateTime < 2000) {
-        return
-      }
-
-      try {
-        const recentMessages = mqttBus.getRecentMessages()
-
-        // 只處理新的消息
-        const newMessages = recentMessages.filter(msg => {
-          const msgTime = msg.timestamp.getTime()
-          const msgKey = `${msg.topic}-${msgTime}`
-          const isNew = msgTime > lastProcessedTime && !processedMessages.has(msgKey)
-          return isNew
-        })
-
-        if (newMessages.length === 0) return
-
-        // 更新最後處理時間
-        lastProcessedTime = Math.max(...newMessages.map(msg => msg.timestamp.getTime()))
-
-        // 標記已處理的消息
-        newMessages.forEach(msg => {
-          const msgKey = `${msg.topic}-${msg.timestamp.getTime()}`
-          processedMessages.add(msgKey)
-        })
-
-        // 清理過期的處理記錄
-        const oneHourAgo = Date.now() - 60 * 60 * 1000
-        processedMessages.forEach((key) => {
-          const timestamp = parseInt(key.split('-').pop() || '0')
-          if (timestamp < oneHourAgo) {
-            processedMessages.delete(key)
-          }
-        })
-
-        // 更新設備狀態
-        setRealTimeDevices(prev => {
-          const next = new Map(prev)
-          let hasChanges = false
-
-          newMessages.forEach(msg => {
-            const data = msg.payload
-            // 嘗試從多個字段獲取 MAC 或 ID
-            const mac = data.MAC || data['mac address'] || data.macAddress || data.hardwareId
-            const id = data.id || data['device id'] || data.device_id
-
-            if (!mac && !id) return
-
-            // 查找對應的設備
-            const device = devices.find(d => {
-              // 檢查 MAC/HardwareID
-              if (mac && (d.hardwareId === mac || d.deviceUid.includes(mac) || (d.deviceUid && d.deviceUid.endsWith(mac)))) {
-                return true
-              }
-              // 檢查 ID (針對 UWB Tag)
-              if (id && d.deviceUid === `TAG:${id}`) {
-                return true
-              }
-              return false
-            })
-
-            if (device) {
-              const batteryLevel = data['battery level'] || data.battery_level || data.battery
-              const status = DeviceStatus.ACTIVE // 收到消息即視為活躍
-
-              const existing = next.get(device.id)
-              const newData: RealTimeDeviceData = {
-                deviceId: device.id,
-                deviceUid: device.deviceUid,
-                batteryLevel: batteryLevel !== undefined ? parseInt(batteryLevel) : (existing?.batteryLevel || 0),
-                status: status,
-                lastSeen: msg.timestamp,
-                signalStrength: data.rssi || existing?.signalStrength,
-                position: data.position ? {
-                  x: data.position.x || 0,
-                  y: data.position.y || 0,
-                  z: data.position.z || 0,
-                  quality: data.position.quality || 0
-                } : existing?.position
-              }
-
-              next.set(device.id, newData)
-              hasChanges = true
-            }
-          })
-
-          return hasChanges ? next : prev
-        })
-
-        lastUpdateTime = Date.now()
-      } catch (error) {
-        console.error('Error processing MQTT data:', error)
-      }
-    }
-
-    // 初始載入
-    updateMqttData()
-
-    // 定時更新
-    const interval = setInterval(updateMqttData, 2000)
-
-    return () => clearInterval(interval)
-  }, [devices])
+  // 移除本地的 MQTT 處理邏輯，直接使用全局狀態
+  // ... (原有的 updateMqttData 邏輯已移至 DeviceMonitoringContext)
 
   // 🚀 持久化系統狀態
   const [lastSaveTime, setLastSaveTime] = useState<Date>(new Date())
@@ -524,35 +391,9 @@ export default function DeviceManagementPage() {
     })
   }
 
-  // 處理替換設備
-  const handleReplaceDevice = (device: any) => {
-    setSelectedDevice(device)
-    setNewHardwareId(device.hardwareId)
-    setShowReplaceModal(true)
-  }
 
-  // 確認替換設備
-  const confirmReplaceDevice = () => {
-    if (selectedDevice && newHardwareId.trim()) {
-      updateDevice(selectedDevice.id, { hardwareId: newHardwareId.trim() })
-      setShowReplaceModal(false)
-      setSelectedDevice(null)
-      setNewHardwareId("")
-    }
-  }
 
-  // 處理移除設備
-  const handleRemoveDevice = (deviceId: string) => {
-    if (confirm(t('pages:deviceManagement.confirms.removeDevice'))) {
-      removeDevice(deviceId)
-    }
-  }
 
-  // 新增：處理設備綁定
-  const handleBindDevice = (device: any) => {
-    setBindingDevice(device)
-    setShowBindingModal(true)
-  }
 
   // 新增：處理設備操作
   const handleDeviceAction = (action: string, deviceId: string) => {
@@ -1108,59 +949,7 @@ export default function DeviceManagementPage() {
           </div>
         )}
 
-        {/* 替換設備彈出視窗 */}
-        {showReplaceModal && selectedDevice && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <Card className="w-full max-w-md">
-              <CardHeader>
-                <CardTitle>{t('pages:deviceManagement.replaceModal.title')}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center space-y-2">
-                  <h3 className="font-semibold">{selectedDevice.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t('pages:deviceManagement.replaceModal.currentHardwareId')}: {selectedDevice.hardwareId}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {t('pages:deviceManagement.replaceModal.deviceUid')}: {selectedDevice.deviceUid}
-                  </p>
-                </div>
 
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    {t('pages:deviceManagement.replaceModal.newHardwareId')}
-                  </label>
-                  <Input
-                    value={newHardwareId}
-                    onChange={(e) => setNewHardwareId(e.target.value)}
-                    placeholder={t('pages:deviceManagement.replaceModal.placeholders.newHardwareId')}
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowReplaceModal(false)
-                      setSelectedDevice(null)
-                      setNewHardwareId("")
-                    }}
-                    className="flex-1"
-                  >
-                    {t('common:actions.cancel')}
-                  </Button>
-                  <Button
-                    onClick={confirmReplaceDevice}
-                    className="flex-1"
-                    disabled={!newHardwareId.trim() || newHardwareId === selectedDevice.hardwareId}
-                  >
-                    {t('pages:deviceManagement.replaceModal.confirmReplace')}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
 
         {/* 設備綁定模態框 */}
         <DeviceBindingModal
