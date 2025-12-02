@@ -20,7 +20,8 @@ import {
     Tag,
     Edit,
     Save,
-    X
+    X,
+    Anchor
 } from 'lucide-react'
 import { useDeviceManagement } from '@/contexts/DeviceManagementContext'
 
@@ -70,6 +71,7 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
             case 'DIAPER': return Baby
             case 'PEDO': return Activity
             case 'TAG': return MapPin
+            case 'ANCHOR': return Anchor
             default: return Settings
         }
     }

@@ -206,7 +206,8 @@
             "smartwatch300B": "300B手錶",
             "diaperSensor": "尿布傳感器",
             "pedometer": "運動傳感器",
-            "uwbTag": "定位標籤"
+            "uwbTag": "定位標籤",
+            "uwbAnchor": "定位錨點"
         },
         "actions": {
             "addDevice": "新增設備",
@@ -245,7 +246,8 @@
                 "smartwatch300B": "300B 健康監測手錶",
                 "diaperSensor": "智能尿布傳感器",
                 "pedometer": "運動傳感器",
-                "uwbTag": "UWB定位標籤"
+                "uwbTag": "UWB定位標籤",
+                "uwbAnchor": "UWB定位錨點"
             },
             "placeholders": {
                 "deviceName": "輸入設備名稱",

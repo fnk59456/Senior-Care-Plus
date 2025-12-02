@@ -206,7 +206,8 @@
             "smartwatch300B": "300B Watch",
             "diaperSensor": "Diaper Sensor",
             "pedometer": "Motion Sensor",
-            "uwbTag": "Positioning Tag"
+            "uwbTag": "Positioning Tag",
+            "uwbAnchor": "Positioning Anchor"
         },
         "actions": {
             "addDevice": "Add Device",
@@ -245,7 +246,8 @@
                 "smartwatch300B": "300B Health Monitoring Watch",
                 "diaperSensor": "Smart Diaper Sensor",
                 "pedometer": "Motion Sensor",
-                "uwbTag": "UWB Positioning Tag"
+                "uwbTag": "UWB Positioning Tag",
+                "uwbAnchor": "UWB Positioning Anchor"
             },
             "placeholders": {
                 "deviceName": "Enter device name",

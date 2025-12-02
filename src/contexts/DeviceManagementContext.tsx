@@ -307,6 +307,13 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
         lastUpdate: Date
     }>>(new Map())
 
+    // 錨點數據緩存（用於合併 Config 和 Message 數據）
+    const anchorDataCacheRef = useRef<Map<number, {
+        config?: any
+        message?: any
+        lastUpdate: Date
+    }>>(new Map())
+
     // 🚀 智能批量保存函數 - 避免頻繁寫入
     const batchSave = useCallback(() => {
         if (saveTimeoutRef.current) {
@@ -451,6 +458,17 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             return {
                 deviceUid: DeviceUIDGenerator.generateTag(id),
                 deviceType: DeviceType.UWB_TAG,
+                hardwareId: id,
+                gatewayId: gatewayId?.toString()
+            }
+        }
+
+        // ANCHOR 設備識別（從 Message、AncConf topic）
+        if (payload?.node === 'ANCHOR' && payload?.id !== undefined) {
+            const id = payload.id.toString()
+            return {
+                deviceUid: DeviceUIDGenerator.generateAnchor(id),
+                deviceType: DeviceType.UWB_ANCHOR,
                 hardwareId: id,
                 gatewayId: gatewayId?.toString()
             }
@@ -730,6 +748,138 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
         })
     }, [])
 
+    // 合併錨點數據並更新設備（需要在 handleAnchorConfig/Message 之前定義）
+    const mergeAndUpdateAnchorDevice = useCallback((anchorId: number, anchorData: any, timestamp: Date) => {
+        const deviceUid = DeviceUIDGenerator.generateAnchor(anchorId.toString())
+        const gatewayId = anchorData.config?.['gateway id'] || anchorData.message?.['gateway id'] || anchorData.config?.gateway_id || anchorData.message?.gateway_id
+
+        // 使用函數式更新避免依賴 devices
+        setDevices(prevDevices => {
+            // 查找已存在的設備
+            let existingDevice = prevDevices.find(d => d.deviceUid === deviceUid)
+
+            // 合併數據
+            const lastData: Record<string, any> = {}
+            let batteryLevel: number | undefined
+            let firmwareVersion: string | undefined
+
+            // 從 config 提取數據（名稱、位置、配置參數）
+            if (anchorData.config) {
+                const cfg = anchorData.config
+                if (cfg.position) {
+                    lastData.position = {
+                        x: cfg.position.x || 0,
+                        y: cfg.position.y || 0,
+                        z: cfg.position.z || 0
+                    }
+                }
+                if (cfg.fw_update !== undefined) lastData['fw_update'] = cfg.fw_update
+                if (cfg.led !== undefined) lastData.led = cfg.led
+                if (cfg.ble !== undefined) lastData.ble = cfg.ble
+                if (cfg.initiator !== undefined) lastData.initiator = cfg.initiator
+            }
+
+            // 從 message 提取數據（電量、固件版本等）
+            if (anchorData.message) {
+                const msg = anchorData.message
+                if (msg['battery level'] !== undefined) batteryLevel = parseInt(msg['battery level'])
+                if (msg['battery voltage'] !== undefined) lastData['battery voltage'] = msg['battery voltage']
+                if (msg['fw ver'] !== undefined) firmwareVersion = msg['fw ver'].toString()
+                if (msg['5V plugged'] !== undefined) lastData['5V plugged'] = msg['5V plugged']
+                if (msg['uwb tx power'] !== undefined) lastData['uwb tx power'] = msg['uwb tx power']
+                if (msg['bat detect time(1s)'] !== undefined) lastData['bat detect time'] = msg['bat detect time(1s)']
+            }
+
+            // 如果設備不存在，自動創建
+            if (!existingDevice) {
+                // 使用格式：UWB定位錨點 ${name}，如果沒有 name 則使用默認格式
+                const deviceName = anchorData.config?.name
+                    ? `${DEVICE_TYPE_CONFIG[DeviceType.UWB_ANCHOR].label} ${anchorData.config.name}`
+                    : `${DEVICE_TYPE_CONFIG[DeviceType.UWB_ANCHOR].label} ${anchorId}`
+
+                const newDevice: Device = {
+                    id: `D${Date.now()}`,
+                    deviceUid,
+                    deviceType: DeviceType.UWB_ANCHOR,
+                    name: deviceName,
+                    hardwareId: anchorId.toString(),
+                    status: DeviceStatus.ACTIVE,
+                    gatewayId: gatewayId?.toString(),
+                    batteryLevel,
+                    firmwareVersion,
+                    lastData: Object.keys(lastData).length > 0 ? lastData : undefined,
+                    lastSeen: timestamp.toISOString(),
+                    createdAt: timestamp.toISOString(),
+                    updatedAt: timestamp.toISOString()
+                }
+                console.log(`✅ 自動發現新錨點設備: ${anchorId}`)
+
+                // 保存設備數據記錄
+                setDeviceData(prevData => {
+                    const newData: DeviceData = {
+                        id: `DATA${Date.now()}`,
+                        deviceId: newDevice.id,
+                        deviceUid,
+                        dataType: 'anchor',
+                        content: 'anchor_combined',
+                        payload: lastData,
+                        timestamp: timestamp.toISOString(),
+                        topic: 'combined',
+                        gatewayId: gatewayId?.toString(),
+                        serialNo: anchorData.config?.['serial no'] || anchorData.message?.['serial no']
+                    }
+                    return [...prevData, newData]
+                })
+
+                return [...prevDevices, newDevice]
+            } else {
+                // 更新已存在的設備
+                const updates: Partial<Device> = {
+                    lastSeen: timestamp.toISOString(),
+                    status: DeviceStatus.ACTIVE,
+                    updatedAt: timestamp.toISOString()
+                }
+
+                if (Object.keys(lastData).length > 0) {
+                    updates.lastData = { ...existingDevice.lastData, ...lastData }
+                }
+                if (batteryLevel !== undefined) {
+                    updates.batteryLevel = batteryLevel
+                }
+                if (firmwareVersion !== undefined) {
+                    updates.firmwareVersion = firmwareVersion
+                }
+                // 移除自動更新設備名稱的功能，允許用戶手動編輯設備名稱
+                if (gatewayId && existingDevice.gatewayId !== gatewayId.toString()) {
+                    updates.gatewayId = gatewayId.toString()
+                }
+
+                // 保存設備數據記錄
+                setDeviceData(prevData => {
+                    const newData: DeviceData = {
+                        id: `DATA${Date.now()}`,
+                        deviceId: existingDevice.id,
+                        deviceUid,
+                        dataType: 'anchor',
+                        content: 'anchor_combined',
+                        payload: lastData,
+                        timestamp: timestamp.toISOString(),
+                        topic: 'combined',
+                        gatewayId: gatewayId?.toString(),
+                        serialNo: anchorData.config?.['serial no'] || anchorData.message?.['serial no']
+                    }
+                    return [...prevData, newData]
+                })
+
+                return prevDevices.map(device =>
+                    device.id === existingDevice.id
+                        ? { ...device, ...updates }
+                        : device
+                )
+            }
+        })
+    }, [])
+
     // 處理 Tag Message Topic 數據（info 類型）
     const handleTagMessage = useCallback((message: MQTTMessage) => {
         const { topic, payload, timestamp } = message
@@ -793,6 +943,48 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
         mergeAndUpdateTagDevice(tagId, tagData, timestamp)
     }, [mergeAndUpdateTagDevice])
 
+    // 處理錨點 Config Topic 數據（config 類型）
+    const handleAnchorConfig = useCallback((message: MQTTMessage) => {
+        const { topic, payload, timestamp } = message
+        if (!payload || payload.node !== 'ANCHOR' || payload.content !== 'config') return
+
+        const anchorId = payload.id
+        if (anchorId === undefined) return
+
+        // 更新錨點數據緩存
+        const cache = anchorDataCacheRef.current
+        if (!cache.has(anchorId)) {
+            cache.set(anchorId, { lastUpdate: timestamp })
+        }
+        const anchorData = cache.get(anchorId)!
+        anchorData.config = payload
+        anchorData.lastUpdate = timestamp
+
+        // 實時合併並更新設備
+        mergeAndUpdateAnchorDevice(anchorId, anchorData, timestamp)
+    }, [mergeAndUpdateAnchorDevice])
+
+    // 處理錨點 Message Topic 數據（info 類型）
+    const handleAnchorMessage = useCallback((message: MQTTMessage) => {
+        const { topic, payload, timestamp } = message
+        if (!payload || payload.node !== 'ANCHOR' || payload.content !== 'info') return
+
+        const anchorId = payload.id
+        if (anchorId === undefined) return
+
+        // 更新錨點數據緩存
+        const cache = anchorDataCacheRef.current
+        if (!cache.has(anchorId)) {
+            cache.set(anchorId, { lastUpdate: timestamp })
+        }
+        const anchorData = cache.get(anchorId)!
+        anchorData.message = payload
+        anchorData.lastUpdate = timestamp
+
+        // 實時合併並更新設備
+        mergeAndUpdateAnchorDevice(anchorId, anchorData, timestamp)
+    }, [mergeAndUpdateAnchorDevice])
+
     // 訂閱 MQTT 消息
     useEffect(() => {
         // 1. 處理歷史消息（從 mqttBus 緩衝區獲取）
@@ -813,6 +1005,10 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                         handleTagLocation(msg)
                     } else if ((topic.includes('TagConf') || topic.includes('tag_config')) && payload.node === 'TAG' && payload.content === 'config') {
                         handleTagConfig(msg)
+                    } else if ((topic.includes('AncConf') || topic.includes('anchor_config')) && payload.node === 'ANCHOR' && payload.content === 'config') {
+                        handleAnchorConfig(msg)
+                    } else if (topic.includes('Message') && payload.node === 'ANCHOR' && payload.content === 'info') {
+                        handleAnchorMessage(msg)
                     }
                 } catch (error) {
                     console.error('❌ 處理歷史消息失敗:', error)
@@ -856,6 +1052,28 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             }
         })
 
+        const unsubscribeAncConf = mqttBus.subscribe(RoutePatterns.ANC_CONF, (message: MQTTMessage) => {
+            const payload = message.payload || {}
+            if (payload.node === 'ANCHOR' && payload.content === 'config') {
+                handleAnchorConfig(message)
+            }
+        })
+
+        const unsubscribeAnchorConfig = mqttBus.subscribe(RoutePatterns.ANCHOR_CONFIG, (message: MQTTMessage) => {
+            const payload = message.payload || {}
+            if (payload.node === 'ANCHOR' && payload.content === 'config') {
+                handleAnchorConfig(message)
+            }
+        })
+
+        // 訂閱 Message topic 中的錨點消息
+        const unsubscribeAnchorMessage = mqttBus.subscribe(RoutePatterns.MESSAGE, (message: MQTTMessage) => {
+            const payload = message.payload || {}
+            if (payload.node === 'ANCHOR' && payload.content === 'info') {
+                handleAnchorMessage(message)
+            }
+        })
+
         console.log('✅ DeviceManagementContext MQTT 訂閱已註冊')
 
         // 清理函數
@@ -865,6 +1083,9 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             unsubscribeLocation()
             unsubscribeTagConf()
             unsubscribeTagConfig()
+            unsubscribeAncConf()
+            unsubscribeAnchorConfig()
+            unsubscribeAnchorMessage()
             console.log('🔌 DeviceManagementContext MQTT 訂閱已取消')
         }
         // 只在組件掛載時訂閱一次，避免重複訂閱
@@ -888,6 +1109,29 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
 
             if (keysToDelete.length > 0) {
                 console.log(`🧹 清理了 ${keysToDelete.length} 個過期的 Tag 數據緩存`)
+            }
+        }, 5 * 60 * 1000) // 每 5 分鐘清理一次
+
+        return () => clearInterval(interval)
+    }, [])
+
+    // 清理過期的錨點數據緩存（保留最近 1 小時）
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const oneHourAgo = Date.now() - 60 * 60 * 1000
+            const cache = anchorDataCacheRef.current
+            const keysToDelete: number[] = []
+
+            cache.forEach((data, anchorId) => {
+                if (data.lastUpdate.getTime() < oneHourAgo) {
+                    keysToDelete.push(anchorId)
+                }
+            })
+
+            keysToDelete.forEach(anchorId => cache.delete(anchorId))
+
+            if (keysToDelete.length > 0) {
+                console.log(`🧹 清理了 ${keysToDelete.length} 個過期的錨點數據緩存`)
             }
         }, 5 * 60 * 1000) // 每 5 分鐘清理一次
 

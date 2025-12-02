@@ -20,7 +20,8 @@ import {
   Upload,
   Wifi,
   Filter,
-  Activity
+  Activity,
+  Anchor
 } from "lucide-react"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { useDeviceDiscovery } from "@/contexts/DeviceDiscoveryContext"
@@ -347,6 +348,10 @@ export default function DeviceManagementPage() {
       deviceUid = DeviceUIDGenerator.generateDiaper(newDevice.mac)
     } else if (newDevice.deviceType === DeviceType.PEDOMETER) {
       deviceUid = DeviceUIDGenerator.generatePedo(newDevice.deviceId)
+    } else if (newDevice.deviceType === DeviceType.UWB_TAG) {
+      deviceUid = DeviceUIDGenerator.generateTag(newDevice.deviceId)
+    } else if (newDevice.deviceType === DeviceType.UWB_ANCHOR) {
+      deviceUid = DeviceUIDGenerator.generateAnchor(newDevice.deviceId)
     } else {
       deviceUid = DeviceUIDGenerator.generateTag(newDevice.deviceId)
     }
@@ -721,6 +726,14 @@ export default function DeviceManagementPage() {
             <MapPin className="h-4 w-4" />
             {t('pages:deviceManagement.filters.uwbTag')}
           </Button>
+          <Button
+            variant={selectedFilter === DeviceType.UWB_ANCHOR ? "default" : "outline"}
+            onClick={() => setSelectedFilter(DeviceType.UWB_ANCHOR)}
+            className="gap-2"
+          >
+            <Anchor className="h-4 w-4" />
+            {t('pages:deviceManagement.filters.uwbAnchor') || '定位錨點'}
+          </Button>
         </div>
 
         {/* 新增設備按鈕 */}
@@ -799,7 +812,7 @@ export default function DeviceManagementPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <p className="text-2xl font-bold text-orange-600">{deviceTypeSummary[DeviceType.UWB_TAG] + deviceTypeSummary[DeviceType.PEDOMETER]}</p>
+                <p className="text-2xl font-bold text-orange-600">{deviceTypeSummary[DeviceType.UWB_TAG] + deviceTypeSummary[DeviceType.PEDOMETER] + deviceTypeSummary[DeviceType.UWB_ANCHOR]}</p>
                 <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.stats.otherDevices')}</p>
               </div>
             </CardContent>
@@ -871,6 +884,7 @@ export default function DeviceManagementPage() {
                       <SelectItem value={DeviceType.DIAPER_SENSOR}>{t('pages:deviceManagement.addModal.deviceTypes.diaperSensor')}</SelectItem>
                       <SelectItem value={DeviceType.PEDOMETER}>{t('pages:deviceManagement.addModal.deviceTypes.pedometer')}</SelectItem>
                       <SelectItem value={DeviceType.UWB_TAG}>{t('pages:deviceManagement.addModal.deviceTypes.uwbTag')}</SelectItem>
+                      <SelectItem value={DeviceType.UWB_ANCHOR}>{t('pages:deviceManagement.addModal.deviceTypes.uwbAnchor') || 'UWB定位錨點'}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -905,7 +919,7 @@ export default function DeviceManagementPage() {
                   </div>
                 )}
 
-                {(newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG) && (
+                {(newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG || newDevice.deviceType === DeviceType.UWB_ANCHOR) && (
                   <div>
                     <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.deviceId')}</label>
                     <Input
@@ -938,7 +952,7 @@ export default function DeviceManagementPage() {
                     className="flex-1"
                     disabled={!newDevice.name || !newDevice.hardwareId ||
                       ((newDevice.deviceType === DeviceType.SMARTWATCH_300B || newDevice.deviceType === DeviceType.DIAPER_SENSOR) && !newDevice.mac) ||
-                      ((newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG) && !newDevice.deviceId)
+                      ((newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG || newDevice.deviceType === DeviceType.UWB_ANCHOR) && !newDevice.deviceId)
                     }
                   >
                     {t('pages:deviceManagement.actions.addDevice')}

@@ -10,7 +10,8 @@ import {
     Activity,
     Baby,
     Watch,
-    Settings
+    Settings,
+    Anchor
 } from 'lucide-react'
 import { Device, Resident, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
 import DeviceActionHandler from './DeviceActionHandler'
@@ -33,6 +34,7 @@ export default function DeviceMonitorCard({ device, resident, onAction }: Device
             case DeviceType.DIAPER_SENSOR: return Baby
             case DeviceType.PEDOMETER: return Activity
             case DeviceType.UWB_TAG: return MapPin
+            case DeviceType.UWB_ANCHOR: return Anchor
             default: return Settings
         }
     }

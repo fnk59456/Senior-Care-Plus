@@ -6,13 +6,15 @@ export type DeviceUID =
     | `DIAPER:${string}`    // DIAPER:<MAC>
     | `PEDO:${string}`      // PEDO:<id>
     | `TAG:${string}`       // TAG:<id>
+    | `ANCHOR:${string}`    // ANCHOR:<id>
 
 // 設備類型枚舉
 export enum DeviceType {
     SMARTWATCH_300B = '300B',
     DIAPER_SENSOR = 'DIAPER',
     PEDOMETER = 'PEDO',
-    UWB_TAG = 'TAG'
+    UWB_TAG = 'TAG',
+    UWB_ANCHOR = 'ANCHOR'
 }
 
 // 設備狀態
@@ -28,7 +30,8 @@ export const DEVICE_TOPICS: Record<DeviceType, string[]> = {
     [DeviceType.SMARTWATCH_300B]: ['GWxxxx_Health'],
     [DeviceType.DIAPER_SENSOR]: ['GWxxxx_Health'],
     [DeviceType.PEDOMETER]: ['GWxxxx_Health'],
-    [DeviceType.UWB_TAG]: ['GWxxxx_TagConf', 'GWxxxx_Loca', 'GWxxxx_Message']
+    [DeviceType.UWB_TAG]: ['GWxxxx_TagConf', 'GWxxxx_Loca', 'GWxxxx_Message'],
+    [DeviceType.UWB_ANCHOR]: ['GWxxxx_AncConf', 'GWxxxx_Message']
 }
 
 // 設備配置接口
@@ -74,6 +77,14 @@ export const DEVICE_TYPE_CONFIG: Record<DeviceType, DeviceTypeConfig> = {
         prefix: 'TAG',
         uniqueFields: ['id', 'gateway id', 'serial no'],
         dataTypes: ['location', 'config', 'info', 'tx_power']
+    },
+    [DeviceType.UWB_ANCHOR]: {
+        label: 'UWB定位錨點',
+        icon: 'Anchor',
+        color: 'bg-indigo-100 text-indigo-700',
+        prefix: 'ANCHOR',
+        uniqueFields: ['id', 'gateway id', 'serial no'],
+        dataTypes: ['config', 'info', '5V_status']
     }
 }
 
@@ -184,6 +195,10 @@ export class DeviceUIDGenerator {
         return `TAG:${id}` as DeviceUID
     }
 
+    static generateAnchor(id: string): DeviceUID {
+        return `ANCHOR:${id}` as DeviceUID
+    }
+
     static parse(deviceUid: DeviceUID): { type: DeviceType; identifier: string } {
         const [type, identifier] = deviceUid.split(':')
         return {
@@ -217,5 +232,11 @@ export class DeviceDataValidator {
         return ['config', 'location', 'info', 'tx power config'].some(type =>
             data.content?.includes(type)
         ) && data.id !== undefined
+    }
+
+    static validateAnchor(data: any): boolean {
+        return data.node === 'ANCHOR' &&
+            (data.content === 'config' || data.content === 'info') &&
+            data.id !== undefined
     }
 }

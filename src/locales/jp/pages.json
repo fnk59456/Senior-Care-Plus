@@ -206,7 +206,8 @@
             "smartwatch300B": "300Bウォッチ",
             "diaperSensor": "おむつセンサー",
             "pedometer": "モーションセンサー",
-            "uwbTag": "位置タグ"
+            "uwbTag": "位置タグ",
+            "uwbAnchor": "位置アンカー"
         },
         "actions": {
             "addDevice": "デバイス追加",
@@ -245,7 +246,8 @@
                 "smartwatch300B": "300B健康監視ウォッチ",
                 "diaperSensor": "スマートおむつセンサー",
                 "pedometer": "モーションセンサー",
-                "uwbTag": "UWB位置タグ"
+                "uwbTag": "UWB位置タグ",
+                "uwbAnchor": "UWB位置アンカー"
             },
             "placeholders": {
                 "deviceName": "デバイス名を入力",
