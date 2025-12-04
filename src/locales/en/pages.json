@@ -217,6 +217,10 @@
             "importSettings": "Import Settings",
             "debugStorage": "Debug Storage"
         },
+        "autoAdd": {
+            "enabled": "Auto Add: Enabled",
+            "disabled": "Auto Add: Disabled"
+        },
         "stats": {
             "totalDevices": "Total Devices",
             "activeDevices": "Active Devices",

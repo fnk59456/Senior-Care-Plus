@@ -217,6 +217,10 @@
             "importSettings": "導入設定",
             "debugStorage": "調試存儲"
         },
+        "autoAdd": {
+            "enabled": "自動加入：已啟用",
+            "disabled": "自動加入：已禁用"
+        },
         "stats": {
             "totalDevices": "總設備數",
             "activeDevices": "活躍設備",

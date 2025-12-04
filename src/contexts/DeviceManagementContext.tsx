@@ -53,6 +53,10 @@ interface DeviceManagementContextType {
     clearAllData: () => void
     exportAllData: () => void
     importData: (data: any) => void
+
+    // 自動加入設備控制
+    autoAddDevices: boolean
+    setAutoAddDevices: (enabled: boolean) => void
 }
 
 const DeviceManagementContext = createContext<DeviceManagementContextType | undefined>(undefined)
@@ -299,6 +303,31 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
     const [bindings, setBindings] = useState<DeviceBinding[]>(() => loadBindingsFromStorage())
     const [deviceData, setDeviceData] = useState<DeviceData[]>([])
 
+    // 自動加入設備開關狀態（默認啟用）
+    const [autoAddDevices, setAutoAddDevicesState] = useState<boolean>(() => {
+        try {
+            const stored = localStorage.getItem('device_mgmt_autoAddDevices')
+            if (stored !== null) {
+                return JSON.parse(stored)
+            }
+            return true // 默認啟用
+        } catch (error) {
+            console.warn('❌ 無法從 localStorage 加載自動加入設置:', error)
+            return true
+        }
+    })
+
+    // 設置自動加入設備開關（帶持久化）
+    const setAutoAddDevices = useCallback((enabled: boolean) => {
+        setAutoAddDevicesState(enabled)
+        try {
+            localStorage.setItem('device_mgmt_autoAddDevices', JSON.stringify(enabled))
+            console.log(`✅ 自動加入設備設置已${enabled ? '啟用' : '禁用'}`)
+        } catch (error) {
+            console.warn('❌ 無法保存自動加入設置:', error)
+        }
+    }, [])
+
     // Tag 數據臨時狀態（用於組合多個 topic 的數據）
     const tagDataCacheRef = useRef<Map<number, {
         message?: any
@@ -313,6 +342,14 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
         message?: any
         lastUpdate: Date
     }>>(new Map())
+
+    // 自動加入設備開關的 ref（用於在回調中訪問最新值，避免重複訂閱）
+    const autoAddDevicesRef = useRef<boolean>(autoAddDevices)
+
+    // 同步 ref 值
+    useEffect(() => {
+        autoAddDevicesRef.current = autoAddDevices
+    }, [autoAddDevices])
 
     // 🚀 智能批量保存函數 - 避免頻繁寫入
     const batchSave = useCallback(() => {
@@ -519,8 +556,14 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                 if (payload['battery level'] !== undefined) batteryLevel = parseInt(payload['battery level'])
             }
 
-            // 如果設備不存在，自動創建
+            // 如果設備不存在，檢查自動加入開關後決定是否創建
             if (!existingDevice) {
+                // 檢查自動加入開關
+                if (!autoAddDevicesRef.current) {
+                    console.log(`⏭️ 自動加入已禁用，跳過創建設備: ${deviceType} - ${hardwareId}`)
+                    return prevDevices // 不創建新設備，但返回原數組以保持狀態不變
+                }
+
                 const newDevice: Device = {
                     id: `D${Date.now()}`,
                     deviceUid,
@@ -657,8 +700,14 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                 if (cfg['location engine'] !== undefined) lastData['location engine'] = cfg['location engine']
             }
 
-            // 如果設備不存在，自動創建
+            // 如果設備不存在，檢查自動加入開關後決定是否創建
             if (!existingDevice) {
+                // 檢查自動加入開關
+                if (!autoAddDevicesRef.current) {
+                    console.log(`⏭️ 自動加入已禁用，跳過創建 Tag 設備: ${tagId}`)
+                    return prevDevices // 不創建新設備，但返回原數組以保持狀態不變
+                }
+
                 // 使用格式：UWB定位標籤 ${id(Hex)}，如果沒有 id(Hex) 則使用默認名稱
                 const deviceName = tagHexId
                     ? `${DEVICE_TYPE_CONFIG[DeviceType.UWB_TAG].label} ${tagHexId}`
@@ -790,8 +839,14 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                 if (msg['bat detect time(1s)'] !== undefined) lastData['bat detect time'] = msg['bat detect time(1s)']
             }
 
-            // 如果設備不存在，自動創建
+            // 如果設備不存在，檢查自動加入開關後決定是否創建
             if (!existingDevice) {
+                // 檢查自動加入開關
+                if (!autoAddDevicesRef.current) {
+                    console.log(`⏭️ 自動加入已禁用，跳過創建錨點設備: ${anchorId}`)
+                    return prevDevices // 不創建新設備，但返回原數組以保持狀態不變
+                }
+
                 // 使用格式：UWB定位錨點 ${name}，如果沒有 name 則使用默認格式
                 const deviceName = anchorData.config?.name
                     ? `${DEVICE_TYPE_CONFIG[DeviceType.UWB_ANCHOR].label} ${anchorData.config.name}`
@@ -1230,7 +1285,8 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             [DeviceType.SMARTWATCH_300B]: 0,
             [DeviceType.DIAPER_SENSOR]: 0,
             [DeviceType.PEDOMETER]: 0,
-            [DeviceType.UWB_TAG]: 0
+            [DeviceType.UWB_TAG]: 0,
+            [DeviceType.UWB_ANCHOR]: 0
         }
 
         devices.forEach(device => {
@@ -1330,7 +1386,9 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
         forceSave,
         clearAllData,
         exportAllData,
-        importData
+        importData,
+        autoAddDevices,
+        setAutoAddDevices
     }
 
     return (

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import {
   Search,
   Watch,
@@ -41,10 +42,13 @@ export default function DeviceManagementPage() {
     addDevice,
     removeDevice,
     getDeviceTypeSummary,
-    getDeviceStatusSummary
+    getDeviceStatusSummary,
+    autoAddDevices,
+    setAutoAddDevices
   } = useDeviceManagement()
 
-  const { startDiscovery } = useDeviceDiscovery()
+  // 保留 useDeviceDiscovery 導入但不再使用（代碼備用）
+  // const { startDiscovery } = useDeviceDiscovery()
   const { selectedGateway, gateways, setSelectedGateway } = useUWBLocation()
   const { realTimeDevices, isMonitoring } = useDeviceMonitoring()
 
@@ -684,95 +688,77 @@ export default function DeviceManagementPage() {
           </CardContent>
         </Card>
 
-        {/* 篩選標籤 */}
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            variant={selectedFilter === "all" ? "default" : "outline"}
-            onClick={() => setSelectedFilter("all")}
-            className="gap-2"
-          >
-            <Settings className="h-4 w-4" />
-            {t('pages:deviceManagement.filters.all')}
-          </Button>
-          <Button
-            variant={selectedFilter === DeviceType.SMARTWATCH_300B ? "default" : "outline"}
-            onClick={() => setSelectedFilter(DeviceType.SMARTWATCH_300B)}
-            className="gap-2"
-          >
-            <Watch className="h-4 w-4" />
-            {t('pages:deviceManagement.filters.smartwatch300B')}
-          </Button>
-          <Button
-            variant={selectedFilter === DeviceType.DIAPER_SENSOR ? "default" : "outline"}
-            onClick={() => setSelectedFilter(DeviceType.DIAPER_SENSOR)}
-            className="gap-2"
-          >
-            <Baby className="h-4 w-4" />
-            {t('pages:deviceManagement.filters.diaperSensor')}
-          </Button>
-          <Button
-            variant={selectedFilter === DeviceType.PEDOMETER ? "default" : "outline"}
-            onClick={() => setSelectedFilter(DeviceType.PEDOMETER)}
-            className="gap-2"
-          >
-            <Settings className="h-4 w-4" />
-            {t('pages:deviceManagement.filters.pedometer')}
-          </Button>
-          <Button
-            variant={selectedFilter === DeviceType.UWB_TAG ? "default" : "outline"}
-            onClick={() => setSelectedFilter(DeviceType.UWB_TAG)}
-            className="gap-2"
-          >
-            <MapPin className="h-4 w-4" />
-            {t('pages:deviceManagement.filters.uwbTag')}
-          </Button>
-          <Button
-            variant={selectedFilter === DeviceType.UWB_ANCHOR ? "default" : "outline"}
-            onClick={() => setSelectedFilter(DeviceType.UWB_ANCHOR)}
-            className="gap-2"
-          >
-            <Anchor className="h-4 w-4" />
-            {t('pages:deviceManagement.filters.uwbAnchor') || '定位錨點'}
-          </Button>
-        </div>
+        {/* 篩選標籤和操作按鈕 */}
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant={selectedFilter === "all" ? "default" : "outline"}
+              onClick={() => setSelectedFilter("all")}
+              className="gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              {t('pages:deviceManagement.filters.all')}
+            </Button>
+            <Button
+              variant={selectedFilter === DeviceType.SMARTWATCH_300B ? "default" : "outline"}
+              onClick={() => setSelectedFilter(DeviceType.SMARTWATCH_300B)}
+              className="gap-2"
+            >
+              <Watch className="h-4 w-4" />
+              {t('pages:deviceManagement.filters.smartwatch300B')}
+            </Button>
+            <Button
+              variant={selectedFilter === DeviceType.DIAPER_SENSOR ? "default" : "outline"}
+              onClick={() => setSelectedFilter(DeviceType.DIAPER_SENSOR)}
+              className="gap-2"
+            >
+              <Baby className="h-4 w-4" />
+              {t('pages:deviceManagement.filters.diaperSensor')}
+            </Button>
+            <Button
+              variant={selectedFilter === DeviceType.PEDOMETER ? "default" : "outline"}
+              onClick={() => setSelectedFilter(DeviceType.PEDOMETER)}
+              className="gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              {t('pages:deviceManagement.filters.pedometer')}
+            </Button>
+            <Button
+              variant={selectedFilter === DeviceType.UWB_TAG ? "default" : "outline"}
+              onClick={() => setSelectedFilter(DeviceType.UWB_TAG)}
+              className="gap-2"
+            >
+              <MapPin className="h-4 w-4" />
+              {t('pages:deviceManagement.filters.uwbTag')}
+            </Button>
+            <Button
+              variant={selectedFilter === DeviceType.UWB_ANCHOR ? "default" : "outline"}
+              onClick={() => setSelectedFilter(DeviceType.UWB_ANCHOR)}
+              className="gap-2"
+            >
+              <Anchor className="h-4 w-4" />
+              {t('pages:deviceManagement.filters.uwbAnchor') || '定位錨點'}
+            </Button>
+          </div>
 
-        {/* 新增設備按鈕 */}
-        <div className="flex justify-end gap-2">
-          <Select value={selectedGateway} onValueChange={setSelectedGateway}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="選擇 Gateway" />
-            </SelectTrigger>
-            <SelectContent>
-              {gateways.map((gateway) => (
-                <SelectItem key={gateway.id} value={gateway.id}>
-                  {gateway.name || gateway.macAddress || gateway.id}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            {/* 自動加入設備開關 */}
+            <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-white">
+              <Switch
+                checked={autoAddDevices}
+                onCheckedChange={setAutoAddDevices}
+                id="auto-add-devices"
+              />
+              <label htmlFor="auto-add-devices" className="text-sm font-medium cursor-pointer">
+                {autoAddDevices ? t('pages:deviceManagement.autoAdd.enabled') : t('pages:deviceManagement.autoAdd.disabled')}
+              </label>
+            </div>
 
-          <Button
-            variant="outline"
-            onClick={() => {
-              if (!selectedGateway) {
-                alert('請先選擇一個Gateway')
-                return
-              }
-              try {
-                startDiscovery(selectedGateway)
-              } catch (error) {
-                console.error('啟動失敗:', error)
-              }
-            }}
-            disabled={!selectedGateway}
-          >
-            <Wifi className="h-4 w-4 mr-2" />
-            {t('pages:deviceManagement.actions.autoDiscovery')}
-          </Button>
-          <Button onClick={() => setShowAddModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('pages:deviceManagement.actions.addDevice')}
-          </Button>
+            <Button onClick={() => setShowAddModal(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              {t('pages:deviceManagement.actions.addDevice')}
+            </Button>
+          </div>
         </div>
 
         {/* 統計資訊 */}

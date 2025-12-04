@@ -217,6 +217,10 @@
             "importSettings": "設定インポート",
             "debugStorage": "ストレージデバッグ"
         },
+        "autoAdd": {
+            "enabled": "自動追加：有効",
+            "disabled": "自動追加：無効"
+        },
         "stats": {
             "totalDevices": "総デバイス数",
             "activeDevices": "アクティブデバイス",

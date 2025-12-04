@@ -7,63 +7,19 @@
       "region id": 0,
       "organiz id": 0,
       "node": "TAG",
-      "id": 1770,
-      "id(Hex)": "0x06EA",
-      "position": {
-        "x": 0.27,
-        "y": -1.18,
-        "z": 2.09,
-        "quality": 82
-      },
-      "time": "2025-337 01:24:34.57",
-      "sf number": 153,
-      "serial no": 757805
-    },
-    "timestamp": "2025-12-02T17:24:34.775Z"
-  },
-  {
-    "topic": "UWB/GW16B8_TagConf",
-    "message": {
-      "content": "config",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "TAG",
-      "name": "DW06EA",
-      "id": 1770,
-      "id(Hex)": "0x06EA",
-      "fw update": 0,
-      "led": 0,
-      "ble": 1,
-      "location engine": 1,
-      "responsive mode(0=On,1=Off)": 1,
-      "stationary detect": 0,
-      "nominal udr(hz)": 0.5,
-      "stationary udr(hz)": 0.5
-    },
-    "timestamp": "2025-12-02T17:24:34.982Z"
-  },
-  {
-    "topic": "UWB/GW16B8_Loca",
-    "message": {
-      "content": "location",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "TAG",
       "id": 53397,
       "id(Hex)": "0xD095",
       "position": {
-        "x": 1.78,
+        "x": 1.68,
         "y": -1,
-        "z": 1.24,
-        "quality": 82
+        "z": 1.45,
+        "quality": 81
       },
-      "time": "2025-337 01:24:34.67",
-      "sf number": 154,
-      "serial no": 757806
+      "time": "2025-338 21:05:19.32",
+      "sf number": 114,
+      "serial no": 920086
     },
-    "timestamp": "2025-12-02T17:24:34.985Z"
+    "timestamp": "2025-12-04T13:05:19.582Z"
   },
   {
     "topic": "UWB/GW16B8_TagConf",
@@ -85,206 +41,27 @@
       "nominal udr(hz)": 0.5,
       "stationary udr(hz)": 0.1
     },
-    "timestamp": "2025-12-02T17:24:34.986Z"
+    "timestamp": "2025-12-04T13:05:19.930Z"
   },
   {
-    "topic": "UWB/GW16B8_Loca",
-    "message": {
-      "content": "location",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "TAG",
-      "id": 1770,
-      "id(Hex)": "0x06EA",
-      "position": {
-        "x": 0.27,
-        "y": -1.18,
-        "z": 2.09,
-        "quality": 82
-      },
-      "time": "2025-337 01:24:36.57",
-      "sf number": 173,
-      "serial no": 757807
-    },
-    "timestamp": "2025-12-02T17:24:36.768Z"
-  },
-  {
-    "topic": "UWB/GW16B8_TagConf",
-    "message": {
-      "content": "config",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "TAG",
-      "name": "DW06EA",
-      "id": 1770,
-      "id(Hex)": "0x06EA",
-      "fw update": 0,
-      "led": 0,
-      "ble": 1,
-      "location engine": 1,
-      "responsive mode(0=On,1=Off)": 1,
-      "stationary detect": 0,
-      "nominal udr(hz)": 0.5,
-      "stationary udr(hz)": 0.5
-    },
-    "timestamp": "2025-12-02T17:24:37.132Z"
-  },
-  {
-    "topic": "UWB/GW16B8_TagConf",
-    "message": {
-      "content": "config",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "TAG",
-      "name": "DWD095",
-      "id": 53397,
-      "id(Hex)": "0xD095",
-      "fw update": 0,
-      "led": 0,
-      "ble": 1,
-      "location engine": 1,
-      "responsive mode(0=On,1=Off)": 1,
-      "stationary detect": 0,
-      "nominal udr(hz)": 0.5,
-      "stationary udr(hz)": 0.1
-    },
-    "timestamp": "2025-12-02T17:24:37.134Z"
-  },
-  {
-    "topic": "UWB/GW16B8_Loca",
-    "message": {
-      "content": "location",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "TAG",
-      "id": 53397,
-      "id(Hex)": "0xD095",
-      "position": {
-        "x": 1.82,
-        "y": -0.98,
-        "z": 1.32,
-        "quality": 83
-      },
-      "time": "2025-337 01:24:36.67",
-      "sf number": 174,
-      "serial no": 757808
-    },
-    "timestamp": "2025-12-02T17:24:37.135Z"
-  },
-  {
-    "topic": "UWB/GW16B8_Message",
-    "message": {
-      "content": "heartbeat",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "ANCHOR",
-      "name": "DW4210",
-      "id": 16912,
-      "id(Hex)": "0x4210",
-      "fw update": 0,
-      "led": 1,
-      "ble": 1,
-      "initiator": 1,
-      "position": {
-        "x": 1.7,
-        "y": -3.8,
-        "z": 1.15
-      }
-    },
-    "timestamp": "2025-12-02T17:24:37.470Z"
-  },
-  {
-    "topic": "UWB/GW16B8_Health",
+    "topic": "UWB/GW3C7C_Health",
     "message": {
       "content": "diaper DV1",
-      "gateway id": 4192540344,
+      "gateway id": 4192812156,
       "region id": 0,
       "organiz id": 0,
-      "MAC": "C5:C6:E3:19:47:43",
-      "name": "DV1_194743",
+      "MAC": "C5:D6:FB:1B:85:23",
+      "name": "DV1_1B8523",
       "fw ver": 2.01,
-      "temp": 25.31,
-      "humi": 54.47,
+      "temp": 14.42,
+      "humi": 67.07,
       "button": 0,
-      "mssg idx": 31749,
+      "mssg idx": 15519,
       "ack": 0,
-      "battery level": 98,
-      "serial no": 757809
+      "battery level": 76,
+      "serial no": 4407
     },
-    "timestamp": "2025-12-02T17:24:37.753Z"
-  },
-  {
-    "topic": "UWB/GW16B8_Message",
-    "message": {
-      "content": "heartbeat",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "ANCHOR",
-      "name": "DW5B05",
-      "id": 23301,
-      "id(Hex)": "0x5B05",
-      "fw update": 0,
-      "led": 1,
-      "ble": 1,
-      "initiator": 0,
-      "position": {
-        "x": -2,
-        "y": 3.5,
-        "z": 1
-      }
-    },
-    "timestamp": "2025-12-02T17:24:37.756Z"
-  },
-  {
-    "topic": "UWB/GW16B8_Message",
-    "message": {
-      "content": "heartbeat",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "ANCHOR",
-      "name": "DW8E97",
-      "id": 36503,
-      "id(Hex)": "0x8E97",
-      "fw update": 0,
-      "led": 1,
-      "ble": 1,
-      "initiator": 0,
-      "position": {
-        "x": -2.3,
-        "y": 0.7,
-        "z": 2.6
-      }
-    },
-    "timestamp": "2025-12-02T17:24:38.054Z"
-  },
-  {
-    "topic": "UWB/GW16B8_Loca",
-    "message": {
-      "content": "location",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "TAG",
-      "id": 1770,
-      "id(Hex)": "0x06EA",
-      "position": {
-        "x": 0.28,
-        "y": -1.18,
-        "z": 2.11,
-        "quality": 82
-      },
-      "time": "2025-337 01:24:38.57",
-      "sf number": 193,
-      "serial no": 757810
-    },
-    "timestamp": "2025-12-02T17:24:38.770Z"
+    "timestamp": "2025-12-04T13:05:20.002Z"
   },
   {
     "topic": "UWB/GW16B8_TagConf",
@@ -306,56 +83,12 @@
       "nominal udr(hz)": 0.5,
       "stationary udr(hz)": 0.5
     },
-    "timestamp": "2025-12-02T17:24:39.081Z"
+    "timestamp": "2025-12-04T13:05:20.300Z"
   },
   {
-    "topic": "UWB/GW16B8_TagConf",
+    "topic": "UWB/GW3C7C_AncConf",
     "message": {
       "content": "config",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "TAG",
-      "name": "DWD095",
-      "id": 53397,
-      "id(Hex)": "0xD095",
-      "fw update": 0,
-      "led": 0,
-      "ble": 1,
-      "location engine": 1,
-      "responsive mode(0=On,1=Off)": 1,
-      "stationary detect": 0,
-      "nominal udr(hz)": 0.5,
-      "stationary udr(hz)": 0.1
-    },
-    "timestamp": "2025-12-02T17:24:39.085Z"
-  },
-  {
-    "topic": "UWB/GW16B8_Loca",
-    "message": {
-      "content": "location",
-      "gateway id": 4192540344,
-      "region id": 0,
-      "organiz id": 0,
-      "node": "TAG",
-      "id": 53397,
-      "id(Hex)": "0xD095",
-      "position": {
-        "x": 1.82,
-        "y": -0.99,
-        "z": 1.36,
-        "quality": 82
-      },
-      "time": "2025-337 01:24:38.67",
-      "sf number": 194,
-      "serial no": 757811
-    },
-    "timestamp": "2025-12-02T17:24:39.087Z"
-  },
-  {
-    "topic": "UWB/GW3C7C_Message",
-    "message": {
-      "content": "heartbeat",
       "gateway id": 4192812156,
       "region id": 0,
       "organiz id": 0,
@@ -373,6 +106,360 @@
         "z": 1
       }
     },
-    "timestamp": "2025-12-02T17:24:39.088Z"
+    "timestamp": "2025-12-04T13:05:20.605Z"
+  },
+  {
+    "topic": "UWB/GW16B8_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW4C0B",
+      "id": 19467,
+      "id(Hex)": "0x4C0B",
+      "fw update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 0,
+      "position": {
+        "x": -0.3,
+        "y": -3.8,
+        "z": 1.25
+      }
+    },
+    "timestamp": "2025-12-04T13:05:20.801Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Loca",
+    "message": {
+      "content": "location",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "id": 53397,
+      "id(Hex)": "0xD095",
+      "position": {
+        "x": 1.69,
+        "y": -0.99,
+        "z": 1.48,
+        "quality": 82
+      },
+      "time": "2025-338 21:05:21.32",
+      "sf number": 134,
+      "serial no": 920087
+    },
+    "timestamp": "2025-12-04T13:05:21.554Z"
+  },
+  {
+    "topic": "UWB/GW16B8_TagConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "name": "DWD095",
+      "id": 53397,
+      "id(Hex)": "0xD095",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "location engine": 1,
+      "responsive mode(0=On,1=Off)": 1,
+      "stationary detect": 0,
+      "nominal udr(hz)": 0.5,
+      "stationary udr(hz)": 0.1
+    },
+    "timestamp": "2025-12-04T13:05:21.835Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "diaper DV1",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "C5:C6:E3:19:47:43",
+      "name": "DV1_194743",
+      "fw ver": 2.01,
+      "temp": 23.62,
+      "humi": 52.12,
+      "button": 0,
+      "mssg idx": 7479,
+      "ack": 0,
+      "battery level": 98,
+      "serial no": 920088
+    },
+    "timestamp": "2025-12-04T13:05:22.145Z"
+  },
+  {
+    "topic": "UWB/GW16B8_TagConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "name": "DW06EA",
+      "id": 1770,
+      "id(Hex)": "0x06EA",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "location engine": 1,
+      "responsive mode(0=On,1=Off)": 1,
+      "stationary detect": 0,
+      "nominal udr(hz)": 0.5,
+      "stationary udr(hz)": 0.5
+    },
+    "timestamp": "2025-12-04T13:05:22.147Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Loca",
+    "message": {
+      "content": "location",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "id": 53397,
+      "id(Hex)": "0xD095",
+      "position": {
+        "x": 1.69,
+        "y": -0.99,
+        "z": 1.51,
+        "quality": 81
+      },
+      "time": "2025-338 21:05:23.32",
+      "sf number": 154,
+      "serial no": 920089
+    },
+    "timestamp": "2025-12-04T13:05:23.565Z"
+  },
+  {
+    "topic": "UWB/GW16B8_TagConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "name": "DWD095",
+      "id": 53397,
+      "id(Hex)": "0xD095",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "location engine": 1,
+      "responsive mode(0=On,1=Off)": 1,
+      "stationary detect": 0,
+      "nominal udr(hz)": 0.5,
+      "stationary udr(hz)": 0.1
+    },
+    "timestamp": "2025-12-04T13:05:23.781Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Loca",
+    "message": {
+      "content": "location",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "id": 1770,
+      "id(Hex)": "0x06EA",
+      "position": {
+        "x": 0.25,
+        "y": -1.19,
+        "z": 2.06,
+        "quality": 82
+      },
+      "time": "2025-338 21:05:23.72",
+      "sf number": 158,
+      "serial no": 920090
+    },
+    "timestamp": "2025-12-04T13:05:24.089Z"
+  },
+  {
+    "topic": "UWB/GW16B8_TagConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "name": "DW06EA",
+      "id": 1770,
+      "id(Hex)": "0x06EA",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "location engine": 1,
+      "responsive mode(0=On,1=Off)": 1,
+      "stationary detect": 0,
+      "nominal udr(hz)": 0.5,
+      "stationary udr(hz)": 0.5
+    },
+    "timestamp": "2025-12-04T13:05:24.090Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Loca",
+    "message": {
+      "content": "location",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "id": 53397,
+      "id(Hex)": "0xD095",
+      "position": {
+        "x": 1.71,
+        "y": -1,
+        "z": 1.51,
+        "quality": 81
+      },
+      "time": "2025-338 21:05:25.32",
+      "sf number": 174,
+      "serial no": 920091
+    },
+    "timestamp": "2025-12-04T13:05:25.611Z"
+  },
+  {
+    "topic": "UWB/GW16B8_TagConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "name": "DWD095",
+      "id": 53397,
+      "id(Hex)": "0xD095",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "location engine": 1,
+      "responsive mode(0=On,1=Off)": 1,
+      "stationary detect": 0,
+      "nominal udr(hz)": 0.5,
+      "stationary udr(hz)": 0.1
+    },
+    "timestamp": "2025-12-04T13:05:25.844Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Loca",
+    "message": {
+      "content": "location",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "id": 1770,
+      "id(Hex)": "0x06EA",
+      "position": {
+        "x": 0.26,
+        "y": -1.19,
+        "z": 2.07,
+        "quality": 82
+      },
+      "time": "2025-338 21:05:25.72",
+      "sf number": 178,
+      "serial no": 920092
+    },
+    "timestamp": "2025-12-04T13:05:26.134Z"
+  },
+  {
+    "topic": "UWB/GW16B8_TagConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "TAG",
+      "name": "DW06EA",
+      "id": 1770,
+      "id(Hex)": "0x06EA",
+      "fw update": 0,
+      "led": 0,
+      "ble": 1,
+      "location engine": 1,
+      "responsive mode(0=On,1=Off)": 1,
+      "stationary detect": 0,
+      "nominal udr(hz)": 0.5,
+      "stationary udr(hz)": 0.5
+    },
+    "timestamp": "2025-12-04T13:05:26.136Z"
+  },
+  {
+    "topic": "UWB/GW16B8_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW4210",
+      "id": 16912,
+      "id(Hex)": "0x4210",
+      "fw update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 1.7,
+        "y": -3.8,
+        "z": 1.15
+      }
+    },
+    "timestamp": "2025-12-04T13:05:26.444Z"
+  },
+  {
+    "topic": "UWB/GW16B8_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW5B05",
+      "id": 23301,
+      "id(Hex)": "0x5B05",
+      "fw update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 0,
+      "position": {
+        "x": -2,
+        "y": 3.5,
+        "z": 1
+      }
+    },
+    "timestamp": "2025-12-04T13:05:26.447Z"
+  },
+  {
+    "topic": "UWB/GW16B8_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW8E97",
+      "id": 36503,
+      "id(Hex)": "0x8E97",
+      "fw update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 0,
+      "position": {
+        "x": -2.3,
+        "y": 0.7,
+        "z": 2.6
+      }
+    },
+    "timestamp": "2025-12-04T13:05:26.752Z"
   }
 ]
