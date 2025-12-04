@@ -980,7 +980,7 @@ export default function DeviceManagementPage() {
               })}
             </div>
           ) : (
-            // 卡片视图 - 原有网格布局
+            // 卡片视图 - 原有网格布局，也支持批量操作
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredDevices.map(device => {
                 const resident = getResidentForDevice(device.id)
@@ -991,6 +991,9 @@ export default function DeviceManagementPage() {
                     device={deviceWithRealTime}
                     resident={resident}
                     onAction={handleDeviceAction}
+                    showCheckbox={selectedFilter !== "all"}
+                    isSelected={selectedDeviceIds.has(device.id)}
+                    onSelectChange={handleSelectDevice}
                   />
                 )
               })}
