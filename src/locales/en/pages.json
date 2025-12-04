@@ -304,6 +304,7 @@
             "hardwareId": "Hardware ID",
             "macAddress": "MAC Address",
             "deviceUid": "Device UID",
+            "uid": "UID",
             "gatewayId": "Gateway ID",
             "firmwareVersion": "Firmware Version",
             "batteryLevel": "Battery Level",
@@ -387,7 +388,8 @@
             "removeDevice": "Remove Device",
             "unbind": "Unbind",
             "battery": "Battery",
-            "room": "Room"
+            "room": "Room",
+            "qrCode": "QR Code"
         }
     },
     "health": {

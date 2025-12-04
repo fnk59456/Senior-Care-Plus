@@ -304,6 +304,7 @@
             "hardwareId": "ハードウェアID",
             "macAddress": "MACアドレス",
             "deviceUid": "デバイスUID",
+            "uid": "UID",
             "gatewayId": "ゲートウェイID",
             "firmwareVersion": "ファームウェアバージョン",
             "batteryLevel": "バッテリーレベル",
@@ -387,7 +388,8 @@
             "removeDevice": "デバイス削除",
             "unbind": "バインド解除",
             "battery": "バッテリー",
-            "room": "部屋"
+            "room": "部屋",
+            "qrCode": "QRコード"
         }
     },
     "uwbLocation": {

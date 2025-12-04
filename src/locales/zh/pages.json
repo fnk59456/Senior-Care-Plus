@@ -304,6 +304,7 @@
             "hardwareId": "硬體編號",
             "macAddress": "MAC地址",
             "deviceUid": "設備UID",
+            "uid": "UID",
             "gatewayId": "閘道器ID",
             "firmwareVersion": "韌體版本",
             "batteryLevel": "電量",
@@ -387,7 +388,8 @@
             "removeDevice": "移除設備",
             "unbind": "解除綁定",
             "battery": "電量",
-            "room": "房間"
+            "room": "房間",
+            "qrCode": "QR碼"
         }
     },
     "health": {

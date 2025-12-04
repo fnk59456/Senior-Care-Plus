@@ -22,7 +22,11 @@ import {
   Wifi,
   Filter,
   Activity,
-  Anchor
+  Anchor,
+  Unlink,
+  Trash2,
+  LayoutGrid,
+  List
 } from "lucide-react"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { useDeviceDiscovery } from "@/contexts/DeviceDiscoveryContext"
@@ -32,6 +36,7 @@ import { DeviceType, DeviceStatus, DeviceUIDGenerator } from "@/types/device-typ
 import DeviceBindingModal from "@/components/DeviceBindingModal"
 import DeviceDiscoveryModal from "@/components/DeviceDiscoveryModal"
 import DeviceMonitorCard from "@/components/DeviceMonitorCard"
+import DeviceListRow from "@/components/DeviceListRow"
 import DeviceInfoModal from "@/components/DeviceInfoModal"
 
 export default function DeviceManagementPage() {
@@ -62,6 +67,13 @@ export default function DeviceManagementPage() {
   // 新增：設備資訊模態框狀態
   const [showDeviceInfoModal, setShowDeviceInfoModal] = useState(false)
   const [selectedDeviceInfo, setSelectedDeviceInfo] = useState<any>(null)
+
+  // 批量操作状态
+  const [selectedDeviceIds, setSelectedDeviceIds] = useState<Set<string>>(new Set())
+  const [showBatchActions, setShowBatchActions] = useState(false)
+
+  // 视图模式状态：'list' 或 'grid'
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
   // 新增設備的狀態
   const [newDevice, setNewDevice] = useState({
@@ -126,6 +138,7 @@ export default function DeviceManagementPage() {
           searchTerm,
           selectedFilter,
           newDevice,
+          viewMode,
           version: Date.now(),
           lastSave: new Date().toISOString()
         }
@@ -149,7 +162,7 @@ export default function DeviceManagementPage() {
         setPendingSave(false)
       }
     }, 500) // 500ms延遲，避免頻繁保存
-  }, [searchTerm, selectedFilter, newDevice])
+  }, [searchTerm, selectedFilter, newDevice, viewMode])
 
   // 手動強制保存
   const forceSave = () => {
@@ -162,7 +175,7 @@ export default function DeviceManagementPage() {
 
   // 清除所有存儲數據的函數
   const clearAllStorage = () => {
-    const keys = ['searchTerm', 'selectedFilter', 'newDevice', 'version', 'lastSave']
+    const keys = ['searchTerm', 'selectedFilter', 'newDevice', 'viewMode', 'version', 'lastSave']
     keys.forEach(key => {
       localStorage.removeItem(`device_mgmt_${key}`)
     })
@@ -177,7 +190,7 @@ export default function DeviceManagementPage() {
   // 調試：檢查當前存儲數據
   const debugStorage = () => {
     console.log('🔍 當前設備管理 localStorage 數據:')
-    const keys = ['searchTerm', 'selectedFilter', 'newDevice', 'version', 'lastSave']
+    const keys = ['searchTerm', 'selectedFilter', 'newDevice', 'viewMode', 'version', 'lastSave']
     keys.forEach(key => {
       const data = localStorage.getItem(`device_mgmt_${key}`)
       if (data) {
@@ -258,6 +271,7 @@ export default function DeviceManagementPage() {
         // 加載用戶設定
         const loadedSearchTerm = loadFromStorage('searchTerm', '')
         const loadedSelectedFilter = loadFromStorage('selectedFilter', 'all')
+        const loadedViewMode = loadFromStorage<'list' | 'grid'>('viewMode', 'list')
         const loadedNewDevice = loadFromStorage('newDevice', {
           deviceType: DeviceType.SMARTWATCH_300B,
           name: "",
@@ -269,6 +283,7 @@ export default function DeviceManagementPage() {
 
         setSearchTerm(loadedSearchTerm)
         setSelectedFilter(loadedSelectedFilter)
+        setViewMode(loadedViewMode)
         setNewDevice(loadedNewDevice)
 
         console.log('✅ 設備管理數據加載完成')
@@ -288,7 +303,7 @@ export default function DeviceManagementPage() {
     if (!isLoading) {
       batchSave()
     }
-  }, [searchTerm, selectedFilter, newDevice, batchSave, isLoading])
+  }, [searchTerm, selectedFilter, newDevice, viewMode, batchSave, isLoading])
 
   // 清理定時器
   useEffect(() => {
@@ -404,6 +419,74 @@ export default function DeviceManagementPage() {
 
 
 
+  // 批量选择处理
+  const handleSelectDevice = (deviceId: string, checked: boolean) => {
+    setSelectedDeviceIds(prev => {
+      const newSet = new Set(prev)
+      if (checked) {
+        newSet.add(deviceId)
+      } else {
+        newSet.delete(deviceId)
+      }
+      return newSet
+    })
+  }
+
+  // 全选/取消全选
+  const handleSelectAll = () => {
+    if (selectedDeviceIds.size === filteredDevices.length) {
+      setSelectedDeviceIds(new Set())
+    } else {
+      setSelectedDeviceIds(new Set(filteredDevices.map(d => d.id)))
+    }
+  }
+
+  // 批量解除绑定
+  const handleBatchUnbind = () => {
+    const devicesToUnbind = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter(d => d && d.residentId)
+
+    if (devicesToUnbind.length === 0) {
+      alert('所选设备中没有已绑定的设备')
+      return
+    }
+
+    const deviceNames = devicesToUnbind.map(d => d!.name).join('、')
+    if (confirm(`确定要解除以下 ${devicesToUnbind.length} 个设备的绑定吗？\n\n${deviceNames}\n\n此操作无法撤销。`)) {
+      devicesToUnbind.forEach(device => {
+        if (device && device.residentId) {
+          unbindDevice(device.id, device.residentId)
+        }
+      })
+      setSelectedDeviceIds(new Set())
+      alert(`已成功解除 ${devicesToUnbind.length} 个设备的绑定`)
+    }
+  }
+
+  // 批量移除设备
+  const handleBatchRemove = () => {
+    const devicesToRemove = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter(d => d)
+
+    if (devicesToRemove.length === 0) {
+      alert('请先选择要移除的设备')
+      return
+    }
+
+    const deviceNames = devicesToRemove.map(d => d!.name).join('、')
+    if (confirm(`确定要移除以下 ${devicesToRemove.length} 个设备吗？\n\n${deviceNames}\n\n此操作无法撤销。`)) {
+      devicesToRemove.forEach(device => {
+        if (device) {
+          removeDevice(device.id)
+        }
+      })
+      setSelectedDeviceIds(new Set())
+      alert(`已成功移除 ${devicesToRemove.length} 个设备`)
+    }
+  }
+
   // 新增：處理設備操作
   const handleDeviceAction = (action: string, deviceId: string) => {
     console.log(`執行操作: ${action} 設備ID: ${deviceId}`)
@@ -433,12 +516,16 @@ export default function DeviceManagementPage() {
         // 實現設備數據查看邏輯
         alert('設備數據功能開發中...')
         break
+      case 'qrcode':
+        // QR Code 功能占位
+        alert('QR Code 功能开发中...')
+        break
       case 'unbind':
         // 實現解除綁定邏輯
         if (confirm('確定要解除設備綁定嗎？')) {
           const device = devices.find(d => d.id === deviceId)
           if (device && device.residentId) {
-            // 這裡需要實現解除綁定的邏輯
+            unbindDevice(device.id, device.residentId)
             console.log('解除綁定設備:', deviceId)
           }
         }
@@ -636,41 +723,6 @@ export default function DeviceManagementPage() {
             </div>
           </div>
 
-          {/* 監控統計概覽 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{getMonitoringStats().total}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.monitoring.boundDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{getMonitoringStats().online}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.monitoring.onlineDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-yellow-600">{getMonitoringStats().offline}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.monitoring.offlineDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-red-600">{getMonitoringStats().error}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:deviceManagement.monitoring.errorDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </div>
 
         {/* 搜尋框 */}
@@ -805,14 +857,86 @@ export default function DeviceManagementPage() {
           </Card>
         </div>
 
+        {/* 批量操作工具栏 - 仅在选择特定设备类型时显示 */}
+        {selectedFilter !== "all" && filteredDevices.length > 0 && (
+          <Card className="bg-blue-50 border-blue-200">
+            <CardContent className="py-3">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 md:gap-4">
+                  <span className="text-sm font-medium text-gray-700">
+                    已选择 <span className="text-blue-600 font-bold">{selectedDeviceIds.size}</span> 个设备
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSelectAll}
+                    className="gap-2"
+                  >
+                    {selectedDeviceIds.size === filteredDevices.length ? '取消全选' : '全选'}
+                  </Button>
+                </div>
+
+                {/* 批量操作按钮 */}
+                {selectedDeviceIds.size > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBatchUnbind}
+                      className="gap-2 text-orange-600 hover:text-orange-700"
+                    >
+                      <Unlink className="h-4 w-4" />
+                      <span className="hidden sm:inline">批量解除绑定</span>
+                      <span className="sm:hidden">解绑</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleBatchRemove}
+                      className="gap-2 text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="hidden sm:inline">批量移除设备</span>
+                      <span className="sm:hidden">移除</span>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* 設備監控卡片網格 */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold">{t('pages:deviceManagement.monitoring.title')}</h3>
-            <Badge variant="outline" className="gap-1">
-              <Filter className="h-3 w-3" />
-              {filteredDevices.length} {t('pages:deviceManagement.monitoring.deviceCount')}
-            </Badge>
+            <div className="flex items-center gap-3">
+              {/* 视图切换按钮 */}
+              <div className="flex items-center gap-1 bg-gray-100 rounded-md p-1">
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className="h-8 w-8 p-0"
+                  title="列表视图"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className="h-8 w-8 p-0"
+                  title="卡片视图"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </div>
+              <Badge variant="outline" className="gap-1">
+                <Filter className="h-3 w-3" />
+                {filteredDevices.length} {t('pages:deviceManagement.monitoring.deviceCount')}
+              </Badge>
+            </div>
           </div>
 
           {filteredDevices.length === 0 ? (
@@ -827,7 +951,27 @@ export default function DeviceManagementPage() {
                 </p>
               </CardContent>
             </Card>
+          ) : viewMode === 'list' ? (
+            // 列表视图 - 横条布局
+            <div className="space-y-3">
+              {filteredDevices.map(device => {
+                const resident = getResidentForDevice(device.id)
+                const deviceWithRealTime = getDeviceWithRealTimeData(device)
+                return (
+                  <DeviceListRow
+                    key={device.id}
+                    device={deviceWithRealTime}
+                    resident={resident}
+                    onAction={handleDeviceAction}
+                    showCheckbox={selectedFilter !== "all"}
+                    isSelected={selectedDeviceIds.has(device.id)}
+                    onSelectChange={handleSelectDevice}
+                  />
+                )
+              })}
+            </div>
           ) : (
+            // 卡片视图 - 原有网格布局
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredDevices.map(device => {
                 const resident = getResidentForDevice(device.id)
