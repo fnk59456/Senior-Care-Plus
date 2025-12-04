@@ -296,6 +296,22 @@
             "noDevices": "デバイスなし",
             "noMatchingDevices": "フィルター条件に一致するデバイスがありません"
         },
+        "batchActions": {
+            "selectedCount": "選択済み",
+            "devices": "個のデバイス",
+            "selectAll": "すべて選択",
+            "deselectAll": "選択解除",
+            "batchUnbind": "一括バインド解除",
+            "batchUnbindShort": "解除",
+            "batchRemove": "一括削除",
+            "batchRemoveShort": "削除",
+            "confirmUnbind": "以下の {{count}} 個のデバイスのバインドを解除してもよろしいですか？\n\n{{devices}}\n\nこの操作は元に戻せません。",
+            "confirmRemove": "以下の {{count}} 個のデバイスを削除してもよろしいですか？\n\n{{devices}}\n\nこの操作は元に戻せません。",
+            "noBindableDevices": "選択したデバイスの中にバインド済みのデバイスがありません",
+            "noDevicesSelected": "削除するデバイスを選択してください",
+            "unbindSuccess": "{{count}} 個のデバイスのバインドを解除しました",
+            "removeSuccess": "{{count}} 個のデバイスを削除しました"
+        },
         "deviceInfo": {
             "title": "デバイス情報",
             "basicInfo": "基本情報",

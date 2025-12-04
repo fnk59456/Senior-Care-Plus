@@ -46,6 +46,7 @@ export default function DeviceManagementPage() {
     residents,
     addDevice,
     removeDevice,
+    unbindDevice,
     getDeviceTypeSummary,
     getDeviceStatusSummary,
     autoAddDevices,
@@ -448,19 +449,22 @@ export default function DeviceManagementPage() {
       .filter(d => d && d.residentId)
 
     if (devicesToUnbind.length === 0) {
-      alert('所选设备中没有已绑定的设备')
+      alert(t('pages:deviceManagement.batchActions.noBindableDevices'))
       return
     }
 
     const deviceNames = devicesToUnbind.map(d => d!.name).join('、')
-    if (confirm(`确定要解除以下 ${devicesToUnbind.length} 个设备的绑定吗？\n\n${deviceNames}\n\n此操作无法撤销。`)) {
+    if (confirm(t('pages:deviceManagement.batchActions.confirmUnbind', {
+      count: devicesToUnbind.length,
+      devices: deviceNames
+    }))) {
       devicesToUnbind.forEach(device => {
         if (device && device.residentId) {
           unbindDevice(device.id, device.residentId)
         }
       })
       setSelectedDeviceIds(new Set())
-      alert(`已成功解除 ${devicesToUnbind.length} 个设备的绑定`)
+      alert(t('pages:deviceManagement.batchActions.unbindSuccess', { count: devicesToUnbind.length }))
     }
   }
 
@@ -471,19 +475,22 @@ export default function DeviceManagementPage() {
       .filter(d => d)
 
     if (devicesToRemove.length === 0) {
-      alert('请先选择要移除的设备')
+      alert(t('pages:deviceManagement.batchActions.noDevicesSelected'))
       return
     }
 
     const deviceNames = devicesToRemove.map(d => d!.name).join('、')
-    if (confirm(`确定要移除以下 ${devicesToRemove.length} 个设备吗？\n\n${deviceNames}\n\n此操作无法撤销。`)) {
+    if (confirm(t('pages:deviceManagement.batchActions.confirmRemove', {
+      count: devicesToRemove.length,
+      devices: deviceNames
+    }))) {
       devicesToRemove.forEach(device => {
         if (device) {
           removeDevice(device.id)
         }
       })
       setSelectedDeviceIds(new Set())
-      alert(`已成功移除 ${devicesToRemove.length} 个设备`)
+      alert(t('pages:deviceManagement.batchActions.removeSuccess', { count: devicesToRemove.length }))
     }
   }
 
@@ -864,7 +871,7 @@ export default function DeviceManagementPage() {
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
                 <div className="flex items-center gap-2 md:gap-4">
                   <span className="text-sm font-medium text-gray-700">
-                    已选择 <span className="text-blue-600 font-bold">{selectedDeviceIds.size}</span> 个设备
+                    {t('pages:deviceManagement.batchActions.selectedCount')} <span className="text-blue-600 font-bold">{selectedDeviceIds.size}</span> {t('pages:deviceManagement.batchActions.devices')}
                   </span>
                   <Button
                     variant="outline"
@@ -872,7 +879,9 @@ export default function DeviceManagementPage() {
                     onClick={handleSelectAll}
                     className="gap-2"
                   >
-                    {selectedDeviceIds.size === filteredDevices.length ? '取消全选' : '全选'}
+                    {selectedDeviceIds.size === filteredDevices.length
+                      ? t('pages:deviceManagement.batchActions.deselectAll')
+                      : t('pages:deviceManagement.batchActions.selectAll')}
                   </Button>
                 </div>
 
@@ -886,8 +895,8 @@ export default function DeviceManagementPage() {
                       className="gap-2 text-orange-600 hover:text-orange-700"
                     >
                       <Unlink className="h-4 w-4" />
-                      <span className="hidden sm:inline">批量解除绑定</span>
-                      <span className="sm:hidden">解绑</span>
+                      <span className="hidden sm:inline">{t('pages:deviceManagement.batchActions.batchUnbind')}</span>
+                      <span className="sm:hidden">{t('pages:deviceManagement.batchActions.batchUnbindShort')}</span>
                     </Button>
                     <Button
                       variant="outline"
@@ -896,8 +905,8 @@ export default function DeviceManagementPage() {
                       className="gap-2 text-red-600 hover:text-red-700"
                     >
                       <Trash2 className="h-4 w-4" />
-                      <span className="hidden sm:inline">批量移除设备</span>
-                      <span className="sm:hidden">移除</span>
+                      <span className="hidden sm:inline">{t('pages:deviceManagement.batchActions.batchRemove')}</span>
+                      <span className="sm:hidden">{t('pages:deviceManagement.batchActions.batchRemoveShort')}</span>
                     </Button>
                   </div>
                 )}

@@ -296,6 +296,22 @@
             "noDevices": "沒有設備",
             "noMatchingDevices": "沒有符合篩選條件的設備"
         },
+        "batchActions": {
+            "selectedCount": "已選擇",
+            "devices": "個設備",
+            "selectAll": "全選",
+            "deselectAll": "取消全選",
+            "batchUnbind": "批量解除綁定",
+            "batchUnbindShort": "解綁",
+            "batchRemove": "批量移除設備",
+            "batchRemoveShort": "移除",
+            "confirmUnbind": "確定要解除以下 {{count}} 個設備的綁定嗎？\n\n{{devices}}\n\n此操作無法撤銷。",
+            "confirmRemove": "確定要移除以下 {{count}} 個設備嗎？\n\n{{devices}}\n\n此操作無法撤銷。",
+            "noBindableDevices": "所選設備中沒有已綁定的設備",
+            "noDevicesSelected": "請先選擇要移除的設備",
+            "unbindSuccess": "已成功解除 {{count}} 個設備的綁定",
+            "removeSuccess": "已成功移除 {{count}} 個設備"
+        },
         "deviceInfo": {
             "title": "設備資訊",
             "basicInfo": "基本資訊",

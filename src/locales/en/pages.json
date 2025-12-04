@@ -296,6 +296,22 @@
             "noDevices": "No devices",
             "noMatchingDevices": "No devices matching filter criteria"
         },
+        "batchActions": {
+            "selectedCount": "Selected",
+            "devices": "devices",
+            "selectAll": "Select All",
+            "deselectAll": "Deselect All",
+            "batchUnbind": "Batch Unbind",
+            "batchUnbindShort": "Unbind",
+            "batchRemove": "Batch Remove",
+            "batchRemoveShort": "Remove",
+            "confirmUnbind": "Are you sure you want to unbind the following {{count}} devices?\n\n{{devices}}\n\nThis action cannot be undone.",
+            "confirmRemove": "Are you sure you want to remove the following {{count}} devices?\n\n{{devices}}\n\nThis action cannot be undone.",
+            "noBindableDevices": "No bound devices in selection",
+            "noDevicesSelected": "Please select devices to remove",
+            "unbindSuccess": "Successfully unbound {{count}} devices",
+            "removeSuccess": "Successfully removed {{count}} devices"
+        },
         "deviceInfo": {
             "title": "Device Information",
             "basicInfo": "Basic Information",
