@@ -55,7 +55,17 @@ export default function DeviceManagementPage() {
 
   // 保留 useDeviceDiscovery 導入但不再使用（代碼備用）
   // const { startDiscovery } = useDeviceDiscovery()
-  const { selectedGateway, gateways, setSelectedGateway } = useUWBLocation()
+  const {
+    homes,
+    floors,
+    gateways,
+    selectedHome,
+    setSelectedHome,
+    selectedFloor,
+    setSelectedFloor,
+    selectedGateway,
+    setSelectedGateway
+  } = useUWBLocation()
   const { realTimeDevices, isMonitoring } = useDeviceMonitoring()
 
   const [searchTerm, setSearchTerm] = useState("")
@@ -342,6 +352,24 @@ export default function DeviceManagementPage() {
     return () => window.removeEventListener('keydown', handleKeydown)
   }, [])
 
+  // 輔助函數：檢查設備是否匹配閘道器（使用 cloud_gateway_id 進行匹配）
+  const deviceMatchesGateway = (device: any, gateway: any): boolean => {
+    if (!device.gatewayId) return false
+
+    // 設備的 gatewayId 可能是 cloud_gateway_id（數字或字符串）
+    const deviceGatewayId = String(device.gatewayId)
+
+    // 閘道器的 cloud_gateway_id 可能在不同位置
+    const gatewayCloudId = gateway.cloud_gateway_id || gateway.cloudData?.gateway_id
+
+    if (gatewayCloudId) {
+      return deviceGatewayId === String(gatewayCloudId)
+    }
+
+    // 備用：直接比較 gateway.id
+    return deviceGatewayId === gateway.id
+  }
+
   // 篩選設備
   const filteredDevices = devices.filter(device => {
     const matchesSearch =
@@ -352,7 +380,28 @@ export default function DeviceManagementPage() {
     const matchesFilter =
       selectedFilter === "all" || device.deviceType === selectedFilter
 
-    return matchesSearch && matchesFilter
+    // 根據選擇的區域篩選設備（閘道器 > 樓層 > 養老院）
+    let matchesArea = true
+
+    if (selectedGateway && selectedGateway !== "") {
+      // 如果選擇了特定閘道器，只顯示該閘道器的設備
+      const gateway = gateways.find(gw => gw.id === selectedGateway)
+      matchesArea = gateway ? deviceMatchesGateway(device, gateway) : false
+    } else if (selectedFloor && selectedFloor !== "") {
+      // 如果選擇了樓層，顯示該樓層所有閘道器的設備
+      const floorGateways = gateways.filter(gateway => gateway.floorId === selectedFloor)
+      matchesArea = device.gatewayId ? floorGateways.some(gateway => deviceMatchesGateway(device, gateway)) : false
+    } else if (selectedHome && selectedHome !== "") {
+      // 如果選擇了養老院，顯示該養老院所有樓層所有閘道器的設備
+      const homeFloors = floors.filter(floor => floor.homeId === selectedHome)
+      const homeGateways = gateways.filter(gateway =>
+        homeFloors.some(floor => floor.id === gateway.floorId)
+      )
+      matchesArea = device.gatewayId ? homeGateways.some(gateway => deviceMatchesGateway(device, gateway)) : false
+    }
+    // 如果沒有選擇任何區域，顯示所有設備
+
+    return matchesSearch && matchesFilter && matchesArea
   })
 
 
@@ -732,17 +781,111 @@ export default function DeviceManagementPage() {
 
         </div>
 
-        {/* 搜尋框 */}
+        {/* 搜尋框和養老院選擇 */}
         <Card>
           <CardContent className="pt-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('pages:deviceManagement.searchPlaceholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+            <div className="space-y-4">
+              {/* 搜尋框 */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('pages:deviceManagement.searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {/* 區域選擇器 - 橫排 */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* 養老院選擇 */}
+                <div className="flex-1 space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    {t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHome')}
+                  </label>
+                  <Select
+                    value={selectedHome || "__all__"}
+                    onValueChange={(value) => {
+                      if (value === "__all__") {
+                        setSelectedHome("")
+                        setSelectedFloor("")
+                        setSelectedGateway("")
+                      } else {
+                        setSelectedHome(value)
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHomeFirst')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all__">
+                        {t('pages:deviceManagement.filters.all')}
+                      </SelectItem>
+                      {homes.map(home => (
+                        <SelectItem key={home.id} value={home.id}>
+                          {home.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 樓層選擇 */}
+                <div className="flex-1 space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    {t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor')}
+                  </label>
+                  <Select
+                    value={selectedFloor}
+                    onValueChange={setSelectedFloor}
+                    disabled={!selectedHome}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={selectedHome ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloorFirst')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {floors
+                        .filter(floor => floor.homeId === selectedHome)
+                        .map(floor => (
+                          <SelectItem key={floor.id} value={floor.id}>
+                            {floor.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* 閘道器選擇 */}
+                <div className="flex-1 space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    {t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGateway')}
+                  </label>
+                  <Select
+                    value={selectedGateway}
+                    onValueChange={setSelectedGateway}
+                    disabled={!selectedFloor}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={selectedFloor ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGateway') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectGatewayFirst')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {gateways
+                        .filter(gateway => gateway.floorId === selectedFloor)
+                        .map(gateway => (
+                          <SelectItem key={gateway.id} value={gateway.id}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{gateway.name}</span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                {gateway.macAddress}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
