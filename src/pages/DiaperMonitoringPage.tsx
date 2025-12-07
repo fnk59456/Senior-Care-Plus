@@ -952,69 +952,58 @@ export default function DiaperMonitoringPage() {
 
             {cloudDiaperDevices.length > 0 ? (
               <div className="space-y-3">
-
                 <div className="font-medium">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectDevice')}</div>
-                <Select value={selectedCloudDevice} onValueChange={setSelectedCloudDevice}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectCloudDevice')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {cloudDiaperDevices.filter(device => {
+                <div className="border rounded-lg divide-y max-h-[520px] overflow-y-auto">
+                  {cloudDiaperDevices
+                    .filter(device => {
                       // ✅ 如果選擇了 Gateway，只顯示該 Gateway 的設備
                       if (selectedGateway) {
                         const gateway = gateways.find(gw => gw.id === selectedGateway)
                         if (gateway) {
-                          // 檢查設備的所有記錄，只要有一條記錄來自選定的 Gateway 就顯示該設備
                           const deviceRecords = cloudDiaperRecords.filter(record => record.MAC === device.MAC)
-
                           // 🎯 使用與 HeartRatePage 相同的篩選邏輯：前綴匹配
                           const hasMatchingRecord = deviceRecords.some(record => {
-                            // 主要匹配：record.gateway（來自 MQTT 的 gateway 字段）包含選定 Gateway 的名稱
-                            // 例如：record.gateway = "GwF9E516B8_142", gateway.name = "GwF9E516B8_176"
-                            // 匹配邏輯：檢查前綴是否相同（去掉最後的數字部分）
                             const recordGatewayPrefix = record.gateway?.split('_')[0] || ''
                             const selectedGatewayPrefix = gateway.name?.split('_')[0] || ''
-
-                            return recordGatewayPrefix &&
-                              selectedGatewayPrefix &&
-                              recordGatewayPrefix === selectedGatewayPrefix
+                            return recordGatewayPrefix && selectedGatewayPrefix && recordGatewayPrefix === selectedGatewayPrefix
                           })
-
                           return hasMatchingRecord
                         }
                       }
                       // 如果沒有選擇 Gateway，顯示所有設備
                       return true
-                    }).map(device => {
+                    })
+                    .map(device => {
                       const DeviceIcon = getDeviceTypeIcon(device.deviceType)
                       const statusInfo = getStatusInfo(device.residentStatus)
-
+                      const isSelected = selectedCloudDevice === device.MAC
                       return (
-                        <SelectItem key={device.MAC} value={device.MAC}>
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-2">
-                              <DeviceIcon className="h-4 w-4" />
-                              <span>
-                                {device.residentName ? device.residentName : device.deviceName}
-                              </span>
-                              {device.residentRoom && (
-                                <span className="text-xs text-muted-foreground">
-                                  ({device.residentRoom})
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {statusInfo.badge}
+                        <button
+                          key={device.MAC}
+                          onClick={() => setSelectedCloudDevice(device.MAC)}
+                          className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-blue-50 transition ${isSelected ? 'bg-blue-50 border-l-4 border-blue-400' : ''}`}
+                          aria-pressed={isSelected}
+                        >
+                          <div className="flex items-center gap-2">
+                            <DeviceIcon className="h-4 w-4" />
+                            <span>{device.residentName ? device.residentName : device.deviceName}</span>
+                            {device.residentRoom && (
                               <span className="text-xs text-muted-foreground">
-                                {t('pages:diaperMonitoring.cloudDeviceMonitoring.humidity')}: {device.currentHumidity}%
+                                ({device.residentRoom})
                               </span>
-                            </div>
+                            )}
                           </div>
-                        </SelectItem>
+                          <div className="flex items-center gap-2">
+                            {statusInfo.badge}
+                            <span className="text-xs text-muted-foreground">
+                              {t('pages:diaperMonitoring.cloudDeviceMonitoring.humidity')}: {device.currentHumidity}%
+                            </span>
+                          </div>
+                        </button>
                       )
                     })}
-                  </SelectContent>
-                </Select>
+                </div>
+                <div className="text-xs text-muted-foreground">{t('common:actions.scrollForMore') || t('common:actions.view')}</div>
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
