@@ -35,10 +35,6 @@ import { useDeviceMonitoring } from '@/contexts/DeviceMonitoringContext'
 import { useUWBLocation } from '@/contexts/UWBLocationContext'
 import DeviceBindingModal from '@/components/DeviceBindingModal'
 import ResidentCard from '@/components/ResidentCard'
-import DeviceMonitoringControls from '@/components/DeviceMonitoringControls'
-import DeviceMonitoringStatus from '@/components/DeviceMonitoringStatus'
-import DeviceMonitoringTest from '@/components/DeviceMonitoringTest'
-import DeviceMonitoringDebug from '@/components/DeviceMonitoringDebug'
 import { Device, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
 
 // 使用統一的Resident接口
@@ -58,7 +54,7 @@ export default function ResidentsPage() {
   } = useDeviceManagement()
 
   // 整合設備監控數據
-  const { realTimeDevices, startMonitoring, stopMonitoring } = useDeviceMonitoring()
+  const { realTimeDevices } = useDeviceMonitoring()
   const { selectedGateway } = useUWBLocation()
 
   const [searchTerm, setSearchTerm] = useState('')
@@ -71,9 +67,6 @@ export default function ResidentsPage() {
   const [showDeviceManagement, setShowDeviceManagement] = useState(false)
 
   // 新增：監控控制面板狀態
-  const [showControls, setShowControls] = useState(false)
-  const [showTest, setShowTest] = useState(false)
-  const [showDebug, setShowDebug] = useState(false)
 
   // 新增病患相關狀態
   const [showAddResident, setShowAddResident] = useState(false)
@@ -489,26 +482,6 @@ export default function ResidentsPage() {
     }
   }
 
-  // 新增：監控相關函數
-  const handleStartMonitoring = async () => {
-    if (!selectedGateway) {
-      alert('請先選擇一個Gateway')
-      return
-    }
-    try {
-      await startMonitoring(selectedGateway)
-      console.log('監控已啟動')
-    } catch (error) {
-      console.error('啟動監控失敗:', error)
-      alert('啟動監控失敗')
-    }
-  }
-
-  const handleStopMonitoring = () => {
-    stopMonitoring()
-    console.log('監控已停止')
-  }
-
   // 獲取實時數據
   const getDeviceWithRealTimeData = (device: Device) => {
     const realTimeData = realTimeDevices.get(device.id)
@@ -719,87 +692,6 @@ export default function ResidentsPage() {
           </Button>
         </div>
 
-        {/* 監控控制面板 */}
-        <div className="space-y-6">
-          {/* 監控狀態和控制按鈕 */}
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">{t('pages:residents.monitoring.title')}</h3>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowControls(!showControls)}
-                className="gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                {showControls ? t('pages:residents.monitoring.hideControls') : t('pages:residents.monitoring.showControls')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowTest(!showTest)}
-                className="gap-2"
-              >
-                <TestTube className="h-4 w-4" />
-                {showTest ? t('pages:residents.monitoring.hideTest') : t('pages:residents.monitoring.showTest')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowDebug(!showDebug)}
-                className="gap-2"
-              >
-                <Bug className="h-4 w-4" />
-                {showDebug ? t('pages:residents.monitoring.hideDebug') : t('pages:residents.monitoring.showDebug')}
-              </Button>
-            </div>
-          </div>
-
-          {/* 監控狀態 */}
-          <DeviceMonitoringStatus />
-
-          {/* 監控控制面板 */}
-          {showControls && <DeviceMonitoringControls />}
-
-          {/* 測試面板 */}
-          {showTest && <DeviceMonitoringTest />}
-
-          {/* 調試面板 */}
-          {showDebug && <DeviceMonitoringDebug />}
-
-          {/* 監控統計概覽 */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-blue-600">{getMonitoringStats().total}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:residents.monitoring.boundDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-green-600">{getMonitoringStats().online}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:residents.monitoring.onlineDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-yellow-600">{getMonitoringStats().offline}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:residents.monitoring.offlineDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-red-600">{getMonitoringStats().error}</p>
-                  <p className="text-sm text-muted-foreground">{t('pages:residents.monitoring.errorDevices')}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
 
         {/* 系統概覽統計 */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
