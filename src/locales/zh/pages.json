@@ -27,6 +27,10 @@
                 "title": "心跳監測",
                 "description": "即時監控長者心率變化與異常警示"
             },
+            "heartTemp": {
+                "title": "心率體溫監控",
+                "description": "單一頁面查看心率與體溫監測"
+            },
             "diaper": {
                 "title": "尿布監測",
                 "description": "即時監測尿布濕度狀態與更換記錄"
@@ -42,6 +46,14 @@
         "actions": {
             "startUsing": "立即開始使用",
             "systemGuide": "系統功能指南"
+        }
+    },
+    "heartTemp": {
+        "title": "心率體溫監控",
+        "subtitle": "合併心率與體溫資料，單一連線即可監看 300B 裝置",
+        "tabs": {
+            "heart": "心率",
+            "temp": "體溫"
         }
     },
     "residents": {

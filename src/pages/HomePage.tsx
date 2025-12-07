@@ -66,6 +66,15 @@ const getFeatures = (t: any) => [
     bgDark: "dark:bg-pink-900/20",
   },
   {
+    title: t('pages:home.features.heartTemp.title'),
+    icon: <Activity className="h-8 w-8 text-white" />,
+    desc: t('pages:home.features.heartTemp.description'),
+    href: "/heart-temp-monitoring",
+    color: "from-teal-500 to-emerald-700",
+    bgLight: "bg-teal-50",
+    bgDark: "dark:bg-teal-900/20",
+  },
+  {
     title: t('pages:home.features.diaper.title'),
     icon: <MonitorSmartphone className="h-8 w-8 text-white" />,
     desc: t('pages:home.features.diaper.description'),
