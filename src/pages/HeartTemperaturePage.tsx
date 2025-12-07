@@ -649,46 +649,46 @@ export default function HeartTemperaturePage() {
                 {heartDevices.length > 0 ? (
                   <div className="space-y-3">
                     <div className="font-medium">{t("pages:heartRate.cloudDeviceMonitoring.selectDevice")}</div>
-                    <Select value={selectedHeartDevice} onValueChange={setSelectedHeartDevice}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t("pages:heartRate.cloudDeviceMonitoring.selectCloudDevice")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {heartDevices
-                          .filter(device => {
-                            if (selectedGateway) {
-                              const gateway = gateways.find(gw => gw.id === selectedGateway)
-                              if (gateway) {
-                                const deviceRecords = heartDeviceRecords.filter(record => record.MAC === device.MAC)
-                                return deviceRecords.some(record => {
-                                  const recordGatewayPrefix = record.gateway?.split("_")[0] || ""
-                                  const selectedGatewayPrefix = gateway.name?.split("_")[0] || ""
-                                  return recordGatewayPrefix && selectedGatewayPrefix && recordGatewayPrefix === selectedGatewayPrefix
-                                })
-                              }
+                    <div className="border rounded-lg divide-y max-h-[520px] overflow-y-auto">
+                      {heartDevices
+                        .filter(device => {
+                          if (selectedGateway) {
+                            const gateway = gateways.find(gw => gw.id === selectedGateway)
+                            if (gateway) {
+                              const deviceRecords = heartDeviceRecords.filter(record => record.MAC === device.MAC)
+                              return deviceRecords.some(record => {
+                                const recordGatewayPrefix = record.gateway?.split("_")[0] || ""
+                                const selectedGatewayPrefix = gateway.name?.split("_")[0] || ""
+                                return recordGatewayPrefix && selectedGatewayPrefix && recordGatewayPrefix === selectedGatewayPrefix
+                              })
                             }
-                            return true
-                          })
-                          .map(device => {
-                            const statusInfo = getStatusInfo(device.residentStatus)
-                            return (
-                              <SelectItem key={device.MAC} value={device.MAC}>
-                                <div className="flex items-center justify-between w-full">
-                                  <div className="flex items-center gap-2">
-                                    {getDeviceTypeIcon(device.deviceType)}
-                                    <span>{device.residentName || device.deviceName}</span>
-                                    {device.residentRoom && <span className="text-xs text-muted-foreground">({device.residentRoom})</span>}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-1 rounded-full text-xs ${statusInfo.bgColor}`}>{statusInfo.badge}</span>
-                                    <span className="text-xs text-muted-foreground">{device.recordCount} {t("pages:heartRate.cloudDeviceMonitoring.records")}</span>
-                                  </div>
-                                </div>
-                              </SelectItem>
-                            )
-                          })}
-                      </SelectContent>
-                    </Select>
+                          }
+                          return true
+                        })
+                        .map(device => {
+                          const statusInfo = getStatusInfo(device.residentStatus)
+                          const isSelected = selectedHeartDevice === device.MAC
+                          return (
+                            <button
+                              key={device.MAC}
+                              onClick={() => setSelectedHeartDevice(device.MAC)}
+                              className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-pink-50 transition ${isSelected ? "bg-pink-50 border-l-4 border-pink-400" : ""}`}
+                              aria-pressed={isSelected}
+                            >
+                              <div className="flex items-center gap-2">
+                                {getDeviceTypeIcon(device.deviceType)}
+                                <span>{device.residentName || device.deviceName}</span>
+                                {device.residentRoom && <span className="text-xs text-muted-foreground">({device.residentRoom})</span>}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`px-2 py-1 rounded-full text-xs ${statusInfo.bgColor}`}>{statusInfo.badge}</span>
+                                <span className="text-xs text-muted-foreground">{device.recordCount} {t("pages:heartRate.cloudDeviceMonitoring.records")}</span>
+                              </div>
+                            </button>
+                          )
+                        })}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{t("common:actions.scrollForMore")}</div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
@@ -1065,49 +1065,49 @@ export default function HeartTemperaturePage() {
                 {tempDevices.length > 0 ? (
                   <div className="space-y-3">
                     <div className="font-medium">{t("pages:temperature.cloudDeviceMonitoring.selectDevice")}</div>
-                    <Select value={selectedTempDevice} onValueChange={setSelectedTempDevice}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t("pages:temperature.cloudDeviceMonitoring.selectCloudDevice")} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {tempDevices
-                          .filter(device => {
-                            if (selectedGateway) {
-                              const gateway = gateways.find(gw => gw.id === selectedGateway)
-                              if (gateway) {
-                                const deviceRecords = tempDeviceRecords.filter(record => record.MAC === device.MAC)
-                                const hasMatchingRecord = deviceRecords.some(record => {
-                                  const recordGateway = record.gateway || ""
-                                  const gatewayName = gateway.name || ""
-                                  const gatewayMac = gateway.macAddress || ""
-                                  const macSuffix = gatewayMac.replace(/:/g, "").slice(-4).toUpperCase()
-                                  return recordGateway.includes(macSuffix) || recordGateway.toUpperCase().includes(gatewayName.split("_")[0].toUpperCase())
-                                })
-                                return hasMatchingRecord
-                              }
+                    <div className="border rounded-lg divide-y max-h-[520px] overflow-y-auto">
+                      {tempDevices
+                        .filter(device => {
+                          if (selectedGateway) {
+                            const gateway = gateways.find(gw => gw.id === selectedGateway)
+                            if (gateway) {
+                              const deviceRecords = tempDeviceRecords.filter(record => record.MAC === device.MAC)
+                              const hasMatchingRecord = deviceRecords.some(record => {
+                                const recordGateway = record.gateway || ""
+                                const gatewayName = gateway.name || ""
+                                const gatewayMac = gateway.macAddress || ""
+                                const macSuffix = gatewayMac.replace(/:/g, "").slice(-4).toUpperCase()
+                                return recordGateway.includes(macSuffix) || recordGateway.toUpperCase().includes(gatewayName.split("_")[0].toUpperCase())
+                              })
+                              return hasMatchingRecord
                             }
-                            return true
-                          })
-                          .map(device => {
-                            const statusInfo = getStatusInfo(device.residentStatus)
-                            return (
-                              <SelectItem key={device.MAC} value={device.MAC}>
-                                <div className="flex items-center justify-between w-full">
-                                  <div className="flex items-center gap-2">
-                                    {getDeviceTypeIcon(device.deviceType)}
-                                    <span>{device.residentName || device.deviceName}</span>
-                                    {device.residentRoom && <span className="text-xs text-muted-foreground">({device.residentRoom})</span>}
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-1 rounded-full text-xs ${statusInfo.bgColor}`}>{statusInfo.badge}</span>
-                                    <span className="text-xs text-muted-foreground">{device.recordCount} {t("pages:temperature.cloudDeviceMonitoring.records")}</span>
-                                  </div>
-                                </div>
-                              </SelectItem>
-                            )
-                          })}
-                      </SelectContent>
-                    </Select>
+                          }
+                          return true
+                        })
+                        .map(device => {
+                          const statusInfo = getStatusInfo(device.residentStatus)
+                          const isSelected = selectedTempDevice === device.MAC
+                          return (
+                            <button
+                              key={device.MAC}
+                              onClick={() => setSelectedTempDevice(device.MAC)}
+                              className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-blue-50 transition ${isSelected ? "bg-blue-50 border-l-4 border-blue-400" : ""}`}
+                              aria-pressed={isSelected}
+                            >
+                              <div className="flex items-center gap-2">
+                                {getDeviceTypeIcon(device.deviceType)}
+                                <span>{device.residentName || device.deviceName}</span>
+                                {device.residentRoom && <span className="text-xs text-muted-foreground">({device.residentRoom})</span>}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className={`px-2 py-1 rounded-full text-xs ${statusInfo.bgColor}`}>{statusInfo.badge}</span>
+                                <span className="text-xs text-muted-foreground">{device.recordCount} {t("pages:temperature.cloudDeviceMonitoring.records")}</span>
+                              </div>
+                            </button>
+                          )
+                        })}
+                    </div>
+                    <div className="text-xs text-muted-foreground">{t("common:actions.scrollForMore")}</div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
