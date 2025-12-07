@@ -108,7 +108,7 @@ export default function ResidentCard({ resident, devices, realTimeData, onAction
     const displayId = resident.patientCode || resident.id
 
     return (
-        <Card className="relative p-4 hover:shadow-md transition-shadow h-full flex flex-col">
+        <Card className="relative p-4 hover:shadow-md transition-shadow h-full flex flex-col min-w-[280px]">
             {/* 院友基本信息 - 頭像、姓名、狀態在同一行 */}
             <div className="flex items-center gap-4 mb-4">
                 {/* 院友頭像 */}
@@ -149,7 +149,18 @@ export default function ResidentCard({ resident, devices, realTimeData, onAction
 
                                         {/* 設備信息 */}
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-sm">{device.name}</p>
+                                            <p
+                                                className="font-medium text-sm leading-snug text-gray-800"
+                                                style={{
+                                                    display: '-webkit-box',
+                                                    WebkitLineClamp: 2,
+                                                    WebkitBoxOrient: 'vertical',
+                                                    overflow: 'hidden'
+                                                }}
+                                                title={device.name}
+                                            >
+                                                {device.name}
+                                            </p>
                                             {realTimeStatus.hasRealTimeData && (
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs text-green-600 font-medium">
@@ -160,7 +171,7 @@ export default function ResidentCard({ resident, devices, realTimeData, onAction
                                         </div>
 
                                         {/* 電量顯示 */}
-                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                        <div className="flex items-center gap-1 flex-shrink-0 min-w-[60px] justify-end">
                                             <BatteryIcon
                                                 level={batteryLevel}
                                                 size="sm"
