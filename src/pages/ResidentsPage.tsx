@@ -55,7 +55,7 @@ export default function ResidentsPage() {
 
   // 整合設備監控數據
   const { realTimeDevices } = useDeviceMonitoring()
-  const { selectedGateway } = useUWBLocation()
+  const { homes, floors } = useUWBLocation()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'good' | 'attention' | 'critical'>('all')
@@ -72,6 +72,7 @@ export default function ResidentsPage() {
   const [showAddResident, setShowAddResident] = useState(false)
   const [isEditingResident, setIsEditingResident] = useState(false)
   const [newResident, setNewResident] = useState({
+    patientCode: '',
     name: '',
     age: 0,
     gender: '男',
@@ -83,7 +84,9 @@ export default function ResidentsPage() {
       phone: ''
     },
     careNotes: '',
-    avatar: ''
+    avatar: '',
+    expectedHome: '',
+    expectedFloor: ''
   })
 
   // 🚀 持久化系統狀態
@@ -272,6 +275,7 @@ export default function ResidentsPage() {
         const loadedStatusFilter = loadFromStorage('statusFilter', 'all')
         const loadedShowDeviceManagement = loadFromStorage('showDeviceManagement', false)
         const loadedNewResident = loadFromStorage('newResident', {
+          patientCode: '',
           name: '',
           age: 0,
           gender: '男',
@@ -283,7 +287,9 @@ export default function ResidentsPage() {
             phone: ''
           },
           careNotes: '',
-          avatar: ''
+          avatar: '',
+          expectedHome: '',
+          expectedFloor: ''
         })
 
         setSearchTerm(loadedSearchTerm)
@@ -350,7 +356,8 @@ export default function ResidentsPage() {
   const filteredResidents = residents.filter(resident => {
     const matchesSearch = resident.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       resident.room.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resident.id.toLowerCase().includes(searchTerm.toLowerCase())
+      resident.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (resident.patientCode || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || resident.status === statusFilter
     return matchesSearch && matchesStatus
   })
@@ -393,6 +400,7 @@ export default function ResidentsPage() {
 
       setShowAddResident(false)
       setNewResident({
+        patientCode: '',
         name: '',
         age: 0,
         gender: '男',
@@ -404,7 +412,9 @@ export default function ResidentsPage() {
           phone: ''
         },
         careNotes: '',
-        avatar: ''
+        avatar: '',
+        expectedHome: '',
+        expectedFloor: ''
       })
     }
   }
@@ -457,6 +467,7 @@ export default function ResidentsPage() {
       case 'edit':
         setIsEditingResident(true)
         setNewResident({
+          patientCode: (resident as any).patientCode || '',
           name: resident.name,
           age: resident.age,
           gender: resident.gender,
@@ -464,7 +475,9 @@ export default function ResidentsPage() {
           status: resident.status,
           emergencyContact: { ...resident.emergencyContact },
           careNotes: resident.careNotes,
-          avatar: resident.avatar || ''
+          avatar: resident.avatar || '',
+          expectedHome: (resident as any).expectedHome || '',
+          expectedFloor: (resident as any).expectedFloor || ''
         })
         setSelectedResident(resident)
         break
@@ -873,6 +886,14 @@ export default function ResidentsPage() {
                   />
                 </div>
                 <div>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:residents.id') || '院友代碼/病歷號'}</label>
+                  <Input
+                    placeholder={t('pages:residents.modal.placeholders.id', '院友代碼/病歷號（選填）')}
+                    value={newResident.patientCode || ''}
+                    onChange={(e) => setNewResident({ ...newResident, patientCode: e.target.value })}
+                  />
+                </div>
+                <div>
                   <label className="text-sm font-medium mb-2 block">{t('pages:residents.modal.age')} *</label>
                   <Input
                     type="number"
@@ -921,6 +942,51 @@ export default function ResidentsPage() {
                     value={newResident.avatar}
                     onChange={(e) => setNewResident({ ...newResident, avatar: e.target.value })}
                   />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHome')}（{t('common:actions.optional') || '選填'}）</label>
+                  <Select
+                    value={newResident.expectedHome || 'none'}
+                    onValueChange={(value) => setNewResident({
+                      ...newResident,
+                      expectedHome: value === 'none' ? '' : value,
+                      expectedFloor: ''
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHomeFirst')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t('pages:deviceManagement.filters.all')}</SelectItem>
+                      {homes.map(home => (
+                        <SelectItem key={home.id} value={home.id}>
+                          {home.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor')}（{t('common:actions.optional') || '選填'}）</label>
+                  <Select
+                    value={newResident.expectedFloor || 'none'}
+                    onValueChange={(value) => setNewResident({ ...newResident, expectedFloor: value === 'none' ? '' : value })}
+                    disabled={!newResident.expectedHome}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={newResident.expectedHome ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloorFirst')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t('pages:deviceManagement.filters.all')}</SelectItem>
+                      {floors
+                        .filter(floor => floor.homeId === newResident.expectedHome)
+                        .map(floor => (
+                          <SelectItem key={floor.id} value={floor.id}>
+                            {floor.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -997,9 +1063,26 @@ export default function ResidentsPage() {
                 {getStatusInfo(selectedResident.status).icon}
               </div>
               <CardTitle className="text-xl">{selectedResident.name}</CardTitle>
-              <p className="text-muted-foreground">
-                {selectedResident.age} {t('pages:residents.ageUnit')}, {selectedResident.gender}, {t('pages:residents.room')} {selectedResident.room}
-              </p>
+                <p className="text-muted-foreground">
+                  {selectedResident.age} {t('pages:residents.ageUnit')}, {selectedResident.gender}, {t('pages:residents.room')} {selectedResident.room}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {t('pages:residents.id')}: {(selectedResident as any).patientCode || selectedResident.id}
+                </p>
+                {(() => {
+                  const expectedHomeId = (selectedResident as any).expectedHome || ''
+                  const expectedFloorId = (selectedResident as any).expectedFloor || ''
+                  const homeName = homes.find(h => h.id === expectedHomeId)?.name
+                  const floorName = floors.find(f => f.id === expectedFloorId)?.name
+                  const hasLocation = homeName || floorName
+                  if (!hasLocation) return null
+                  return (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHome')}: {homeName || t('pages:deviceManagement.filters.all')}
+                      {floorName && ` / ${t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor')}: ${floorName}`}
+                    </p>
+                  )
+                })()}
             </CardHeader>
             <CardContent className="space-y-4">
               {/* 編輯院友資訊 */}
@@ -1012,6 +1095,13 @@ export default function ResidentsPage() {
                       <Input
                         value={newResident.name}
                         onChange={(e) => setNewResident({ ...newResident, name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:residents.id') || '院友代碼/病歷號'}</label>
+                      <Input
+                        value={newResident.patientCode || ''}
+                        onChange={(e) => setNewResident({ ...newResident, patientCode: e.target.value })}
                       />
                     </div>
                     <div>
@@ -1060,6 +1150,51 @@ export default function ResidentsPage() {
                         value={newResident.avatar}
                         onChange={(e) => setNewResident({ ...newResident, avatar: e.target.value })}
                       />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHome')}（{t('common:actions.optional') || '選填'}）</label>
+                      <Select
+                        value={newResident.expectedHome || 'none'}
+                        onValueChange={(value) => setNewResident({
+                          ...newResident,
+                          expectedHome: value === 'none' ? '' : value,
+                          expectedFloor: ''
+                        })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHomeFirst')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">{t('pages:deviceManagement.filters.all')}</SelectItem>
+                          {homes.map(home => (
+                            <SelectItem key={home.id} value={home.id}>
+                              {home.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">{t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor')}（{t('common:actions.optional') || '選填'}）</label>
+                      <Select
+                        value={newResident.expectedFloor || 'none'}
+                        onValueChange={(value) => setNewResident({ ...newResident, expectedFloor: value === 'none' ? '' : value })}
+                        disabled={!newResident.expectedHome}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={newResident.expectedHome ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor') : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloorFirst')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">{t('pages:deviceManagement.filters.all')}</SelectItem>
+                          {floors
+                            .filter(floor => floor.homeId === newResident.expectedHome)
+                            .map(floor => (
+                              <SelectItem key={floor.id} value={floor.id}>
+                                {floor.name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
@@ -1240,6 +1375,7 @@ export default function ResidentsPage() {
                     onClick={() => {
                       setIsEditingResident(true)
                       setNewResident({
+                        patientCode: (selectedResident as any).patientCode || '',
                         name: selectedResident.name,
                         age: selectedResident.age,
                         gender: selectedResident.gender,
@@ -1247,7 +1383,9 @@ export default function ResidentsPage() {
                         status: selectedResident.status,
                         emergencyContact: { ...selectedResident.emergencyContact },
                         careNotes: selectedResident.careNotes,
-                        avatar: selectedResident.avatar || ''
+                        avatar: selectedResident.avatar || '',
+                        expectedHome: (selectedResident as any).expectedHome || '',
+                        expectedFloor: (selectedResident as any).expectedFloor || ''
                       })
                     }}
                     className="flex-1"

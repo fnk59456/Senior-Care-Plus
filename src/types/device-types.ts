@@ -91,6 +91,7 @@ export const DEVICE_TYPE_CONFIG: Record<DeviceType, DeviceTypeConfig> = {
 // 院友接口
 export interface Resident {
     id: string
+    patientCode?: string
     name: string
     age: number
     gender: string
@@ -103,6 +104,8 @@ export interface Resident {
     }
     careNotes: string
     avatar?: string
+    expectedHome?: string
+    expectedFloor?: string
 }
 
 // 設備接口

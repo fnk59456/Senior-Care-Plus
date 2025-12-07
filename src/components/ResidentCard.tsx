@@ -105,6 +105,7 @@ export default function ResidentCard({ resident, devices, realTimeData, onAction
     }
 
     const statusInfo = getStatusInfo(resident.status)
+    const displayId = resident.patientCode || resident.id
 
     return (
         <Card className="relative p-4 hover:shadow-md transition-shadow h-full flex flex-col">
@@ -122,7 +123,7 @@ export default function ResidentCard({ resident, devices, realTimeData, onAction
                         {statusInfo.badge}
                     </div>
                     <div className="text-sm text-gray-600 space-y-1">
-                        <p>{t('pages:residents.id')}: {resident.id}</p>
+                        <p>{t('pages:residents.id')}: {displayId}</p>
                         <p>{t('pages:residents.room')}: {resident.room} • {resident.age} {t('pages:residents.ageUnit')}</p>
                     </div>
                 </div>
