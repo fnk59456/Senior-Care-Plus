@@ -1764,6 +1764,27 @@ export default function UWBLocationPage() {
                                 return [...prev, newAnchor]
                             }
                         })
+
+                        // ✅ 同步更新已加入系統的錨點的 cloudData
+                        applyAnchorUpdate(prev => {
+                            const updated = prev.map(anchor => {
+                                // 通過 cloudData.id 或 macAddress 匹配
+                                const isMatch =
+                                    anchor.cloudData?.id === anchorData.id ||
+                                    anchor.macAddress === `ANCHOR:${anchorData.id}`
+
+                                if (isMatch) {
+                                    console.log(`🔄 同步更新錨點 ${anchor.name} 的 cloudData:`, anchorData)
+                                    return {
+                                        ...anchor,
+                                        cloudData: anchorData,
+                                        lastSeen: new Date()
+                                    }
+                                }
+                                return anchor
+                            })
+                            return updated
+                        })
                     }
                 }
             } catch (error) {
@@ -3400,10 +3421,9 @@ export default function UWBLocationPage() {
                 console.log('✅ Anchor 配置已成功發送到雲端')
                 alert(t('pages:uwbLocation.anchorCalibration.coordinatesSentToCloud', { name: anchor.name }))
 
-                // 發送成功後，更新全域 serial_no 為下一個值
-                const nextSerial = anchorConfigForm.serial_no >= 9999 ? 1306 : anchorConfigForm.serial_no + 1
-                setGlobalSerialNo(nextSerial)
-                console.log(`📡 Serial No 已更新: ${anchorConfigForm.serial_no} → ${nextSerial}`)
+                // ✅ 發送成功後，記錄當前 serial_no 為上一次使用的值
+                setLastSerialNo(anchorConfigForm.serial_no)
+                console.log(`📡 Serial No 已記錄: ${anchorConfigForm.serial_no}`)
 
                 // 記錄發送的完整訊息
                 console.log('📤 發送的完整訊息:')
@@ -3425,15 +3445,25 @@ export default function UWBLocationPage() {
         }
     }
 
+    // 生成不重複的隨機 serial_no (0-9999)
+    const generateSerialNo = (): number => {
+        let newSerial: number
+        do {
+            newSerial = Math.floor(Math.random() * 10000) // 0-9999
+        } while (newSerial === lastSerialNo) // 確保不與上一次相同
+        return newSerial
+    }
+
     // 開啟配置發送對話框
     const openConfigDialog = (anchor: AnchorDevice, newPosition: { x: number, y: number, z: number }) => {
-        const nextSerial = getNextSerialNo() // 獲取下一個 serial_no
+        // ✅ 優先使用該 Anchor 最近收到的 cloudData 作為預設值
+        const nextSerial = generateSerialNo() // 生成不重複的隨機 serial_no
         setAnchorConfigForm({
-            fw_update: anchor.cloudData?.fw_update || 0,
-            led: anchor.cloudData?.led || 1,
-            ble: anchor.cloudData?.ble || 1,
-            initiator: anchor.cloudData?.initiator || 0,
-            serial_no: nextSerial // 使用獲取的 serial_no
+            fw_update: anchor.cloudData?.fw_update ?? 0,
+            led: anchor.cloudData?.led ?? 1,
+            ble: anchor.cloudData?.ble ?? 1,
+            initiator: anchor.cloudData?.initiator ?? 0,
+            serial_no: nextSerial
         })
 
         // 先關閉校正彈窗，再開啟配置發送對話框
@@ -3516,12 +3546,13 @@ export default function UWBLocationPage() {
     const [sendingConfig, setSendingConfig] = useState(false)
     const [showConfigDialog, setShowConfigDialog] = useState(false)
     const [configAnchor, setConfigAnchor] = useState<AnchorDevice | null>(null) // 正在配置的 Anchor
+    const [lastSerialNo, setLastSerialNo] = useState<number>(-1) // 記錄上一次使用的 serial_no，避免重複
     const [anchorConfigForm, setAnchorConfigForm] = useState({
         fw_update: 0,
         led: 1,
         ble: 1,
         initiator: 0,
-        serial_no: 1306 // 用戶可修改的 serial_no
+        serial_no: 1306 // 自動產生的 serial_no（不可修改）
     })
 
     // 地圖點擊處理
@@ -6901,19 +6932,13 @@ export default function UWBLocationPage() {
                                             <label className="text-sm font-medium">{t('pages:uwbLocation.anchorCalibration.serialNo')}</label>
                                             <Input
                                                 type="number"
-                                                min="1306"
-                                                max="9999"
                                                 value={anchorConfigForm.serial_no}
-                                                onChange={(e) => {
-                                                    const value = parseInt(e.target.value) || 1306
-                                                    const clampedValue = Math.min(Math.max(value, 1306), 9999)
-                                                    setAnchorConfigForm(prev => ({ ...prev, serial_no: clampedValue }))
-                                                }}
-                                                className="mt-1"
-                                                placeholder="1306-9999"
+                                                disabled
+                                                className="mt-1 bg-gray-50 cursor-not-allowed"
+                                                placeholder="0-9999"
                                             />
                                             <p className="text-xs text-muted-foreground mt-1">
-                                                {t('pages:uwbLocation.anchorCalibration.serialNoRange')}
+                                                範圍: 0-9999，每次自動隨機生成
                                             </p>
                                         </div>
                                     </div>
