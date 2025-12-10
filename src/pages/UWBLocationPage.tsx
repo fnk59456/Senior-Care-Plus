@@ -1765,26 +1765,82 @@ export default function UWBLocationPage() {
                             }
                         })
 
-                        // ✅ 同步更新已加入系統的錨點的 cloudData
-                        applyAnchorUpdate(prev => {
-                            const updated = prev.map(anchor => {
-                                // 通過 cloudData.id 或 macAddress 匹配
+                        // ✅ 同步更新已加入系統的錨點的 cloudData，並寫回後端
+                        console.log('🔍 嘗試匹配並更新錨點 cloudData，收到 anchorData:', anchorData)
+
+                        let updatedAnchor: AnchorDevice | null = null
+                        let shouldWriteBackend = false
+
+                        // 先同步處理當前 anchors，確保 updatedAnchor/shouldWriteBackend 能在後續立即判斷
+                        const processUpdate = (list: AnchorDevice[]) => {
+                            const updated = list.map(anchor => {
+                                const anchorIdFromCloud = anchor.cloudData?.id
+                                const anchorIdFromFlat = (anchor as any).cloud_anchor_id
+                                const anchorIdFromMac = anchor.macAddress?.startsWith('ANCHOR:')
+                                    ? parseInt(anchor.macAddress.replace(/[^0-9]/g, ''), 10)
+                                    : NaN
+
                                 const isMatch =
-                                    anchor.cloudData?.id === anchorData.id ||
-                                    anchor.macAddress === `ANCHOR:${anchorData.id}`
+                                    anchorIdFromCloud === anchorData.id ||
+                                    anchorIdFromFlat === anchorData.id ||
+                                    anchorIdFromMac === anchorData.id
 
                                 if (isMatch) {
-                                    console.log(`🔄 同步更新錨點 ${anchor.name} 的 cloudData:`, anchorData)
-                                    return {
+                                    console.log(`🔄 同步更新錨點 ${anchor.name} 的 cloudData，匹配方式:`, {
+                                        anchorIdFromCloud,
+                                        anchorIdFromFlat,
+                                        anchorIdFromMac,
+                                        targetId: anchorData.id
+                                    })
+                                    const updatedAnchorObj: AnchorDevice = {
                                         ...anchor,
                                         cloudData: anchorData,
                                         lastSeen: new Date()
                                     }
+                                    updatedAnchor = updatedAnchorObj
+                                    shouldWriteBackend = backendAvailable && !updatedAnchorObj.id.startsWith('anchor_')
+                                    return updatedAnchorObj
                                 }
                                 return anchor
                             })
+
+                            if (!updatedAnchor) {
+                                console.log('⚠️ 未找到可匹配的錨點，無法同步 cloudData，現有錨點 ID 檢視：', list.map(a => ({
+                                    id: a.id,
+                                    mac: a.macAddress,
+                                    cloudDataId: a.cloudData?.id,
+                                    flatCloudId: (a as any).cloud_anchor_id
+                                })))
+                            }
+
                             return updated
-                        })
+                        }
+
+                        // 用當前 anchors 計算更新結果，立即取得 updatedAnchor/shouldWriteBackend
+                        const nextAnchors = processUpdate(anchors)
+
+                        // 執行狀態更新（會 normalize）
+                        applyAnchorUpdate(nextAnchors)
+
+                        // ✅ 如果有更新且符合條件，寫回後端（會自動走 serialize 流程）
+                        if (shouldWriteBackend && updatedAnchor) {
+                            console.log('☁️ 準備寫回後端，序列化前 anchor 資料:', updatedAnchor)
+                            api.anchor.update(updatedAnchor.id, updatedAnchor)
+                                .then((res) => {
+                                    console.log(`☁️ 已將錨點 ${updatedAnchor!.id} (${updatedAnchor!.name}) 同步到後端，後端回應:`, res)
+                                })
+                                .catch(err => {
+                                    console.warn(`⚠️ 將錨點 ${updatedAnchor!.id} 同步後端失敗:`, err)
+                                })
+                        } else {
+                            console.log('ℹ️ 未寫回後端，原因：', {
+                                backendAvailable,
+                                hasUpdatedAnchor: Boolean(updatedAnchor),
+                                anchorId: updatedAnchor?.id,
+                                isTempId: updatedAnchor?.id?.startsWith('anchor_'),
+                                shouldWriteBackend
+                            })
+                        }
                     }
                 }
             } catch (error) {
