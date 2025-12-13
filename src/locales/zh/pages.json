@@ -455,6 +455,7 @@
         "monitoringIcons": {
             "temperature": "體溫",
             "heartRate": "心率",
+            "physiological": "生理",
             "diaper": "尿布",
             "activity": "運動",
             "location": "定位",

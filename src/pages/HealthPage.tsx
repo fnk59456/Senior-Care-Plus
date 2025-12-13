@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import {
-  Thermometer, Heart, Baby, Phone, Clock,
+  Baby, Phone, Clock,
   Bell, Menu, Pause, User, CircleDot, Activity, MapPin,
   Watch, Wifi, WifiOff, Database, Save, Download, Upload
 } from "lucide-react"
@@ -313,8 +313,7 @@ export default function HealthPage() {
 
   // 監控功能圖標配置 - 動態生成以支援國際化
   const monitoringIcons = [
-    { icon: Thermometer, color: "text-red-500", route: "/temperature", label: t('pages:health.monitoringIcons.temperature') },
-    { icon: Heart, color: "text-red-600", route: "/heart-rate", label: t('pages:health.monitoringIcons.heartRate') },
+    { icon: Activity, color: "text-red-500", route: "/heart-temp-monitoring", label: t('pages:health.monitoringIcons.physiological') },
     { icon: Baby, color: "text-purple-500", route: "/diaper-monitoring", label: t('pages:health.monitoringIcons.diaper') },
     { icon: Activity, color: "text-green-500", route: "/pedometer", label: t('pages:health.monitoringIcons.activity') },
     { icon: MapPin, color: "text-blue-500", route: "/location", label: t('pages:health.monitoringIcons.location') },

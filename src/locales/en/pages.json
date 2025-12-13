@@ -443,6 +443,7 @@
         "monitoringIcons": {
             "temperature": "Temperature",
             "heartRate": "Heart Rate",
+            "physiological": "Physiological",
             "diaper": "Diaper",
             "activity": "Activity",
             "location": "Location",

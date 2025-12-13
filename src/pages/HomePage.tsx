@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import {
   Activity, CalendarClock, MapPin, Users, UserCog,
   MonitorSmartphone, ArrowRight, LineChart, Bell,
-  ClipboardCheck, HeartPulse, Sparkles, Heart, Phone
+  ClipboardCheck, HeartPulse, Sparkles, Phone
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
@@ -46,24 +46,6 @@ const getFeatures = (t: any) => [
     color: "from-indigo-500 to-indigo-700",
     bgLight: "bg-indigo-50",
     bgDark: "dark:bg-indigo-900/20",
-  },
-  {
-    title: t('pages:home.features.temperature.title'),
-    icon: <HeartPulse className="h-8 w-8 text-white" />,
-    desc: t('pages:home.features.temperature.description'),
-    href: "/temperature",
-    color: "from-red-500 to-red-700",
-    bgLight: "bg-red-50",
-    bgDark: "dark:bg-red-900/20",
-  },
-  {
-    title: t('pages:home.features.heartRate.title'),
-    icon: <Heart className="h-8 w-8 text-white" />,
-    desc: t('pages:home.features.heartRate.description'),
-    href: "/heart-rate",
-    color: "from-pink-500 to-pink-700",
-    bgLight: "bg-pink-50",
-    bgDark: "dark:bg-pink-900/20",
   },
   {
     title: t('pages:home.features.heartTemp.title'),
