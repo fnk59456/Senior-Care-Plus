@@ -297,6 +297,7 @@
             "noMatchingDevices": "フィルター条件に一致するデバイスがありません"
         },
         "batchActions": {
+            "batchActions": "一括操作",
             "selectedCount": "選択済み",
             "devices": "個のデバイス",
             "selectAll": "すべて選択",

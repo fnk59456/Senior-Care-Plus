@@ -7,6 +7,13 @@ import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   Search,
   Watch,
   AlertCircle,
@@ -26,7 +33,9 @@ import {
   Unlink,
   Trash2,
   LayoutGrid,
-  List
+  List,
+  ChevronDown,
+  MoreVertical
 } from "lucide-react"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { useDeviceDiscovery } from "@/contexts/DeviceDiscoveryContext"
@@ -1028,30 +1037,37 @@ export default function DeviceManagementPage() {
                   </Button>
                 </div>
 
-                {/* 批量操作按钮 */}
+                {/* 批量操作下拉菜单 */}
                 {selectedDeviceIds.size > 0 && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleBatchUnbind}
-                      className="gap-2 text-orange-600 hover:text-orange-700"
-                    >
-                      <Unlink className="h-4 w-4" />
-                      <span className="hidden sm:inline">{t('pages:deviceManagement.batchActions.batchUnbind')}</span>
-                      <span className="sm:hidden">{t('pages:deviceManagement.batchActions.batchUnbindShort')}</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleBatchRemove}
-                      className="gap-2 text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="hidden sm:inline">{t('pages:deviceManagement.batchActions.batchRemove')}</span>
-                      <span className="sm:hidden">{t('pages:deviceManagement.batchActions.batchRemoveShort')}</span>
-                    </Button>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <span>{t('pages:deviceManagement.batchActions.batchActions')}</span>
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem
+                        onClick={handleBatchUnbind}
+                        className="text-orange-600 focus:text-orange-700 focus:bg-orange-50 cursor-pointer"
+                      >
+                        <Unlink className="h-4 w-4 mr-2" />
+                        {t('pages:deviceManagement.batchActions.batchUnbind')}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleBatchRemove}
+                        className="text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {t('pages:deviceManagement.batchActions.batchRemove')}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
             </CardContent>

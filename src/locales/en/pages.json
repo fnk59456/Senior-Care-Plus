@@ -297,6 +297,7 @@
             "noMatchingDevices": "No devices matching filter criteria"
         },
         "batchActions": {
+            "batchActions": "Batch Actions",
             "selectedCount": "Selected",
             "devices": "devices",
             "selectAll": "Select All",
