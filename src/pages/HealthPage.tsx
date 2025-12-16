@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Baby, Phone, Clock,
   Bell, Menu, Pause, User, CircleDot, Activity, MapPin,
@@ -11,6 +12,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
+import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { DeviceType, DeviceStatus } from "@/types/device-types"
 
 // 患者數據現在從 DeviceManagementContext 獲取
@@ -20,7 +22,10 @@ import { DeviceType, DeviceStatus } from "@/types/device-types"
 export default function HealthPage() {
   const { t } = useTranslation()
   const { residents, getDevicesForResident, getDeviceStatusSummary } = useDeviceManagement()
+  const { homes, floors } = useUWBLocation()
   const [selectedFilter, setSelectedFilter] = useState("全部")
+  const [selectedHome, setSelectedHome] = useState<string>("")
+  const [selectedFloor, setSelectedFloor] = useState<string>("")
   const navigate = useNavigate()
 
   // 🚀 持久化系統狀態
@@ -71,6 +76,8 @@ export default function HealthPage() {
         // 批量保存所有數據
         const dataToSave = {
           selectedFilter,
+          selectedHome,
+          selectedFloor,
           version: Date.now(),
           lastSave: new Date().toISOString()
         }
@@ -94,7 +101,7 @@ export default function HealthPage() {
         setPendingSave(false)
       }
     }, 500) // 500ms延遲，避免頻繁保存
-  }, [selectedFilter])
+  }, [selectedFilter, selectedHome, selectedFloor])
 
   // 手動強制保存
   const forceSave = () => {
@@ -107,7 +114,7 @@ export default function HealthPage() {
 
   // 清除所有存儲數據的函數
   const clearAllStorage = () => {
-    const keys = ['selectedFilter', 'version', 'lastSave']
+    const keys = ['selectedFilter', 'selectedHome', 'selectedFloor', 'version', 'lastSave']
     keys.forEach(key => {
       localStorage.removeItem(`health_mgmt_${key}`)
     })
@@ -122,7 +129,7 @@ export default function HealthPage() {
   // 調試：檢查當前存儲數據
   const debugStorage = () => {
     console.log('🔍 當前健康監控 localStorage 數據:')
-    const keys = ['selectedFilter', 'version', 'lastSave']
+    const keys = ['selectedFilter', 'selectedHome', 'selectedFloor', 'version', 'lastSave']
     keys.forEach(key => {
       const data = localStorage.getItem(`health_mgmt_${key}`)
       if (data) {
@@ -143,6 +150,8 @@ export default function HealthPage() {
     const data = {
       residents,
       selectedFilter,
+      selectedHome,
+      selectedFloor,
       exportDate: new Date().toISOString()
     }
 
@@ -172,6 +181,8 @@ export default function HealthPage() {
         // 驗證數據結構
         if (data.selectedFilter) {
           setSelectedFilter(data.selectedFilter)
+          if (data.selectedHome) setSelectedHome(data.selectedHome)
+          if (data.selectedFloor) setSelectedFloor(data.selectedFloor)
           console.log('📥 健康監控設定已導入')
           alert(t('pages:health.alerts.importSuccess'))
         } else {
@@ -199,8 +210,12 @@ export default function HealthPage() {
 
         // 加載用戶設定
         const loadedSelectedFilter = loadFromStorage('selectedFilter', '全部')
+        const loadedSelectedHome = loadFromStorage('selectedHome', '')
+        const loadedSelectedFloor = loadFromStorage('selectedFloor', '')
 
         setSelectedFilter(loadedSelectedFilter)
+        setSelectedHome(loadedSelectedHome)
+        setSelectedFloor(loadedSelectedFloor)
 
         console.log('✅ 健康監控數據加載完成')
         setIsLoading(false)
@@ -219,7 +234,14 @@ export default function HealthPage() {
     if (!isLoading) {
       batchSave()
     }
-  }, [selectedFilter, batchSave, isLoading])
+  }, [selectedFilter, selectedHome, selectedFloor, batchSave, isLoading])
+
+  // 當場域改變時，重置樓層選擇
+  useEffect(() => {
+    if (!selectedHome) {
+      setSelectedFloor('')
+    }
+  }, [selectedHome])
 
   // 清理定時器
   useEffect(() => {
@@ -286,9 +308,31 @@ export default function HealthPage() {
 
   // 根據選擇的篩選器過濾患者
   const filteredPatients = residents.filter(resident => {
-    if (selectedFilter === "全部") return true
-    const patientStatus = calculatePatientStatus(resident.id)
-    return patientStatus === selectedFilter
+    // 狀態篩選
+    const statusMatch = selectedFilter === "全部" || calculatePatientStatus(resident.id) === selectedFilter
+
+    // 場域篩選
+    const residentHomeId = (resident as any).expectedHome || ''
+    const homeMatch = !selectedHome || selectedHome === '' || residentHomeId === selectedHome
+
+    // 樓層篩選（只有在選擇了場域時才進行樓層篩選）
+    // 如果沒有選擇場域，則不進行樓層篩選
+    // 如果選擇了場域但沒有選擇樓層，則顯示該場域的所有院友
+    // 如果選擇了場域和樓層，則只顯示該樓層的院友
+    const residentFloorId = (resident as any).expectedFloor || ''
+    let floorMatch = true
+    if (selectedHome && selectedHome !== '') {
+      // 已選擇場域，需要檢查樓層
+      if (selectedFloor && selectedFloor !== '') {
+        // 已選擇樓層，只顯示該樓層的院友
+        floorMatch = residentFloorId === selectedFloor
+      } else {
+        // 未選擇樓層，顯示該場域的所有院友（不限制樓層）
+        floorMatch = true
+      }
+    }
+
+    return statusMatch && homeMatch && floorMatch
   })
 
   // 處理圖標點擊導航
@@ -447,21 +491,80 @@ export default function HealthPage() {
       <div className="mb-4">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('pages:health.monitoringTitle')}</h2>
 
-        {/* 狀態篩選器 */}
-        <div className="flex gap-2 mb-6">
-          {filters.map((filter) => (
-            <Button
-              key={filter}
-              variant={selectedFilter === filter ? "default" : "outline"}
-              onClick={() => setSelectedFilter(filter)}
-              className={`rounded-full px-6 py-2 text-sm font-medium ${selectedFilter === filter
-                ? "bg-blue-500 text-white hover:bg-blue-600"
-                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                }`}
-            >
-              {t(`pages:health.filters.${filter}`)}
-            </Button>
-          ))}
+        {/* 篩選器區域 - 狀態篩選按鈕在左側，場域和樓層篩選器在右側 */}
+        <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+          {/* 狀態篩選器 - 左側 */}
+          <div className="flex gap-2">
+            {filters.map((filter) => (
+              <Button
+                key={filter}
+                variant={selectedFilter === filter ? "default" : "outline"}
+                onClick={() => setSelectedFilter(filter)}
+                className={`rounded-full px-6 py-2 text-sm font-medium ${selectedFilter === filter
+                  ? "bg-blue-500 text-white hover:bg-blue-600"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  }`}
+              >
+                {t(`pages:health.filters.${filter}`)}
+              </Button>
+            ))}
+          </div>
+
+          {/* 場域和樓層篩選器 - 右側 */}
+          <div className="flex items-end gap-3">
+            <div className="w-40">
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                {t('pages:diaperMonitoring.cloudDeviceMonitoring.selectNursingHome')}
+              </label>
+              <Select
+                value={selectedHome || 'all'}
+                onValueChange={(value) => setSelectedHome(value === 'all' ? '' : value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t('pages:deviceManagement.filters.all')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('pages:deviceManagement.filters.all')}</SelectItem>
+                  {homes.map(home => (
+                    <SelectItem key={home.id} value={home.id}>
+                      {home.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="w-40">
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                {t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor')}
+              </label>
+              <Select
+                value={selectedFloor || 'all'}
+                onValueChange={(value) => setSelectedFloor(value === 'all' ? '' : value)}
+                disabled={!selectedHome}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      selectedHome
+                        ? t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloor')
+                        : t('pages:diaperMonitoring.cloudDeviceMonitoring.selectFloorFirst')
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('pages:deviceManagement.filters.all')}</SelectItem>
+                  {floors
+                    .filter(floor => floor.homeId === selectedHome)
+                    .map(floor => (
+                      <SelectItem key={floor.id} value={floor.id}>
+                        {floor.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
 
