@@ -24,6 +24,7 @@ import {
     Anchor
 } from 'lucide-react'
 import { useDeviceManagement } from '@/contexts/DeviceManagementContext'
+import { useUWBLocation } from '@/contexts/UWBLocationContext'
 
 interface DeviceInfoModalProps {
     isOpen: boolean
@@ -34,6 +35,7 @@ interface DeviceInfoModalProps {
 export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoModalProps) {
     const { t } = useTranslation()
     const { updateDevice } = useDeviceManagement()
+    const { gateways } = useUWBLocation()
     const [isEditingName, setIsEditingName] = useState(false)
     const [editedName, setEditedName] = useState(device?.name || '')
 
@@ -92,6 +94,28 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
         if (level <= 25) return 'text-red-500'
         if (level <= 50) return 'text-yellow-500'
         return 'text-green-500'
+    }
+
+    // 獲取閘道器資訊（通過 cloud_gateway_id 匹配）
+    const getGatewayInfo = (gatewayId: string | undefined): { name: string | null; id: string } => {
+        if (!gatewayId) {
+            return { name: null, id: '未設定' }
+        }
+
+        // 嘗試匹配 cloud_gateway_id
+        const gateway = gateways.find(gw => {
+            // 檢查多個可能的字段位置
+            const cloudGatewayId = (gw as any).cloud_gateway_id || gw.cloudData?.gateway_id
+            return String(cloudGatewayId) === String(gatewayId)
+        })
+
+        if (gateway && gateway.name) {
+            // 找到閘道器名稱
+            return { name: gateway.name, id: gatewayId }
+        }
+
+        // 找不到名稱，只返回ID
+        return { name: null, id: gatewayId }
     }
 
     const DeviceIcon = getDeviceIcon(device.deviceType)
@@ -203,17 +227,23 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                         <CardContent className="space-y-3">
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.gatewayId')}</label>
-                                    <p className="text-sm">{device.gatewayId || '未設定'}</p>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.gatewayName')}</label>
+                                    <p className="text-sm">{getGatewayInfo(device.gatewayId).name || '—'}</p>
                                 </div>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.gatewayId')}</label>
+                                    <p className="text-sm">{getGatewayInfo(device.gatewayId).id}</p>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.firmwareVersion')}</label>
                                     <p className="text-sm">{device.firmwareVersion || '未知'}</p>
                                 </div>
-                            </div>
-                            <div>
-                                <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.residentId')}</label>
-                                <p className="text-sm">{device.residentId || '未綁定'}</p>
+                                <div>
+                                    <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.residentId')}</label>
+                                    <p className="text-sm">{device.residentId || '未綁定'}</p>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

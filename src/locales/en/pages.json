@@ -322,6 +322,7 @@
             "deviceUid": "Device UID",
             "uid": "UID",
             "gatewayId": "Gateway ID",
+            "gatewayName": "Gateway Name",
             "firmwareVersion": "Firmware Version",
             "batteryLevel": "Battery Level",
             "status": "Status",

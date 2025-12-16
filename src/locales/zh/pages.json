@@ -334,6 +334,7 @@
             "deviceUid": "設備UID",
             "uid": "UID",
             "gatewayId": "閘道器ID",
+            "gatewayName": "閘道器名稱",
             "firmwareVersion": "韌體版本",
             "batteryLevel": "電量",
             "status": "狀態",

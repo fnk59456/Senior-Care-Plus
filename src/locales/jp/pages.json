@@ -322,6 +322,7 @@
             "deviceUid": "デバイスUID",
             "uid": "UID",
             "gatewayId": "ゲートウェイID",
+            "gatewayName": "ゲートウェイ名",
             "firmwareVersion": "ファームウェアバージョン",
             "batteryLevel": "バッテリーレベル",
             "status": "ステータス",
