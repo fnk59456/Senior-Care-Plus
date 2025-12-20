@@ -582,7 +582,8 @@
             "selectNursingHome": "選擇養老院",
             "selectFloor": "選擇樓層",
             "selectGateway": "選擇閘道器",
-            "local": "本地"
+            "local": "本地",
+            "noGateway": "無閘道器"
         },
         "mqttStatus": {
             "title": "MQTT連接狀態",

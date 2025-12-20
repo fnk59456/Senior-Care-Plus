@@ -570,7 +570,8 @@
             "selectNursingHome": "Select Nursing Home",
             "selectFloor": "Select Floor",
             "selectGateway": "Select Gateway",
-            "local": "Local"
+            "local": "Local",
+            "noGateway": "No Gateway"
         },
         "mqttStatus": {
             "title": "MQTT Connection Status",

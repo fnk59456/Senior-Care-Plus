@@ -1299,7 +1299,8 @@
             "selectNursingHome": "老人ホームを選択",
             "selectFloor": "フロアを選択",
             "selectGateway": "ゲートウェイを選択",
-            "local": "ローカル"
+            "local": "ローカル",
+            "noGateway": "ゲートウェイなし"
         },
         "mqttStatus": {
             "title": "MQTT接続状態",

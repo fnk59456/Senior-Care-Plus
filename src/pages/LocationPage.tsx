@@ -106,6 +106,9 @@ export default function LocationPage() {
   const processedMessagesRef = useRef<Set<string>>(new Set())
   const lastProcessedTimeRef = useRef<number>(0)
   const historyLoadedRef = useRef<string>('') // 跟踪已加载历史消息的 gateway
+  const lastSelectedGatewayRef = useRef<string>('') // 跟踪上一次的 selectedGateway 值
+  const selectedGatewayRef = useRef<string>('') // ✅ 跟踪 selectedGateway 的最新值，解決閉包問題
+  const gatewaysRef = useRef<typeof gateways>([]) // ✅ 跟踪 gateways 的最新值
 
   // 根據MAC地址獲取病患資訊
   const getResidentInfoByMAC = useCallback((mac: string) => {
@@ -347,6 +350,62 @@ export default function LocationPage() {
     resetMapView()
   }, [selectedFloor, resetMapView])
 
+  // ✅ 同步 ref 的值，解決閉包問題
+  useEffect(() => {
+    selectedGatewayRef.current = selectedGateway
+  }, [selectedGateway])
+
+  useEffect(() => {
+    gatewaysRef.current = gateways
+  }, [gateways])
+
+  // ✅ 自动选择楼层对应的闸道器（一楼层一闸道器）
+  useEffect(() => {
+    // ✅ 立即更新 gatewaysRef，確保 processLocationMessage 能獲取到最新的 gateways
+    gatewaysRef.current = gateways
+
+    if (selectedFloor) {
+      // ✅ 切换楼层时，总是先清空旧的设备数据
+      console.log(`🔄 切換樓層，清空舊設備數據...`)
+      setPatients({})
+      setDeviceOnlineStatus({})
+      // 清空已處理消息的記錄，以便重新加載
+      processedMessagesRef.current.clear()
+      historyLoadedRef.current = ''
+
+      // 查找该楼层的在线闸道器
+      const floorGateways = gateways.filter(
+        gw => gw.floorId === selectedFloor && gw.status === 'online'
+      )
+
+      if (floorGateways.length > 0) {
+        // 如果有多个闸道器，选择第一个
+        const selectedGatewayId = floorGateways[0].id
+        console.log(`✅ 自動選擇樓層 ${selectedFloor} 的閘道器:`, {
+          gatewayName: floorGateways[0].name,
+          gatewayId: selectedGatewayId,
+          gatewayIdType: typeof selectedGatewayId,
+          totalGateways: gateways.length,
+          floorGatewaysCount: floorGateways.length
+        })
+        // ✅ 同時更新 state 和 ref，確保 processLocationMessage 能立即獲取到最新值
+        selectedGatewayRef.current = selectedGatewayId
+        setSelectedGateway(selectedGatewayId)
+      } else {
+        // 如果没有找到闸道器，清空闸道器选择
+        console.log(`⚠️ 樓層 ${selectedFloor} 沒有在線的閘道器`)
+        selectedGatewayRef.current = ""
+        setSelectedGateway("")
+      }
+    } else {
+      // 如果没有选择楼层，清空闸道器和设备数据
+      selectedGatewayRef.current = ""
+      setSelectedGateway("")
+      setPatients({})
+      setDeviceOnlineStatus({})
+    }
+  }, [selectedFloor, gateways])
+
   // 設置原生滾輪事件監聽器
   useEffect(() => {
     const mapContainer = mapContainerRef.current
@@ -438,45 +497,74 @@ export default function LocationPage() {
 
       const deviceId = String(data.id)
 
+      // ✅ 使用 ref 獲取最新的值，解決閉包問題
+      const currentSelectedGateway = selectedGatewayRef.current
+      const latestGateways = gatewaysRef.current
+
+      // ✅ 關鍵修復：如果沒有選定 Gateway，跳過消息處理
+      // 這確保只有在用戶選擇了樓層（自動選擇了 Gateway）後才開始處理消息
+      if (!currentSelectedGateway || latestGateways.length === 0) {
+        // 🔍 調試：輸出跳過原因
+        if (processedMessagesRef.current.size < 3) {
+          console.log(`⏭️ 跳過消息處理（未選定 Gateway 或 gateways 未加載）:`, {
+            selectedGateway: currentSelectedGateway || '(empty)',
+            gatewaysCount: latestGateways.length,
+            deviceId: deviceId,
+            msgTopic: message.topic
+          })
+        }
+        return // 跳過此消息
+      }
+
       // ✅ 添加 Gateway 篩選：只處理來自選定 Gateway 的位置消息
-      if (selectedGateway) {
-        const gateway = currentGateways.find(gw => gw.id === selectedGateway)
-        if (gateway) {
-          // 檢查消息是否來自選定的 Gateway
-          const msgGateway = message.gateway?.name || ''
-          const gatewayMac = gateway.macAddress || ''
+      const gateway = latestGateways.find(gw => gw.id === currentSelectedGateway)
+      if (gateway) {
+        // 檢查消息是否來自選定的 Gateway
+        const msgGateway = message.gateway?.name || ''
+        const gatewayMac = gateway.macAddress || ''
 
-          // 提取 MAC 地址的最后4位（例如：16B8）
-          const macSuffix = gatewayMac.replace(/:/g, '').slice(-4).toUpperCase()
+        // 提取 MAC 地址的最后4位（例如：16B8）
+        const macSuffix = gatewayMac.replace(/:/g, '').slice(-4).toUpperCase()
 
-          // 检查匹配：
-          // 1. msgGateway 包含 MAC 后4位（例如：GW16B8 包含 16B8）
-          // 2. 或者 msgGateway 前缀匹配 gateway.name 前缀
-          const matches = (
-            msgGateway.includes(macSuffix) ||
-            msgGateway.toUpperCase().includes(gateway.name.split('_')[0].toUpperCase())
-          )
+        // 检查匹配：
+        // 1. msgGateway 包含 MAC 后4位（例如：GW16B8 包含 16B8）
+        // 2. 或者 msgGateway 前缀匹配 gateway.name 前缀
+        const matches = (
+          msgGateway.includes(macSuffix) ||
+          msgGateway.toUpperCase().includes(gateway.name.split('_')[0].toUpperCase())
+        )
 
-          if (!matches) {
+        if (!matches) {
+          // 🔍 調試：輸出跳過的消息（減少日誌量）
+          if (processedMessagesRef.current.size < 5) {
             console.log(`⏭️ 跳過非選定 Gateway 的位置消息:`, {
               deviceId,
               msgGateway,
               selectedGateway: gateway.name,
               macSuffix
             })
-            return // 跳過此消息
           }
-
-          // ✅ 減少日誌輸出（只在處理前幾條消息時輸出）
-          if (processedMessagesRef.current.size < 5) {
-            console.log(`✅ 處理選定 Gateway 的位置消息:`, {
-              deviceId,
-              msgGateway,
-              selectedGateway: gateway.name,
-              macSuffix
-            })
-          }
+          return // 跳過此消息
         }
+
+        // ✅ 減少日誌輸出（只在處理前幾條消息時輸出）
+        if (processedMessagesRef.current.size < 5) {
+          console.log(`✅ 處理選定 Gateway 的位置消息:`, {
+            deviceId,
+            msgGateway,
+            selectedGateway: gateway.name,
+            macSuffix
+          })
+        }
+      } else {
+        // 找不到對應的 Gateway，跳過
+        if (processedMessagesRef.current.size < 3) {
+          console.log(`⚠️ 找不到對應的 Gateway，跳過消息:`, {
+            selectedGateway: currentSelectedGateway,
+            deviceId
+          })
+        }
+        return
       }
 
       // 獲取病患資訊
@@ -753,9 +841,9 @@ export default function LocationPage() {
       console.log('🔌 取消訂閱位置主題')
       unsubscribe()
     }
-    // ✅ 只依賴 selectedGateway，其他值在 effect 內部獲取最新引用
+    // ✅ 依賴 selectedGateway 和 gateways，確保 gateways 加載完成後重新訂閱
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedGateway])
+  }, [selectedGateway, gateways])
 
   // ✅ 監聽實時數據服務連接狀態
   useEffect(() => {
@@ -785,14 +873,24 @@ export default function LocationPage() {
 
   // ✅ Gateway 切換時清除位置數據和處理狀態
   useEffect(() => {
-    console.log(`🔄 Gateway 切換，清除舊的位置數據:`, selectedGateway)
+    if (selectedGateway) {
+      const gateway = gateways.find(gw => gw.id === selectedGateway)
+      const gatewayName = gateway?.name || selectedGateway
+      console.log(`🔄 Gateway 切換，開始篩選:`, {
+        gatewayId: selectedGateway,
+        gatewayName: gatewayName,
+        gatewayMac: gateway?.macAddress || 'N/A'
+      })
+    } else {
+      console.log(`🔄 Gateway 切換，清除舊的位置數據:`, selectedGateway)
+    }
     setPatients({})
     setDeviceOnlineStatus({}) // 同時清除設備狀態緩存
     // ✅ 清除已處理消息記錄，允許重新加載歷史消息
     processedMessagesRef.current.clear()
     lastProcessedTimeRef.current = 0
     historyLoadedRef.current = '' // 重置歷史消息加載標記
-  }, [selectedGateway])
+  }, [selectedGateway, gateways])
 
   // ✅ 方案一：設備狀態緩存更新 - 只在 patients 變化時重新計算在線狀態
   useEffect(() => {
@@ -803,18 +901,77 @@ export default function LocationPage() {
       newOnlineStatus[patient.id] = now - patient.updatedAt < 5000
     })
 
+    const onlineCount = Object.values(newOnlineStatus).filter(status => status).length
+    const offlineCount = Object.values(newOnlineStatus).filter(status => !status).length
+
+    // 獲取當前 Gateway 信息
+    const gateway = selectedGateway ? gateways.find(gw => gw.id === selectedGateway) : null
+    const gatewayName = gateway?.name || 'N/A'
+
     console.log(`📊 更新設備在線狀態緩存:`, {
+      gatewayName: gatewayName,
+      gatewayId: selectedGateway || 'N/A',
       totalDevices: Object.keys(patients).length,
-      onlineDevices: Object.values(newOnlineStatus).filter(status => status).length,
-      offlineDevices: Object.values(newOnlineStatus).filter(status => !status).length
+      onlineDevices: onlineCount,
+      offlineDevices: offlineCount
     })
 
     setDeviceOnlineStatus(newOnlineStatus)
-  }, [patients]) // 只在 patients 變化時更新
+  }, [patients, selectedGateway, gateways]) // 只在 patients 變化時更新
 
   // ✅ 方案一：使用緩存的設備狀態 - 避免地圖交互時重新計算
   const patientList = Object.values(patients)
   const onlinePatients = patientList.filter(p => deviceOnlineStatus[p.id] !== false)
+
+  // ✅ 輸出篩選後的設備數量
+  useEffect(() => {
+    // 在 useEffect 內部計算 onlinePatients，確保使用最新的 deviceOnlineStatus
+    const patientList = Object.values(patients)
+    const onlinePatientsList = patientList.filter(p => deviceOnlineStatus[p.id] !== false)
+
+    const filtered = onlinePatientsList.filter(patient => {
+      const matchesSearch =
+        patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (patient.residentRoom && patient.residentRoom.toLowerCase().includes(searchTerm.toLowerCase()))
+
+      const matchesStatus = statusFilter === 'all' || patient.residentStatus === statusFilter
+
+      const matchesDeviceType = deviceTypeFilter === 'all' || patient.deviceType === deviceTypeFilter
+
+      return matchesSearch && matchesStatus && matchesDeviceType
+    })
+
+    // ✅ 直接從 selectedFloor 和 gateways 計算當前的閘道器
+    // 這樣可以避免 React 狀態異步更新導致的問題
+    let gatewayName = 'N/A'
+    let gatewayId = 'N/A'
+    let currentGateway: typeof gateways[0] | null = null
+
+    if (selectedFloor && gateways.length > 0) {
+      // 查找該樓層的在線閘道器（與自動選擇邏輯一致）
+      const floorGateways = gateways.filter(
+        gw => gw.floorId === selectedFloor && gw.status === 'online'
+      )
+      if (floorGateways.length > 0) {
+        currentGateway = floorGateways[0]
+        gatewayName = currentGateway.name
+        gatewayId = currentGateway.id
+      }
+    }
+
+    // 只有在有設備數據或有樓層選擇時才輸出日誌
+    if (Object.keys(patients).length > 0 || selectedFloor) {
+      console.log(`🔍 篩選後的設備數量:`, {
+        gatewayName: gatewayName,
+        gatewayId: gatewayId,
+        selectedFloor: selectedFloor,
+        selectedGatewayState: selectedGateway, // 狀態值（可能是異步的）
+        totalDevices: Object.keys(patients).length,
+        onlineDevices: onlinePatientsList.length,
+        filteredDevices: filtered.length
+      })
+    }
+  }, [patients, deviceOnlineStatus, searchTerm, statusFilter, deviceTypeFilter, selectedGateway, gateways, selectedFloor])
 
   // 過濾患者列表
   const filteredPatients = onlinePatients.filter(patient => {
@@ -862,7 +1019,6 @@ export default function LocationPage() {
                 onValueChange={(value) => {
                   setSelectedHome(value)
                   setSelectedFloor("")
-                  setSelectedGateway("")
                 }}
               >
                 <SelectTrigger className="w-[180px]">
@@ -885,7 +1041,6 @@ export default function LocationPage() {
                 value={selectedFloor}
                 onValueChange={(value) => {
                   setSelectedFloor(value)
-                  setSelectedGateway("")
                 }}
                 disabled={!selectedHome}
               >
@@ -904,31 +1059,30 @@ export default function LocationPage() {
               </Select>
             </div>
 
-            {/* Gateway選擇 */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">{t('pages:location.selectArea.gateway')}</label>
-              <Select
-                value={selectedGateway}
-                onValueChange={setSelectedGateway}
-                disabled={!selectedFloor}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={t('pages:location.selectArea.selectGateway')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {gateways
-                    .filter(gw => gw.floorId === selectedFloor && gw.status === 'online')
-                    .map(gateway => (
-                      <SelectItem key={gateway.id} value={gateway.id}>
-                        <div className="flex items-center gap-2">
-                          <div className={`w-2 h-2 rounded-full ${gateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
-                          {gateway.name} {gateway.cloudData ? '' : `(${t('pages:location.selectArea.local')})`}
-                        </div>
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* 閘道器資訊顯示（只讀） */}
+            {selectedFloor && (() => {
+              const floorGateways = gateways.filter(gw => gw.floorId === selectedFloor && gw.status === 'online')
+              const currentGateway = floorGateways.length > 0 ? floorGateways[0] : null
+              return (
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-medium">{t('pages:location.selectArea.gateway')}</label>
+                  <div className="h-10 px-3 py-2 border rounded-md bg-muted flex items-center gap-2 w-[200px]">
+                    {currentGateway ? (
+                      <>
+                        <div className={`w-2 h-2 rounded-full ${currentGateway.cloudData ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                        <span className="text-sm">
+                          {currentGateway.name} {currentGateway.cloudData ? '' : `(${t('pages:location.selectArea.local')})`}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        {t('pages:location.selectArea.noGateway')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )
+            })()}
 
             {/* 搜索框 */}
             <div className="flex-1 flex flex-col gap-2">
