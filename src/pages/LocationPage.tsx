@@ -853,7 +853,7 @@ export default function LocationPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-4">
+          <div className="flex items-end gap-4">
             {/* 養老院選擇 */}
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">{t('pages:location.selectArea.nursingHome')}</label>
@@ -929,144 +929,19 @@ export default function LocationPage() {
                 </SelectContent>
               </Select>
             </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* 連接狀態 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Wifi className="mr-2 h-5 w-5" />
-              {import.meta.env.VITE_USE_WEBSOCKET === 'true'
-                ? '🌐 WebSocket 連接狀態'
-                : '📡 MQTT 連接狀態'}
-            </div>
-            <Button
-              onClick={refreshData}
-              variant="outline"
-              size="sm"
-              title={t('pages:location.mqttStatus.refreshTitle')}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              {t('pages:location.mqttStatus.refreshData')}
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{t('pages:location.mqttStatus.status')}:</span>
-              <Badge variant={cloudConnected ? "default" : "secondary"}>
-                {cloudConnected ? (
-                  <CheckCircle2 className="mr-1 h-3 w-3" />
-                ) : (
-                  <AlertCircle className="mr-1 h-3 w-3" />
-                )}
-                {cloudConnectionStatus}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{t('pages:location.mqttStatus.topic')}:</span>
-              <span className="text-sm font-mono">{selectedGateway ? t('pages:location.mqttStatus.mqttBus') : t('pages:location.mqttStatus.none')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{t('pages:location.mqttStatus.deviceCount')}:</span>
-              <span className="text-sm">{onlinePatients.length}</span>
-            </div>
-          </div>
-          {import.meta.env.VITE_USE_WEBSOCKET === 'true' && (
-            <div className="text-xs text-blue-600 mt-2">
-              💡 使用 WebSocket 模式：數據通過後端 WebSocket 服務實時推送
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-
-
-      {/* 搜索和過濾 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Search className="mr-2 h-5 w-5" />
-            {t('pages:location.searchFilter.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
             {/* 搜索框 */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t('pages:location.searchFilter.searchPlaceholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-
-            {/* 院友狀態過濾 */}
-            <div className="flex gap-2">
-              <Button
-                variant={statusFilter === 'all' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('all')}
-                className="whitespace-nowrap"
-              >
-                {t('pages:location.searchFilter.allStatus')}
-              </Button>
-              <Button
-                variant={statusFilter === 'good' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('good')}
-                className="whitespace-nowrap"
-              >
-                <Heart className="w-4 h-4 mr-1" />
-                {t('status:resident.status.good')}
-              </Button>
-              <Button
-                variant={statusFilter === 'attention' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('attention')}
-                className="whitespace-nowrap"
-              >
-                <AlertTriangle className="w-4 h-4 mr-1" />
-                {t('status:resident.status.attention')}
-              </Button>
-              <Button
-                variant={statusFilter === 'critical' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('critical')}
-                className="whitespace-nowrap"
-              >
-                <AlertCircle className="w-4 h-4 mr-1" />
-                {t('status:resident.status.critical')}
-              </Button>
-            </div>
-
-            {/* 設備類型過濾 */}
-            <div className="flex gap-2">
-              <Button
-                variant={deviceTypeFilter === 'all' ? 'default' : 'outline'}
-                onClick={() => setDeviceTypeFilter('all')}
-                className="whitespace-nowrap"
-              >
-                {t('pages:location.searchFilter.allDevices')}
-              </Button>
-              <Button
-                variant={deviceTypeFilter === DeviceType.SMARTWATCH_300B ? 'default' : 'outline'}
-                onClick={() => setDeviceTypeFilter(DeviceType.SMARTWATCH_300B)}
-                className="whitespace-nowrap"
-              >
-                <Watch className="w-4 h-4 mr-1" />
-                {t('pages:location.searchFilter.watch')}
-              </Button>
-              <Button
-                variant={deviceTypeFilter === DeviceType.UWB_TAG ? 'default' : 'outline'}
-                onClick={() => setDeviceTypeFilter(DeviceType.UWB_TAG)}
-                className="whitespace-nowrap"
-              >
-                <MapPin className="w-4 h-4 mr-1" />
-                {t('pages:location.searchFilter.uwbTag')}
-              </Button>
+            <div className="flex-1 flex flex-col gap-2">
+              <label className="text-sm font-medium">{t('pages:location.searchFilter.title')}</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t('pages:location.searchFilter.searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
           </div>
         </CardContent>
@@ -1091,16 +966,19 @@ export default function LocationPage() {
               className="relative border rounded-md overflow-hidden bg-gray-50"
               style={{
                 overscrollBehavior: 'none',
-                touchAction: 'none'
+                touchAction: 'none',
+                minHeight: '600px',
+                height: 'calc(100vh - 400px)'
               }}
             >
               {dimensions ? (
                 <div
                   ref={mapContainerRef}
-                  className="relative select-none"
+                  className="relative select-none w-full h-full"
                   style={{
                     width: dimensions.width,
                     height: dimensions.height,
+                    minHeight: '600px',
                     cursor: isDragging ? 'grabbing' : 'grab',
                     touchAction: 'none', // 阻止觸控滾動
                     overscrollBehavior: 'none' // 阻止過度滾動
