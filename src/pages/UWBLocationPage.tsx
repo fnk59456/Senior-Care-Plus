@@ -1246,6 +1246,15 @@ export default function UWBLocationPage() {
     const [selectedFloorForTags, setSelectedFloorForTags] = useState<string>("")
     const [selectedGatewayForTags, setSelectedGatewayForTags] = useState<string>("")
 
+    // 樓層管理相關狀態
+    const [selectedFloorForFloors, setSelectedFloorForFloors] = useState<string>("")
+    const [selectedHomeForFloors, setSelectedHomeForFloors] = useState<string>("")
+
+    // 閘道器管理相關狀態
+    const [selectedGatewayForGateways, setSelectedGatewayForGateways] = useState<string>("")
+    const [selectedFloorForGateways, setSelectedFloorForGateways] = useState<string>("")
+    const [selectedHomeForGateways, setSelectedHomeForGateways] = useState<string>("")
+
     // 移除 tagCloudClientRef，改用 MQTT Bus + Store
 
     // 移除自動選擇邏輯，讓用戶必須手動選擇 Gateway
@@ -2334,6 +2343,20 @@ export default function UWBLocationPage() {
         }
     }, [selectedHomeForTags, selectedFloorForTags, floors])
 
+    // 樓層管理頁面已移除樓層下拉菜單，不再需要此驗證邏輯
+
+    // 監聽閘道器管理頁面的選擇變化
+    useEffect(() => {
+        if (selectedHomeForGateways && selectedFloorForGateways) {
+            // 檢查選中的樓層是否仍然屬於選中的養老院
+            const floor = floors.find(f => f.id === selectedFloorForGateways)
+            if (floor && floor.homeId !== selectedHomeForGateways) {
+                // 如果樓層不屬於選中的養老院，重置樓層選擇
+                setSelectedFloorForGateways("")
+            }
+        }
+    }, [selectedHomeForGateways, selectedFloorForGateways, floors])
+
     // 處理表單提交 - 使用 Context 方法
     const handleHomeSubmit = async () => {
         try {
@@ -2365,7 +2388,9 @@ export default function UWBLocationPage() {
     }
 
     const handleFloorSubmit = async () => {
-        if (!selectedHome) return
+        // 優先使用 selectedHomeForFloors，如果沒有則使用 selectedHome（向後兼容）
+        const homeId = selectedHomeForFloors || selectedHome
+        if (!homeId) return
 
         try {
             const floorData = {
@@ -2389,7 +2414,7 @@ export default function UWBLocationPage() {
                 // 創建新樓層
                 await createFloor({
                     ...floorData,
-                    homeId: selectedHome
+                    homeId: homeId
                 })
                 toast({
                     title: "樓層創建成功",
@@ -3841,31 +3866,6 @@ export default function UWBLocationPage() {
                         </div>
                     </div>
 
-                    {/* 場域選擇 */}
-                    <div className="flex items-center gap-4">
-                        <Select
-                            value={selectedHome}
-                            onValueChange={(value) => {
-                                setSelectedHome(value)
-                                // 保存選擇的場域到 localStorage
-                                saveToStorage('selectedHome', value)
-                            }}
-                        >
-                            <SelectTrigger className="w-[240px]">
-                                <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {homes.map(home => (
-                                    <SelectItem key={home.id} value={home.id}>
-                                        <div className="flex items-center gap-2">
-                                            <Home className="h-4 w-4" />
-                                            {home.name}
-                                        </div>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
                 </div>
 
                 {/* 主要內容標籤頁 */}
@@ -4184,13 +4184,31 @@ export default function UWBLocationPage() {
                     <TabsContent value="floors" className="space-y-6">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.floors')}</h2>
-                            <Button onClick={() => setShowFloorModal(true)} disabled={!selectedHome}>
-                                <Plus className="h-4 w-4 mr-2" />
-                                {t('pages:uwbLocation.actions.addFloor')}
-                            </Button>
+                            <div className="flex items-center gap-4">
+                                {/* 場域選擇下拉菜單 */}
+                                <Select
+                                    value={selectedHomeForFloors}
+                                    onValueChange={setSelectedHomeForFloors}
+                                >
+                                    <SelectTrigger className="w-[180px]">
+                                        <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {homes.map(home => (
+                                            <SelectItem key={home.id} value={home.id}>
+                                                {home.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button onClick={() => setShowFloorModal(true)} disabled={!selectedHomeForFloors}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    {t('pages:uwbLocation.actions.addFloor')}
+                                </Button>
+                            </div>
                         </div>
 
-                        {!selectedHome ? (
+                        {!selectedHomeForFloors ? (
                             <Card>
                                 <CardContent className="pt-6 text-center">
                                     <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -4199,7 +4217,9 @@ export default function UWBLocationPage() {
                             </Card>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {currentFloors.map(floor => {
+                                {floors
+                                    .filter(floor => floor.homeId === selectedHomeForFloors)
+                                    .map(floor => {
                                     const floorGateways = gateways.filter(g => g.floorId === floor.id)
 
                                     return (
@@ -4839,26 +4859,84 @@ export default function UWBLocationPage() {
                     <TabsContent value="gateways" className="space-y-6">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xl font-semibold">{t('pages:uwbLocation.tabs.gateways')}</h2>
-                            <div className="flex gap-2">
-                                <Button onClick={() => setShowGatewayModal(true)} disabled={currentFloors.length === 0}>
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    {t('pages:uwbLocation.manualAdd')}
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        console.log("手動重連雲端連接...")
-                                        setCloudConnectionStatus("手動重連中...")
-                                        realtimeDataService.disconnect()
-                                        setTimeout(() => {
-                                            realtimeDataService.connect()
-                                        }, 1000)
-                                    }}
-                                    disabled={cloudConnected}
-                                >
-                                    <RefreshIcon className="h-4 w-4 mr-2" />
-                                    {t('pages:uwbLocation.reconnectCloud')}
-                                </Button>
+                            <div className="flex items-center gap-4">
+                                {/* 場域和樓層選擇下拉菜單 */}
+                                <div className="flex items-center gap-2">
+                                    {/* 場域選擇（始終顯示） */}
+                                    <Select
+                                        value={selectedHomeForGateways}
+                                        onValueChange={(value) => {
+                                            setSelectedHomeForGateways(value)
+                                            // 如果選擇的場域改變，清空樓層選擇
+                                            const newFloors = floors.filter(f => f.homeId === value)
+                                            if (!newFloors.some(f => f.id === selectedFloorForGateways)) {
+                                                setSelectedFloorForGateways("")
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder={t('pages:uwbLocation.selectHome')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {homes.map(home => (
+                                                <SelectItem key={home.id} value={home.id}>
+                                                    {home.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+
+                                    {/* 樓層選擇（選擇場域後顯示） */}
+                                    <Select
+                                        value={selectedFloorForGateways}
+                                        onValueChange={setSelectedFloorForGateways}
+                                        disabled={!selectedHomeForGateways}
+                                    >
+                                        <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {floors
+                                                .filter(floor => floor.homeId === selectedHomeForGateways)
+                                                .map(floor => (
+                                                    <SelectItem key={floor.id} value={floor.id}>
+                                                        {floor.name}
+                                                    </SelectItem>
+                                                ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="flex gap-2">
+                                    <Button onClick={() => {
+                                        setShowGatewayModal(true)
+                                        // 如果有選中的樓層，自動填充到表單
+                                        if (selectedFloorForGateways) {
+                                            setGatewayForm(prev => ({
+                                                ...prev,
+                                                floorId: selectedFloorForGateways
+                                            }))
+                                        }
+                                    }} disabled={!selectedFloorForGateways && !selectedHome}>
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        {t('pages:uwbLocation.manualAdd')}
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            console.log("手動重連雲端連接...")
+                                            setCloudConnectionStatus("手動重連中...")
+                                            realtimeDataService.disconnect()
+                                            setTimeout(() => {
+                                                realtimeDataService.connect()
+                                            }, 1000)
+                                        }}
+                                        disabled={cloudConnected}
+                                    >
+                                        <RefreshIcon className="h-4 w-4 mr-2" />
+                                        {t('pages:uwbLocation.reconnectCloud')}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
 
@@ -5034,16 +5112,25 @@ export default function UWBLocationPage() {
                             </CardContent>
                         </Card>
 
-                        {currentFloors.length === 0 ? (
+                        {!selectedHomeForGateways ? (
                             <Card>
                                 <CardContent className="pt-6 text-center">
                                     <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                                    <p className="text-muted-foreground">{t('pages:uwbLocation.messages.addFloorFirst')}</p>
+                                    <p className="text-muted-foreground">{t('pages:uwbLocation.messages.selectFieldFirst')}</p>
+                                </CardContent>
+                            </Card>
+                        ) : !selectedFloorForGateways ? (
+                            <Card>
+                                <CardContent className="pt-6 text-center">
+                                    <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                    <p className="text-muted-foreground">請選擇一個樓層</p>
                                 </CardContent>
                             </Card>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {currentGateways.map(gateway => {
+                                {gateways
+                                    .filter(gateway => gateway.floorId === selectedFloorForGateways)
+                                    .map(gateway => {
                                     const floor = floors.find(f => f.id === gateway.floorId)
 
                                     return (
@@ -7251,7 +7338,7 @@ export default function UWBLocationPage() {
                                     <Button
                                         onClick={handleFloorSubmit}
                                         className="flex-1"
-                                        disabled={!floorForm.name || !selectedHome}
+                                        disabled={!floorForm.name || (!selectedHomeForFloors && !selectedHome)}
                                     >
                                         {t('pages:uwbLocation.actions.addFloor')}
                                     </Button>
@@ -7325,7 +7412,7 @@ export default function UWBLocationPage() {
                                     <Button
                                         onClick={handleFloorSubmit}
                                         className="flex-1"
-                                        disabled={!floorForm.name || !selectedHome}
+                                        disabled={!floorForm.name || (!selectedHomeForFloors && !selectedHome)}
                                     >
                                         {editingItem ? t('common:actions.save') : t('pages:uwbLocation.actions.addFloor')}
                                     </Button>
@@ -7367,11 +7454,14 @@ export default function UWBLocationPage() {
                                             <SelectValue placeholder={t('pages:uwbLocation.selectFloor')} />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {currentFloors.map(floor => (
-                                                <SelectItem key={floor.id} value={floor.id}>
-                                                    {floor.name}
-                                                </SelectItem>
-                                            ))}
+                                            {/* 優先使用 selectedHomeForGateways，如果沒有則使用 selectedHome（向後兼容） */}
+                                            {floors
+                                                .filter(floor => floor.homeId === (selectedHomeForGateways || selectedHome))
+                                                .map(floor => (
+                                                    <SelectItem key={floor.id} value={floor.id}>
+                                                        {floor.name}
+                                                    </SelectItem>
+                                                ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
