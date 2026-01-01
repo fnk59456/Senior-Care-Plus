@@ -18,6 +18,8 @@ export interface AckNotificationData {
     idHex: string
     receivedAt: string
     topic: string
+    response?: string // 可选：NewFirmware Ack 的响应状态 (OK/NACK)
+    serialNo?: string // 可选：序列号 (0-65535)
 }
 
 interface AckNotificationProps {
@@ -45,13 +47,47 @@ export function AckNotification({ data }: AckNotificationProps) {
     }
 
     const getCommandColor = (command: string) => {
-        switch (command.toLowerCase()) {
+        const cmd = command.toLowerCase()
+        switch (cmd) {
+            // 配置相关
             case 'configchange':
+            case 'tag cfg request':
                 return 'bg-blue-100 text-blue-800 border-blue-200'
             case 'config':
                 return 'bg-green-100 text-green-800 border-green-200'
+
+            // 消息相关
+            case 'message':
+                return 'bg-green-100 text-green-800 border-green-200'
+
+            // 警报相关
+            case 'downlink alert':
+                return 'bg-orange-100 text-orange-800 border-orange-200'
+
+            // QR码和图片相关
+            case 'qr code':
+                return 'bg-purple-100 text-purple-800 border-purple-200'
+            case 'image':
+                return 'bg-cyan-100 text-cyan-800 border-cyan-200'
+
+            // 固件相关（重要）
+            case 'new fw notify':
+                return 'bg-red-100 text-red-800 border-red-200'
+
+            // QoS 相关
+            case 'qos request':
+                return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+
+            // 网关操作相关（警告）
+            case 'gateway reset request':
+                return 'bg-red-100 text-red-800 border-red-200'
+            case 'discard iot data time(0.1s)':
+                return 'bg-gray-100 text-gray-800 border-gray-200'
+
+            // 状态相关
             case 'status':
                 return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+
             default:
                 return 'bg-gray-100 text-gray-800 border-gray-200'
         }
@@ -148,6 +184,39 @@ export function AckNotification({ data }: AckNotificationProps) {
                             {data.topic}
                         </code>
                     </div>
+
+                    {/* Response (仅 NewFirmware Ack 有) */}
+                    {data.response && (
+                        <div className="flex items-center space-x-2">
+                            <CheckCircle2 className="h-4 w-4 text-gray-500" />
+                            <span className="text-xs text-gray-600 font-medium">
+                                {t('pages:uwbLocation.notifications.response', '響應狀態')}:
+                            </span>
+                            <Badge
+                                variant="outline"
+                                className={`text-xs ${
+                                    data.response.toUpperCase() === 'OK'
+                                        ? 'bg-green-100 text-green-800 border-green-200'
+                                        : 'bg-red-100 text-red-800 border-red-200'
+                                }`}
+                            >
+                                {data.response}
+                            </Badge>
+                        </div>
+                    )}
+
+                    {/* Serial No */}
+                    {data.serialNo && (
+                        <div className="flex items-center space-x-2">
+                            <Hash className="h-4 w-4 text-gray-500" />
+                            <span className="text-xs text-gray-600 font-medium">
+                                {t('pages:uwbLocation.notifications.serialNo', '序列號')}:
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                                {data.serialNo}
+                            </Badge>
+                        </div>
+                    )}
 
                     {/* Received Time */}
                     <div className="flex items-center space-x-2">
