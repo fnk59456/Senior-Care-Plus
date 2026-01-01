@@ -146,6 +146,8 @@ export const useAckStore = create<AckState>((set, get) => {
             toast({
                 // 用 description 放自定義卡片（避免在 .ts 使用 JSX）
                 description: React.createElement(AckNotification, { data }),
+                // 設置 duration 為 Infinity，不自動消失，需要手動點擊關閉
+                duration: Infinity,
             })
         },
         onAck: (cb: (ack: AckRecord) => void) => {
