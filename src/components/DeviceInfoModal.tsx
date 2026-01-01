@@ -96,6 +96,26 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
         return 'text-green-500'
     }
 
+    // 格式化閘道器ID（同時顯示10進制和16進制）
+    const formatGatewayId = (gatewayId: string | undefined): string => {
+        if (!gatewayId || gatewayId === '未設定') {
+            return gatewayId || '未設定'
+        }
+
+        // 嘗試解析為數字
+        const numId = Number(gatewayId)
+
+        // 如果是有效數字，同時顯示10進制和16進制
+        if (!isNaN(numId) && isFinite(numId) && numId > 0) {
+            const hexId = numId.toString(16).toUpperCase()
+            // 格式：10進制 (16進制)
+            return `${gatewayId} (0x${hexId})`
+        }
+
+        // 如果不是數字，直接返回原值
+        return gatewayId
+    }
+
     // 獲取閘道器資訊（通過 cloud_gateway_id 匹配）
     const getGatewayInfo = (gatewayId: string | undefined): { name: string | null; id: string } => {
         if (!gatewayId) {
@@ -232,7 +252,7 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.gatewayId')}</label>
-                                    <p className="text-sm">{getGatewayInfo(device.gatewayId).id}</p>
+                                    <p className="text-sm font-mono">{formatGatewayId(getGatewayInfo(device.gatewayId).id)}</p>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
