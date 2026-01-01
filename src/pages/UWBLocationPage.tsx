@@ -1869,30 +1869,30 @@ export default function UWBLocationPage() {
                     return newData
                 })
 
-                // 顯示 Ack 通知
-                try {
-                    const notificationData: AckNotificationData = {
-                        gatewayId: msg['gateway id']?.toString() || msg.gateway_id?.toString() || 'Unknown',
-                        command: msg.command || 'Unknown',
-                        node: msg.node || 'Unknown',
-                        id: msg.id?.toString() || 'Unknown',
-                        idHex: msg.id ? `0x${parseInt(msg.id.toString()).toString(16).toUpperCase()}` : 'Unknown',
-                        receivedAt: new Date().toISOString(),
-                        topic: message.topic
-                    }
+                // 顯示 Ack 通知（暫時移除顯示，保留功能代碼）
+                // try {
+                //     const notificationData: AckNotificationData = {
+                //         gatewayId: msg['gateway id']?.toString() || msg.gateway_id?.toString() || 'Unknown',
+                //         command: msg.command || 'Unknown',
+                //         node: msg.node || 'Unknown',
+                //         id: msg.id?.toString() || 'Unknown',
+                //         idHex: msg.id ? `0x${parseInt(msg.id.toString()).toString(16).toUpperCase()}` : 'Unknown',
+                //         receivedAt: new Date().toISOString(),
+                //         topic: message.topic
+                //     }
 
-                    toast({
-                        title: t('pages:uwbLocation.notifications.ackReceived', 'Ack 消息接收'),
-                        description: (
-                            <AckNotification
-                                data={notificationData}
-                            />
-                        ),
-                        duration: 5000,
-                    })
-                } catch (error) {
-                    console.error('創建 Ack 通知時發生錯誤:', error)
-                }
+                //     toast({
+                //         title: t('pages:uwbLocation.notifications.ackReceived', 'Ack 消息接收'),
+                //         description: (
+                //             <AckNotification
+                //                 data={notificationData}
+                //             />
+                //         ),
+                //         duration: 5000,
+                //     })
+                // } catch (error) {
+                //     console.error('創建 Ack 通知時發生錯誤:', error)
+                // }
             } catch (error) {
                 console.error('Ack 訊息解析錯誤:', error)
             }
