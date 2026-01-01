@@ -205,13 +205,26 @@ export class GatewayRegistry {
                 downlink: subTopics?.downlink,
             }
         } else {
-            // 本地模式：使用命名規則
-            const gwName = gateway.name.replace(/\s+/g, '')
+            // 本地模式：使用命名規則（從 MAC 地址提取最後4個字符）
+            const extractGatewayId = (macAddress?: string, name?: string): string => {
+                if (macAddress) {
+                    // 移除 "GW:" 前綴（如果存在）
+                    const macWithoutPrefix = macAddress.replace(/^GW:/i, '')
+                    // 提取最後4個字符
+                    if (macWithoutPrefix.length >= 4) {
+                        return macWithoutPrefix.slice(-4).toUpperCase()
+                    }
+                }
+                // 如果 MAC 地址不可用，回退到使用 name（移除空格）
+                return name ? name.replace(/\s+/g, '') : 'Unknown'
+            }
+
+            const gwId = extractGatewayId(gateway.macAddress, gateway.name)
             return {
-                health: `UWB/GW${gwName}_Health`,
-                location: `UWB/GW${gwName}_Loca`,
-                ack: `UWB/GW${gwName}_Ack`,
-                message: `UWB/GW${gwName}_Message`,
+                health: `UWB/GW${gwId}_Health`,
+                location: `UWB/GW${gwId}_Loca`,
+                ack: `UWB/GW${gwId}_Ack`,
+                message: `UWB/GW${gwId}_Message`,
             }
         }
     }
