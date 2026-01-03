@@ -12,7 +12,8 @@ import {
     Baby,
     Watch,
     Settings,
-    Anchor
+    Anchor,
+    Wifi
 } from 'lucide-react'
 import { Device, Resident, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
 import DeviceActionHandler from './DeviceActionHandler'
@@ -46,6 +47,7 @@ export default function DeviceMonitorCard({
             case DeviceType.PEDOMETER: return Activity
             case DeviceType.UWB_TAG: return MapPin
             case DeviceType.UWB_ANCHOR: return Anchor
+            case DeviceType.GATEWAY: return Wifi
             default: return Settings
         }
     }

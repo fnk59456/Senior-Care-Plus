@@ -12,6 +12,7 @@ import {
     Watch,
     Settings,
     Anchor,
+    Wifi,
     Info,
     Link,
     Trash2,
@@ -49,6 +50,7 @@ export default function DeviceListRow({
             case DeviceType.PEDOMETER: return Activity
             case DeviceType.UWB_TAG: return MapPin
             case DeviceType.UWB_ANCHOR: return Anchor
+            case DeviceType.GATEWAY: return Wifi
             default: return Settings
         }
     }
