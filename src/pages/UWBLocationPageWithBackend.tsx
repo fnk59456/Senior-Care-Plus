@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
-import { Toaster } from "@/components/ui/toaster"
 import { Building2, Plus, Edit, Trash2, Home, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
 
 // 導入API服務和Hook
@@ -280,8 +279,6 @@ export default function UWBLocationPageWithBackend() {
 
     return (
         <div className="container mx-auto p-6">
-            <Toaster />
-
             {/* 頁面標題和同步狀態 */}
             <div className="flex justify-between items-center mb-6">
                 <div>

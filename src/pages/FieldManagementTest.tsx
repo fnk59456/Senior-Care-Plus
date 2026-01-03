@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Toaster } from "@/components/ui/toaster"
 import {
     Plus,
     Edit,
@@ -321,8 +320,6 @@ export default function FieldManagementTest() {
 
     return (
         <div className="container mx-auto p-6 space-y-6">
-            <Toaster />
-
             {/* 頁面標題 */}
             <div className="flex items-center justify-between">
                 <div>

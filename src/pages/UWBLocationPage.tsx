@@ -20,7 +20,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Toaster } from "@/components/ui/toaster"
 import AckNotification, { AckNotificationData } from "@/components/AckNotification"
 import {
     Building2,
@@ -7967,7 +7966,6 @@ export default function UWBLocationPage() {
                 )}
 
             </div>
-            <Toaster />
         </>
     )
 }

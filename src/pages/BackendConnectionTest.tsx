@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Toaster } from "@/components/ui/toaster"
 import {
     CheckCircle2,
     XCircle,
@@ -239,8 +238,6 @@ export default function BackendConnectionTest() {
 
     return (
         <div className="container mx-auto p-6 space-y-6">
-            <Toaster />
-
             {/* 頁面標題 */}
             <div className="flex items-center justify-between">
                 <div>
