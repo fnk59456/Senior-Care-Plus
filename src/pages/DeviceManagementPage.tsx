@@ -430,6 +430,8 @@ export default function DeviceManagementPage() {
       deviceUid = DeviceUIDGenerator.generateTag(newDevice.deviceId)
     } else if (newDevice.deviceType === DeviceType.UWB_ANCHOR) {
       deviceUid = DeviceUIDGenerator.generateAnchor(newDevice.deviceId)
+    } else if (newDevice.deviceType === DeviceType.GATEWAY) {
+      deviceUid = DeviceUIDGenerator.generateGateway(newDevice.deviceId || newDevice.gatewayId || '')
     } else {
       deviceUid = DeviceUIDGenerator.generateTag(newDevice.deviceId)
     }
@@ -950,6 +952,14 @@ export default function DeviceManagementPage() {
               <Anchor className="h-4 w-4" />
               {t('pages:deviceManagement.filters.uwbAnchor') || '定位錨點'}
             </Button>
+            <Button
+              variant={selectedFilter === DeviceType.GATEWAY ? "default" : "outline"}
+              onClick={() => setSelectedFilter(DeviceType.GATEWAY)}
+              className="gap-2"
+            >
+              <Wifi className="h-4 w-4" />
+              {t('pages:deviceManagement.filters.gateway')}
+            </Button>
           </div>
 
           <div className="flex items-center gap-2">
@@ -958,9 +968,8 @@ export default function DeviceManagementPage() {
               <Switch
                 checked={autoAddDevices}
                 onCheckedChange={setAutoAddDevices}
-                id="auto-add-devices"
               />
-              <label htmlFor="auto-add-devices" className="text-sm font-medium cursor-pointer">
+              <label className="text-sm font-medium cursor-pointer" onClick={() => setAutoAddDevices(!autoAddDevices)}>
                 {autoAddDevices ? t('pages:deviceManagement.autoAdd.enabled') : t('pages:deviceManagement.autoAdd.disabled')}
               </label>
             </div>
@@ -1186,6 +1195,7 @@ export default function DeviceManagementPage() {
                       <SelectItem value={DeviceType.PEDOMETER}>{t('pages:deviceManagement.addModal.deviceTypes.pedometer')}</SelectItem>
                       <SelectItem value={DeviceType.UWB_TAG}>{t('pages:deviceManagement.addModal.deviceTypes.uwbTag')}</SelectItem>
                       <SelectItem value={DeviceType.UWB_ANCHOR}>{t('pages:deviceManagement.addModal.deviceTypes.uwbAnchor') || 'UWB定位錨點'}</SelectItem>
+                      <SelectItem value={DeviceType.GATEWAY}>{t('pages:deviceManagement.addModal.deviceTypes.gateway')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1220,7 +1230,7 @@ export default function DeviceManagementPage() {
                   </div>
                 )}
 
-                {(newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG || newDevice.deviceType === DeviceType.UWB_ANCHOR) && (
+                {(newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG || newDevice.deviceType === DeviceType.UWB_ANCHOR || newDevice.deviceType === DeviceType.GATEWAY) && (
                   <div>
                     <label className="text-sm font-medium mb-2 block">{t('pages:deviceManagement.addModal.deviceId')}</label>
                     <Input
@@ -1253,7 +1263,7 @@ export default function DeviceManagementPage() {
                     className="flex-1"
                     disabled={!newDevice.name || !newDevice.hardwareId ||
                       ((newDevice.deviceType === DeviceType.SMARTWATCH_300B || newDevice.deviceType === DeviceType.DIAPER_SENSOR) && !newDevice.mac) ||
-                      ((newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG || newDevice.deviceType === DeviceType.UWB_ANCHOR) && !newDevice.deviceId)
+                      ((newDevice.deviceType === DeviceType.PEDOMETER || newDevice.deviceType === DeviceType.UWB_TAG || newDevice.deviceType === DeviceType.UWB_ANCHOR || newDevice.deviceType === DeviceType.GATEWAY) && !newDevice.deviceId)
                     }
                   >
                     {t('pages:deviceManagement.actions.addDevice')}

@@ -207,7 +207,8 @@
             "diaperSensor": "Diaper Sensor",
             "pedometer": "Motion Sensor",
             "uwbTag": "Positioning Tag",
-            "uwbAnchor": "Positioning Anchor"
+            "uwbAnchor": "Positioning Anchor",
+            "gateway": "UWB Gateway"
         },
         "actions": {
             "addDevice": "Add Device",
@@ -251,7 +252,8 @@
                 "diaperSensor": "Smart Diaper Sensor",
                 "pedometer": "Motion Sensor",
                 "uwbTag": "UWB Positioning Tag",
-                "uwbAnchor": "UWB Positioning Anchor"
+                "uwbAnchor": "UWB Positioning Anchor",
+                "gateway": "UWB Gateway"
             },
             "placeholders": {
                 "deviceName": "Enter device name",

@@ -219,7 +219,8 @@
             "diaperSensor": "尿布傳感器",
             "pedometer": "運動傳感器",
             "uwbTag": "定位標籤",
-            "uwbAnchor": "定位錨點"
+            "uwbAnchor": "定位錨點",
+            "gateway": "UWB閘道器"
         },
         "actions": {
             "addDevice": "新增設備",
@@ -263,7 +264,8 @@
                 "diaperSensor": "智能尿布傳感器",
                 "pedometer": "運動傳感器",
                 "uwbTag": "UWB定位標籤",
-                "uwbAnchor": "UWB定位錨點"
+                "uwbAnchor": "UWB定位錨點",
+                "gateway": "UWB閘道器"
             },
             "placeholders": {
                 "deviceName": "輸入設備名稱",

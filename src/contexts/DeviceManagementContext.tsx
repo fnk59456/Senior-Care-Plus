@@ -511,6 +511,17 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             }
         }
 
+        // GATEWAY 設備識別（從 UWB/UWB_Gateway topic）
+        if (payload?.content === 'gateway topic' && (payload?.['gateway id'] !== undefined || payload?.gateway_id !== undefined)) {
+            const id = (payload['gateway id'] || payload.gateway_id).toString()
+            return {
+                deviceUid: DeviceUIDGenerator.generateGateway(id),
+                deviceType: DeviceType.GATEWAY,
+                hardwareId: payload.macAddress || id, // Use macAddress if available, otherwise id
+                gatewayId: id // Gateway's own ID is its gatewayId
+            }
+        }
+
         return null
     }, [])
 
@@ -574,7 +585,7 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                     gatewayId,
                     batteryLevel,
                     firmwareVersion,
-                    lastData: Object.keys(lastData).length > 0 ? lastData : undefined,
+                    lastData: lastData,
                     lastSeen: timestamp.toISOString(),
                     createdAt: timestamp.toISOString(),
                     updatedAt: timestamp.toISOString()
@@ -723,7 +734,7 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                     gatewayId: gatewayId?.toString(),
                     batteryLevel,
                     firmwareVersion,
-                    lastData: Object.keys(lastData).length > 0 ? lastData : undefined,
+                    lastData: lastData,
                     lastSeen: timestamp.toISOString(),
                     createdAt: timestamp.toISOString(),
                     updatedAt: timestamp.toISOString()
@@ -862,7 +873,7 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                     gatewayId: gatewayId?.toString(),
                     batteryLevel,
                     firmwareVersion,
-                    lastData: Object.keys(lastData).length > 0 ? lastData : undefined,
+                    lastData: lastData,
                     lastSeen: timestamp.toISOString(),
                     createdAt: timestamp.toISOString(),
                     updatedAt: timestamp.toISOString()
@@ -1040,6 +1051,104 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
         mergeAndUpdateAnchorDevice(anchorId, anchorData, timestamp)
     }, [mergeAndUpdateAnchorDevice])
 
+    // 處理 Gateway Topic 數據
+    const handleGatewayData = useCallback((message: MQTTMessage) => {
+        const { topic, payload, timestamp } = message
+        if (!payload) return
+
+        const deviceInfo = identifyDevice(topic, payload)
+        if (!deviceInfo || deviceInfo.deviceType !== DeviceType.GATEWAY) return
+
+        const { deviceUid, hardwareId, gatewayId } = deviceInfo
+
+        setDevices(prevDevices => {
+            let existingDevice = prevDevices.find(d => d.deviceUid === deviceUid)
+
+            // 保存完整的原始 payload 數據（像錨點一樣）
+            const lastData: Record<string, any> = { ...payload }
+            let batteryLevel: number | undefined
+            let firmwareVersion: string | undefined
+            let status: DeviceStatus = DeviceStatus.OFFLINE // Default to offline
+
+            // Extract data specific to Gateway
+            // 注意：閘道器 MQTT 訊號中沒有 battery level 字段，只有 battery voltage
+            // 閘道器通常使用 5V 電源供電（5V plugged），不依賴電池，所以不設置 batteryLevel
+            // batteryLevel = undefined // 閘道器沒有電池電量信息
+            if (payload['fw ver'] !== undefined) firmwareVersion = payload['fw ver'].toString()
+            if (payload['UWB Joined'] === 'yes') status = DeviceStatus.ACTIVE // If UWB is joined, consider it active
+
+            const deviceName = payload.name || `${DEVICE_TYPE_CONFIG[DeviceType.GATEWAY].label} ${hardwareId}`
+
+            if (!existingDevice) {
+                if (!autoAddDevicesRef.current) {
+                    console.log(`⏭️ 自動加入已禁用，跳過創建 Gateway 設備: ${hardwareId}`)
+                    return prevDevices
+                }
+
+                const newDevice: Device = {
+                    id: `D${Date.now()}`,
+                    deviceUid,
+                    deviceType: DeviceType.GATEWAY,
+                    name: deviceName,
+                    hardwareId,
+                    status,
+                    gatewayId,
+                    batteryLevel,
+                    firmwareVersion,
+                    lastData: lastData,
+                    lastSeen: timestamp.toISOString(),
+                    createdAt: timestamp.toISOString(),
+                    updatedAt: timestamp.toISOString()
+                }
+                console.log(`✅ 自動發現新 Gateway 設備: ${hardwareId}`)
+                setDeviceData(prevData => [...prevData, {
+                    id: `DATA${Date.now()}`,
+                    deviceId: newDevice.id,
+                    deviceUid,
+                    dataType: 'gateway_health',
+                    content: payload.content,
+                    payload: lastData,
+                    timestamp: timestamp.toISOString(),
+                    topic,
+                    gatewayId,
+                    serialNo: payload['fw serial']?.toString()
+                }])
+                return [...prevDevices, newDevice]
+            } else {
+                const updates: Partial<Device> = {
+                    lastSeen: timestamp.toISOString(),
+                    status,
+                    updatedAt: timestamp.toISOString(),
+                    name: deviceName, // Always update name from MQTT for gateways
+                    lastData: lastData // 更新 lastData 為完整的原始 payload（像錨點一樣）
+                }
+                if (batteryLevel !== undefined) {
+                    updates.batteryLevel = batteryLevel
+                }
+                if (firmwareVersion !== undefined) {
+                    updates.firmwareVersion = firmwareVersion
+                }
+                setDeviceData(prevData => [...prevData, {
+                    id: `DATA${Date.now()}`,
+                    deviceId: existingDevice.id,
+                    deviceUid,
+                    dataType: 'gateway_health',
+                    content: payload.content,
+                    payload: lastData,
+                    timestamp: timestamp.toISOString(),
+                    topic,
+                    gatewayId,
+                    serialNo: payload['fw serial']?.toString()
+                }])
+                return prevDevices.map(device =>
+                    device.id === existingDevice.id
+                        ? { ...device, ...updates }
+                        : device
+                )
+            }
+        })
+    }, [autoAddDevicesRef, identifyDevice])
+
     // 訂閱 MQTT 消息
     useEffect(() => {
         // 1. 處理歷史消息（從 mqttBus 緩衝區獲取）
@@ -1064,6 +1173,8 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                         handleAnchorConfig(msg)
                     } else if (topic.includes('Message') && payload.node === 'ANCHOR' && payload.content === 'info') {
                         handleAnchorMessage(msg)
+                    } else if (topic === 'UWB/UWB_Gateway' && payload.content === 'gateway topic') {
+                        handleGatewayData(msg)
                     }
                 } catch (error) {
                     console.error('❌ 處理歷史消息失敗:', error)
@@ -1129,6 +1240,14 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             }
         })
 
+        // 訂閱 Gateway Topic
+        const unsubscribeGateway = mqttBus.subscribe(RoutePatterns.GATEWAY, (message: MQTTMessage) => {
+            const payload = message.payload || {}
+            if (payload.content === 'gateway topic') {
+                handleGatewayData(message)
+            }
+        })
+
         console.log('✅ DeviceManagementContext MQTT 訂閱已註冊')
 
         // 清理函數
@@ -1141,6 +1260,7 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             unsubscribeAncConf()
             unsubscribeAnchorConfig()
             unsubscribeAnchorMessage()
+            unsubscribeGateway()
             console.log('🔌 DeviceManagementContext MQTT 訂閱已取消')
         }
         // 只在組件掛載時訂閱一次，避免重複訂閱

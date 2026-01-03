@@ -7,6 +7,7 @@ export type DeviceUID =
     | `PEDO:${string}`      // PEDO:<id>
     | `TAG:${string}`       // TAG:<id>
     | `ANCHOR:${string}`    // ANCHOR:<id>
+    | `GATEWAY:${string}`   // GATEWAY:<gateway_id>
 
 // 設備類型枚舉
 export enum DeviceType {
@@ -14,7 +15,8 @@ export enum DeviceType {
     DIAPER_SENSOR = 'DIAPER',
     PEDOMETER = 'PEDO',
     UWB_TAG = 'TAG',
-    UWB_ANCHOR = 'ANCHOR'
+    UWB_ANCHOR = 'ANCHOR',
+    GATEWAY = 'GATEWAY'
 }
 
 // 設備狀態
@@ -31,7 +33,8 @@ export const DEVICE_TOPICS: Record<DeviceType, string[]> = {
     [DeviceType.DIAPER_SENSOR]: ['GWxxxx_Health'],
     [DeviceType.PEDOMETER]: ['GWxxxx_Health'],
     [DeviceType.UWB_TAG]: ['GWxxxx_TagConf', 'GWxxxx_Loca', 'GWxxxx_Message'],
-    [DeviceType.UWB_ANCHOR]: ['GWxxxx_AncConf', 'GWxxxx_Message']
+    [DeviceType.UWB_ANCHOR]: ['GWxxxx_AncConf', 'GWxxxx_Message'],
+    [DeviceType.GATEWAY]: ['UWB/UWB_Gateway']
 }
 
 // 設備配置接口
@@ -85,6 +88,14 @@ export const DEVICE_TYPE_CONFIG: Record<DeviceType, DeviceTypeConfig> = {
         prefix: 'ANCHOR',
         uniqueFields: ['id', 'gateway id', 'serial no'],
         dataTypes: ['config', 'info', '5V_status']
+    },
+    [DeviceType.GATEWAY]: {
+        label: 'UWB閘道器',
+        icon: 'Wifi',
+        color: 'bg-cyan-100 text-cyan-700',
+        prefix: 'GATEWAY',
+        uniqueFields: ['gateway id', 'name', 'fw ver'],
+        dataTypes: ['gateway topic', 'config', 'status', 'network']
     }
 }
 
@@ -202,6 +213,10 @@ export class DeviceUIDGenerator {
         return `ANCHOR:${id}` as DeviceUID
     }
 
+    static generateGateway(gatewayId: string | number): DeviceUID {
+        return `GATEWAY:${gatewayId}` as DeviceUID
+    }
+
     static parse(deviceUid: DeviceUID): { type: DeviceType; identifier: string } {
         const [type, identifier] = deviceUid.split(':')
         return {
@@ -241,5 +256,11 @@ export class DeviceDataValidator {
         return data.node === 'ANCHOR' &&
             (data.content === 'config' || data.content === 'info') &&
             data.id !== undefined
+    }
+
+    static validateGateway(data: any): boolean {
+        return data.content === 'gateway topic' &&
+            (data['gateway id'] !== undefined || data.gateway_id !== undefined) &&
+            data.name !== undefined
     }
 }

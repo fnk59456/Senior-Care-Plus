@@ -74,6 +74,7 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
             case 'PEDO': return Activity
             case 'TAG': return MapPin
             case 'ANCHOR': return Anchor
+            case 'GATEWAY': return Wifi
             default: return Settings
         }
     }

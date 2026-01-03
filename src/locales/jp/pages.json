@@ -207,7 +207,8 @@
             "diaperSensor": "おむつセンサー",
             "pedometer": "モーションセンサー",
             "uwbTag": "位置タグ",
-            "uwbAnchor": "位置アンカー"
+            "uwbAnchor": "位置アンカー",
+            "gateway": "UWBゲートウェイ"
         },
         "actions": {
             "addDevice": "デバイス追加",
@@ -251,7 +252,8 @@
                 "diaperSensor": "スマートおむつセンサー",
                 "pedometer": "モーションセンサー",
                 "uwbTag": "UWB位置タグ",
-                "uwbAnchor": "UWB位置アンカー"
+                "uwbAnchor": "UWB位置アンカー",
+                "gateway": "UWBゲートウェイ"
             },
             "placeholders": {
                 "deviceName": "デバイス名を入力",

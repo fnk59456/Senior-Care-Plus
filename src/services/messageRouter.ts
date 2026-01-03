@@ -156,6 +156,9 @@ export const RoutePatterns = {
     // 雲端 tag_config 主題
     TAG_CONFIG: /tag_config$/,
 
+    // Gateway Topic
+    GATEWAY: /^UWB\/UWB_Gateway$/,
+
     // 調試：匹配所有 Topics
     ALL_TOPICS: /.*/,
 }
