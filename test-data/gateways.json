@@ -34,15 +34,16 @@
     "sub_topic_downlink": "UWB/GW16B8_Dwlink",
     "discard_iot_data_time": 30,
     "discarded_iot_data": 0,
-    "total_discarded_data": 4,
-    "first_sync": "2025-330 22:51:15.11",
-    "last_sync": "2025-332 00:56:15.07",
-    "current": "2025-332 00:56:20.02",
-    "received_at": "2025-11-27T16:56:21.728Z",
-    "processing_timestamp": "2025-11-29T15:47:49.125Z",
+    "total_discarded_data": 18,
+    "first_sync": "2025-363 10:09:23.19",
+    "last_sync": "2026-004 01:03:36.04",
+    "current": "2026-004 01:03:43.06",
+    "received_at": "2026-01-03T17:03:44.968Z",
+    "processing_timestamp": "2026-01-03T17:03:49.979Z",
     "device_type": "gateway",
     "battery_level": "critical",
-    "createdAt": "2025-11-29T15:47:49.134Z"
+    "createdAt": "2025-11-29T15:47:49.134Z",
+    "timestamp": "2026-03-31T17:03:43.060Z"
   },
   {
     "id": "GW:F9E93C7C",

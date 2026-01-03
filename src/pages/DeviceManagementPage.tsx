@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,7 +43,8 @@ import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
 import { useDeviceDiscovery } from "@/contexts/DeviceDiscoveryContext"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { useDeviceMonitoring } from "@/contexts/DeviceMonitoringContext"
-import { DeviceType, DeviceStatus, DeviceUIDGenerator } from "@/types/device-types"
+import { DeviceType, DeviceStatus, DeviceUIDGenerator, Device } from "@/types/device-types"
+import { mqttBus } from "@/services/mqttBus"
 import DeviceBindingModal from "@/components/DeviceBindingModal"
 import DeviceDiscoveryModal from "@/components/DeviceDiscoveryModal"
 import DeviceMonitorCard from "@/components/DeviceMonitorCard"
@@ -91,6 +94,12 @@ export default function DeviceManagementPage() {
   // 批量操作状态
   const [selectedDeviceIds, setSelectedDeviceIds] = useState<Set<string>>(new Set())
   const [showBatchActions, setShowBatchActions] = useState(false)
+
+  // 閘道器更改UWB Network ID 對話框狀態
+  const [showGatewayNetworkIdDialog, setShowGatewayNetworkIdDialog] = useState(false)
+  const [gatewayNetworkIdValue, setGatewayNetworkIdValue] = useState<string>("")
+  const [selectedGatewayDevice, setSelectedGatewayDevice] = useState<Device | null>(null)
+  const [isSendingNetworkId, setIsSendingNetworkId] = useState(false)
 
   // 视图模式状态：'list' 或 'grid'
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
@@ -525,6 +534,128 @@ export default function DeviceManagementPage() {
       })
       setSelectedDeviceIds(new Set())
       alert(t('pages:deviceManagement.batchActions.unbindSuccess', { count: devicesToUnbind.length }))
+    }
+  }
+
+  // 獲取選中設備的類型（用於動態顯示批量操作選項）
+  const getSelectedDeviceTypes = (): Set<DeviceType> => {
+    const selectedDevices = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter((d): d is Device => d !== undefined)
+
+    return new Set(selectedDevices.map(d => d.deviceType))
+  }
+
+  // 獲取設備對應的 Gateway 和 downlink topic
+  const getDeviceGatewayInfo = (device: Device): { gateway: any; downlinkTopic: string } | null => {
+    if (!device.gatewayId) return null
+
+    // 嘗試通過 gatewayId 匹配 Gateway
+    const gateway = gateways.find(gw => {
+      // 檢查多個可能的字段位置
+      const cloudGatewayId = (gw as any).cloud_gateway_id || gw.cloudData?.gateway_id
+      return String(cloudGatewayId) === String(device.gatewayId)
+    })
+
+    if (!gateway || !gateway.cloudData?.sub_topic?.downlink) {
+      return null
+    }
+
+    // 檢查 downlink 是否已包含 UWB/ 前綴
+    const downlinkValue = gateway.cloudData.sub_topic.downlink
+    const downlinkTopic = downlinkValue.startsWith('UWB/') ? downlinkValue : `UWB/${downlinkValue}`
+
+    return { gateway, downlinkTopic }
+  }
+
+  // 生成不重複的隨機 serial_no (0-65535)
+  const generateSerialNo = (): number => {
+    return Math.floor(Math.random() * 65536) // 0-65535
+  }
+
+  // 處理閘道器更改UWB Network ID
+  const handleGatewayNetworkIdChange = () => {
+    // 只處理選中1個閘道器的情況
+    const selectedGatewayDevices = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.GATEWAY)
+
+    if (selectedGatewayDevices.length !== 1) {
+      alert('請選擇1個閘道器設備')
+      return
+    }
+
+    const gatewayDevice = selectedGatewayDevices[0]
+    setSelectedGatewayDevice(gatewayDevice)
+
+    // 從設備的 lastData 中獲取當前的 UWB Network ID（如果有的話）
+    const currentNetworkId = gatewayDevice.lastData?.['UWB Network ID'] || gatewayDevice.lastData?.['uwb_network_id']
+    setGatewayNetworkIdValue(currentNetworkId ? String(currentNetworkId) : "")
+
+    setShowGatewayNetworkIdDialog(true)
+  }
+
+  // 發送閘道器更改UWB Network ID 指令
+  const sendGatewayNetworkIdCommand = async () => {
+    if (!selectedGatewayDevice) return
+
+    // 驗證輸入
+    const networkId = parseInt(gatewayNetworkIdValue)
+    if (isNaN(networkId) || networkId < 1 || networkId > 65535) {
+      alert('UWB Network ID 必須在 1~65535 範圍內')
+      return
+    }
+
+    // 獲取 Gateway 信息
+    const gatewayInfo = getDeviceGatewayInfo(selectedGatewayDevice)
+    if (!gatewayInfo) {
+      alert('找不到對應的 Gateway 或 downlink 主題')
+      return
+    }
+
+    const { gateway, downlinkTopic } = gatewayInfo
+
+    // 檢查 MQTT 連接
+    if (!mqttBus.isConnected()) {
+      alert('MQTT Bus 未連線，無法發送指令')
+      return
+    }
+
+    setIsSendingNetworkId(true)
+
+    try {
+      // 構建配置訊息
+      const configMessage = {
+        content: "set gateway network id",
+        "gateway id": gateway.cloudData.gateway_id,
+        value: networkId,
+        "serial no": generateSerialNo()
+      }
+
+      console.log(`🚀 準備發送閘道器更改UWB Network ID指令:`)
+      console.log(`- 主題: ${downlinkTopic}`)
+      console.log(`- Gateway ID: ${configMessage["gateway id"]}`)
+      console.log(`- Network ID: ${networkId}`)
+      console.log(`- Serial No: ${configMessage["serial no"]}`)
+      console.log(`- 完整訊息:`, JSON.stringify(configMessage, null, 2))
+
+      // 發送消息
+      await mqttBus.publish(downlinkTopic, configMessage, 1)
+
+      console.log('✅ 閘道器更改UWB Network ID指令已成功發送')
+      alert(`✅ 已成功發送更改UWB Network ID指令到 ${selectedGatewayDevice.name}\nNetwork ID: ${networkId}`)
+
+      // 關閉對話框並重置狀態
+      setShowGatewayNetworkIdDialog(false)
+      setGatewayNetworkIdValue("")
+      setSelectedGatewayDevice(null)
+      setSelectedDeviceIds(new Set())
+
+    } catch (error: any) {
+      console.error('❌ 發送指令失敗:', error)
+      alert('發送指令失敗: ' + (error?.message || error))
+    } finally {
+      setIsSendingNetworkId(false)
     }
   }
 
@@ -1059,7 +1190,8 @@ export default function DeviceManagementPage() {
                         <ChevronDown className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuContent align="end" className="w-56">
+                      {/* 通用批量操作 */}
                       <DropdownMenuItem
                         onClick={handleBatchUnbind}
                         className="text-orange-600 focus:text-orange-700 focus:bg-orange-50 cursor-pointer"
@@ -1075,6 +1207,128 @@ export default function DeviceManagementPage() {
                         <Trash2 className="h-4 w-4 mr-2" />
                         {t('pages:deviceManagement.batchActions.batchRemove')}
                       </DropdownMenuItem>
+
+                      {/* 根據設備類型顯示不同的批量操作選項 */}
+                      {(() => {
+                        const selectedTypes = getSelectedDeviceTypes()
+                        const items: React.ReactNode[] = []
+
+                        // 閘道器批量操作（只在選中1個閘道器時顯示"更改UWB Network ID"）
+                        const selectedGatewayDevices = Array.from(selectedDeviceIds)
+                          .map(id => devices.find(d => d.id === id))
+                          .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.GATEWAY)
+
+                        if (selectedGatewayDevices.length > 0) {
+                          items.push(
+                            <DropdownMenuSeparator key="gateway-sep" />
+                          )
+
+                          // 只在選中1個閘道器時顯示"更改UWB Network ID"
+                          if (selectedGatewayDevices.length === 1) {
+                            items.push(
+                              <DropdownMenuItem
+                                key="gateway-network-id"
+                                onClick={handleGatewayNetworkIdChange}
+                                className="cursor-pointer"
+                              >
+                                <Wifi className="h-4 w-4 mr-2" />
+                                更改UWB Network ID
+                              </DropdownMenuItem>
+                            )
+                          }
+
+                          items.push(
+                            <DropdownMenuItem
+                              key="gateway-location"
+                              onClick={() => {/* TODO: 實現修改所屬養老院及樓層 */ }}
+                              className="cursor-pointer"
+                            >
+                              <Settings className="h-4 w-4 mr-2" />
+                              修改所屬養老院及樓層
+                            </DropdownMenuItem>
+                          )
+                        }
+
+                        // 定位錨點批量操作
+                        if (selectedTypes.has(DeviceType.UWB_ANCHOR)) {
+                          items.push(
+                            <DropdownMenuSeparator key="anchor-sep" />,
+                            <DropdownMenuItem
+                              key="anchor-location"
+                              onClick={() => {/* TODO: 實現修改所屬養老院及樓層 */ }}
+                              className="cursor-pointer"
+                            >
+                              <MapPin className="h-4 w-4 mr-2" />
+                              修改所屬養老院及樓層
+                            </DropdownMenuItem>,
+                            <DropdownMenuItem
+                              key="anchor-height"
+                              onClick={() => {/* TODO: 實現修改高度(Z坐標) */ }}
+                              className="cursor-pointer"
+                            >
+                              <Anchor className="h-4 w-4 mr-2" />
+                              修改高度(Z坐標)
+                            </DropdownMenuItem>,
+                            <DropdownMenuItem
+                              key="anchor-request-data"
+                              onClick={() => {/* TODO: 實現要求錨點資料 */ }}
+                              className="cursor-pointer"
+                            >
+                              <Activity className="h-4 w-4 mr-2" />
+                              要求錨點資料
+                            </DropdownMenuItem>,
+                            <DropdownMenuItem
+                              key="anchor-power"
+                              onClick={() => {/* TODO: 實現修改功率 */ }}
+                              className="cursor-pointer"
+                            >
+                              <Settings className="h-4 w-4 mr-2" />
+                              修改功率
+                            </DropdownMenuItem>
+                          )
+                        }
+
+                        // 定位標籤批量操作
+                        if (selectedTypes.has(DeviceType.UWB_TAG)) {
+                          items.push(
+                            <DropdownMenuSeparator key="tag-sep" />,
+                            <DropdownMenuItem
+                              key="tag-location"
+                              onClick={() => {/* TODO: 實現修改所屬養老院及樓層 */ }}
+                              className="cursor-pointer"
+                            >
+                              <MapPin className="h-4 w-4 mr-2" />
+                              修改所屬養老院及樓層
+                            </DropdownMenuItem>,
+                            <DropdownMenuItem
+                              key="tag-config"
+                              onClick={() => {/* TODO: 實現更改參數設定 */ }}
+                              className="cursor-pointer"
+                            >
+                              <Settings className="h-4 w-4 mr-2" />
+                              更改參數設定
+                            </DropdownMenuItem>,
+                            <DropdownMenuItem
+                              key="tag-request-data"
+                              onClick={() => {/* TODO: 實現要求標籤資料 */ }}
+                              className="cursor-pointer"
+                            >
+                              <Activity className="h-4 w-4 mr-2" />
+                              要求標籤資料
+                            </DropdownMenuItem>,
+                            <DropdownMenuItem
+                              key="tag-power"
+                              onClick={() => {/* TODO: 實現修改功率 */ }}
+                              className="cursor-pointer"
+                            >
+                              <Settings className="h-4 w-4 mr-2" />
+                              修改功率
+                            </DropdownMenuItem>
+                          )
+                        }
+
+                        return items
+                      })()}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -1298,6 +1552,86 @@ export default function DeviceManagementPage() {
           }}
           device={selectedDeviceInfo}
         />
+
+        {/* 閘道器更改UWB Network ID 對話框 */}
+        <Dialog open={showGatewayNetworkIdDialog} onOpenChange={setShowGatewayNetworkIdDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Wifi className="h-5 w-5" />
+                更改UWB Network ID
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {selectedGatewayDevice && (
+                <>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">閘道器名稱</Label>
+                    <p className="text-sm font-semibold mt-1">{selectedGatewayDevice.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                    <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                      {selectedGatewayDevice.gatewayId || '未設定'}
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="network-id" className="text-sm font-medium">
+                      UWB Network ID <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="network-id"
+                      type="number"
+                      min="1"
+                      max="65535"
+                      value={gatewayNetworkIdValue}
+                      onChange={(e) => setGatewayNetworkIdValue(e.target.value)}
+                      placeholder="1 ~ 65535"
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">範圍: 1 ~ 65535</p>
+                  </div>
+                  <div className="bg-gray-50 p-3 rounded">
+                    <Label className="text-xs font-medium text-gray-600">指令資訊（僅供參考）</Label>
+                    <div className="mt-2 space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Content:</span>
+                        <span className="font-mono">set gateway network id</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Gateway ID:</span>
+                        <span className="font-mono">{selectedGatewayDevice.gatewayId || 'N/A'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Serial No:</span>
+                        <span className="font-mono">自動生成 (0~65535)</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowGatewayNetworkIdDialog(false)
+                  setGatewayNetworkIdValue("")
+                  setSelectedGatewayDevice(null)
+                }}
+                disabled={isSendingNetworkId}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={sendGatewayNetworkIdCommand}
+                disabled={isSendingNetworkId || !gatewayNetworkIdValue || parseInt(gatewayNetworkIdValue) < 1 || parseInt(gatewayNetworkIdValue) > 65535}
+              >
+                {isSendingNetworkId ? '發送中...' : '發送指令'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </>
     </div>
   )
