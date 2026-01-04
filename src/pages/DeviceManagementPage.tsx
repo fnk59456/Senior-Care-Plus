@@ -109,6 +109,12 @@ export default function DeviceManagementPage() {
   const [gatewayLocationFloorId, setGatewayLocationFloorId] = useState<string>("")
   const [isSavingGatewayLocation, setIsSavingGatewayLocation] = useState(false)
 
+  // 錨點修改高度(Z坐標) 對話框狀態
+  const [showAnchorHeightDialog, setShowAnchorHeightDialog] = useState(false)
+  const [anchorHeightValue, setAnchorHeightValue] = useState<string>("")
+  const [selectedAnchorDevice, setSelectedAnchorDevice] = useState<Device | null>(null)
+  const [isSendingAnchorHeight, setIsSendingAnchorHeight] = useState(false)
+
   // 视图模式状态：'list' 或 'grid'
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
@@ -686,6 +692,130 @@ export default function DeviceManagementPage() {
       alert('更新失敗: ' + (error?.message || error))
     } finally {
       setIsSavingGatewayLocation(false)
+    }
+  }
+
+  // 從設備名稱中提取錨點名稱（例如："UWB定位錨點 DW4C0B" -> "DW4C0B"）
+  const extractAnchorName = (deviceName: string): string => {
+    // 如果名稱包含 "UWB定位錨點 "，提取後面的部分
+    const prefix = "UWB定位錨點 "
+    if (deviceName.startsWith(prefix)) {
+      return deviceName.substring(prefix.length)
+    }
+    // 如果沒有前綴，直接返回（可能是直接來自MQTT的名稱）
+    return deviceName
+  }
+
+  // 處理錨點修改高度(Z坐標)
+  const handleAnchorHeightChange = () => {
+    // 只處理選中1個錨點的情況
+    const selectedAnchorDevices = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_ANCHOR)
+
+    if (selectedAnchorDevices.length !== 1) {
+      alert('請選擇1個定位錨點設備')
+      return
+    }
+
+    const anchorDevice = selectedAnchorDevices[0]
+    setSelectedAnchorDevice(anchorDevice)
+
+    // 從設備的 lastData 中獲取當前的 Z 坐標
+    const currentZ = anchorDevice.lastData?.position?.z
+    setAnchorHeightValue(currentZ !== undefined ? String(currentZ) : "")
+
+    setShowAnchorHeightDialog(true)
+  }
+
+  // 發送錨點修改高度(Z坐標) 指令
+  const sendAnchorHeightCommand = async () => {
+    if (!selectedAnchorDevice) return
+
+    // 驗證輸入
+    const zValue = parseFloat(anchorHeightValue)
+    if (isNaN(zValue)) {
+      alert('請輸入有效的Z坐標數值')
+      return
+    }
+
+    // 獲取 Gateway 信息
+    const gatewayInfo = getDeviceGatewayInfo(selectedAnchorDevice)
+    if (!gatewayInfo) {
+      alert('找不到對應的 Gateway 或 downlink 主題')
+      return
+    }
+
+    const { gateway, downlinkTopic } = gatewayInfo
+
+    // 檢查 MQTT 連接
+    if (!mqttBus.isConnected()) {
+      alert('MQTT Bus 未連線，無法發送指令')
+      return
+    }
+
+    // 從設備數據中提取參數
+    const lastData = selectedAnchorDevice.lastData || {}
+    const position = lastData.position || { x: 0, y: 0, z: 0 }
+
+    // 提取錨點名稱
+    const anchorName = extractAnchorName(selectedAnchorDevice.name)
+    const anchorId = parseInt(selectedAnchorDevice.hardwareId)
+    const gatewayId = gateway.cloudData?.gateway_id || parseInt(selectedAnchorDevice.gatewayId || "0")
+
+    if (isNaN(anchorId) || isNaN(gatewayId)) {
+      alert('無法獲取有效的錨點ID或閘道器ID')
+      return
+    }
+
+    setIsSendingAnchorHeight(true)
+
+    try {
+      // 構建配置訊息（使用空格格式的字段名）
+      const configMessage = {
+        content: "configChange",
+        "gateway id": gatewayId,
+        node: "ANCHOR",
+        name: anchorName,
+        id: anchorId,
+        "fw update": lastData.fw_update ?? 0,
+        led: lastData.led ?? 0,
+        ble: lastData.ble ?? 0,
+        initiator: lastData.initiator ?? 0,
+        position: {
+          x: position.x ?? 0,
+          y: position.y ?? 0,
+          z: zValue  // 使用用戶輸入的新Z值
+        },
+        "serial no": generateSerialNo()
+      }
+
+      console.log(`🚀 準備發送錨點修改高度指令:`)
+      console.log(`- 主題: ${downlinkTopic}`)
+      console.log(`- Gateway ID: ${gatewayId}`)
+      console.log(`- Anchor 名稱: ${anchorName}`)
+      console.log(`- Anchor ID: ${anchorId}`)
+      console.log(`- 新Z坐標: ${zValue}`)
+      console.log(`- Serial No: ${configMessage["serial no"]}`)
+      console.log(`- 完整訊息:`, JSON.stringify(configMessage, null, 2))
+
+      // 發送消息
+      await mqttBus.publish(downlinkTopic, configMessage, 1)
+
+      console.log('✅ 錨點修改高度指令已成功發送')
+      alert(`✅ 已成功發送修改高度指令到 ${selectedAnchorDevice.name}\n新Z坐標: ${zValue}`)
+
+      // 關閉對話框並重置狀態
+      setShowAnchorHeightDialog(false)
+      setAnchorHeightValue("")
+      setSelectedAnchorDevice(null)
+      setSelectedDeviceIds(new Set())
+
+    } catch (error: any) {
+      console.error('❌ 發送指令失敗:', error)
+      alert('發送指令失敗: ' + (error?.message || error))
+    } finally {
+      setIsSendingAnchorHeight(false)
     }
   }
 
@@ -1364,9 +1494,30 @@ export default function DeviceManagementPage() {
                         }
 
                         // 定位錨點批量操作
-                        if (selectedTypes.has(DeviceType.UWB_ANCHOR)) {
+                        const selectedAnchorDevices = Array.from(selectedDeviceIds)
+                          .map(id => devices.find(d => d.id === id))
+                          .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_ANCHOR)
+
+                        if (selectedAnchorDevices.length > 0) {
                           items.push(
-                            <DropdownMenuSeparator key="anchor-sep" />,
+                            <DropdownMenuSeparator key="anchor-sep" />
+                          )
+
+                          // 只在選中1個錨點時顯示"修改高度(Z坐標)"
+                          if (selectedAnchorDevices.length === 1) {
+                            items.push(
+                              <DropdownMenuItem
+                                key="anchor-height"
+                                onClick={handleAnchorHeightChange}
+                                className="cursor-pointer"
+                              >
+                                <Anchor className="h-4 w-4 mr-2" />
+                                修改高度(Z坐標)
+                              </DropdownMenuItem>
+                            )
+                          }
+
+                          items.push(
                             <DropdownMenuItem
                               key="anchor-location"
                               onClick={() => {/* TODO: 實現修改所屬養老院及樓層 */ }}
@@ -1374,14 +1525,6 @@ export default function DeviceManagementPage() {
                             >
                               <MapPin className="h-4 w-4 mr-2" />
                               修改所屬養老院及樓層
-                            </DropdownMenuItem>,
-                            <DropdownMenuItem
-                              key="anchor-height"
-                              onClick={() => {/* TODO: 實現修改高度(Z坐標) */ }}
-                              className="cursor-pointer"
-                            >
-                              <Anchor className="h-4 w-4 mr-2" />
-                              修改高度(Z坐標)
                             </DropdownMenuItem>,
                             <DropdownMenuItem
                               key="anchor-request-data"
@@ -1888,6 +2031,139 @@ export default function DeviceManagementPage() {
                 disabled={isSavingGatewayLocation || !gatewayLocationFloorId}
               >
                 {isSavingGatewayLocation ? '保存中...' : '確認修改'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* 錨點修改高度(Z坐標) 對話框 */}
+        <Dialog open={showAnchorHeightDialog} onOpenChange={setShowAnchorHeightDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Anchor className="h-5 w-5" />
+                修改高度(Z坐標)
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {selectedAnchorDevice && (() => {
+                const lastData = selectedAnchorDevice.lastData || {}
+                const position = lastData.position || { x: 0, y: 0, z: 0 }
+                const anchorName = extractAnchorName(selectedAnchorDevice.name)
+                const gatewayInfo = getDeviceGatewayInfo(selectedAnchorDevice)
+
+                return (
+                  <>
+                    {/* 錨點信息 - 簡潔顯示 */}
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">錨點名稱</Label>
+                      <p className="text-sm font-semibold mt-1">{anchorName}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Anchor ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {selectedAnchorDevice.hardwareId}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedAnchorDevice.gatewayId || '未設定'}
+                      </p>
+                    </div>
+
+                    {/* Z坐標輸入 */}
+                    <div>
+                      <Label htmlFor="anchor-z" className="text-sm font-medium">
+                        Z坐標（高度） <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="anchor-z"
+                        type="number"
+                        step="0.01"
+                        value={anchorHeightValue}
+                        onChange={(e) => setAnchorHeightValue(e.target.value)}
+                        placeholder="請輸入Z坐標值"
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">輸入新的高度值（單位：米）</p>
+                    </div>
+
+                    {/* 指令資訊預覽 */}
+                    <div className="bg-gray-50 p-3 rounded">
+                      <Label className="text-sm font-medium text-gray-600">指令資訊（僅供參考）</Label>
+                      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Content:</span>
+                          <span className="font-mono">configChange</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Gateway ID:</span>
+                          <span className="font-mono">{gatewayInfo?.gateway.cloudData?.gateway_id || selectedAnchorDevice.gatewayId || 'N/A'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Node:</span>
+                          <span className="font-mono">ANCHOR</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Name:</span>
+                          <span className="font-mono">{anchorName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">ID:</span>
+                          <span className="font-mono">{selectedAnchorDevice.hardwareId}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">X坐標:</span>
+                          <span className="font-mono">{position.x ?? 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Y坐標:</span>
+                          <span className="font-mono">{position.y ?? 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">fw update:</span>
+                          <span className="font-mono">{lastData.fw_update ?? 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">led:</span>
+                          <span className="font-mono">{lastData.led ?? 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">ble:</span>
+                          <span className="font-mono">{lastData.ble ?? 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">initiator:</span>
+                          <span className="font-mono">{lastData.initiator ?? 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Serial No:</span>
+                          <span className="font-mono">0~65535</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAnchorHeightDialog(false)
+                  setAnchorHeightValue("")
+                  setSelectedAnchorDevice(null)
+                }}
+                disabled={isSendingAnchorHeight}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={sendAnchorHeightCommand}
+                disabled={isSendingAnchorHeight || !anchorHeightValue || isNaN(parseFloat(anchorHeightValue))}
+              >
+                {isSendingAnchorHeight ? '發送中...' : '確認修改'}
               </Button>
             </DialogFooter>
           </DialogContent>
