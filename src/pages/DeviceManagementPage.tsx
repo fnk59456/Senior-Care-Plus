@@ -118,6 +118,17 @@ export default function DeviceManagementPage() {
   // 錨點要求資料 狀態
   const [isRequestingAnchorData, setIsRequestingAnchorData] = useState(false)
 
+  // 錨點修改功率 對話框狀態
+  const [showAnchorPowerDialog, setShowAnchorPowerDialog] = useState(false)
+  const [anchorPowerValues, setAnchorPowerValues] = useState({
+    boostNorm: "",
+    boost500: "",
+    boost250: "",
+    boost125: ""
+  })
+  const [selectedAnchorForPower, setSelectedAnchorForPower] = useState<Device | null>(null)
+  const [isSendingAnchorPower, setIsSendingAnchorPower] = useState(false)
+
   // 视图模式状态：'list' 或 'grid'
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
@@ -819,6 +830,136 @@ export default function DeviceManagementPage() {
       alert('發送指令失敗: ' + (error?.message || error))
     } finally {
       setIsSendingAnchorHeight(false)
+    }
+  }
+
+  // 處理錨點修改功率
+  const handleAnchorPowerChange = () => {
+    // 只處理選中1個錨點的情況
+    const selectedAnchorDevices = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_ANCHOR)
+
+    if (selectedAnchorDevices.length !== 1) {
+      alert('請選擇1個定位錨點設備')
+      return
+    }
+
+    const anchorDevice = selectedAnchorDevices[0]
+    setSelectedAnchorForPower(anchorDevice)
+
+    // 從設備的 lastData 中獲取當前的功率值
+    const txPower = anchorDevice.lastData?.['uwb tx power'] || anchorDevice.lastData?.['uwb_tx_power'] || {}
+
+    // 支持多種字段名格式
+    const getPowerValue = (key: string): string => {
+      const value = txPower[key] ||
+        txPower[key.replace(/[()]/g, '')] ||
+        txPower[key.replace(/\s/g, '_')] ||
+        txPower[key.replace(/\s/g, '').toLowerCase()]
+      return value !== undefined ? String(value) : ""
+    }
+
+    setAnchorPowerValues({
+      boostNorm: getPowerValue('boost norm(5.0~30.5dB)') || getPowerValue('boost_norm') || "",
+      boost500: getPowerValue('boost 500(5.0~30.5dB)') || getPowerValue('boost_500') || "",
+      boost250: getPowerValue('boost 250(5.0~30.5dB)') || getPowerValue('boost_250') || "",
+      boost125: getPowerValue('boost 125(5.0~30.5dB)') || getPowerValue('boost_125') || ""
+    })
+
+    setShowAnchorPowerDialog(true)
+  }
+
+  // 發送錨點修改功率 指令
+  const sendAnchorPowerCommand = async () => {
+    if (!selectedAnchorForPower) return
+
+    // 驗證輸入
+    const boostNorm = parseFloat(anchorPowerValues.boostNorm)
+    const boost500 = parseFloat(anchorPowerValues.boost500)
+    const boost250 = parseFloat(anchorPowerValues.boost250)
+    const boost125 = parseFloat(anchorPowerValues.boost125)
+
+    if (isNaN(boostNorm) || isNaN(boost500) || isNaN(boost250) || isNaN(boost125)) {
+      alert('請輸入所有功率值')
+      return
+    }
+
+    // 驗證範圍 (5.0~30.5dB)
+    if (boostNorm < 5.0 || boostNorm > 30.5 ||
+      boost500 < 5.0 || boost500 > 30.5 ||
+      boost250 < 5.0 || boost250 > 30.5 ||
+      boost125 < 5.0 || boost125 > 30.5) {
+      alert('功率值必須在 5.0~30.5 dB 範圍內')
+      return
+    }
+
+    // 獲取 Gateway 信息
+    const gatewayInfo = getDeviceGatewayInfo(selectedAnchorForPower)
+    if (!gatewayInfo) {
+      alert('找不到對應的 Gateway 或 downlink 主題')
+      return
+    }
+
+    const { gateway, downlinkTopic } = gatewayInfo
+
+    // 檢查 MQTT 連接
+    if (!mqttBus.isConnected()) {
+      alert('MQTT Bus 未連線，無法發送指令')
+      return
+    }
+
+    const anchorId = parseInt(selectedAnchorForPower.hardwareId)
+    const gatewayId = gateway.cloudData?.gateway_id || parseInt(selectedAnchorForPower.gatewayId || "0")
+
+    if (isNaN(anchorId) || isNaN(gatewayId)) {
+      alert('無法獲取有效的錨點ID或閘道器ID')
+      return
+    }
+
+    setIsSendingAnchorPower(true)
+
+    try {
+      // 構建配置訊息（使用空格格式的字段名）
+      const configMessage = {
+        content: "tx power configChange",
+        "gateway id": gatewayId,
+        id: anchorId,
+        "boost norm(5.0~30.5dB)": boostNorm,
+        "boost 500(5.0~30.5dB)": boost500,
+        "boost 250(5.0~30.5dB)": boost250,
+        "boost 125(5.0~30.5dB)": boost125,
+        "serial no": generateSerialNo()
+      }
+
+      console.log(`🚀 準備發送錨點修改功率指令:`)
+      console.log(`- 主題: ${downlinkTopic}`)
+      console.log(`- Gateway ID: ${gatewayId}`)
+      console.log(`- Anchor ID: ${anchorId}`)
+      console.log(`- Boost Norm: ${boostNorm} dB`)
+      console.log(`- Boost 500: ${boost500} dB`)
+      console.log(`- Boost 250: ${boost250} dB`)
+      console.log(`- Boost 125: ${boost125} dB`)
+      console.log(`- Serial No: ${configMessage["serial no"]}`)
+      console.log(`- 完整訊息:`, JSON.stringify(configMessage, null, 2))
+
+      // 發送消息
+      await mqttBus.publish(downlinkTopic, configMessage, 1)
+
+      console.log('✅ 錨點修改功率指令已成功發送')
+      alert(`✅ 已成功發送修改功率指令到 ${selectedAnchorForPower.name}`)
+
+      // 關閉對話框並重置狀態
+      setShowAnchorPowerDialog(false)
+      setAnchorPowerValues({ boostNorm: "", boost500: "", boost250: "", boost125: "" })
+      setSelectedAnchorForPower(null)
+      setSelectedDeviceIds(new Set())
+
+    } catch (error: any) {
+      console.error('❌ 發送指令失敗:', error)
+      alert('發送指令失敗: ' + (error?.message || error))
+    } finally {
+      setIsSendingAnchorPower(false)
     }
   }
 
@@ -1603,7 +1744,7 @@ export default function DeviceManagementPage() {
                             <DropdownMenuSeparator key="anchor-sep" />
                           )
 
-                          // 只在選中1個錨點時顯示"修改高度(Z坐標)"
+                          // 只在選中1個錨點時顯示這些操作
                           if (selectedAnchorDevices.length === 1) {
                             items.push(
                               <DropdownMenuItem
@@ -1613,6 +1754,14 @@ export default function DeviceManagementPage() {
                               >
                                 <Anchor className="h-4 w-4 mr-2" />
                                 修改高度(Z坐標)
+                              </DropdownMenuItem>,
+                              <DropdownMenuItem
+                                key="anchor-power"
+                                onClick={handleAnchorPowerChange}
+                                className="cursor-pointer"
+                              >
+                                <Settings className="h-4 w-4 mr-2" />
+                                修改功率
                               </DropdownMenuItem>
                             )
                           }
@@ -1634,14 +1783,6 @@ export default function DeviceManagementPage() {
                             >
                               <Activity className="h-4 w-4 mr-2" />
                               {isRequestingAnchorData ? '發送中...' : '要求錨點資料'}
-                            </DropdownMenuItem>,
-                            <DropdownMenuItem
-                              key="anchor-power"
-                              onClick={() => {/* TODO: 實現修改功率 */ }}
-                              className="cursor-pointer"
-                            >
-                              <Settings className="h-4 w-4 mr-2" />
-                              修改功率
                             </DropdownMenuItem>
                           )
                         }
@@ -2265,6 +2406,143 @@ export default function DeviceManagementPage() {
                 disabled={isSendingAnchorHeight || !anchorHeightValue || isNaN(parseFloat(anchorHeightValue))}
               >
                 {isSendingAnchorHeight ? '發送中...' : '確認修改'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* 錨點修改功率 對話框 */}
+        <Dialog open={showAnchorPowerDialog} onOpenChange={setShowAnchorPowerDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                修改功率
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {selectedAnchorForPower && (() => {
+                const anchorName = extractAnchorName(selectedAnchorForPower.name)
+                const gatewayInfo = getDeviceGatewayInfo(selectedAnchorForPower)
+
+                return (
+                  <>
+                    {/* 錨點信息 - 簡潔顯示 */}
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">錨點名稱</Label>
+                      <p className="text-sm font-semibold mt-1">{anchorName}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Anchor ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {selectedAnchorForPower.hardwareId}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedAnchorForPower.gatewayId || '未設定'}
+                      </p>
+                    </div>
+
+                    {/* 功率值輸入 */}
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="boost-norm" className="text-sm font-medium">
+                          boost norm(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="boost-norm"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={anchorPowerValues.boostNorm}
+                          onChange={(e) => setAnchorPowerValues({ ...anchorPowerValues, boostNorm: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="boost-500" className="text-sm font-medium">
+                          boost 500(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="boost-500"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={anchorPowerValues.boost500}
+                          onChange={(e) => setAnchorPowerValues({ ...anchorPowerValues, boost500: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="boost-250" className="text-sm font-medium">
+                          boost 250(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="boost-250"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={anchorPowerValues.boost250}
+                          onChange={(e) => setAnchorPowerValues({ ...anchorPowerValues, boost250: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="boost-125" className="text-sm font-medium">
+                          boost 125(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="boost-125"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={anchorPowerValues.boost125}
+                          onChange={(e) => setAnchorPowerValues({ ...anchorPowerValues, boost125: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAnchorPowerDialog(false)
+                  setAnchorPowerValues({ boostNorm: "", boost500: "", boost250: "", boost125: "" })
+                  setSelectedAnchorForPower(null)
+                }}
+                disabled={isSendingAnchorPower}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={sendAnchorPowerCommand}
+                disabled={
+                  isSendingAnchorPower ||
+                  !anchorPowerValues.boostNorm ||
+                  !anchorPowerValues.boost500 ||
+                  !anchorPowerValues.boost250 ||
+                  !anchorPowerValues.boost125 ||
+                  isNaN(parseFloat(anchorPowerValues.boostNorm)) ||
+                  isNaN(parseFloat(anchorPowerValues.boost500)) ||
+                  isNaN(parseFloat(anchorPowerValues.boost250)) ||
+                  isNaN(parseFloat(anchorPowerValues.boost125))
+                }
+              >
+                {isSendingAnchorPower ? '發送中...' : '確認修改'}
               </Button>
             </DialogFooter>
           </DialogContent>
