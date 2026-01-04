@@ -1350,6 +1350,7 @@ export default function DeviceManagementPage() {
                                 <Wifi className="h-4 w-4 mr-2" />
                                 更改UWB Network ID
                               </DropdownMenuItem>,
+                              <DropdownMenuSeparator key="gateway-location-sep" />,
                               <DropdownMenuItem
                                 key="gateway-location"
                                 onClick={handleGatewayLocationChange}
