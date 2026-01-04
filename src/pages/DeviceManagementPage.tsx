@@ -115,6 +115,9 @@ export default function DeviceManagementPage() {
   const [selectedAnchorDevice, setSelectedAnchorDevice] = useState<Device | null>(null)
   const [isSendingAnchorHeight, setIsSendingAnchorHeight] = useState(false)
 
+  // 錨點要求資料 狀態
+  const [isRequestingAnchorData, setIsRequestingAnchorData] = useState(false)
+
   // 视图模式状态：'list' 或 'grid'
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
 
@@ -816,6 +819,103 @@ export default function DeviceManagementPage() {
       alert('發送指令失敗: ' + (error?.message || error))
     } finally {
       setIsSendingAnchorHeight(false)
+    }
+  }
+
+  // 處理錨點要求資料（支持多選）
+  const handleRequestAnchorData = async () => {
+    // 獲取所有選中的錨點設備
+    const selectedAnchorDevices = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_ANCHOR)
+
+    if (selectedAnchorDevices.length === 0) {
+      alert('請至少選擇1個定位錨點設備')
+      return
+    }
+
+    // 檢查 MQTT 連接
+    if (!mqttBus.isConnected()) {
+      alert('MQTT Bus 未連線，無法發送指令')
+      return
+    }
+
+    setIsRequestingAnchorData(true)
+
+    try {
+      let successCount = 0
+      let failCount = 0
+      const failedDevices: string[] = []
+
+      // 循環處理每個選中的錨點
+      for (const anchorDevice of selectedAnchorDevices) {
+        try {
+          // 獲取 Gateway 信息
+          const gatewayInfo = getDeviceGatewayInfo(anchorDevice)
+          if (!gatewayInfo) {
+            console.warn(`⚠️ 找不到錨點 ${anchorDevice.name} 對應的 Gateway 或 downlink 主題`)
+            failCount++
+            failedDevices.push(anchorDevice.name)
+            continue
+          }
+
+          const { gateway, downlinkTopic } = gatewayInfo
+          const anchorId = parseInt(anchorDevice.hardwareId)
+          const gatewayId = gateway.cloudData?.gateway_id || parseInt(anchorDevice.gatewayId || "0")
+
+          if (isNaN(anchorId) || isNaN(gatewayId)) {
+            console.warn(`⚠️ 錨點 ${anchorDevice.name} 的 ID 或 Gateway ID 無效`)
+            failCount++
+            failedDevices.push(anchorDevice.name)
+            continue
+          }
+
+          // 構建請求訊息
+          const requestMessage = {
+            content: "node info request",
+            "gateway id": gatewayId,
+            id: anchorId,
+            "serial no": generateSerialNo()
+          }
+
+          console.log(`🚀 準備發送錨點要求資料指令:`)
+          console.log(`- 錨點: ${anchorDevice.name}`)
+          console.log(`- 主題: ${downlinkTopic}`)
+          console.log(`- Gateway ID: ${gatewayId}`)
+          console.log(`- Anchor ID: ${anchorId}`)
+          console.log(`- Serial No: ${requestMessage["serial no"]}`)
+          console.log(`- 完整訊息:`, JSON.stringify(requestMessage, null, 2))
+
+          // 發送消息
+          await mqttBus.publish(downlinkTopic, requestMessage, 1)
+          successCount++
+
+          console.log(`✅ 錨點 ${anchorDevice.name} 的要求資料指令已成功發送`)
+
+        } catch (error: any) {
+          console.error(`❌ 發送錨點 ${anchorDevice.name} 的要求資料指令失敗:`, error)
+          failCount++
+          failedDevices.push(anchorDevice.name)
+        }
+      }
+
+      // 顯示結果
+      if (successCount > 0 && failCount === 0) {
+        alert(`✅ 已成功發送要求資料指令到 ${successCount} 個錨點設備`)
+      } else if (successCount > 0 && failCount > 0) {
+        alert(`⚠️ 已成功發送 ${successCount} 個，失敗 ${failCount} 個\n失敗設備: ${failedDevices.join('、')}`)
+      } else {
+        alert(`❌ 所有指令發送失敗\n失敗設備: ${failedDevices.join('、')}`)
+      }
+
+      // 清空選擇
+      setSelectedDeviceIds(new Set())
+
+    } catch (error: any) {
+      console.error('❌ 發送要求資料指令時發生錯誤:', error)
+      alert('發送指令時發生錯誤: ' + (error?.message || error))
+    } finally {
+      setIsRequestingAnchorData(false)
     }
   }
 
@@ -1528,11 +1628,12 @@ export default function DeviceManagementPage() {
                             </DropdownMenuItem>,
                             <DropdownMenuItem
                               key="anchor-request-data"
-                              onClick={() => {/* TODO: 實現要求錨點資料 */ }}
+                              onClick={handleRequestAnchorData}
                               className="cursor-pointer"
+                              disabled={isRequestingAnchorData}
                             >
                               <Activity className="h-4 w-4 mr-2" />
-                              要求錨點資料
+                              {isRequestingAnchorData ? '發送中...' : '要求錨點資料'}
                             </DropdownMenuItem>,
                             <DropdownMenuItem
                               key="anchor-power"
