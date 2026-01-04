@@ -30,6 +30,11 @@ interface DeviceListRowProps {
     showCheckbox?: boolean
     isSelected?: boolean
     onSelectChange?: (deviceId: string, checked: boolean) => void
+    // 閘道器綁定信息（場域和樓層）
+    locationInfo?: {
+        homeName?: string
+        floorName?: string
+    }
 }
 
 export default function DeviceListRow({
@@ -38,7 +43,8 @@ export default function DeviceListRow({
     onAction,
     showCheckbox = false,
     isSelected = false,
-    onSelectChange
+    onSelectChange,
+    locationInfo
 }: DeviceListRowProps) {
     const { t } = useTranslation()
 
@@ -141,9 +147,24 @@ export default function DeviceListRow({
                 </span>
             </div>
 
-            {/* 院友信息 - 头像+名称+房间，缩小范围 */}
+            {/* 院友信息 / 閘道器位置信息 */}
             <div className="flex-shrink-0 flex items-center gap-1.5 w-32 lg:w-40">
-                {resident ? (
+                {device.deviceType === DeviceType.GATEWAY ? (
+                    // 閘道器顯示位置信息
+                    locationInfo?.homeName || locationInfo?.floorName ? (
+                        <div className="flex flex-col min-w-0 flex-1">
+                            <div className="text-xs font-medium text-gray-900 truncate" title={locationInfo.homeName}>
+                                {locationInfo.homeName || '未綁定'}
+                            </div>
+                            <div className="text-xs text-gray-500 truncate" title={locationInfo.floorName}>
+                                {locationInfo.floorName || '-'}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-xs text-orange-500 truncate">未綁定位置</div>
+                    )
+                ) : resident ? (
+                    // 其他設備顯示院友信息
                     <>
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center text-base flex-shrink-0 ${resident.gender === '男' ? 'bg-blue-100' : 'bg-pink-100'}`}>
                             {resident.gender === '男' ? '👨' : '👩'}

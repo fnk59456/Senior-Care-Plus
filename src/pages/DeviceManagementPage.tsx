@@ -76,7 +76,9 @@ export default function DeviceManagementPage() {
     selectedFloor,
     setSelectedFloor,
     selectedGateway,
-    setSelectedGateway
+    setSelectedGateway,
+    updateGateway,
+    refreshData: refreshUWBData
   } = useUWBLocation()
   const { realTimeDevices, isMonitoring } = useDeviceMonitoring()
 
@@ -100,6 +102,12 @@ export default function DeviceManagementPage() {
   const [gatewayNetworkIdValue, setGatewayNetworkIdValue] = useState<string>("")
   const [selectedGatewayDevice, setSelectedGatewayDevice] = useState<Device | null>(null)
   const [isSendingNetworkId, setIsSendingNetworkId] = useState(false)
+
+  // 閘道器修改所屬養老院及樓層 對話框狀態
+  const [showGatewayLocationDialog, setShowGatewayLocationDialog] = useState(false)
+  const [gatewayLocationHomeId, setGatewayLocationHomeId] = useState<string>("")
+  const [gatewayLocationFloorId, setGatewayLocationFloorId] = useState<string>("")
+  const [isSavingGatewayLocation, setIsSavingGatewayLocation] = useState(false)
 
   // 视图模式状态：'list' 或 'grid'
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
@@ -571,6 +579,114 @@ export default function DeviceManagementPage() {
   // 生成不重複的隨機 serial_no (0-65535)
   const generateSerialNo = (): number => {
     return Math.floor(Math.random() * 65536) // 0-65535
+  }
+
+  // 獲取閘道器設備的綁定信息（場域、樓層）
+  const getGatewayLocationInfo = (device: Device): {
+    home: { id: string; name: string } | null;
+    floor: { id: string; name: string } | null;
+    uwbGateway: any | null
+  } => {
+    if (device.deviceType !== DeviceType.GATEWAY || !device.gatewayId) {
+      return { home: null, floor: null, uwbGateway: null }
+    }
+
+    // 通過 cloud_gateway_id 匹配 UWBLocation 中的 Gateway
+    const uwbGateway = gateways.find(gw => {
+      const cloudId = (gw as any).cloud_gateway_id || gw.cloudData?.gateway_id
+      return cloudId && String(cloudId) === device.gatewayId
+    })
+
+    if (!uwbGateway) {
+      return { home: null, floor: null, uwbGateway: null }
+    }
+
+    // 通過 floorId 獲取樓層信息
+    const floor = floors.find(f => f.id === uwbGateway.floorId)
+    if (!floor) {
+      return { home: null, floor: null, uwbGateway }
+    }
+
+    // 通過 homeId 獲取場域信息
+    const home = homes.find(h => h.id === floor.homeId)
+
+    return {
+      home: home ? { id: home.id, name: home.name } : null,
+      floor: { id: floor.id, name: floor.name },
+      uwbGateway
+    }
+  }
+
+  // 處理閘道器修改所屬養老院及樓層
+  const handleGatewayLocationChange = () => {
+    // 只處理選中1個閘道器的情況
+    const selectedGatewayDevices = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.GATEWAY)
+
+    if (selectedGatewayDevices.length !== 1) {
+      alert('請選擇1個閘道器設備')
+      return
+    }
+
+    const gatewayDevice = selectedGatewayDevices[0]
+    setSelectedGatewayDevice(gatewayDevice)
+
+    // 獲取當前綁定信息
+    const locationInfo = getGatewayLocationInfo(gatewayDevice)
+    setGatewayLocationHomeId(locationInfo.home?.id || "")
+    setGatewayLocationFloorId(locationInfo.floor?.id || "")
+
+    setShowGatewayLocationDialog(true)
+  }
+
+  // 保存閘道器所屬養老院及樓層
+  const saveGatewayLocation = async () => {
+    if (!selectedGatewayDevice) return
+
+    if (!gatewayLocationFloorId) {
+      alert('請選擇樓層')
+      return
+    }
+
+    // 獲取對應的 UWB Gateway
+    const locationInfo = getGatewayLocationInfo(selectedGatewayDevice)
+    if (!locationInfo.uwbGateway) {
+      alert('找不到對應的閘道器配置，請先在「UWB定位管理」中新增閘道器')
+      return
+    }
+
+    setIsSavingGatewayLocation(true)
+
+    try {
+      // 調用 updateGateway 更新 floorId
+      await updateGateway(locationInfo.uwbGateway.id, {
+        floorId: gatewayLocationFloorId
+      })
+
+      // 刷新數據
+      await refreshUWBData()
+
+      console.log('✅ 閘道器所屬樓層已更新:', {
+        gatewayId: locationInfo.uwbGateway.id,
+        newFloorId: gatewayLocationFloorId
+      })
+
+      alert('閘道器所屬養老院及樓層已更新成功！')
+
+      // 關閉對話框並重置狀態
+      setShowGatewayLocationDialog(false)
+      setGatewayLocationHomeId("")
+      setGatewayLocationFloorId("")
+      setSelectedGatewayDevice(null)
+      setSelectedDeviceIds(new Set())
+
+    } catch (error: any) {
+      console.error('❌ 更新閘道器所屬樓層失敗:', error)
+      alert('更新失敗: ' + (error?.message || error))
+    } finally {
+      setIsSavingGatewayLocation(false)
+    }
   }
 
   // 處理閘道器更改UWB Network ID
@@ -1223,7 +1339,7 @@ export default function DeviceManagementPage() {
                             <DropdownMenuSeparator key="gateway-sep" />
                           )
 
-                          // 只在選中1個閘道器時顯示"更改UWB Network ID"
+                          // 只在選中1個閘道器時顯示這些操作
                           if (selectedGatewayDevices.length === 1) {
                             items.push(
                               <DropdownMenuItem
@@ -1233,20 +1349,17 @@ export default function DeviceManagementPage() {
                               >
                                 <Wifi className="h-4 w-4 mr-2" />
                                 更改UWB Network ID
+                              </DropdownMenuItem>,
+                              <DropdownMenuItem
+                                key="gateway-location"
+                                onClick={handleGatewayLocationChange}
+                                className="cursor-pointer"
+                              >
+                                <MapPin className="h-4 w-4 mr-2" />
+                                修改所屬養老院及樓層
                               </DropdownMenuItem>
                             )
                           }
-
-                          items.push(
-                            <DropdownMenuItem
-                              key="gateway-location"
-                              onClick={() => {/* TODO: 實現修改所屬養老院及樓層 */ }}
-                              className="cursor-pointer"
-                            >
-                              <Settings className="h-4 w-4 mr-2" />
-                              修改所屬養老院及樓層
-                            </DropdownMenuItem>
-                          )
                         }
 
                         // 定位錨點批量操作
@@ -1388,6 +1501,16 @@ export default function DeviceManagementPage() {
               {filteredDevices.map(device => {
                 const resident = getResidentForDevice(device.id)
                 const deviceWithRealTime = getDeviceWithRealTimeData(device)
+                // 獲取閘道器位置信息
+                const locationInfo = device.deviceType === DeviceType.GATEWAY
+                  ? (() => {
+                    const info = getGatewayLocationInfo(device)
+                    return {
+                      homeName: info.home?.name,
+                      floorName: info.floor?.name
+                    }
+                  })()
+                  : undefined
                 return (
                   <DeviceListRow
                     key={device.id}
@@ -1397,6 +1520,7 @@ export default function DeviceManagementPage() {
                     showCheckbox={selectedFilter !== "all"}
                     isSelected={selectedDeviceIds.has(device.id)}
                     onSelectChange={handleSelectDevice}
+                    locationInfo={locationInfo}
                   />
                 )
               })}
@@ -1407,6 +1531,16 @@ export default function DeviceManagementPage() {
               {filteredDevices.map(device => {
                 const resident = getResidentForDevice(device.id)
                 const deviceWithRealTime = getDeviceWithRealTimeData(device)
+                // 獲取閘道器位置信息
+                const locationInfo = device.deviceType === DeviceType.GATEWAY
+                  ? (() => {
+                    const info = getGatewayLocationInfo(device)
+                    return {
+                      homeName: info.home?.name,
+                      floorName: info.floor?.name
+                    }
+                  })()
+                  : undefined
                 return (
                   <DeviceMonitorCard
                     key={device.id}
@@ -1416,6 +1550,7 @@ export default function DeviceManagementPage() {
                     showCheckbox={selectedFilter !== "all"}
                     isSelected={selectedDeviceIds.has(device.id)}
                     onSelectChange={handleSelectDevice}
+                    locationInfo={locationInfo}
                   />
                 )
               })}
@@ -1628,6 +1763,130 @@ export default function DeviceManagementPage() {
                 disabled={isSendingNetworkId || !gatewayNetworkIdValue || parseInt(gatewayNetworkIdValue) < 1 || parseInt(gatewayNetworkIdValue) > 65535}
               >
                 {isSendingNetworkId ? '發送中...' : '發送指令'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* 閘道器修改所屬養老院及樓層 對話框 */}
+        <Dialog open={showGatewayLocationDialog} onOpenChange={setShowGatewayLocationDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <MapPin className="h-5 w-5" />
+                修改所屬養老院及樓層
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {selectedGatewayDevice && (
+                <>
+                  {/* 閘道器信息 */}
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600">閘道器名稱</Label>
+                        <p className="font-semibold text-blue-800">{selectedGatewayDevice.name}</p>
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-gray-600">Gateway ID</Label>
+                        <p className="font-mono text-blue-800">{selectedGatewayDevice.gatewayId || '未設定'}</p>
+                      </div>
+                    </div>
+                    {/* 當前綁定信息 */}
+                    {(() => {
+                      const currentLocation = getGatewayLocationInfo(selectedGatewayDevice)
+                      return (
+                        <div className="mt-2 pt-2 border-t border-blue-200">
+                          <Label className="text-xs font-medium text-gray-600">當前綁定</Label>
+                          <p className="text-sm text-blue-700">
+                            {currentLocation.home?.name || '未綁定場域'}
+                            {currentLocation.floor ? ` → ${currentLocation.floor.name}` : ''}
+                          </p>
+                        </div>
+                      )
+                    })()}
+                  </div>
+
+                  {/* 場域選擇 */}
+                  <div>
+                    <Label className="text-sm font-medium">
+                      選擇養老院 <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={gatewayLocationHomeId}
+                      onValueChange={(value) => {
+                        setGatewayLocationHomeId(value)
+                        setGatewayLocationFloorId("") // 重置樓層選擇
+                      }}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="請選擇養老院" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {homes.map(home => (
+                          <SelectItem key={home.id} value={home.id}>
+                            {home.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* 樓層選擇 */}
+                  <div>
+                    <Label className="text-sm font-medium">
+                      選擇樓層 <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={gatewayLocationFloorId}
+                      onValueChange={setGatewayLocationFloorId}
+                      disabled={!gatewayLocationHomeId}
+                    >
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder={gatewayLocationHomeId ? "請選擇樓層" : "請先選擇養老院"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {floors
+                          .filter(floor => floor.homeId === gatewayLocationHomeId)
+                          .map(floor => (
+                            <SelectItem key={floor.id} value={floor.id}>
+                              {floor.name}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    {gatewayLocationHomeId && floors.filter(f => f.homeId === gatewayLocationHomeId).length === 0 && (
+                      <p className="text-xs text-orange-600 mt-1">
+                        該養老院暫無樓層，請先在「UWB定位管理」中新增樓層
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 提示信息 */}
+                  <div className="bg-gray-50 p-3 rounded text-xs text-gray-600">
+                    <p>💡 修改綁定後，閘道器將歸屬於新選擇的養老院和樓層。</p>
+                  </div>
+                </>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowGatewayLocationDialog(false)
+                  setGatewayLocationHomeId("")
+                  setGatewayLocationFloorId("")
+                  setSelectedGatewayDevice(null)
+                }}
+                disabled={isSavingGatewayLocation}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={saveGatewayLocation}
+                disabled={isSavingGatewayLocation || !gatewayLocationFloorId}
+              >
+                {isSavingGatewayLocation ? '保存中...' : '確認修改'}
               </Button>
             </DialogFooter>
           </DialogContent>

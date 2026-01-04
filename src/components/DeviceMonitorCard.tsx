@@ -27,6 +27,11 @@ interface DeviceMonitorCardProps {
     showCheckbox?: boolean
     isSelected?: boolean
     onSelectChange?: (deviceId: string, checked: boolean) => void
+    // 閘道器綁定信息（場域和樓層）
+    locationInfo?: {
+        homeName?: string
+        floorName?: string
+    }
 }
 
 export default function DeviceMonitorCard({
@@ -35,7 +40,8 @@ export default function DeviceMonitorCard({
     onAction,
     showCheckbox = false,
     isSelected = false,
-    onSelectChange
+    onSelectChange,
+    locationInfo
 }: DeviceMonitorCardProps) {
     const { t } = useTranslation()
 
@@ -166,10 +172,38 @@ export default function DeviceMonitorCard({
                     </div>
                 </div>
 
-                {/* 右側：院友信息和UID - 垂直布局，居中 */}
+                {/* 右側：院友信息/位置信息和UID - 垂直布局，居中 */}
                 <div className="flex flex-col flex-1 min-w-0 justify-center">
-                    {/* 院友信息 - 横向排列 */}
-                    {resident ? (
+                    {/* 閘道器位置信息 或 院友信息 - 横向排列 */}
+                    {device.deviceType === DeviceType.GATEWAY ? (
+                        // 閘道器顯示位置信息
+                        <div className="flex items-center gap-2 mb-2">
+                            {locationInfo?.homeName || locationInfo?.floorName ? (
+                                <>
+                                    <div className="p-1.5 rounded bg-blue-100">
+                                        <MapPin className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <div className="font-medium text-base text-gray-900 flex-shrink-0">
+                                        {locationInfo.homeName || '未綁定'}
+                                    </div>
+                                    {locationInfo.floorName && (
+                                        <div className="text-base text-gray-600 flex-shrink-0">
+                                            → {locationInfo.floorName}
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="text-base text-orange-500">未綁定位置</div>
+                            )}
+                            {/* 状态 */}
+                            <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
+                                <StatusIcon className={`h-5 w-5 ${statusInfo.color}`} />
+                                <span className={`text-base font-medium ${statusInfo.color}`}>
+                                    {statusInfo.text}
+                                </span>
+                            </div>
+                        </div>
+                    ) : resident ? (
                         <div className="flex items-center gap-2 mb-2">
                             {/* 头像 */}
                             <div className={`w-9 h-9 rounded-full flex items-center justify-center text-base flex-shrink-0 ${resident.gender === '男' ? 'bg-blue-100' : 'bg-pink-100'}`}>
