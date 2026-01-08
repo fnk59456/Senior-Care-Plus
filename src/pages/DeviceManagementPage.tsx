@@ -1755,6 +1755,7 @@ export default function DeviceManagementPage() {
                                 <Anchor className="h-4 w-4 mr-2" />
                                 修改高度(Z坐標)
                               </DropdownMenuItem>,
+                              <DropdownMenuSeparator key="anchor-power-sep" />,
                               <DropdownMenuItem
                                 key="anchor-power"
                                 onClick={handleAnchorPowerChange}
@@ -1766,25 +1767,26 @@ export default function DeviceManagementPage() {
                             )
                           }
 
-                          items.push(
-                            <DropdownMenuItem
-                              key="anchor-location"
-                              onClick={() => {/* TODO: 實現修改所屬養老院及樓層 */ }}
-                              className="cursor-pointer"
-                            >
-                              <MapPin className="h-4 w-4 mr-2" />
-                              修改所屬養老院及樓層
-                            </DropdownMenuItem>,
-                            <DropdownMenuItem
-                              key="anchor-request-data"
-                              onClick={handleRequestAnchorData}
-                              className="cursor-pointer"
-                              disabled={isRequestingAnchorData}
-                            >
-                              <Activity className="h-4 w-4 mr-2" />
-                              {isRequestingAnchorData ? '發送中...' : '要求錨點資料'}
-                            </DropdownMenuItem>
-                          )
+                          // 如果选中了锚点，添加"要求錨點資料"选项
+                          if (selectedAnchorDevices.length > 0) {
+                            // 如果已经有单选操作，在它们和"要求錨點資料"之间添加分隔线
+                            if (selectedAnchorDevices.length === 1) {
+                              items.push(
+                                <DropdownMenuSeparator key="anchor-request-sep" />
+                              )
+                            }
+                            items.push(
+                              <DropdownMenuItem
+                                key="anchor-request-data"
+                                onClick={handleRequestAnchorData}
+                                className="cursor-pointer"
+                                disabled={isRequestingAnchorData}
+                              >
+                                <Activity className="h-4 w-4 mr-2" />
+                                {isRequestingAnchorData ? '發送中...' : '要求錨點資料'}
+                              </DropdownMenuItem>
+                            )
+                          }
                         }
 
                         // 定位標籤批量操作
