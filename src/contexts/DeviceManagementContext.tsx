@@ -702,13 +702,18 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                 }
             }
 
-            // 從 config 提取數據
+            // 從 config 提取數據（包含所有配置參數）
             if (tagData.config) {
                 const cfg = tagData.config
                 if (cfg.name) lastData.name = cfg.name
+                if (cfg['fw update'] !== undefined) lastData['fw update'] = cfg['fw update']
                 if (cfg.led !== undefined) lastData.led = cfg.led
                 if (cfg.ble !== undefined) lastData.ble = cfg.ble
                 if (cfg['location engine'] !== undefined) lastData['location engine'] = cfg['location engine']
+                if (cfg['responsive mode(0=On,1=Off)'] !== undefined) lastData['responsive mode(0=On,1=Off)'] = cfg['responsive mode(0=On,1=Off)']
+                if (cfg['stationary detect'] !== undefined) lastData['stationary detect'] = cfg['stationary detect']
+                if (cfg['nominal udr(hz)'] !== undefined) lastData['nominal udr(hz)'] = cfg['nominal udr(hz)']
+                if (cfg['stationary udr(hz)'] !== undefined) lastData['stationary udr(hz)'] = cfg['stationary udr(hz)']
             }
 
             // 如果設備不存在，檢查自動加入開關後決定是否創建

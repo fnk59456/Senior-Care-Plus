@@ -118,6 +118,21 @@ export default function DeviceManagementPage() {
   // 錨點要求資料 狀態
   const [isRequestingAnchorData, setIsRequestingAnchorData] = useState(false)
 
+  // 標籤更改參數設定 對話框狀態
+  const [showTagConfigDialog, setShowTagConfigDialog] = useState(false)
+  const [tagConfigValues, setTagConfigValues] = useState({
+    fwUpdate: "",
+    led: "",
+    ble: "",
+    locationEngine: "",
+    responsiveMode: "",
+    stationaryDetect: "",
+    nominalUdr: "",
+    stationaryUdr: ""
+  })
+  const [selectedTagDevice, setSelectedTagDevice] = useState<Device | null>(null)
+  const [isSendingTagConfig, setIsSendingTagConfig] = useState(false)
+
   // 錨點修改功率 對話框狀態
   const [showAnchorPowerDialog, setShowAnchorPowerDialog] = useState(false)
   const [anchorPowerValues, setAnchorPowerValues] = useState({
@@ -963,6 +978,150 @@ export default function DeviceManagementPage() {
     }
   }
 
+  // 從設備名稱中提取標籤名稱（例如："UWB定位標籤 DW5B35" -> "DW5B35"）
+  const extractTagName = (deviceName: string): string => {
+    // 如果名稱包含 "UWB定位標籤 "，提取後面的部分
+    const prefix = "UWB定位標籤 "
+    if (deviceName.startsWith(prefix)) {
+      return deviceName.substring(prefix.length)
+    }
+    // 如果沒有前綴，直接返回（可能是直接來自MQTT的名稱）
+    return deviceName
+  }
+
+  // 處理標籤更改參數設定
+  const handleTagConfigChange = () => {
+    // 只處理選中1個標籤的情況
+    const selectedTagDevices = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_TAG)
+
+    if (selectedTagDevices.length !== 1) {
+      alert('請選擇1個定位標籤設備')
+      return
+    }
+
+    const tagDevice = selectedTagDevices[0]
+    setSelectedTagDevice(tagDevice)
+
+    // 從設備的 lastData 中獲取當前的參數值
+    const lastData = tagDevice.lastData || {}
+
+    setTagConfigValues({
+      fwUpdate: lastData['fw update'] !== undefined ? String(lastData['fw update']) : "",
+      led: lastData.led !== undefined ? String(lastData.led) : "",
+      ble: lastData.ble !== undefined ? String(lastData.ble) : "",
+      locationEngine: lastData['location engine'] !== undefined ? String(lastData['location engine']) : "",
+      responsiveMode: lastData['responsive mode(0=On,1=Off)'] !== undefined ? String(lastData['responsive mode(0=On,1=Off)']) : "",
+      stationaryDetect: lastData['stationary detect'] !== undefined ? String(lastData['stationary detect']) : "",
+      nominalUdr: lastData['nominal udr(hz)'] !== undefined ? String(lastData['nominal udr(hz)']) : "",
+      stationaryUdr: lastData['stationary udr(hz)'] !== undefined ? String(lastData['stationary udr(hz)']) : ""
+    })
+
+    setShowTagConfigDialog(true)
+  }
+
+  // 發送標籤更改參數設定 指令
+  const sendTagConfigCommand = async () => {
+    if (!selectedTagDevice) return
+
+    // 驗證輸入
+    const fwUpdate = parseInt(tagConfigValues.fwUpdate)
+    const led = parseInt(tagConfigValues.led)
+    const ble = parseInt(tagConfigValues.ble)
+    const locationEngine = parseInt(tagConfigValues.locationEngine)
+    const responsiveMode = parseInt(tagConfigValues.responsiveMode)
+    const stationaryDetect = parseInt(tagConfigValues.stationaryDetect)
+    const nominalUdr = parseFloat(tagConfigValues.nominalUdr)
+    const stationaryUdr = parseFloat(tagConfigValues.stationaryUdr)
+
+    if (isNaN(fwUpdate) || isNaN(led) || isNaN(ble) || isNaN(locationEngine) ||
+      isNaN(responsiveMode) || isNaN(stationaryDetect) || isNaN(nominalUdr) || isNaN(stationaryUdr)) {
+      alert('請輸入所有參數值')
+      return
+    }
+
+    // 獲取 Gateway 信息
+    const gatewayInfo = getDeviceGatewayInfo(selectedTagDevice)
+    if (!gatewayInfo) {
+      alert('找不到對應的 Gateway 或 downlink 主題')
+      return
+    }
+
+    const { gateway, downlinkTopic } = gatewayInfo
+
+    // 檢查 MQTT 連接
+    if (!mqttBus.isConnected()) {
+      alert('MQTT Bus 未連線，無法發送指令')
+      return
+    }
+
+    const tagId = parseInt(selectedTagDevice.hardwareId)
+    const gatewayId = gateway.cloudData?.gateway_id || parseInt(selectedTagDevice.gatewayId || "0")
+    const tagName = extractTagName(selectedTagDevice.name)
+
+    if (isNaN(tagId) || isNaN(gatewayId)) {
+      alert('無法獲取有效的標籤ID或閘道器ID')
+      return
+    }
+
+    setIsSendingTagConfig(true)
+
+    try {
+      // 構建配置訊息（使用空格格式的字段名）
+      const configMessage = {
+        content: "configChange",
+        "gateway id": gatewayId,
+        node: "TAG",
+        name: tagName,
+        id: tagId,
+        "fw update": fwUpdate,
+        led: led,
+        ble: ble,
+        "location engine": locationEngine,
+        "responsive mode(0=On,1=Off)": responsiveMode,
+        "stationary detect": stationaryDetect,
+        "nominal udr(hz)": nominalUdr,
+        "stationary udr(hz)": stationaryUdr,
+        "serial no": generateSerialNo()
+      }
+
+      console.log(`🚀 準備發送標籤更改參數設定指令:`)
+      console.log(`- 主題: ${downlinkTopic}`)
+      console.log(`- Gateway ID: ${gatewayId}`)
+      console.log(`- Tag 名稱: ${tagName}`)
+      console.log(`- Tag ID: ${tagId}`)
+      console.log(`- 完整訊息:`, JSON.stringify(configMessage, null, 2))
+
+      // 發送消息
+      await mqttBus.publish(downlinkTopic, configMessage, 1)
+
+      console.log('✅ 標籤更改參數設定指令已成功發送')
+      alert(`✅ 已成功發送更改參數設定指令到 ${selectedTagDevice.name}`)
+
+      // 關閉對話框並重置狀態
+      setShowTagConfigDialog(false)
+      setTagConfigValues({
+        fwUpdate: "",
+        led: "",
+        ble: "",
+        locationEngine: "",
+        responsiveMode: "",
+        stationaryDetect: "",
+        nominalUdr: "",
+        stationaryUdr: ""
+      })
+      setSelectedTagDevice(null)
+      setSelectedDeviceIds(new Set())
+
+    } catch (error: any) {
+      console.error('❌ 發送指令失敗:', error)
+      alert('發送指令失敗: ' + (error?.message || error))
+    } finally {
+      setIsSendingTagConfig(false)
+    }
+  }
+
   // 處理錨點要求資料（支持多選）
   const handleRequestAnchorData = async () => {
     // 獲取所有選中的錨點設備
@@ -1790,9 +1949,30 @@ export default function DeviceManagementPage() {
                         }
 
                         // 定位標籤批量操作
-                        if (selectedTypes.has(DeviceType.UWB_TAG)) {
+                        const selectedTagDevices = Array.from(selectedDeviceIds)
+                          .map(id => devices.find(d => d.id === id))
+                          .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_TAG)
+
+                        if (selectedTagDevices.length > 0) {
                           items.push(
-                            <DropdownMenuSeparator key="tag-sep" />,
+                            <DropdownMenuSeparator key="tag-sep" />
+                          )
+
+                          // 只在選中1個標籤時顯示"更改參數設定"
+                          if (selectedTagDevices.length === 1) {
+                            items.push(
+                              <DropdownMenuItem
+                                key="tag-config"
+                                onClick={handleTagConfigChange}
+                                className="cursor-pointer"
+                              >
+                                <Settings className="h-4 w-4 mr-2" />
+                                更改參數設定
+                              </DropdownMenuItem>
+                            )
+                          }
+
+                          items.push(
                             <DropdownMenuItem
                               key="tag-location"
                               onClick={() => {/* TODO: 實現修改所屬養老院及樓層 */ }}
@@ -1800,14 +1980,6 @@ export default function DeviceManagementPage() {
                             >
                               <MapPin className="h-4 w-4 mr-2" />
                               修改所屬養老院及樓層
-                            </DropdownMenuItem>,
-                            <DropdownMenuItem
-                              key="tag-config"
-                              onClick={() => {/* TODO: 實現更改參數設定 */ }}
-                              className="cursor-pointer"
-                            >
-                              <Settings className="h-4 w-4 mr-2" />
-                              更改參數設定
                             </DropdownMenuItem>,
                             <DropdownMenuItem
                               key="tag-request-data"
@@ -2545,6 +2717,194 @@ export default function DeviceManagementPage() {
                 }
               >
                 {isSendingAnchorPower ? '發送中...' : '確認修改'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* 標籤更改參數設定 對話框 */}
+        <Dialog open={showTagConfigDialog} onOpenChange={setShowTagConfigDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                更改參數設定
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {selectedTagDevice && (() => {
+                const tagName = extractTagName(selectedTagDevice.name)
+                const gatewayInfo = getDeviceGatewayInfo(selectedTagDevice)
+
+                return (
+                  <>
+                    {/* 標籤信息 - 簡潔顯示 */}
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">標籤名稱</Label>
+                      <p className="text-sm font-semibold mt-1">{tagName}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Tag ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {selectedTagDevice.hardwareId}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedTagDevice.gatewayId || '未設定'}
+                      </p>
+                    </div>
+
+                    {/* 參數輸入 - 兩列布局 */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="fw-update" className="text-sm font-medium">
+                          fw update <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="fw-update"
+                          type="number"
+                          value={tagConfigValues.fwUpdate}
+                          onChange={(e) => setTagConfigValues({ ...tagConfigValues, fwUpdate: e.target.value })}
+                          placeholder="0 或 1"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="led" className="text-sm font-medium">
+                          led <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="led"
+                          type="number"
+                          value={tagConfigValues.led}
+                          onChange={(e) => setTagConfigValues({ ...tagConfigValues, led: e.target.value })}
+                          placeholder="0 或 1"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="ble" className="text-sm font-medium">
+                          ble <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="ble"
+                          type="number"
+                          value={tagConfigValues.ble}
+                          onChange={(e) => setTagConfigValues({ ...tagConfigValues, ble: e.target.value })}
+                          placeholder="0 或 1"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="location-engine" className="text-sm font-medium">
+                          location engine <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="location-engine"
+                          type="number"
+                          value={tagConfigValues.locationEngine}
+                          onChange={(e) => setTagConfigValues({ ...tagConfigValues, locationEngine: e.target.value })}
+                          placeholder="0 或 1"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="responsive-mode" className="text-sm font-medium">
+                          responsive mode <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="responsive-mode"
+                          type="number"
+                          value={tagConfigValues.responsiveMode}
+                          onChange={(e) => setTagConfigValues({ ...tagConfigValues, responsiveMode: e.target.value })}
+                          placeholder="0 或 1"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="stationary-detect" className="text-sm font-medium">
+                          stationary detect <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="stationary-detect"
+                          type="number"
+                          value={tagConfigValues.stationaryDetect}
+                          onChange={(e) => setTagConfigValues({ ...tagConfigValues, stationaryDetect: e.target.value })}
+                          placeholder="0 或 1"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="nominal-udr" className="text-sm font-medium">
+                          nominal udr(hz) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="nominal-udr"
+                          type="number"
+                          step="0.1"
+                          value={tagConfigValues.nominalUdr}
+                          onChange={(e) => setTagConfigValues({ ...tagConfigValues, nominalUdr: e.target.value })}
+                          placeholder="請輸入數值"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="stationary-udr" className="text-sm font-medium">
+                          stationary udr(hz) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="stationary-udr"
+                          type="number"
+                          step="0.1"
+                          value={tagConfigValues.stationaryUdr}
+                          onChange={(e) => setTagConfigValues({ ...tagConfigValues, stationaryUdr: e.target.value })}
+                          placeholder="請輸入數值"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowTagConfigDialog(false)
+                  setTagConfigValues({
+                    fwUpdate: "",
+                    led: "",
+                    ble: "",
+                    locationEngine: "",
+                    responsiveMode: "",
+                    stationaryDetect: "",
+                    nominalUdr: "",
+                    stationaryUdr: ""
+                  })
+                  setSelectedTagDevice(null)
+                }}
+                disabled={isSendingTagConfig}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={sendTagConfigCommand}
+                disabled={
+                  isSendingTagConfig ||
+                  !tagConfigValues.fwUpdate ||
+                  !tagConfigValues.led ||
+                  !tagConfigValues.ble ||
+                  !tagConfigValues.locationEngine ||
+                  !tagConfigValues.responsiveMode ||
+                  !tagConfigValues.stationaryDetect ||
+                  !tagConfigValues.nominalUdr ||
+                  !tagConfigValues.stationaryUdr
+                }
+              >
+                {isSendingTagConfig ? '發送中...' : '確認修改'}
               </Button>
             </DialogFooter>
           </DialogContent>
