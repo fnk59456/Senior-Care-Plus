@@ -118,6 +118,20 @@ export default function DeviceManagementPage() {
   // 錨點要求資料 狀態
   const [isRequestingAnchorData, setIsRequestingAnchorData] = useState(false)
 
+  // 標籤要求資料 狀態
+  const [isRequestingTagData, setIsRequestingTagData] = useState(false)
+
+  // 標籤修改功率 狀態
+  const [showTagPowerDialog, setShowTagPowerDialog] = useState(false)
+  const [tagPowerValues, setTagPowerValues] = useState({
+    boostNorm: "",
+    boost500: "",
+    boost250: "",
+    boost125: ""
+  })
+  const [selectedTagForPower, setSelectedTagForPower] = useState<Device | null>(null)
+  const [isSendingTagPower, setIsSendingTagPower] = useState(false)
+
   // 標籤更改參數設定 對話框狀態
   const [showTagConfigDialog, setShowTagConfigDialog] = useState(false)
   const [tagConfigValues, setTagConfigValues] = useState({
@@ -1219,6 +1233,233 @@ export default function DeviceManagementPage() {
     }
   }
 
+  // 處理標籤修改功率
+  const handleTagPowerChange = () => {
+    // 只處理選中1個標籤的情況
+    const selectedTagDevices = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_TAG)
+
+    if (selectedTagDevices.length !== 1) {
+      alert('請選擇1個定位標籤設備')
+      return
+    }
+
+    const tagDevice = selectedTagDevices[0]
+    setSelectedTagForPower(tagDevice)
+
+    // 從設備的 lastData 中獲取當前的功率值
+    const txPower = tagDevice.lastData?.['uwb tx power'] || tagDevice.lastData?.['uwb_tx_power'] || {}
+
+    // 支持多種字段名格式
+    const getPowerValue = (key: string): string => {
+      const value = txPower[key] ||
+        txPower[key.replace(/[()]/g, '')] ||
+        txPower[key.replace(/\s/g, '_')] ||
+        txPower[key.replace(/\s/g, '').toLowerCase()]
+      return value !== undefined ? String(value) : ""
+    }
+
+    setTagPowerValues({
+      boostNorm: getPowerValue('boost norm(5.0~30.5dB)') || getPowerValue('boost_norm') || "",
+      boost500: getPowerValue('boost 500(5.0~30.5dB)') || getPowerValue('boost_500') || "",
+      boost250: getPowerValue('boost 250(5.0~30.5dB)') || getPowerValue('boost_250') || "",
+      boost125: getPowerValue('boost 125(5.0~30.5dB)') || getPowerValue('boost_125') || ""
+    })
+
+    setShowTagPowerDialog(true)
+  }
+
+  // 發送標籤修改功率 指令
+  const sendTagPowerCommand = async () => {
+    if (!selectedTagForPower) return
+
+    // 驗證輸入
+    const boostNorm = parseFloat(tagPowerValues.boostNorm)
+    const boost500 = parseFloat(tagPowerValues.boost500)
+    const boost250 = parseFloat(tagPowerValues.boost250)
+    const boost125 = parseFloat(tagPowerValues.boost125)
+
+    if (isNaN(boostNorm) || isNaN(boost500) || isNaN(boost250) || isNaN(boost125)) {
+      alert('請輸入所有功率值')
+      return
+    }
+
+    // 驗證範圍 (5.0~30.5dB)
+    if (boostNorm < 5.0 || boostNorm > 30.5 ||
+      boost500 < 5.0 || boost500 > 30.5 ||
+      boost250 < 5.0 || boost250 > 30.5 ||
+      boost125 < 5.0 || boost125 > 30.5) {
+      alert('功率值必須在 5.0~30.5 dB 範圍內')
+      return
+    }
+
+    // 獲取 Gateway 信息
+    const gatewayInfo = getDeviceGatewayInfo(selectedTagForPower)
+    if (!gatewayInfo) {
+      alert('找不到對應的 Gateway 或 downlink 主題')
+      return
+    }
+
+    const { gateway, downlinkTopic } = gatewayInfo
+
+    // 檢查 MQTT 連接
+    if (!mqttBus.isConnected()) {
+      alert('MQTT Bus 未連線，無法發送指令')
+      return
+    }
+
+    const tagId = parseInt(selectedTagForPower.hardwareId)
+    const gatewayId = gateway.cloudData?.gateway_id || parseInt(selectedTagForPower.gatewayId || "0")
+
+    if (isNaN(tagId) || isNaN(gatewayId)) {
+      alert('無法獲取有效的標籤ID或閘道器ID')
+      return
+    }
+
+    setIsSendingTagPower(true)
+
+    try {
+      // 構建配置訊息（使用空格格式的字段名）
+      const configMessage = {
+        content: "tx power configChange",
+        "gateway id": gatewayId,
+        id: tagId,
+        "boost norm(5.0~30.5dB)": boostNorm,
+        "boost 500(5.0~30.5dB)": boost500,
+        "boost 250(5.0~30.5dB)": boost250,
+        "boost 125(5.0~30.5dB)": boost125,
+        "serial no": generateSerialNo()
+      }
+
+      console.log(`🚀 準備發送標籤修改功率指令:`)
+      console.log(`- 主題: ${downlinkTopic}`)
+      console.log(`- Gateway ID: ${gatewayId}`)
+      console.log(`- Tag ID: ${tagId}`)
+      console.log(`- Boost Norm: ${boostNorm} dB`)
+      console.log(`- Boost 500: ${boost500} dB`)
+      console.log(`- Boost 250: ${boost250} dB`)
+      console.log(`- Boost 125: ${boost125} dB`)
+      console.log(`- Serial No: ${configMessage["serial no"]}`)
+      console.log(`- 完整訊息:`, JSON.stringify(configMessage, null, 2))
+
+      // 發送消息
+      await mqttBus.publish(downlinkTopic, configMessage, 1)
+
+      console.log('✅ 標籤修改功率指令已成功發送')
+      alert(`✅ 已成功發送修改功率指令到 ${selectedTagForPower.name}`)
+
+      // 關閉對話框並重置狀態
+      setShowTagPowerDialog(false)
+      setTagPowerValues({ boostNorm: "", boost500: "", boost250: "", boost125: "" })
+      setSelectedTagForPower(null)
+      setSelectedDeviceIds(new Set())
+
+    } catch (error: any) {
+      console.error('❌ 發送指令失敗:', error)
+      alert('發送指令失敗: ' + (error?.message || error))
+    } finally {
+      setIsSendingTagPower(false)
+    }
+  }
+
+  // 處理標籤要求資料（支持多選）
+  const handleRequestTagData = async () => {
+    // 獲取所有選中的標籤設備
+    const selectedTagDevices = Array.from(selectedDeviceIds)
+      .map(id => devices.find(d => d.id === id))
+      .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_TAG)
+
+    if (selectedTagDevices.length === 0) {
+      alert('請至少選擇1個定位標籤設備')
+      return
+    }
+
+    // 檢查 MQTT 連接
+    if (!mqttBus.isConnected()) {
+      alert('MQTT Bus 未連線，無法發送指令')
+      return
+    }
+
+    setIsRequestingTagData(true)
+
+    try {
+      let successCount = 0
+      let failCount = 0
+      const failedDevices: string[] = []
+
+      // 循環處理每個選中的標籤
+      for (const tagDevice of selectedTagDevices) {
+        try {
+          // 獲取 Gateway 信息
+          const gatewayInfo = getDeviceGatewayInfo(tagDevice)
+          if (!gatewayInfo) {
+            console.warn(`⚠️ 找不到標籤 ${tagDevice.name} 對應的 Gateway 或 downlink 主題`)
+            failCount++
+            failedDevices.push(tagDevice.name)
+            continue
+          }
+
+          const { gateway, downlinkTopic } = gatewayInfo
+          const tagId = parseInt(tagDevice.hardwareId)
+          const gatewayId = gateway.cloudData?.gateway_id || parseInt(tagDevice.gatewayId || "0")
+
+          if (isNaN(tagId) || isNaN(gatewayId)) {
+            console.warn(`⚠️ 標籤 ${tagDevice.name} 的 ID 或 Gateway ID 無效`)
+            failCount++
+            failedDevices.push(tagDevice.name)
+            continue
+          }
+
+          // 構建請求訊息
+          const requestMessage = {
+            content: "node info request",
+            "gateway id": gatewayId,
+            id: tagId,
+            "serial no": generateSerialNo()
+          }
+
+          console.log(`🚀 準備發送標籤要求資料指令:`)
+          console.log(`- 標籤: ${tagDevice.name}`)
+          console.log(`- 主題: ${downlinkTopic}`)
+          console.log(`- Gateway ID: ${gatewayId}`)
+          console.log(`- Tag ID: ${tagId}`)
+          console.log(`- Serial No: ${requestMessage["serial no"]}`)
+          console.log(`- 完整訊息:`, JSON.stringify(requestMessage, null, 2))
+
+          // 發送消息
+          await mqttBus.publish(downlinkTopic, requestMessage, 1)
+          successCount++
+
+          console.log(`✅ 標籤 ${tagDevice.name} 的要求資料指令已成功發送`)
+
+        } catch (error: any) {
+          console.error(`❌ 發送標籤 ${tagDevice.name} 的要求資料指令失敗:`, error)
+          failCount++
+          failedDevices.push(tagDevice.name)
+        }
+      }
+
+      // 顯示結果
+      if (successCount > 0 && failCount === 0) {
+        alert(`✅ 已成功發送要求資料指令到 ${successCount} 個標籤設備`)
+      } else if (successCount > 0 && failCount > 0) {
+        alert(`⚠️ 已成功發送 ${successCount} 個，失敗 ${failCount} 個\n失敗設備: ${failedDevices.join('、')}`)
+      } else {
+        alert(`❌ 所有指令發送失敗\n失敗設備: ${failedDevices.join('、')}`)
+      }
+
+      // 清空選擇
+      setSelectedDeviceIds(new Set())
+
+    } catch (error: any) {
+      console.error('❌ 發送要求資料指令時發生錯誤:', error)
+      alert('發送指令時發生錯誤: ' + (error?.message || error))
+    } finally {
+      setIsRequestingTagData(false)
+    }
+  }
+
   // 處理閘道器更改UWB Network ID
   const handleGatewayNetworkIdChange = () => {
     // 只處理選中1個閘道器的情況
@@ -1958,7 +2199,7 @@ export default function DeviceManagementPage() {
                             <DropdownMenuSeparator key="tag-sep" />
                           )
 
-                          // 只在選中1個標籤時顯示"更改參數設定"
+                          // 只在選中1個標籤時顯示"更改參數設定"和"修改功率"
                           if (selectedTagDevices.length === 1) {
                             items.push(
                               <DropdownMenuItem
@@ -1968,36 +2209,39 @@ export default function DeviceManagementPage() {
                               >
                                 <Settings className="h-4 w-4 mr-2" />
                                 更改參數設定
+                              </DropdownMenuItem>,
+                              <DropdownMenuSeparator key="tag-power-sep" />,
+                              <DropdownMenuItem
+                                key="tag-power"
+                                onClick={handleTagPowerChange}
+                                className="cursor-pointer"
+                              >
+                                <Settings className="h-4 w-4 mr-2" />
+                                修改功率
                               </DropdownMenuItem>
                             )
                           }
 
-                          items.push(
-                            <DropdownMenuItem
-                              key="tag-location"
-                              onClick={() => {/* TODO: 實現修改所屬養老院及樓層 */ }}
-                              className="cursor-pointer"
-                            >
-                              <MapPin className="h-4 w-4 mr-2" />
-                              修改所屬養老院及樓層
-                            </DropdownMenuItem>,
-                            <DropdownMenuItem
-                              key="tag-request-data"
-                              onClick={() => {/* TODO: 實現要求標籤資料 */ }}
-                              className="cursor-pointer"
-                            >
-                              <Activity className="h-4 w-4 mr-2" />
-                              要求標籤資料
-                            </DropdownMenuItem>,
-                            <DropdownMenuItem
-                              key="tag-power"
-                              onClick={() => {/* TODO: 實現修改功率 */ }}
-                              className="cursor-pointer"
-                            >
-                              <Settings className="h-4 w-4 mr-2" />
-                              修改功率
-                            </DropdownMenuItem>
-                          )
+                          // 如果选中了标签，添加"要求標籤資料"选项
+                          if (selectedTagDevices.length > 0) {
+                            // 如果已经有单选操作，在它们和"要求標籤資料"之间添加分隔线
+                            if (selectedTagDevices.length === 1) {
+                              items.push(
+                                <DropdownMenuSeparator key="tag-request-sep" />
+                              )
+                            }
+                            items.push(
+                              <DropdownMenuItem
+                                key="tag-request-data"
+                                onClick={handleRequestTagData}
+                                className="cursor-pointer"
+                                disabled={isRequestingTagData}
+                              >
+                                <Activity className="h-4 w-4 mr-2" />
+                                {isRequestingTagData ? '發送中...' : '要求標籤資料'}
+                              </DropdownMenuItem>
+                            )
+                          }
                         }
 
                         return items
@@ -2323,6 +2567,143 @@ export default function DeviceManagementPage() {
                 disabled={isSendingNetworkId || !gatewayNetworkIdValue || parseInt(gatewayNetworkIdValue) < 1 || parseInt(gatewayNetworkIdValue) > 65535}
               >
                 {isSendingNetworkId ? '發送中...' : '發送指令'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* 標籤修改功率 對話框 */}
+        <Dialog open={showTagPowerDialog} onOpenChange={setShowTagPowerDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                修改功率
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {selectedTagForPower && (() => {
+                const tagName = extractTagName(selectedTagForPower.name)
+                const gatewayInfo = getDeviceGatewayInfo(selectedTagForPower)
+
+                return (
+                  <>
+                    {/* 標籤信息 - 簡潔顯示 */}
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">標籤名稱</Label>
+                      <p className="text-sm font-semibold mt-1">{tagName}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Tag ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {selectedTagForPower.hardwareId}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedTagForPower.gatewayId || '未設定'}
+                      </p>
+                    </div>
+
+                    {/* 功率值輸入 */}
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="tag-boost-norm" className="text-sm font-medium">
+                          boost norm(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="tag-boost-norm"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={tagPowerValues.boostNorm}
+                          onChange={(e) => setTagPowerValues({ ...tagPowerValues, boostNorm: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="tag-boost-500" className="text-sm font-medium">
+                          boost 500(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="tag-boost-500"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={tagPowerValues.boost500}
+                          onChange={(e) => setTagPowerValues({ ...tagPowerValues, boost500: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="tag-boost-250" className="text-sm font-medium">
+                          boost 250(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="tag-boost-250"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={tagPowerValues.boost250}
+                          onChange={(e) => setTagPowerValues({ ...tagPowerValues, boost250: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="tag-boost-125" className="text-sm font-medium">
+                          boost 125(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="tag-boost-125"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={tagPowerValues.boost125}
+                          onChange={(e) => setTagPowerValues({ ...tagPowerValues, boost125: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowTagPowerDialog(false)
+                  setTagPowerValues({ boostNorm: "", boost500: "", boost250: "", boost125: "" })
+                  setSelectedTagForPower(null)
+                }}
+                disabled={isSendingTagPower}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={sendTagPowerCommand}
+                disabled={
+                  isSendingTagPower ||
+                  !tagPowerValues.boostNorm ||
+                  !tagPowerValues.boost500 ||
+                  !tagPowerValues.boost250 ||
+                  !tagPowerValues.boost125 ||
+                  isNaN(parseFloat(tagPowerValues.boostNorm)) ||
+                  isNaN(parseFloat(tagPowerValues.boost500)) ||
+                  isNaN(parseFloat(tagPowerValues.boost250)) ||
+                  isNaN(parseFloat(tagPowerValues.boost125))
+                }
+              >
+                {isSendingTagPower ? '發送中...' : '確認修改'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -2905,6 +3286,143 @@ export default function DeviceManagementPage() {
                 }
               >
                 {isSendingTagConfig ? '發送中...' : '確認修改'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* 標籤修改功率 對話框 */}
+        <Dialog open={showTagPowerDialog} onOpenChange={setShowTagPowerDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                修改功率
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              {selectedTagForPower && (() => {
+                const tagName = extractTagName(selectedTagForPower.name)
+                const gatewayInfo = getDeviceGatewayInfo(selectedTagForPower)
+
+                return (
+                  <>
+                    {/* 標籤信息 - 簡潔顯示 */}
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">標籤名稱</Label>
+                      <p className="text-sm font-semibold mt-1">{tagName}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Tag ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {selectedTagForPower.hardwareId}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                      <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
+                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedTagForPower.gatewayId || '未設定'}
+                      </p>
+                    </div>
+
+                    {/* 功率值輸入 */}
+                    <div className="space-y-3">
+                      <div>
+                        <Label htmlFor="tag-boost-norm" className="text-sm font-medium">
+                          boost norm(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="tag-boost-norm"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={tagPowerValues.boostNorm}
+                          onChange={(e) => setTagPowerValues({ ...tagPowerValues, boostNorm: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="tag-boost-500" className="text-sm font-medium">
+                          boost 500(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="tag-boost-500"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={tagPowerValues.boost500}
+                          onChange={(e) => setTagPowerValues({ ...tagPowerValues, boost500: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="tag-boost-250" className="text-sm font-medium">
+                          boost 250(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="tag-boost-250"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={tagPowerValues.boost250}
+                          onChange={(e) => setTagPowerValues({ ...tagPowerValues, boost250: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="tag-boost-125" className="text-sm font-medium">
+                          boost 125(5.0~30.5dB) <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="tag-boost-125"
+                          type="number"
+                          step="0.1"
+                          min="5.0"
+                          max="30.5"
+                          value={tagPowerValues.boost125}
+                          onChange={(e) => setTagPowerValues({ ...tagPowerValues, boost125: e.target.value })}
+                          placeholder="5.0 ~ 30.5"
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowTagPowerDialog(false)
+                  setTagPowerValues({ boostNorm: "", boost500: "", boost250: "", boost125: "" })
+                  setSelectedTagForPower(null)
+                }}
+                disabled={isSendingTagPower}
+              >
+                取消
+              </Button>
+              <Button
+                onClick={sendTagPowerCommand}
+                disabled={
+                  isSendingTagPower ||
+                  !tagPowerValues.boostNorm ||
+                  !tagPowerValues.boost500 ||
+                  !tagPowerValues.boost250 ||
+                  !tagPowerValues.boost125 ||
+                  isNaN(parseFloat(tagPowerValues.boostNorm)) ||
+                  isNaN(parseFloat(tagPowerValues.boost500)) ||
+                  isNaN(parseFloat(tagPowerValues.boost250)) ||
+                  isNaN(parseFloat(tagPowerValues.boost125))
+                }
+              >
+                {isSendingTagPower ? '發送中...' : '確認修改'}
               </Button>
             </DialogFooter>
           </DialogContent>
