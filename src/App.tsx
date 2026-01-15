@@ -17,6 +17,7 @@ import LocationPage from './pages/LocationPage'
 import TemperaturePage from './pages/TemperaturePage'
 import HeartRatePage from './pages/HeartRatePage'
 import HeartTemperaturePage from './pages/HeartTemperaturePage'
+import HeartTemperaturePage2 from './pages/HeartTemperaturePage2'
 import RemindersPage from './pages/RemindersPage'
 import ResidentsPage from './pages/ResidentsPage'
 import ResidentDetailPage from './pages/ResidentDetailPage'
@@ -54,6 +55,7 @@ function App() {
                           <Route path="/temperature" element={<TemperaturePage />} />
                           <Route path="/heart-rate" element={<HeartRatePage />} />
                           <Route path="/heart-temp-monitoring" element={<HeartTemperaturePage />} />
+                          <Route path="/heart-temp-monitoring-v2" element={<HeartTemperaturePage2 />} />
                           <Route path="/reminders" element={<RemindersPage />} />
                           <Route path="/residents" element={<ResidentsPage />} />
                           <Route path="/residents/:id" element={<ResidentDetailPage />} />

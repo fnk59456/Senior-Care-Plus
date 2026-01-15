@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -15,7 +15,7 @@ import {
   Watch,
   Settings
 } from "lucide-react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 import { useUWBLocation } from "@/contexts/UWBLocationContext"
 import { useDeviceManagement } from "@/contexts/DeviceManagementContext"
@@ -124,7 +124,33 @@ type CloudDevice = {
 export default function HeartTemperaturePage() {
   const { t } = useTranslation()
   const location = useLocation()
+  const navigate = useNavigate()
   const patientName = location.state?.patientName
+
+  // 隱藏入口：點擊心形圖標10次進入新頁面
+  const [heartClickCount, setHeartClickCount] = useState(0)
+  const clickTimeoutRef = useRef<NodeJS.Timeout>()
+
+  const handleHeartIconClick = () => {
+    // 清除之前的定時器
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current)
+    }
+
+    setHeartClickCount(prev => {
+      const newCount = prev + 1
+      if (newCount >= 10) {
+        navigate('/heart-temp-monitoring-v2')
+        return 0
+      }
+      return newCount
+    })
+
+    // 5秒後重置計數
+    clickTimeoutRef.current = setTimeout(() => {
+      setHeartClickCount(0)
+    }, 5000)
+  }
 
   // UWB 區域狀態
   const {
@@ -520,7 +546,10 @@ export default function HeartTemperaturePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold mb-4 flex items-center">
-          <Heart className="mr-3 h-8 w-8 text-pink-500" />
+          <Heart
+            className="mr-3 h-8 w-8 text-pink-500 cursor-pointer hover:scale-110 transition-transform"
+            onClick={handleHeartIconClick}
+          />
           {t("pages:heartTemp.title")}
         </h1>
         {patientName && (
