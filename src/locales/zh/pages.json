@@ -643,6 +643,7 @@
             "ratio": "比例",
             "pixelsPerMeter": "像素/米",
             "translate": "平移",
+            "totalDevices": "總設備數",
             "onlineDevices": "在線設備",
             "filtered": "過濾後"
         },

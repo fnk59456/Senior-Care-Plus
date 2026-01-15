@@ -109,6 +109,7 @@ export default function LocationPage() {
   const lastSelectedGatewayRef = useRef<string>('') // 跟踪上一次的 selectedGateway 值
   const selectedGatewayRef = useRef<string>('') // ✅ 跟踪 selectedGateway 的最新值，解決閉包問題
   const gatewaysRef = useRef<typeof gateways>([]) // ✅ 跟踪 gateways 的最新值
+  const lastOnlineStatusRef = useRef<Record<string, boolean>>({}) // ✅ 跟踪上一次的在线状态，用于优化更新
 
   // 根據MAC地址獲取病患資訊
   const getResidentInfoByMAC = useCallback((mac: string) => {
@@ -892,35 +893,73 @@ export default function LocationPage() {
     historyLoadedRef.current = '' // 重置歷史消息加載標記
   }, [selectedGateway, gateways])
 
-  // ✅ 方案一：設備狀態緩存更新 - 只在 patients 變化時重新計算在線狀態
+  // ✅ 定時檢查設備在線狀態 - 每200ms檢查一次，確保及時檢測離線設備
   useEffect(() => {
-    const now = Date.now()
-    const newOnlineStatus: Record<string, boolean> = {}
+    // 超時時間（毫秒）
+    const TIMEOUT_MS = 5000
+    // 檢查頻率（毫秒）- 根據設備數量動態調整
+    const CHECK_INTERVAL = Object.keys(patients).length > 30 ? 500 : 200
 
-    Object.values(patients).forEach(patient => {
-      newOnlineStatus[patient.id] = now - patient.updatedAt < 5000
-    })
+    // 檢查在線狀態的函數
+    const checkOnlineStatus = () => {
+      const now = Date.now()
+      const newOnlineStatus: Record<string, boolean> = {}
+      let hasChange = false
 
-    const onlineCount = Object.values(newOnlineStatus).filter(status => status).length
-    const offlineCount = Object.values(newOnlineStatus).filter(status => !status).length
+      Object.values(patients).forEach(patient => {
+        const isOnline = now - patient.updatedAt < TIMEOUT_MS
+        const wasOnline = lastOnlineStatusRef.current[patient.id] !== false
 
-    // 獲取當前 Gateway 信息
-    const gateway = selectedGateway ? gateways.find(gw => gw.id === selectedGateway) : null
-    const gatewayName = gateway?.name || 'N/A'
+        newOnlineStatus[patient.id] = isOnline
 
-    console.log(`📊 更新設備在線狀態緩存:`, {
-      gatewayName: gatewayName,
-      gatewayId: selectedGateway || 'N/A',
-      totalDevices: Object.keys(patients).length,
-      onlineDevices: onlineCount,
-      offlineDevices: offlineCount
-    })
+        // 檢測狀態是否變化
+        if (isOnline !== wasOnline) {
+          hasChange = true
+        }
+      })
 
-    setDeviceOnlineStatus(newOnlineStatus)
-  }, [patients, selectedGateway, gateways]) // 只在 patients 變化時更新
+      // 只在狀態變化時更新，減少不必要的重新渲染
+      if (hasChange || Object.keys(newOnlineStatus).length !== Object.keys(lastOnlineStatusRef.current).length) {
+        const onlineCount = Object.values(newOnlineStatus).filter(status => status).length
+        const offlineCount = Object.values(newOnlineStatus).filter(status => !status).length
 
-  // ✅ 方案一：使用緩存的設備狀態 - 避免地圖交互時重新計算
+        // 獲取當前 Gateway 信息
+        const gateway = selectedGateway ? gateways.find(gw => gw.id === selectedGateway) : null
+        const gatewayName = gateway?.name || 'N/A'
+
+        console.log(`📊 更新設備在線狀態緩存:`, {
+          gatewayName: gatewayName,
+          gatewayId: selectedGateway || 'N/A',
+          totalDevices: Object.keys(patients).length,
+          onlineDevices: onlineCount,
+          offlineDevices: offlineCount,
+          hasChange: hasChange
+        })
+
+        // 更新狀態和 ref
+        lastOnlineStatusRef.current = newOnlineStatus
+        setDeviceOnlineStatus(newOnlineStatus)
+      }
+    }
+
+    // 初始化 lastOnlineStatusRef（同步當前狀態）
+    lastOnlineStatusRef.current = { ...deviceOnlineStatus }
+
+    // 立即執行一次檢查（處理初始狀態）
+    checkOnlineStatus()
+
+    // 設置定時檢查
+    const interval = setInterval(checkOnlineStatus, CHECK_INTERVAL)
+
+    // 清理函數：組件卸載時清除定時器
+    return () => {
+      clearInterval(interval)
+    }
+  }, [patients, selectedGateway, gateways]) // 只依賴 patients，避免無限循環
+
+  // ✅ 使用緩存的設備狀態 - 避免地圖交互時重新計算
   const patientList = Object.values(patients)
+  // 保留 onlinePatients 用于统计，但地图显示所有设备（包括离线）
   const onlinePatients = patientList.filter(p => deviceOnlineStatus[p.id] !== false)
 
   // ✅ 輸出篩選後的設備數量
@@ -929,7 +968,8 @@ export default function LocationPage() {
     const patientList = Object.values(patients)
     const onlinePatientsList = patientList.filter(p => deviceOnlineStatus[p.id] !== false)
 
-    const filtered = onlinePatientsList.filter(patient => {
+    // 過濾所有設備（包括離線設備），用於地圖顯示
+    const filtered = patientList.filter(patient => {
       const matchesSearch =
         patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (patient.residentRoom && patient.residentRoom.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -973,8 +1013,8 @@ export default function LocationPage() {
     }
   }, [patients, deviceOnlineStatus, searchTerm, statusFilter, deviceTypeFilter, selectedGateway, gateways, selectedFloor])
 
-  // 過濾患者列表
-  const filteredPatients = onlinePatients.filter(patient => {
+  // 過濾患者列表（包含所有設備，包括離線設備）
+  const filteredPatients = patientList.filter(patient => {
     const matchesSearch =
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (patient.residentRoom && patient.residentRoom.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -1118,306 +1158,310 @@ export default function LocationPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col" style={{ minHeight: 'calc(100vh - 400px)' }}>
-            <div
-              className="relative border rounded-md overflow-hidden bg-gray-50 flex-1"
-              style={{
-                overscrollBehavior: 'none',
-                touchAction: 'none',
-                minHeight: '600px'
-              }}
-            >
-              {dimensions ? (
-                <div
-                  ref={mapContainerRef}
-                  className="relative select-none w-full h-full"
-                  style={{
-                    width: dimensions.width,
-                    height: dimensions.height,
-                    minHeight: '600px',
-                    cursor: isDragging ? 'grabbing' : 'grab',
-                    touchAction: 'none', // 阻止觸控滾動
-                    overscrollBehavior: 'none' // 阻止過度滾動
-                  }}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseEnter={handleMapMouseEnter}
-                  onMouseLeave={() => {
-                    handleMouseUp()
-                    handleMapMouseLeave()
-                  }}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  {/* 整体变换容器 - 包含地图和所有设备标记 */}
+              <div
+                className="relative border rounded-md overflow-hidden bg-gray-50 flex-1"
+                style={{
+                  overscrollBehavior: 'none',
+                  touchAction: 'none',
+                  minHeight: '600px'
+                }}
+              >
+                {dimensions ? (
                   <div
-                    className="relative origin-top-left"
+                    ref={mapContainerRef}
+                    className="relative select-none w-full h-full"
                     style={{
-                      transform: `translate(${mapTransform.translateX}px, ${mapTransform.translateY}px) scale(${mapTransform.scale})`,
-                      transformOrigin: '0 0',
-                      transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                      width: dimensions.width,
+                      height: dimensions.height,
+                      minHeight: '600px',
+                      cursor: isDragging ? 'grabbing' : 'grab',
+                      touchAction: 'none', // 阻止觸控滾動
+                      overscrollBehavior: 'none' // 阻止過度滾動
                     }}
+                    onMouseDown={handleMouseDown}
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseEnter={handleMapMouseEnter}
+                    onMouseLeave={() => {
+                      handleMouseUp()
+                      handleMapMouseLeave()
+                    }}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                   >
-                    {/* 地图图片 */}
-                    <img
-                      ref={mapImageRef}
-                      src={mapImage}
-                      alt={`${selectedFloorData.name}地圖`}
-                      className="w-full h-full object-contain"
-                      style={{ maxWidth: '100%', maxHeight: '100%' }}
-                      draggable={false}
-                    />
+                    {/* 整体变换容器 - 包含地图和所有设备标记 */}
+                    <div
+                      className="relative origin-top-left"
+                      style={{
+                        transform: `translate(${mapTransform.translateX}px, ${mapTransform.translateY}px) scale(${mapTransform.scale})`,
+                        transformOrigin: '0 0',
+                        transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+                      }}
+                    >
+                      {/* 地图图片 */}
+                      <img
+                        ref={mapImageRef}
+                        src={mapImage}
+                        alt={`${selectedFloorData.name}地圖`}
+                        className="w-full h-full object-contain"
+                        style={{ maxWidth: '100%', maxHeight: '100%' }}
+                        draggable={false}
+                      />
 
-                    {/* 设备标记 - 使用简化的坐标转换，让CSS变换处理缩放和平移 */}
+                      {/* 设备标记 - 使用简化的坐标转换，让CSS变换处理缩放和平移 */}
+                      {filteredPatients.map(patient => {
+                        if (!calibration?.isCalibrated) return null
+
+                        // 使用简化的坐标转换函数
+                        const displayCoords = convertRealToDisplayCoords(
+                          patient.position.x,
+                          patient.position.y,
+                          selectedFloorData,
+                          mapImageRef.current as HTMLImageElement
+                        )
+
+                        if (!displayCoords) return null
+
+                        const DeviceIcon = patient.deviceType ? getDeviceIcon(patient.deviceType) : MapPin
+                        const statusInfo = patient.residentStatus ? getStatusInfo(patient.residentStatus) : null
+
+                        return (
+                          <React.Fragment key={patient.id}>
+                            {/* 設備圖標 - 獨立定位 */}
+                            <div
+                              className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+                              style={{
+                                left: displayCoords.x,
+                                top: displayCoords.y
+                              }}
+                            >
+                              <div className="relative">
+                                <Avatar className={`border-2 shadow-lg ${deviceOnlineStatus[patient.id] !== false
+                                  ? 'border-blue-500'  // 在線：藍色
+                                  : 'border-red-500'    // 離線：紅色
+                                  }`}>
+                                  <AvatarFallback className="text-xs">
+                                    {patient.residentName ? patient.residentName[0] : '設'}
+                                  </AvatarFallback>
+                                </Avatar>
+
+                                {/* 設備類型圖標 */}
+                                <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-md">
+                                  <DeviceIcon className="h-3 w-3 text-blue-600" />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 信息標籤 - 獨立定位，在設備圖標下方 */}
+                            {showMarkerInfo && (
+                              <div
+                                className="absolute transform -translate-x-1/2 pointer-events-none text-xs bg-white/90 rounded px-2 py-1 text-center whitespace-nowrap shadow-md min-w-[80px]"
+                                style={{
+                                  left: displayCoords.x,
+                                  top: displayCoords.y + 24  // 設備圖標下方（Avatar 高度 40px / 2 + 邊距 4px）
+                                }}
+                              >
+                                <div className="font-medium">
+                                  {patient.residentName || `設備-${patient.id}`}
+                                </div>
+                                {patient.residentRoom && (
+                                  <div className="text-gray-600 text-[10px]">
+                                    {t('pages:location.deviceList.room')}: {patient.residentRoom}
+                                  </div>
+                                )}
+                                {patient.position.z !== undefined && (
+                                  <div className="text-gray-600 text-[10px]">
+                                    Z: {patient.position.z.toFixed(2)}
+                                  </div>
+                                )}
+                                {statusInfo && (
+                                  <div className="mt-1">
+                                    {statusInfo.badge}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </React.Fragment>
+                        )
+                      })}
+
+                      {/* 无人在线提示 */}
+                      {filteredPatients.length === 0 && (
+                        <div className="absolute inset-0 flex items-center justify-center text-lg text-muted-foreground bg-white/70 pointer-events-none">
+                          {cloudConnected ? t('pages:location.map.noDevices') : t('pages:location.map.selectGateway')}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 缩放控制按钮 */}
+                    <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-lg z-10">
+                      <Button
+                        size="sm"
+                        onClick={handleZoomIn}
+                        disabled={mapTransform.scale >= mapTransform.maxScale}
+                        className="w-8 h-8 p-0"
+                        title={t('pages:location.map.zoomIn')}
+                      >
+                        <ZoomIn className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleZoomOut}
+                        disabled={mapTransform.scale <= mapTransform.minScale}
+                        className="w-8 h-8 p-0"
+                        title={t('pages:location.map.zoomOut')}
+                      >
+                        <ZoomOut className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={resetMapView}
+                        className="w-8 h-8 p-0"
+                        title={t('pages:location.map.resetView')}
+                      >
+                        <RotateCcw className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={showMarkerInfo ? "default" : "outline"}
+                        onClick={() => setShowMarkerInfo(!showMarkerInfo)}
+                        className="w-8 h-8 p-0"
+                        title={showMarkerInfo ? t('pages:location.map.hideMarkerInfo') : t('pages:location.map.showMarkerInfo')}
+                      >
+                        {showMarkerInfo ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+
+                    {/* 缩放比例显示 */}
+                    <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-lg shadow-lg text-sm z-10">
+                      {t('pages:location.map.zoom')}: {(mapTransform.scale * 100).toFixed(0)}%
+                    </div>
+
+                    {/* 操作提示 */}
+                    <div className="absolute top-4 left-4 bg-blue-600/90 text-white px-3 py-1 rounded-lg shadow-lg text-sm z-10">
+                      {t('pages:location.map.controls')} | 滑鼠在地圖上滾動縮放
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-muted-foreground">
+                    <MapPin className="mx-auto h-12 w-12 mb-3 opacity-30" />
+                    <p>{t('pages:location.map.noDimensions')}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* 地圖資訊 */}
+              {calibration && (
+                <div className="mt-4 text-sm text-muted-foreground">
+                  <div>{t('pages:location.map.mapStatus')}: {calibration.isCalibrated ? t('pages:location.map.calibrated') : t('pages:location.map.notCalibrated')}</div>
+                  {calibration.isCalibrated && (
+                    <div>{t('pages:location.map.ratio')}: {calibration.pixelToMeterRatio.toFixed(2)} {t('pages:location.map.pixelsPerMeter')}</div>
+                  )}
+                  <div className="flex items-center gap-4 mt-2">
+                    <div>{t('pages:location.map.zoom')}: {(mapTransform.scale * 100).toFixed(0)}%</div>
+                    <div>{t('pages:location.map.translate')}: ({mapTransform.translateX.toFixed(0)}, {mapTransform.translateY.toFixed(0)})</div>
+                    <div>{t('pages:location.map.totalDevices')}: {patientList.length}</div>
+                    <div>{t('pages:location.map.onlineDevices')}: {onlinePatients.length}</div>
+                    <div>{t('pages:location.map.filtered')}: {filteredPatients.length}</div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 設備列表 - 右側 */}
+          {filteredPatients.length > 0 && (
+            <Card className="w-[400px] flex flex-col">
+              <CardHeader className="flex-shrink-0">
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Signal className="mr-2 h-5 w-5" />
+                    {t('pages:location.deviceList.onlineDevices', { count: filteredPatients.length })}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {t('pages:location.deviceList.totalDevices', { count: onlinePatients.length })}
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-hidden flex flex-col">
+                {/* 動態高度滾動容器 */}
+                <div
+                  className="overflow-y-auto pr-2 flex-1"
+                  style={{
+                    minHeight: '0'
+                  }}
+                >
+                  {/* 垂直列表布局 */}
+                  <div className="flex flex-col gap-2">
                     {filteredPatients.map(patient => {
-                      if (!calibration?.isCalibrated) return null
-
-                      // 使用简化的坐标转换函数
-                      const displayCoords = convertRealToDisplayCoords(
-                        patient.position.x,
-                        patient.position.y,
-                        selectedFloorData,
-                        mapImageRef.current as HTMLImageElement
-                      )
-
-                      if (!displayCoords) return null
-
                       const DeviceIcon = patient.deviceType ? getDeviceIcon(patient.deviceType) : MapPin
                       const statusInfo = patient.residentStatus ? getStatusInfo(patient.residentStatus) : null
 
                       return (
-                        <React.Fragment key={patient.id}>
-                          {/* 設備圖標 - 獨立定位 */}
-                          <div
-                            className="absolute transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                            style={{
-                              left: displayCoords.x,
-                              top: displayCoords.y
-                            }}
-                          >
-                            <div className="relative">
-                              <Avatar className="border-2 border-blue-500 shadow-lg">
-                                <AvatarFallback className="text-xs">
+                        <div
+                          key={patient.id}
+                          className="flex flex-col gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors w-full"
+                        >
+                          {/* 第一行：圖標、名稱、狀態 */}
+                          <div className="flex items-center gap-3">
+                            {/* 設備圖標 */}
+                            <div className="relative flex-shrink-0">
+                              <Avatar className="h-10 w-10">
+                                <AvatarFallback className="text-sm">
                                   {patient.residentName ? patient.residentName[0] : '設'}
                                 </AvatarFallback>
                               </Avatar>
 
                               {/* 設備類型圖標 */}
-                              <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-md">
+                              <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-sm">
                                 <DeviceIcon className="h-3 w-3 text-blue-600" />
                               </div>
                             </div>
+
+                            {/* 名稱和狀態徽章 */}
+                            <div className="flex-1 flex items-center gap-2 min-w-0">
+                              <h3 className="text-base font-semibold truncate">
+                                {patient.residentName || `設備-${patient.id}`}
+                              </h3>
+                              {statusInfo && statusInfo.badge}
+                            </div>
+
+                            {/* 在線狀態指示 */}
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-xs text-green-600">{t('pages:location.deviceList.online')}</span>
+                            </div>
                           </div>
 
-                          {/* 信息標籤 - 獨立定位，在設備圖標下方 */}
-                          {showMarkerInfo && (
-                            <div
-                              className="absolute transform -translate-x-1/2 pointer-events-none text-xs bg-white/90 rounded px-2 py-1 text-center whitespace-nowrap shadow-md min-w-[80px]"
-                              style={{
-                                left: displayCoords.x,
-                                top: displayCoords.y + 24  // 設備圖標下方（Avatar 高度 40px / 2 + 邊距 4px）
-                              }}
-                            >
-                              <div className="font-medium">
-                                {patient.residentName || `設備-${patient.id}`}
+                          {/* 第二行：詳細信息（緊湊顯示） */}
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground pl-[52px]">
+                            {patient.residentRoom && (
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">{t('pages:location.deviceList.room')}:</span>
+                                <span>{patient.residentRoom}</span>
                               </div>
-                              {patient.residentRoom && (
-                                <div className="text-gray-600 text-[10px]">
-                                  {t('pages:location.deviceList.room')}: {patient.residentRoom}
-                                </div>
-                              )}
-                              {patient.position.z !== undefined && (
-                                <div className="text-gray-600 text-[10px]">
-                                  Z: {patient.position.z.toFixed(2)}
-                                </div>
-                              )}
-                              {statusInfo && (
-                                <div className="mt-1">
-                                  {statusInfo.badge}
-                                </div>
-                              )}
+                            )}
+                            <div className="flex items-center gap-1">
+                              <span className="font-medium">{t('pages:location.deviceList.position')}:</span>
+                              <span>
+                                ({patient.position.x.toFixed(2)}, {patient.position.y.toFixed(2)})
+                                {patient.position.z !== undefined && `, Z: ${patient.position.z.toFixed(2)}`}
+                              </span>
                             </div>
-                          )}
-                        </React.Fragment>
+                            <div className="text-xs">
+                              {t('pages:location.deviceList.updated')}: {new Date(patient.updatedAt).toLocaleTimeString()}
+                            </div>
+                          </div>
+                        </div>
                       )
                     })}
-
-                    {/* 无人在线提示 */}
-                    {filteredPatients.length === 0 && (
-                      <div className="absolute inset-0 flex items-center justify-center text-lg text-muted-foreground bg-white/70 pointer-events-none">
-                        {cloudConnected ? t('pages:location.map.noDevices') : t('pages:location.map.selectGateway')}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 缩放控制按钮 */}
-                  <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-lg z-10">
-                    <Button
-                      size="sm"
-                      onClick={handleZoomIn}
-                      disabled={mapTransform.scale >= mapTransform.maxScale}
-                      className="w-8 h-8 p-0"
-                      title={t('pages:location.map.zoomIn')}
-                    >
-                      <ZoomIn className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleZoomOut}
-                      disabled={mapTransform.scale <= mapTransform.minScale}
-                      className="w-8 h-8 p-0"
-                      title={t('pages:location.map.zoomOut')}
-                    >
-                      <ZoomOut className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={resetMapView}
-                      className="w-8 h-8 p-0"
-                      title={t('pages:location.map.resetView')}
-                    >
-                      <RotateCcw className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={showMarkerInfo ? "default" : "outline"}
-                      onClick={() => setShowMarkerInfo(!showMarkerInfo)}
-                      className="w-8 h-8 p-0"
-                      title={showMarkerInfo ? t('pages:location.map.hideMarkerInfo') : t('pages:location.map.showMarkerInfo')}
-                    >
-                      {showMarkerInfo ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </Button>
-                  </div>
-
-                  {/* 缩放比例显示 */}
-                  <div className="absolute bottom-4 left-4 bg-white/90 px-3 py-1 rounded-lg shadow-lg text-sm z-10">
-                    {t('pages:location.map.zoom')}: {(mapTransform.scale * 100).toFixed(0)}%
-                  </div>
-
-                  {/* 操作提示 */}
-                  <div className="absolute top-4 left-4 bg-blue-600/90 text-white px-3 py-1 rounded-lg shadow-lg text-sm z-10">
-                    {t('pages:location.map.controls')} | 滑鼠在地圖上滾動縮放
                   </div>
                 </div>
-              ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                  <MapPin className="mx-auto h-12 w-12 mb-3 opacity-30" />
-                  <p>{t('pages:location.map.noDimensions')}</p>
-                </div>
-              )}
-            </div>
-
-            {/* 地圖資訊 */}
-            {calibration && (
-              <div className="mt-4 text-sm text-muted-foreground">
-                <div>{t('pages:location.map.mapStatus')}: {calibration.isCalibrated ? t('pages:location.map.calibrated') : t('pages:location.map.notCalibrated')}</div>
-                {calibration.isCalibrated && (
-                  <div>{t('pages:location.map.ratio')}: {calibration.pixelToMeterRatio.toFixed(2)} {t('pages:location.map.pixelsPerMeter')}</div>
-                )}
-                <div className="flex items-center gap-4 mt-2">
-                  <div>{t('pages:location.map.zoom')}: {(mapTransform.scale * 100).toFixed(0)}%</div>
-                  <div>{t('pages:location.map.translate')}: ({mapTransform.translateX.toFixed(0)}, {mapTransform.translateY.toFixed(0)})</div>
-                  <div>{t('pages:location.map.onlineDevices')}: {onlinePatients.length}</div>
-                  <div>{t('pages:location.map.filtered')}: {filteredPatients.length}</div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 設備列表 - 右側 */}
-        {filteredPatients.length > 0 && (
-          <Card className="w-[400px] flex flex-col">
-            <CardHeader className="flex-shrink-0">
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Signal className="mr-2 h-5 w-5" />
-                  {t('pages:location.deviceList.onlineDevices', { count: filteredPatients.length })}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {t('pages:location.deviceList.totalDevices', { count: onlinePatients.length })}
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 overflow-hidden flex flex-col">
-              {/* 動態高度滾動容器 */}
-              <div
-                className="overflow-y-auto pr-2 flex-1"
-                style={{
-                  minHeight: '0'
-                }}
-              >
-              {/* 垂直列表布局 */}
-              <div className="flex flex-col gap-2">
-                {filteredPatients.map(patient => {
-                  const DeviceIcon = patient.deviceType ? getDeviceIcon(patient.deviceType) : MapPin
-                  const statusInfo = patient.residentStatus ? getStatusInfo(patient.residentStatus) : null
-
-                  return (
-                    <div
-                      key={patient.id}
-                      className="flex flex-col gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors w-full"
-                    >
-                      {/* 第一行：圖標、名稱、狀態 */}
-                      <div className="flex items-center gap-3">
-                        {/* 設備圖標 */}
-                        <div className="relative flex-shrink-0">
-                          <Avatar className="h-10 w-10">
-                            <AvatarFallback className="text-sm">
-                              {patient.residentName ? patient.residentName[0] : '設'}
-                            </AvatarFallback>
-                          </Avatar>
-
-                          {/* 設備類型圖標 */}
-                          <div className="absolute -top-1 -right-1 bg-white rounded-full p-1 shadow-sm">
-                            <DeviceIcon className="h-3 w-3 text-blue-600" />
-                          </div>
-                        </div>
-
-                        {/* 名稱和狀態徽章 */}
-                        <div className="flex-1 flex items-center gap-2 min-w-0">
-                          <h3 className="text-base font-semibold truncate">
-                            {patient.residentName || `設備-${patient.id}`}
-                          </h3>
-                          {statusInfo && statusInfo.badge}
-                        </div>
-
-                        {/* 在線狀態指示 */}
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          <span className="text-xs text-green-600">{t('pages:location.deviceList.online')}</span>
-                        </div>
-                      </div>
-
-                      {/* 第二行：詳細信息（緊湊顯示） */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground pl-[52px]">
-                        {patient.residentRoom && (
-                          <div className="flex items-center gap-1">
-                            <span className="font-medium">{t('pages:location.deviceList.room')}:</span>
-                            <span>{patient.residentRoom}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium">{t('pages:location.deviceList.position')}:</span>
-                          <span>
-                            ({patient.position.x.toFixed(2)}, {patient.position.y.toFixed(2)})
-                            {patient.position.z !== undefined && `, Z: ${patient.position.z.toFixed(2)}`}
-                          </span>
-                        </div>
-                        <div className="text-xs">
-                          {t('pages:location.deviceList.updated')}: {new Date(patient.updatedAt).toLocaleTimeString()}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       ) : (
         <Card>

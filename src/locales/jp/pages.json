@@ -1360,6 +1360,7 @@
             "ratio": "比率",
             "pixelsPerMeter": "ピクセル/メートル",
             "translate": "平行移動",
+            "totalDevices": "総デバイス数",
             "onlineDevices": "オンラインデバイス",
             "filtered": "フィルター後"
         },
