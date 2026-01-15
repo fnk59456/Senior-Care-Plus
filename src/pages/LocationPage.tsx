@@ -896,7 +896,7 @@ export default function LocationPage() {
   // ✅ 定時檢查設備在線狀態 - 每200ms檢查一次，確保及時檢測離線設備
   useEffect(() => {
     // 超時時間（毫秒）
-    const TIMEOUT_MS = 5000
+    const TIMEOUT_MS = 10000
     // 檢查頻率（毫秒）- 根據設備數量動態調整
     const CHECK_INTERVAL = Object.keys(patients).length > 30 ? 500 : 200
 
