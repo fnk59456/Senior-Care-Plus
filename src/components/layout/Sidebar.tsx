@@ -129,15 +129,8 @@ export function Sidebar() {
   const navigation = getNavigationItems(t)
 
   return (
-    <div className="hidden border-r bg-background/80 backdrop-blur-sm md:block w-64 shadow-sm">
+    <div className="hidden border-r bg-background/80 backdrop-blur-sm md:block w-64 shadow-sm h-full">
       <div className="flex h-full flex-col">
-        <div className="flex items-center p-4 mb-2">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center mr-2">
-            <span className="text-primary-foreground font-bold">護</span>
-          </div>
-          <span className="font-bold text-lg">{t('navigation:sidebar.title')}</span>
-        </div>
-
         <div className="flex-1 overflow-auto py-4 px-3">
           <div className="space-y-1">
             <SidebarSection title={t('navigation:sidebar.sections.main')} items={navigation.slice(0, 5)} pathname={pathname} />
