@@ -326,7 +326,81 @@
             "noBindableDevices": "所選設備中沒有已綁定的設備",
             "noDevicesSelected": "請先選擇要移除的設備",
             "unbindSuccess": "已成功解除 {{count}} 個設備的綁定",
-            "removeSuccess": "已成功移除 {{count}} 個設備"
+            "removeSuccess": "已成功移除 {{count}} 個設備",
+            "gateway": {
+                "changeNetworkId": "更改UWB Network ID",
+                "changeLocation": "修改所屬養老院及樓層"
+            },
+            "anchor": {
+                "changeHeight": "修改高度(Z坐標)",
+                "changePower": "修改功率",
+                "requestData": "要求錨點資料",
+                "requesting": "發送中..."
+            },
+            "tag": {
+                "changeConfig": "更改參數設定",
+                "changePower": "修改功率",
+                "requestData": "要求標籤資料",
+                "requesting": "發送中...",
+                "tagName": "標籤名稱",
+                "tagId": "Tag ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "未設定"
+            },
+            "anchor": {
+                "anchorName": "錨點名稱",
+                "anchorId": "Anchor ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "未設定",
+                "selectOneAnchor": "請選擇1個定位錨點設備",
+                "selectAtLeastOneAnchor": "請至少選擇1個定位錨點設備",
+                "enterValidZCoordinate": "請輸入有效的Z坐標數值",
+                "enterAllPowerValues": "請輸入所有功率值",
+                "powerValueRange": "功率值必須在 5.0~30.5 dB 範圍內",
+                "commandSentSuccess": "✅ 已成功發送修改功率指令到 {{name}}",
+                "heightCommandSentSuccess": "✅ 已成功發送修改高度指令到 {{name}}\n新Z坐標: {{zValue}}",
+                "requestDataSuccess": "✅ 已成功發送要求資料指令到 {{count}} 個錨點設備",
+                "requestDataPartialSuccess": "⚠️ 已成功發送 {{successCount}} 個，失敗 {{failCount}} 個\n失敗設備: {{failedDevices}}",
+                "requestDataFailed": "❌ 所有指令發送失敗\n失敗設備: {{failedDevices}}"
+            },
+            "tag": {
+                "changeConfig": "更改參數設定",
+                "changePower": "修改功率",
+                "requestData": "要求標籤資料",
+                "requesting": "發送中...",
+                "tagName": "標籤名稱",
+                "tagId": "Tag ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "未設定",
+                "selectOneTag": "請選擇1個定位標籤設備",
+                "selectAtLeastOneTag": "請至少選擇1個定位標籤設備",
+                "enterAllParameterValues": "請輸入所有參數值",
+                "enterAllPowerValues": "請輸入所有功率值",
+                "powerValueRange": "功率值必須在 5.0~30.5 dB 範圍內",
+                "configCommandSentSuccess": "✅ 已成功發送更改參數設定指令到 {{name}}",
+                "powerCommandSentSuccess": "✅ 已成功發送修改功率指令到 {{name}}",
+                "requestDataSuccess": "✅ 已成功發送要求資料指令到 {{count}} 個標籤設備",
+                "requestDataPartialSuccess": "⚠️ 已成功發送 {{successCount}} 個，失敗 {{failCount}} 個\n失敗設備: {{failedDevices}}",
+                "requestDataFailed": "❌ 所有指令發送失敗\n失敗設備: {{failedDevices}}"
+            },
+            "gateway": {
+                "gatewayId": "Gateway ID",
+                "notSet": "未設定",
+                "selectOneGateway": "請選擇1個閘道器設備",
+                "networkIdRange": "UWB Network ID 必須在 1~65535 範圍內",
+                "networkIdCommandSentSuccess": "✅ 已成功發送更改UWB Network ID指令到 {{name}}\nNetwork ID: {{networkId}}",
+                "locationUpdatedSuccess": "閘道器所屬養老院及樓層已更新成功！"
+            },
+            "common": {
+                "gatewayNotFound": "找不到對應的閘道器配置，請先在「UWB定位管理」中新增閘道器",
+                "downlinkTopicNotFound": "找不到對應的 Gateway 或 downlink 主題",
+                "mqttBusNotConnected": "MQTT Bus 未連線，無法發送指令",
+                "invalidDeviceIdOrGatewayId": "無法獲取有效的{{deviceType}}ID或閘道器ID",
+                "selectFloor": "請選擇樓層",
+                "commandSendFailed": "發送指令失敗: {{error}}",
+                "commandSendError": "發送指令時發生錯誤: {{error}}",
+                "updateFailed": "更新失敗: {{error}}"
+            }
         },
         "deviceInfo": {
             "title": "設備資訊",

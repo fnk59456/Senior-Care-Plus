@@ -9,63 +9,83 @@
         "items": {
             "home": {
                 "name": "ホーム",
-                "description": "システムホームに戻る"
+                "description": "システムホーム"
             },
-            "residents": {
-                "name": "居住者管理",
-                "description": "居住者データとデバイスバインディングの管理"
-            },
-            "deviceManagement": {
-                "name": "デバイス管理",
-                "description": "すべてのタイプのケアデバイスの管理"
-            },
-            "health": {
-                "name": "健康監視",
-                "description": "居住者の健康状態の監視"
+            "emergency": {
+                "name": "緊急通報",
+                "description": "緊急支援信号"
             },
             "emergencyCall": {
                 "name": "緊急通報",
-                "description": "緊急支援信号の送信"
+                "description": "緊急支援信号"
+            },
+            "health": {
+                "name": "健康監視",
+                "description": "バイタル即時監視"
             },
             "reminders": {
                 "name": "リマインダー",
-                "description": "薬物、水分補給、その他のケアリマインダーの管理"
+                "description": "服薬・ケアリマイン"
             },
             "location": {
                 "name": "屋内位置",
-                "description": "施設内の高齢者とデバイスの位置追跡"
+                "description": "位置追跡・安全区域"
             },
-            "temperature": {
-                "name": "体温監視",
-                "description": "高齢者の体温変化の監視"
+            "residents": {
+                "name": "居住者管理",
+                "description": "居住者データ・記録"
             },
-            "heartRate": {
-                "name": "心拍監視",
-                "description": "高齢者の心拍変化の監視"
-            },
-            "diaperMonitoring": {
-                "name": "おむつ監視",
-                "description": "高齢者のおむつ湿度状態の監視"
+            "staff": {
+                "name": "スタッフ管理",
+                "description": "スタッフ・職員"
             },
             "staffManagement": {
                 "name": "スタッフ管理",
-                "description": "スタッフ情報の管理"
+                "description": "スタッフ・職員"
+            },
+            "devices": {
+                "name": "デバイス管理",
+                "description": "ケアデバイス・保守"
+            },
+            "deviceManagement": {
+                "name": "デバイス管理",
+                "description": "ケアデバイス・保守"
             },
             "uwbLocation": {
                 "name": "UWB位置管理",
-                "description": "UWB位置システムの設定管理"
+                "description": "UWB施設管理"
+            },
+            "temperature": {
+                "name": "体温監視",
+                "description": "体温変化の監視"
+            },
+            "heartRate": {
+                "name": "心拍監視",
+                "description": "心拍変化の監視"
+            },
+            "diaperMonitoring": {
+                "name": "おむつ監視",
+                "description": "おむつ湿度の監視"
             },
             "backendTest": {
                 "name": "バックエンドテスト",
-                "description": "フロントエンドとバックエンドの接続をテスト"
+                "description": "前後端接続テスト"
             },
             "fieldManagementTest": {
                 "name": "フィールド管理テスト",
-                "description": "フィールドのCRUD操作をテスト"
+                "description": "フィールドCRUD"
+            },
+            "more": {
+                "name": "その他",
+                "description": "スマートケア機能"
             },
             "settings": {
                 "name": "設定",
-                "description": "システム設定と個人設定"
+                "description": "設定・個人設定"
+            },
+            "help": {
+                "name": "ヘルプ",
+                "description": "ガイド・サポート"
             }
         }
     }

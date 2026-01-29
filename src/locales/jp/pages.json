@@ -212,12 +212,12 @@
         "searchPlaceholder": "デバイス名、ハードウェアID、デバイスUIDで検索...",
         "filters": {
             "all": "すべて",
-            "smartwatch300B": "300Bウォッチ",
-            "diaperSensor": "おむつセンサー",
-            "pedometer": "モーションセンサー",
-            "uwbTag": "位置タグ",
-            "uwbAnchor": "位置アンカー",
-            "gateway": "UWBゲートウェイ"
+            "smartwatch300B": "300B",
+            "diaperSensor": "おむつ",
+            "pedometer": "モーション",
+            "uwbTag": "タグ",
+            "uwbAnchor": "アンカー",
+            "gateway": "ゲートウェイ"
         },
         "actions": {
             "addDevice": "デバイス追加",
@@ -322,7 +322,67 @@
             "noBindableDevices": "選択したデバイスの中にバインド済みのデバイスがありません",
             "noDevicesSelected": "削除するデバイスを選択してください",
             "unbindSuccess": "{{count}} 個のデバイスのバインドを解除しました",
-            "removeSuccess": "{{count}} 個のデバイスを削除しました"
+            "removeSuccess": "{{count}} 個のデバイスを削除しました",
+            "gateway": {
+                "changeNetworkId": "UWB Network IDを変更",
+                "changeLocation": "老人ホームと階層を変更",
+                "gatewayId": "Gateway ID",
+                "notSet": "未設定",
+                "selectOneGateway": "1つのゲートウェイデバイスを選択してください",
+                "networkIdRange": "UWB Network IDは1~65535の範囲内である必要があります",
+                "networkIdCommandSentSuccess": "✅ {{name}}へのUWB Network ID変更コマンドの送信に成功しました\nNetwork ID: {{networkId}}",
+                "locationUpdatedSuccess": "ゲートウェイの老人ホームと階層が正常に更新されました！"
+            },
+            "anchor": {
+                "changeHeight": "高さ(Z座標)を変更",
+                "changePower": "パワーを変更",
+                "requestData": "アンカーデータを要求",
+                "requesting": "送信中...",
+                "anchorName": "アンカー名",
+                "anchorId": "Anchor ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "未設定",
+                "selectOneAnchor": "1つのアンカーデバイスを選択してください",
+                "selectAtLeastOneAnchor": "少なくとも1つのアンカーデバイスを選択してください",
+                "enterValidZCoordinate": "有効なZ座標値を入力してください",
+                "enterAllPowerValues": "すべてのパワー値を入力してください",
+                "powerValueRange": "パワー値は5.0~30.5 dBの範囲内である必要があります",
+                "commandSentSuccess": "✅ {{name}}へのパワー変更コマンドの送信に成功しました",
+                "heightCommandSentSuccess": "✅ {{name}}への高さ変更コマンドの送信に成功しました\n新しいZ座標: {{zValue}}",
+                "requestDataSuccess": "✅ {{count}}個のアンカーデバイスへのデータ要求コマンドの送信に成功しました",
+                "requestDataPartialSuccess": "⚠️ {{successCount}}個成功、{{failCount}}個失敗\n失敗したデバイス: {{failedDevices}}",
+                "requestDataFailed": "❌ すべてのコマンドが失敗しました\n失敗したデバイス: {{failedDevices}}"
+            },
+            "tag": {
+                "changeConfig": "パラメータ設定を変更",
+                "changePower": "パワーを変更",
+                "requestData": "タグデータを要求",
+                "requesting": "送信中...",
+                "tagName": "タグ名",
+                "tagId": "Tag ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "未設定",
+                "selectOneTag": "1つのタグデバイスを選択してください",
+                "selectAtLeastOneTag": "少なくとも1つのタグデバイスを選択してください",
+                "enterAllParameterValues": "すべてのパラメータ値を入力してください",
+                "enterAllPowerValues": "すべてのパワー値を入力してください",
+                "powerValueRange": "パワー値は5.0~30.5 dBの範囲内である必要があります",
+                "configCommandSentSuccess": "✅ {{name}}へのパラメータ設定変更コマンドの送信に成功しました",
+                "powerCommandSentSuccess": "✅ {{name}}へのパワー変更コマンドの送信に成功しました",
+                "requestDataSuccess": "✅ {{count}}個のタグデバイスへのデータ要求コマンドの送信に成功しました",
+                "requestDataPartialSuccess": "⚠️ {{successCount}}個成功、{{failCount}}個失敗\n失敗したデバイス: {{failedDevices}}",
+                "requestDataFailed": "❌ すべてのコマンドが失敗しました\n失敗したデバイス: {{failedDevices}}"
+            },
+            "common": {
+                "gatewayNotFound": "ゲートウェイ設定が見つかりません。「UWB位置管理」でゲートウェイを追加してください",
+                "downlinkTopicNotFound": "ゲートウェイまたはダウンリンクトピックが見つかりません",
+                "mqttBusNotConnected": "MQTT Busが接続されていません。コマンドを送信できません",
+                "invalidDeviceIdOrGatewayId": "有効な{{deviceType}}IDまたはゲートウェイIDを取得できません",
+                "selectFloor": "階層を選択してください",
+                "commandSendFailed": "コマンド送信に失敗しました: {{error}}",
+                "commandSendError": "コマンド送信中にエラーが発生しました: {{error}}",
+                "updateFailed": "更新に失敗しました: {{error}}"
+            }
         },
         "deviceInfo": {
             "title": "デバイス情報",
@@ -843,6 +903,63 @@
             "generalAnchor": "一般アンカー",
             "mainAnchor": "メインアンカー",
             "unknown": "不明"
+        }
+    },
+    "health": {
+        "systemTitle": "高齢者ケアシステム",
+        "monitoringTitle": "患者監視",
+        "actions": {
+            "forceSave": "強制保存",
+            "exportSettings": "設定エクスポート",
+            "importSettings": "設定インポート",
+            "debugStorage": "ストレージデバッグ"
+        },
+        "stats": {
+            "totalResidents": "総居住者数",
+            "activeDevices": "アクティブデバイス",
+            "offlineDevices": "オフラインデバイス",
+            "errorDevices": "エラーデバイス"
+        },
+        "filters": {
+            "全部": "すべて",
+            "異常": "エラー",
+            "正常": "正常",
+            "需注意": "注意"
+        },
+        "patientInfo": {
+            "age": "年齢",
+            "room": "部屋",
+            "devices": "デバイス"
+        },
+        "patientStatus": {
+            "normal": "正常",
+            "error": "エラー",
+            "attention": "注意",
+            "noDevices": "デバイスなし"
+        },
+        "monitoringIcons": {
+            "temperature": "体温",
+            "heartRate": "心拍数",
+            "physiological": "生理",
+            "diaper": "おむつ",
+            "activity": "活動",
+            "location": "位置",
+            "emergency": "緊急",
+            "reminders": "リマイン",
+            "residents": "居住者",
+            "devices": "デバイス"
+        },
+        "emptyState": {
+            "noPatients": "現在{{status}}状態の患者がいません",
+            "goToResidentManagement": "居住者管理に移動してデバイスを設定"
+        },
+        "alerts": {
+            "importSuccess": "✅ 健康監視設定のインポートに成功しました！",
+            "invalidFormat": "❌ 無効なデータ形式",
+            "importFailed": "❌ データインポート失敗"
+        },
+        "confirms": {
+            "resetSettings": "すべての健康監視設定をリセットしてもよろしいですか？この操作は元に戻せません！"
         }
     },
     "heartRate": {

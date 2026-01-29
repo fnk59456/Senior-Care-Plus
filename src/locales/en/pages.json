@@ -212,12 +212,12 @@
         "searchPlaceholder": "Search device name, hardware ID, or device UID...",
         "filters": {
             "all": "All",
-            "smartwatch300B": "300B Watch",
-            "diaperSensor": "Diaper Sensor",
-            "pedometer": "Motion Sensor",
-            "uwbTag": "Positioning Tag",
-            "uwbAnchor": "Positioning Anchor",
-            "gateway": "UWB Gateway"
+            "smartwatch300B": "300B",
+            "diaperSensor": "Diaper",
+            "pedometer": "Motion",
+            "uwbTag": "Tag",
+            "uwbAnchor": "Anchor",
+            "gateway": "Gateway"
         },
         "actions": {
             "addDevice": "Add Device",
@@ -322,7 +322,67 @@
             "noBindableDevices": "No bound devices in selection",
             "noDevicesSelected": "Please select devices to remove",
             "unbindSuccess": "Successfully unbound {{count}} devices",
-            "removeSuccess": "Successfully removed {{count}} devices"
+            "removeSuccess": "Successfully removed {{count}} devices",
+            "gateway": {
+                "changeNetworkId": "Change UWB Network ID",
+                "changeLocation": "Modify Nursing Home and Floor",
+                "gatewayId": "Gateway ID",
+                "notSet": "Not Set",
+                "selectOneGateway": "Please select 1 gateway device",
+                "networkIdRange": "UWB Network ID must be between 1~65535",
+                "networkIdCommandSentSuccess": "✅ Successfully sent change UWB Network ID command to {{name}}\nNetwork ID: {{networkId}}",
+                "locationUpdatedSuccess": "Gateway nursing home and floor updated successfully!"
+            },
+            "anchor": {
+                "changeHeight": "Modify Height (Z Coordinate)",
+                "changePower": "Modify Power",
+                "requestData": "Request Anchor Data",
+                "requesting": "Sending...",
+                "anchorName": "Anchor Name",
+                "anchorId": "Anchor ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "Not Set",
+                "selectOneAnchor": "Please select 1 anchor device",
+                "selectAtLeastOneAnchor": "Please select at least 1 anchor device",
+                "enterValidZCoordinate": "Please enter a valid Z coordinate value",
+                "enterAllPowerValues": "Please enter all power values",
+                "powerValueRange": "Power value must be between 5.0~30.5 dB",
+                "commandSentSuccess": "✅ Successfully sent modify power command to {{name}}",
+                "heightCommandSentSuccess": "✅ Successfully sent modify height command to {{name}}\nNew Z coordinate: {{zValue}}",
+                "requestDataSuccess": "✅ Successfully sent request data command to {{count}} anchor devices",
+                "requestDataPartialSuccess": "⚠️ Successfully sent {{successCount}}, failed {{failCount}}\nFailed devices: {{failedDevices}}",
+                "requestDataFailed": "❌ All commands failed\nFailed devices: {{failedDevices}}"
+            },
+            "tag": {
+                "changeConfig": "Change Parameter Settings",
+                "changePower": "Modify Power",
+                "requestData": "Request Tag Data",
+                "requesting": "Sending...",
+                "tagName": "Tag Name",
+                "tagId": "Tag ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "Not Set",
+                "selectOneTag": "Please select 1 tag device",
+                "selectAtLeastOneTag": "Please select at least 1 tag device",
+                "enterAllParameterValues": "Please enter all parameter values",
+                "enterAllPowerValues": "Please enter all power values",
+                "powerValueRange": "Power value must be between 5.0~30.5 dB",
+                "configCommandSentSuccess": "✅ Successfully sent change parameter settings command to {{name}}",
+                "powerCommandSentSuccess": "✅ Successfully sent modify power command to {{name}}",
+                "requestDataSuccess": "✅ Successfully sent request data command to {{count}} tag devices",
+                "requestDataPartialSuccess": "⚠️ Successfully sent {{successCount}}, failed {{failCount}}\nFailed devices: {{failedDevices}}",
+                "requestDataFailed": "❌ All commands failed\nFailed devices: {{failedDevices}}"
+            },
+            "common": {
+                "gatewayNotFound": "Gateway configuration not found, please add gateway in \"UWB Location Management\" first",
+                "downlinkTopicNotFound": "Gateway or downlink topic not found",
+                "mqttBusNotConnected": "MQTT Bus not connected, cannot send command",
+                "invalidDeviceIdOrGatewayId": "Cannot get valid {{deviceType}} ID or Gateway ID",
+                "selectFloor": "Please select floor",
+                "commandSendFailed": "Command send failed: {{error}}",
+                "commandSendError": "Error occurred while sending command: {{error}}",
+                "updateFailed": "Update failed: {{error}}"
+            }
         },
         "deviceInfo": {
             "title": "Device Information",
@@ -456,7 +516,7 @@
         "monitoringIcons": {
             "temperature": "Temperature",
             "heartRate": "Heart Rate",
-            "physiological": "Physiological",
+            "physiological": "Physio",
             "diaper": "Diaper",
             "activity": "Activity",
             "location": "Location",

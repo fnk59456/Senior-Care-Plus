@@ -674,7 +674,7 @@ export default function DeviceManagementPage() {
       .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.GATEWAY)
 
     if (selectedGatewayDevices.length !== 1) {
-      alert('請選擇1個閘道器設備')
+      alert(t('pages:deviceManagement.batchActions.gateway.selectOneGateway'))
       return
     }
 
@@ -694,14 +694,14 @@ export default function DeviceManagementPage() {
     if (!selectedGatewayDevice) return
 
     if (!gatewayLocationFloorId) {
-      alert('請選擇樓層')
+      alert(t('pages:deviceManagement.batchActions.common.selectFloor'))
       return
     }
 
     // 獲取對應的 UWB Gateway
     const locationInfo = getGatewayLocationInfo(selectedGatewayDevice)
     if (!locationInfo.uwbGateway) {
-      alert('找不到對應的閘道器配置，請先在「UWB定位管理」中新增閘道器')
+      alert(t('pages:deviceManagement.batchActions.common.gatewayNotFound'))
       return
     }
 
@@ -721,7 +721,7 @@ export default function DeviceManagementPage() {
         newFloorId: gatewayLocationFloorId
       })
 
-      alert('閘道器所屬養老院及樓層已更新成功！')
+      alert(t('pages:deviceManagement.batchActions.gateway.locationUpdatedSuccess'))
 
       // 關閉對話框並重置狀態
       setShowGatewayLocationDialog(false)
@@ -732,7 +732,7 @@ export default function DeviceManagementPage() {
 
     } catch (error: any) {
       console.error('❌ 更新閘道器所屬樓層失敗:', error)
-      alert('更新失敗: ' + (error?.message || error))
+      alert(t('pages:deviceManagement.batchActions.common.updateFailed', { error: error?.message || error }))
     } finally {
       setIsSavingGatewayLocation(false)
     }
@@ -757,7 +757,7 @@ export default function DeviceManagementPage() {
       .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_ANCHOR)
 
     if (selectedAnchorDevices.length !== 1) {
-      alert('請選擇1個定位錨點設備')
+      alert(t('pages:deviceManagement.batchActions.anchor.selectOneAnchor'))
       return
     }
 
@@ -778,14 +778,14 @@ export default function DeviceManagementPage() {
     // 驗證輸入
     const zValue = parseFloat(anchorHeightValue)
     if (isNaN(zValue)) {
-      alert('請輸入有效的Z坐標數值')
+      alert(t('pages:deviceManagement.batchActions.anchor.enterValidZCoordinate'))
       return
     }
 
     // 獲取 Gateway 信息
     const gatewayInfo = getDeviceGatewayInfo(selectedAnchorDevice)
     if (!gatewayInfo) {
-      alert('找不到對應的 Gateway 或 downlink 主題')
+      alert(t('pages:deviceManagement.batchActions.common.downlinkTopicNotFound'))
       return
     }
 
@@ -793,7 +793,7 @@ export default function DeviceManagementPage() {
 
     // 檢查 MQTT 連接
     if (!mqttBus.isConnected()) {
-      alert('MQTT Bus 未連線，無法發送指令')
+      alert(t('pages:deviceManagement.batchActions.common.mqttBusNotConnected'))
       return
     }
 
@@ -807,7 +807,7 @@ export default function DeviceManagementPage() {
     const gatewayId = gateway.cloudData?.gateway_id || parseInt(selectedAnchorDevice.gatewayId || "0")
 
     if (isNaN(anchorId) || isNaN(gatewayId)) {
-      alert('無法獲取有效的錨點ID或閘道器ID')
+      alert(t('pages:deviceManagement.batchActions.common.invalidDeviceIdOrGatewayId', { deviceType: '錨點' }))
       return
     }
 
@@ -846,7 +846,7 @@ export default function DeviceManagementPage() {
       await mqttBus.publish(downlinkTopic, configMessage, 1)
 
       console.log('✅ 錨點修改高度指令已成功發送')
-      alert(`✅ 已成功發送修改高度指令到 ${selectedAnchorDevice.name}\n新Z坐標: ${zValue}`)
+      alert(t('pages:deviceManagement.batchActions.anchor.heightCommandSentSuccess', { name: selectedAnchorDevice.name, zValue }))
 
       // 關閉對話框並重置狀態
       setShowAnchorHeightDialog(false)
@@ -856,7 +856,7 @@ export default function DeviceManagementPage() {
 
     } catch (error: any) {
       console.error('❌ 發送指令失敗:', error)
-      alert('發送指令失敗: ' + (error?.message || error))
+      alert(t('pages:deviceManagement.batchActions.common.commandSendFailed', { error: error?.message || error }))
     } finally {
       setIsSendingAnchorHeight(false)
     }
@@ -870,7 +870,7 @@ export default function DeviceManagementPage() {
       .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_ANCHOR)
 
     if (selectedAnchorDevices.length !== 1) {
-      alert('請選擇1個定位錨點設備')
+      alert(t('pages:deviceManagement.batchActions.anchor.selectOneAnchor'))
       return
     }
 
@@ -910,7 +910,7 @@ export default function DeviceManagementPage() {
     const boost125 = parseFloat(anchorPowerValues.boost125)
 
     if (isNaN(boostNorm) || isNaN(boost500) || isNaN(boost250) || isNaN(boost125)) {
-      alert('請輸入所有功率值')
+      alert(t('pages:deviceManagement.batchActions.anchor.enterAllPowerValues'))
       return
     }
 
@@ -919,14 +919,14 @@ export default function DeviceManagementPage() {
       boost500 < 5.0 || boost500 > 30.5 ||
       boost250 < 5.0 || boost250 > 30.5 ||
       boost125 < 5.0 || boost125 > 30.5) {
-      alert('功率值必須在 5.0~30.5 dB 範圍內')
+      alert(t('pages:deviceManagement.batchActions.anchor.powerValueRange'))
       return
     }
 
     // 獲取 Gateway 信息
     const gatewayInfo = getDeviceGatewayInfo(selectedAnchorForPower)
     if (!gatewayInfo) {
-      alert('找不到對應的 Gateway 或 downlink 主題')
+      alert(t('pages:deviceManagement.batchActions.common.downlinkTopicNotFound'))
       return
     }
 
@@ -934,7 +934,7 @@ export default function DeviceManagementPage() {
 
     // 檢查 MQTT 連接
     if (!mqttBus.isConnected()) {
-      alert('MQTT Bus 未連線，無法發送指令')
+      alert(t('pages:deviceManagement.batchActions.common.mqttBusNotConnected'))
       return
     }
 
@@ -942,7 +942,7 @@ export default function DeviceManagementPage() {
     const gatewayId = gateway.cloudData?.gateway_id || parseInt(selectedAnchorForPower.gatewayId || "0")
 
     if (isNaN(anchorId) || isNaN(gatewayId)) {
-      alert('無法獲取有效的錨點ID或閘道器ID')
+      alert(t('pages:deviceManagement.batchActions.common.invalidDeviceIdOrGatewayId', { deviceType: '錨點' }))
       return
     }
 
@@ -976,7 +976,7 @@ export default function DeviceManagementPage() {
       await mqttBus.publish(downlinkTopic, configMessage, 1)
 
       console.log('✅ 錨點修改功率指令已成功發送')
-      alert(`✅ 已成功發送修改功率指令到 ${selectedAnchorForPower.name}`)
+      alert(t('pages:deviceManagement.batchActions.anchor.commandSentSuccess', { name: selectedAnchorForPower.name }))
 
       // 關閉對話框並重置狀態
       setShowAnchorPowerDialog(false)
@@ -986,7 +986,7 @@ export default function DeviceManagementPage() {
 
     } catch (error: any) {
       console.error('❌ 發送指令失敗:', error)
-      alert('發送指令失敗: ' + (error?.message || error))
+      alert(t('pages:deviceManagement.batchActions.common.commandSendFailed', { error: error?.message || error }))
     } finally {
       setIsSendingAnchorPower(false)
     }
@@ -1011,7 +1011,7 @@ export default function DeviceManagementPage() {
       .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_TAG)
 
     if (selectedTagDevices.length !== 1) {
-      alert('請選擇1個定位標籤設備')
+      alert(t('pages:deviceManagement.batchActions.tag.selectOneTag'))
       return
     }
 
@@ -1051,14 +1051,14 @@ export default function DeviceManagementPage() {
 
     if (isNaN(fwUpdate) || isNaN(led) || isNaN(ble) || isNaN(locationEngine) ||
       isNaN(responsiveMode) || isNaN(stationaryDetect) || isNaN(nominalUdr) || isNaN(stationaryUdr)) {
-      alert('請輸入所有參數值')
+      alert(t('pages:deviceManagement.batchActions.tag.enterAllParameterValues'))
       return
     }
 
     // 獲取 Gateway 信息
     const gatewayInfo = getDeviceGatewayInfo(selectedTagDevice)
     if (!gatewayInfo) {
-      alert('找不到對應的 Gateway 或 downlink 主題')
+      alert(t('pages:deviceManagement.batchActions.common.downlinkTopicNotFound'))
       return
     }
 
@@ -1066,7 +1066,7 @@ export default function DeviceManagementPage() {
 
     // 檢查 MQTT 連接
     if (!mqttBus.isConnected()) {
-      alert('MQTT Bus 未連線，無法發送指令')
+      alert(t('pages:deviceManagement.batchActions.common.mqttBusNotConnected'))
       return
     }
 
@@ -1075,7 +1075,7 @@ export default function DeviceManagementPage() {
     const tagName = extractTagName(selectedTagDevice.name)
 
     if (isNaN(tagId) || isNaN(gatewayId)) {
-      alert('無法獲取有效的標籤ID或閘道器ID')
+      alert(t('pages:deviceManagement.batchActions.common.invalidDeviceIdOrGatewayId', { deviceType: '標籤' }))
       return
     }
 
@@ -1130,7 +1130,7 @@ export default function DeviceManagementPage() {
 
     } catch (error: any) {
       console.error('❌ 發送指令失敗:', error)
-      alert('發送指令失敗: ' + (error?.message || error))
+      alert(t('pages:deviceManagement.batchActions.common.commandSendFailed', { error: error?.message || error }))
     } finally {
       setIsSendingTagConfig(false)
     }
@@ -1150,7 +1150,7 @@ export default function DeviceManagementPage() {
 
     // 檢查 MQTT 連接
     if (!mqttBus.isConnected()) {
-      alert('MQTT Bus 未連線，無法發送指令')
+      alert(t('pages:deviceManagement.batchActions.common.mqttBusNotConnected'))
       return
     }
 
@@ -1215,11 +1215,11 @@ export default function DeviceManagementPage() {
 
       // 顯示結果
       if (successCount > 0 && failCount === 0) {
-        alert(`✅ 已成功發送要求資料指令到 ${successCount} 個錨點設備`)
+        alert(t('pages:deviceManagement.batchActions.anchor.requestDataSuccess', { count: successCount }))
       } else if (successCount > 0 && failCount > 0) {
-        alert(`⚠️ 已成功發送 ${successCount} 個，失敗 ${failCount} 個\n失敗設備: ${failedDevices.join('、')}`)
+        alert(t('pages:deviceManagement.batchActions.anchor.requestDataPartialSuccess', { successCount, failCount, failedDevices: failedDevices.join('、') }))
       } else {
-        alert(`❌ 所有指令發送失敗\n失敗設備: ${failedDevices.join('、')}`)
+        alert(t('pages:deviceManagement.batchActions.anchor.requestDataFailed', { failedDevices: failedDevices.join('、') }))
       }
 
       // 清空選擇
@@ -1227,7 +1227,7 @@ export default function DeviceManagementPage() {
 
     } catch (error: any) {
       console.error('❌ 發送要求資料指令時發生錯誤:', error)
-      alert('發送指令時發生錯誤: ' + (error?.message || error))
+      alert(t('pages:deviceManagement.batchActions.common.commandSendError', { error: error?.message || error }))
     } finally {
       setIsRequestingAnchorData(false)
     }
@@ -1241,7 +1241,7 @@ export default function DeviceManagementPage() {
       .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_TAG)
 
     if (selectedTagDevices.length !== 1) {
-      alert('請選擇1個定位標籤設備')
+      alert(t('pages:deviceManagement.batchActions.tag.selectOneTag'))
       return
     }
 
@@ -1281,7 +1281,7 @@ export default function DeviceManagementPage() {
     const boost125 = parseFloat(tagPowerValues.boost125)
 
     if (isNaN(boostNorm) || isNaN(boost500) || isNaN(boost250) || isNaN(boost125)) {
-      alert('請輸入所有功率值')
+      alert(t('pages:deviceManagement.batchActions.anchor.enterAllPowerValues'))
       return
     }
 
@@ -1290,14 +1290,14 @@ export default function DeviceManagementPage() {
       boost500 < 5.0 || boost500 > 30.5 ||
       boost250 < 5.0 || boost250 > 30.5 ||
       boost125 < 5.0 || boost125 > 30.5) {
-      alert('功率值必須在 5.0~30.5 dB 範圍內')
+      alert(t('pages:deviceManagement.batchActions.anchor.powerValueRange'))
       return
     }
 
     // 獲取 Gateway 信息
     const gatewayInfo = getDeviceGatewayInfo(selectedTagForPower)
     if (!gatewayInfo) {
-      alert('找不到對應的 Gateway 或 downlink 主題')
+      alert(t('pages:deviceManagement.batchActions.common.downlinkTopicNotFound'))
       return
     }
 
@@ -1305,7 +1305,7 @@ export default function DeviceManagementPage() {
 
     // 檢查 MQTT 連接
     if (!mqttBus.isConnected()) {
-      alert('MQTT Bus 未連線，無法發送指令')
+      alert(t('pages:deviceManagement.batchActions.common.mqttBusNotConnected'))
       return
     }
 
@@ -1313,7 +1313,7 @@ export default function DeviceManagementPage() {
     const gatewayId = gateway.cloudData?.gateway_id || parseInt(selectedTagForPower.gatewayId || "0")
 
     if (isNaN(tagId) || isNaN(gatewayId)) {
-      alert('無法獲取有效的標籤ID或閘道器ID')
+      alert(t('pages:deviceManagement.batchActions.common.invalidDeviceIdOrGatewayId', { deviceType: '標籤' }))
       return
     }
 
@@ -1347,7 +1347,7 @@ export default function DeviceManagementPage() {
       await mqttBus.publish(downlinkTopic, configMessage, 1)
 
       console.log('✅ 標籤修改功率指令已成功發送')
-      alert(`✅ 已成功發送修改功率指令到 ${selectedTagForPower.name}`)
+      alert(t('pages:deviceManagement.batchActions.tag.powerCommandSentSuccess', { name: selectedTagForPower.name }))
 
       // 關閉對話框並重置狀態
       setShowTagPowerDialog(false)
@@ -1357,7 +1357,7 @@ export default function DeviceManagementPage() {
 
     } catch (error: any) {
       console.error('❌ 發送指令失敗:', error)
-      alert('發送指令失敗: ' + (error?.message || error))
+      alert(t('pages:deviceManagement.batchActions.common.commandSendFailed', { error: error?.message || error }))
     } finally {
       setIsSendingTagPower(false)
     }
@@ -1371,13 +1371,13 @@ export default function DeviceManagementPage() {
       .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.UWB_TAG)
 
     if (selectedTagDevices.length === 0) {
-      alert('請至少選擇1個定位標籤設備')
+      alert(t('pages:deviceManagement.batchActions.tag.selectAtLeastOneTag'))
       return
     }
 
     // 檢查 MQTT 連接
     if (!mqttBus.isConnected()) {
-      alert('MQTT Bus 未連線，無法發送指令')
+      alert(t('pages:deviceManagement.batchActions.common.mqttBusNotConnected'))
       return
     }
 
@@ -1442,11 +1442,11 @@ export default function DeviceManagementPage() {
 
       // 顯示結果
       if (successCount > 0 && failCount === 0) {
-        alert(`✅ 已成功發送要求資料指令到 ${successCount} 個標籤設備`)
+        alert(t('pages:deviceManagement.batchActions.tag.requestDataSuccess', { count: successCount }))
       } else if (successCount > 0 && failCount > 0) {
-        alert(`⚠️ 已成功發送 ${successCount} 個，失敗 ${failCount} 個\n失敗設備: ${failedDevices.join('、')}`)
+        alert(t('pages:deviceManagement.batchActions.tag.requestDataPartialSuccess', { successCount, failCount, failedDevices: failedDevices.join('、') }))
       } else {
-        alert(`❌ 所有指令發送失敗\n失敗設備: ${failedDevices.join('、')}`)
+        alert(t('pages:deviceManagement.batchActions.tag.requestDataFailed', { failedDevices: failedDevices.join('、') }))
       }
 
       // 清空選擇
@@ -1454,7 +1454,7 @@ export default function DeviceManagementPage() {
 
     } catch (error: any) {
       console.error('❌ 發送要求資料指令時發生錯誤:', error)
-      alert('發送指令時發生錯誤: ' + (error?.message || error))
+      alert(t('pages:deviceManagement.batchActions.common.commandSendError', { error: error?.message || error }))
     } finally {
       setIsRequestingTagData(false)
     }
@@ -1468,7 +1468,7 @@ export default function DeviceManagementPage() {
       .filter((d): d is Device => d !== undefined && d.deviceType === DeviceType.GATEWAY)
 
     if (selectedGatewayDevices.length !== 1) {
-      alert('請選擇1個閘道器設備')
+      alert(t('pages:deviceManagement.batchActions.gateway.selectOneGateway'))
       return
     }
 
@@ -1489,14 +1489,14 @@ export default function DeviceManagementPage() {
     // 驗證輸入
     const networkId = parseInt(gatewayNetworkIdValue)
     if (isNaN(networkId) || networkId < 1 || networkId > 65535) {
-      alert('UWB Network ID 必須在 1~65535 範圍內')
+      alert(t('pages:deviceManagement.batchActions.gateway.networkIdRange'))
       return
     }
 
     // 獲取 Gateway 信息
     const gatewayInfo = getDeviceGatewayInfo(selectedGatewayDevice)
     if (!gatewayInfo) {
-      alert('找不到對應的 Gateway 或 downlink 主題')
+      alert(t('pages:deviceManagement.batchActions.common.downlinkTopicNotFound'))
       return
     }
 
@@ -1504,7 +1504,7 @@ export default function DeviceManagementPage() {
 
     // 檢查 MQTT 連接
     if (!mqttBus.isConnected()) {
-      alert('MQTT Bus 未連線，無法發送指令')
+      alert(t('pages:deviceManagement.batchActions.common.mqttBusNotConnected'))
       return
     }
 
@@ -1530,7 +1530,7 @@ export default function DeviceManagementPage() {
       await mqttBus.publish(downlinkTopic, configMessage, 1)
 
       console.log('✅ 閘道器更改UWB Network ID指令已成功發送')
-      alert(`✅ 已成功發送更改UWB Network ID指令到 ${selectedGatewayDevice.name}\nNetwork ID: ${networkId}`)
+      alert(t('pages:deviceManagement.batchActions.gateway.networkIdCommandSentSuccess', { name: selectedGatewayDevice.name, networkId }))
 
       // 關閉對話框並重置狀態
       setShowGatewayNetworkIdDialog(false)
@@ -1540,7 +1540,7 @@ export default function DeviceManagementPage() {
 
     } catch (error: any) {
       console.error('❌ 發送指令失敗:', error)
-      alert('發送指令失敗: ' + (error?.message || error))
+      alert(t('pages:deviceManagement.batchActions.common.commandSendFailed', { error: error?.message || error }))
     } finally {
       setIsSendingNetworkId(false)
     }
@@ -2119,7 +2119,7 @@ export default function DeviceManagementPage() {
                                 className="cursor-pointer"
                               >
                                 <Wifi className="h-4 w-4 mr-2" />
-                                更改UWB Network ID
+                                {t('pages:deviceManagement.batchActions.gateway.changeNetworkId')}
                               </DropdownMenuItem>,
                               <DropdownMenuSeparator key="gateway-location-sep" />,
                               <DropdownMenuItem
@@ -2128,7 +2128,7 @@ export default function DeviceManagementPage() {
                                 className="cursor-pointer"
                               >
                                 <MapPin className="h-4 w-4 mr-2" />
-                                修改所屬養老院及樓層
+                                {t('pages:deviceManagement.batchActions.gateway.changeLocation')}
                               </DropdownMenuItem>
                             )
                           }
@@ -2153,7 +2153,7 @@ export default function DeviceManagementPage() {
                                 className="cursor-pointer"
                               >
                                 <Anchor className="h-4 w-4 mr-2" />
-                                修改高度(Z坐標)
+                                {t('pages:deviceManagement.batchActions.anchor.changeHeight')}
                               </DropdownMenuItem>,
                               <DropdownMenuSeparator key="anchor-power-sep" />,
                               <DropdownMenuItem
@@ -2162,7 +2162,7 @@ export default function DeviceManagementPage() {
                                 className="cursor-pointer"
                               >
                                 <Settings className="h-4 w-4 mr-2" />
-                                修改功率
+                                {t('pages:deviceManagement.batchActions.anchor.changePower')}
                               </DropdownMenuItem>
                             )
                           }
@@ -2183,7 +2183,7 @@ export default function DeviceManagementPage() {
                                 disabled={isRequestingAnchorData}
                               >
                                 <Activity className="h-4 w-4 mr-2" />
-                                {isRequestingAnchorData ? '發送中...' : '要求錨點資料'}
+                                {isRequestingAnchorData ? t('pages:deviceManagement.batchActions.anchor.requesting') : t('pages:deviceManagement.batchActions.anchor.requestData')}
                               </DropdownMenuItem>
                             )
                           }
@@ -2208,7 +2208,7 @@ export default function DeviceManagementPage() {
                                 className="cursor-pointer"
                               >
                                 <Settings className="h-4 w-4 mr-2" />
-                                更改參數設定
+                                {t('pages:deviceManagement.batchActions.tag.changeConfig')}
                               </DropdownMenuItem>,
                               <DropdownMenuSeparator key="tag-power-sep" />,
                               <DropdownMenuItem
@@ -2217,7 +2217,7 @@ export default function DeviceManagementPage() {
                                 className="cursor-pointer"
                               >
                                 <Settings className="h-4 w-4 mr-2" />
-                                修改功率
+                                {t('pages:deviceManagement.batchActions.tag.changePower')}
                               </DropdownMenuItem>
                             )
                           }
@@ -2238,7 +2238,7 @@ export default function DeviceManagementPage() {
                                 disabled={isRequestingTagData}
                               >
                                 <Activity className="h-4 w-4 mr-2" />
-                                {isRequestingTagData ? '發送中...' : '要求標籤資料'}
+                                {isRequestingTagData ? t('pages:deviceManagement.batchActions.tag.requesting') : t('pages:deviceManagement.batchActions.tag.requestData')}
                               </DropdownMenuItem>
                             )
                           }
@@ -2509,9 +2509,9 @@ export default function DeviceManagementPage() {
                     <p className="text-sm font-semibold mt-1">{selectedGatewayDevice.name}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                    <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.gateway.gatewayId')}</Label>
                     <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
-                      {selectedGatewayDevice.gatewayId || '未設定'}
+                      {selectedGatewayDevice.gatewayId || t('pages:deviceManagement.batchActions.gateway.notSet')}
                     </p>
                   </div>
                   <div>
@@ -2578,7 +2578,7 @@ export default function DeviceManagementPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                修改功率
+                {t('pages:deviceManagement.batchActions.tag.changePower')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -2590,19 +2590,19 @@ export default function DeviceManagementPage() {
                   <>
                     {/* 標籤信息 - 簡潔顯示 */}
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">標籤名稱</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.tag.tagName')}</Label>
                       <p className="text-sm font-semibold mt-1">{tagName}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Tag ID</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.tag.tagId')}</Label>
                       <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
                         {selectedTagForPower.hardwareId}
                       </p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.tag.gatewayId')}</Label>
                       <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
-                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedTagForPower.gatewayId || '未設定'}
+                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedTagForPower.gatewayId || t('pages:deviceManagement.batchActions.tag.notSet')}
                       </p>
                     </div>
 
@@ -2729,8 +2729,8 @@ export default function DeviceManagementPage() {
                         <p className="font-semibold text-blue-800">{selectedGatewayDevice.name}</p>
                       </div>
                       <div>
-                        <Label className="text-xs font-medium text-gray-600">Gateway ID</Label>
-                        <p className="font-mono text-blue-800">{selectedGatewayDevice.gatewayId || '未設定'}</p>
+                        <Label className="text-xs font-medium text-gray-600">{t('pages:deviceManagement.batchActions.gateway.gatewayId')}</Label>
+                        <p className="font-mono text-blue-800">{selectedGatewayDevice.gatewayId || t('pages:deviceManagement.batchActions.gateway.notSet')}</p>
                       </div>
                     </div>
                     {/* 當前綁定信息 */}
@@ -2839,7 +2839,7 @@ export default function DeviceManagementPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Anchor className="h-5 w-5" />
-                修改高度(Z坐標)
+                {t('pages:deviceManagement.batchActions.anchor.changeHeight')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -2853,19 +2853,19 @@ export default function DeviceManagementPage() {
                   <>
                     {/* 錨點信息 - 簡潔顯示 */}
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">錨點名稱</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.anchor.anchorName')}</Label>
                       <p className="text-sm font-semibold mt-1">{anchorName}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Anchor ID</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.anchor.anchorId')}</Label>
                       <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
                         {selectedAnchorDevice.hardwareId}
                       </p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.anchor.gatewayId')}</Label>
                       <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
-                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedAnchorDevice.gatewayId || '未設定'}
+                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedAnchorDevice.gatewayId || t('pages:deviceManagement.batchActions.anchor.notSet')}
                       </p>
                     </div>
 
@@ -2895,8 +2895,8 @@ export default function DeviceManagementPage() {
                           <span className="font-mono">configChange</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Gateway ID:</span>
-                          <span className="font-mono">{gatewayInfo?.gateway.cloudData?.gateway_id || selectedAnchorDevice.gatewayId || 'N/A'}</span>
+                          <span className="text-gray-600">{t('pages:deviceManagement.batchActions.anchor.gatewayId')}:</span>
+                          <span className="font-mono">{gatewayInfo?.gateway.cloudData?.gateway_id || selectedAnchorDevice.gatewayId || t('pages:deviceManagement.batchActions.anchor.notSet')}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Node:</span>
@@ -2972,7 +2972,7 @@ export default function DeviceManagementPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                修改功率
+                {t('pages:deviceManagement.batchActions.tag.changePower')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -2984,19 +2984,19 @@ export default function DeviceManagementPage() {
                   <>
                     {/* 錨點信息 - 簡潔顯示 */}
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">錨點名稱</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.anchor.anchorName')}</Label>
                       <p className="text-sm font-semibold mt-1">{anchorName}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Anchor ID</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.anchor.anchorId')}</Label>
                       <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
                         {selectedAnchorForPower.hardwareId}
                       </p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.anchor.gatewayId')}</Label>
                       <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
-                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedAnchorForPower.gatewayId || '未設定'}
+                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedAnchorForPower.gatewayId || t('pages:deviceManagement.batchActions.anchor.notSet')}
                       </p>
                     </div>
 
@@ -3109,7 +3109,7 @@ export default function DeviceManagementPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                更改參數設定
+                {t('pages:deviceManagement.batchActions.tag.changeConfig')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -3297,7 +3297,7 @@ export default function DeviceManagementPage() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5" />
-                修改功率
+                {t('pages:deviceManagement.batchActions.tag.changePower')}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -3309,19 +3309,19 @@ export default function DeviceManagementPage() {
                   <>
                     {/* 標籤信息 - 簡潔顯示 */}
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">標籤名稱</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.tag.tagName')}</Label>
                       <p className="text-sm font-semibold mt-1">{tagName}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Tag ID</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.tag.tagId')}</Label>
                       <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
                         {selectedTagForPower.hardwareId}
                       </p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-gray-600">Gateway ID</Label>
+                      <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.tag.gatewayId')}</Label>
                       <p className="text-sm font-mono bg-gray-100 p-2 rounded mt-1">
-                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedTagForPower.gatewayId || '未設定'}
+                        {gatewayInfo?.gateway.cloudData?.gateway_id || selectedTagForPower.gatewayId || t('pages:deviceManagement.batchActions.tag.notSet')}
                       </p>
                     </div>
 

@@ -9,59 +9,59 @@
         "items": {
             "home": {
                 "name": "Home",
-                "description": "Return to system homepage"
+                "description": "System homepage"
             },
             "emergency": {
                 "name": "Emergency Call",
-                "description": "Quick emergency assistance signal"
+                "description": "Quick emergency signal"
             },
             "health": {
                 "name": "Health Monitor",
-                "description": "Real-time vital signs monitoring"
+                "description": "Live vital signs"
             },
             "reminders": {
                 "name": "Reminders",
-                "description": "Medication and care reminders"
+                "description": "Medication & care alerts"
             },
             "location": {
                 "name": "Indoor Location",
-                "description": "Location tracking and safety zones"
+                "description": "Tracking & safety zones"
             },
             "residents": {
                 "name": "Resident Management",
-                "description": "Manage resident data and records"
+                "description": "Resident data & records"
             },
             "staff": {
                 "name": "Staff Management",
-                "description": "Nursing staff and personnel management"
+                "description": "Staff & personnel"
             },
             "devices": {
                 "name": "Device Management",
-                "description": "Care device management and maintenance"
+                "description": "Care devices & maintenance"
             },
             "uwbLocation": {
                 "name": "Facility Management",
-                "description": "UWB positioning system facility management"
+                "description": "UWB facility management"
             },
             "backendTest": {
                 "name": "Backend Test",
-                "description": "Test frontend and backend connection"
+                "description": "Frontend-backend connection"
             },
             "fieldManagementTest": {
                 "name": "Field Management Test",
-                "description": "Test field CRUD operations"
+                "description": "Field CRUD operations"
             },
             "more": {
                 "name": "More Features",
-                "description": "Explore smart care features"
+                "description": "Smart care features"
             },
             "settings": {
                 "name": "Settings",
-                "description": "System settings and preferences"
+                "description": "Settings & preferences"
             },
             "help": {
                 "name": "Help Center",
-                "description": "User guide and support"
+                "description": "Guide & support"
             }
         }
     },
