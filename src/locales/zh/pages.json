@@ -895,7 +895,10 @@
     },
     "placeholder": {
         "title": "{{title}}",
-        "description": "此頁面正在開發中"
+        "description": "此頁面正在開發中",
+        "more": "更多功能頁面",
+        "help": "幫助中心",
+        "notFound": "404 - 頁面不存在"
     },
     "heartRate": {
         "title": "心跳監測",
@@ -1263,6 +1266,54 @@
             "noNotes": "暫無備註資訊",
             "editNotes": "編輯備註",
             "updateNotes": "更新備註"
+        }
+    },
+    "fieldManagementTest": {
+        "title": "場域管理測試",
+        "subtitle": "測試場域和樓層的增刪改查功能",
+        "reload": "重新載入",
+        "homeSection": "場域管理",
+        "homesCount": "{{count}} 個場域",
+        "homeNamePlaceholder": "場域名稱",
+        "descriptionPlaceholder": "描述",
+        "addressPlaceholder": "地址",
+        "createHome": "創建場域",
+        "updateHome": "更新場域",
+        "cancel": "取消",
+        "floorsCount": "{{count}} 樓層",
+        "floorSection": "樓層管理",
+        "floorsCountBadge": "{{count}} 個樓層",
+        "floorNamePlaceholder": "樓層名稱",
+        "levelPlaceholder": "樓層",
+        "widthPlaceholder": "寬度(米)",
+        "heightPlaceholder": "高度(米)",
+        "createFloor": "創建樓層",
+        "updateFloor": "更新樓層",
+        "floorLevelFormat": "{{name}} - {{level}}樓",
+        "usageTitle": "使用說明",
+        "usage1": "1. 確保後端服務器正在運行 (node test-backend-with-db.js)",
+        "usage2": "2. 創建場域：填寫場域信息並點擊「創建場域」",
+        "usage3": "3. 創建樓層：選擇場域後填寫樓層信息並點擊「創建樓層」",
+        "usage4": "4. 編輯：點擊編輯按鈕修改現有項目",
+        "usage5": "5. 刪除：點擊刪除按鈕移除項目",
+        "toast": {
+            "loadFail": "載入失敗",
+            "loadFailDesc": "無法從後端載入數據",
+            "validationFail": "驗證失敗",
+            "homeNameRequired": "請輸入場域名稱",
+            "floorRequired": "請輸入樓層名稱並選擇場域",
+            "updateSuccess": "更新成功",
+            "homeUpdated": "場域信息已更新",
+            "floorUpdated": "樓層信息已更新",
+            "createSuccess": "創建成功",
+            "homeCreated": "場域已創建",
+            "floorCreated": "樓層已創建",
+            "operationFail": "操作失敗",
+            "deleteSuccess": "刪除成功",
+            "homeDeleted": "場域已刪除",
+            "floorDeleted": "樓層已刪除",
+            "deleteFail": "刪除失敗",
+            "unknownError": "未知錯誤"
         }
     },
     "uwbLocation": {

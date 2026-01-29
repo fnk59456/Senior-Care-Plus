@@ -1,5 +1,6 @@
 // 場域管理測試頁面
 import React, { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,7 +38,10 @@ interface Floor {
     createdAt: string
 }
 
+const ns = 'pages:fieldManagementTest'
+
 export default function FieldManagementTest() {
+    const { t } = useTranslation()
     const { toast } = useToast()
     const [homes, setHomes] = useState<Home[]>([])
     const [floors, setFloors] = useState<Floor[]>([])
@@ -82,8 +86,8 @@ export default function FieldManagementTest() {
         } catch (error) {
             console.error('載入數據失敗:', error)
             toast({
-                title: "載入失敗",
-                description: "無法從後端載入數據",
+                title: t(`${ns}.toast.loadFail`),
+                description: t(`${ns}.toast.loadFailDesc`),
                 variant: "destructive"
             })
         } finally {
@@ -100,8 +104,8 @@ export default function FieldManagementTest() {
     const handleHomeSubmit = async () => {
         if (!homeForm.name.trim()) {
             toast({
-                title: "驗證失敗",
-                description: "請輸入場域名稱",
+                title: t(`${ns}.toast.validationFail`),
+                description: t(`${ns}.toast.homeNameRequired`),
                 variant: "destructive"
             })
             return
@@ -120,8 +124,8 @@ export default function FieldManagementTest() {
                     const updatedHome = await response.json()
                     setHomes(prev => prev.map(h => h.id === editingItem.id ? updatedHome : h))
                     toast({
-                        title: "更新成功",
-                        description: "場域信息已更新"
+                        title: t(`${ns}.toast.updateSuccess`),
+                        description: t(`${ns}.toast.homeUpdated`)
                     })
                 } else {
                     throw new Error(`HTTP ${response.status}`)
@@ -139,8 +143,8 @@ export default function FieldManagementTest() {
                     setHomes(prev => [...prev, newHome])
                     setSelectedHome(newHome.id)
                     toast({
-                        title: "創建成功",
-                        description: "場域已創建"
+                        title: t(`${ns}.toast.createSuccess`),
+                        description: t(`${ns}.toast.homeCreated`)
                     })
                 } else {
                     throw new Error(`HTTP ${response.status}`)
@@ -151,8 +155,8 @@ export default function FieldManagementTest() {
         } catch (error) {
             console.error('場域操作失敗:', error)
             toast({
-                title: "操作失敗",
-                description: error instanceof Error ? error.message : "未知錯誤",
+                title: t(`${ns}.toast.operationFail`),
+                description: error instanceof Error ? error.message : t(`${ns}.toast.unknownError`),
                 variant: "destructive"
             })
         }
@@ -162,8 +166,8 @@ export default function FieldManagementTest() {
     const handleFloorSubmit = async () => {
         if (!floorForm.name.trim() || !selectedHome) {
             toast({
-                title: "驗證失敗",
-                description: "請輸入樓層名稱並選擇場域",
+                title: t(`${ns}.toast.validationFail`),
+                description: t(`${ns}.toast.floorRequired`),
                 variant: "destructive"
             })
             return
@@ -182,8 +186,8 @@ export default function FieldManagementTest() {
                     const updatedFloor = await response.json()
                     setFloors(prev => prev.map(f => f.id === editingItem.id ? updatedFloor : f))
                     toast({
-                        title: "更新成功",
-                        description: "樓層信息已更新"
+                        title: t(`${ns}.toast.updateSuccess`),
+                        description: t(`${ns}.toast.floorUpdated`)
                     })
                 } else {
                     throw new Error(`HTTP ${response.status}`)
@@ -203,8 +207,8 @@ export default function FieldManagementTest() {
                     const newFloor = await response.json()
                     setFloors(prev => [...prev, newFloor])
                     toast({
-                        title: "創建成功",
-                        description: "樓層已創建"
+                        title: t(`${ns}.toast.createSuccess`),
+                        description: t(`${ns}.toast.floorCreated`)
                     })
                 } else {
                     throw new Error(`HTTP ${response.status}`)
@@ -215,8 +219,8 @@ export default function FieldManagementTest() {
         } catch (error) {
             console.error('樓層操作失敗:', error)
             toast({
-                title: "操作失敗",
-                description: error instanceof Error ? error.message : "未知錯誤",
+                title: t(`${ns}.toast.operationFail`),
+                description: error instanceof Error ? error.message : t(`${ns}.toast.unknownError`),
                 variant: "destructive"
             })
         }
@@ -235,8 +239,8 @@ export default function FieldManagementTest() {
                     setSelectedHome(homes.find(h => h.id !== id)?.id || '')
                 }
                 toast({
-                    title: "刪除成功",
-                    description: "場域已刪除"
+                    title: t(`${ns}.toast.deleteSuccess`),
+                    description: t(`${ns}.toast.homeDeleted`)
                 })
             } else {
                 throw new Error(`HTTP ${response.status}`)
@@ -244,8 +248,8 @@ export default function FieldManagementTest() {
         } catch (error) {
             console.error('場域刪除失敗:', error)
             toast({
-                title: "刪除失敗",
-                description: error instanceof Error ? error.message : "未知錯誤",
+                title: t(`${ns}.toast.deleteFail`),
+                description: error instanceof Error ? error.message : t(`${ns}.toast.unknownError`),
                 variant: "destructive"
             })
         }
@@ -261,8 +265,8 @@ export default function FieldManagementTest() {
             if (response.ok) {
                 setFloors(prev => prev.filter(f => f.id !== id))
                 toast({
-                    title: "刪除成功",
-                    description: "樓層已刪除"
+                    title: t(`${ns}.toast.deleteSuccess`),
+                    description: t(`${ns}.toast.floorDeleted`)
                 })
             } else {
                 throw new Error(`HTTP ${response.status}`)
@@ -270,8 +274,8 @@ export default function FieldManagementTest() {
         } catch (error) {
             console.error('樓層刪除失敗:', error)
             toast({
-                title: "刪除失敗",
-                description: error instanceof Error ? error.message : "未知錯誤",
+                title: t(`${ns}.toast.deleteFail`),
+                description: error instanceof Error ? error.message : t(`${ns}.toast.unknownError`),
                 variant: "destructive"
             })
         }
@@ -323,9 +327,9 @@ export default function FieldManagementTest() {
             {/* 頁面標題 */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold">場域管理測試</h1>
+                    <h1 className="text-3xl font-bold">{t(`${ns}.title`)}</h1>
                     <p className="text-muted-foreground mt-2">
-                        測試場域和樓層的增刪改查功能
+                        {t(`${ns}.subtitle`)}
                     </p>
                 </div>
                 <Button onClick={loadData} disabled={loading} className="flex items-center space-x-2">
@@ -334,7 +338,7 @@ export default function FieldManagementTest() {
                     ) : (
                         <Building2 className="h-4 w-4" />
                     )}
-                    <span>重新載入</span>
+                    <span>{t(`${ns}.reload`)}</span>
                 </Button>
             </div>
 
@@ -343,35 +347,35 @@ export default function FieldManagementTest() {
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Building2 className="h-5 w-5" />
-                        <span>場域管理</span>
-                        <Badge variant="outline">{homes.length} 個場域</Badge>
+                        <span>{t(`${ns}.homeSection`)}</span>
+                        <Badge variant="outline">{t(`${ns}.homesCount`, { count: homes.length })}</Badge>
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {/* 場域表單 */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg bg-muted/50">
                         <Input
-                            placeholder="場域名稱"
+                            placeholder={t(`${ns}.homeNamePlaceholder`)}
                             value={homeForm.name}
                             onChange={(e) => setHomeForm(prev => ({ ...prev, name: e.target.value }))}
                         />
                         <Input
-                            placeholder="描述"
+                            placeholder={t(`${ns}.descriptionPlaceholder`)}
                             value={homeForm.description}
                             onChange={(e) => setHomeForm(prev => ({ ...prev, description: e.target.value }))}
                         />
                         <Input
-                            placeholder="地址"
+                            placeholder={t(`${ns}.addressPlaceholder`)}
                             value={homeForm.address}
                             onChange={(e) => setHomeForm(prev => ({ ...prev, address: e.target.value }))}
                         />
                         <div className="flex space-x-2">
                             <Button onClick={handleHomeSubmit} className="flex-1">
-                                {isEditing ? '更新' : '創建'}場域
+                                {isEditing ? t(`${ns}.updateHome`) : t(`${ns}.createHome`)}
                             </Button>
                             {isEditing && (
                                 <Button variant="outline" onClick={resetHomeForm}>
-                                    取消
+                                    {t(`${ns}.cancel`)}
                                 </Button>
                             )}
                         </div>
@@ -391,7 +395,7 @@ export default function FieldManagementTest() {
                                 </div>
                                 <div className="flex items-center space-x-2">
                                     <Badge variant="outline" className="text-xs">
-                                        {getFloorsByHome(home.id).length} 樓層
+                                        {t(`${ns}.floorsCount`, { count: getFloorsByHome(home.id).length })}
                                     </Badge>
                                     <Button
                                         size="sm"
@@ -419,43 +423,43 @@ export default function FieldManagementTest() {
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <MapPin className="h-5 w-5" />
-                        <span>樓層管理</span>
-                        <Badge variant="outline">{floors.length} 個樓層</Badge>
+                        <span>{t(`${ns}.floorSection`)}</span>
+                        <Badge variant="outline">{t(`${ns}.floorsCountBadge`, { count: floors.length })}</Badge>
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {/* 樓層表單 */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border rounded-lg bg-muted/50">
                         <Input
-                            placeholder="樓層名稱"
+                            placeholder={t(`${ns}.floorNamePlaceholder`)}
                             value={floorForm.name}
                             onChange={(e) => setFloorForm(prev => ({ ...prev, name: e.target.value }))}
                         />
                         <Input
                             type="number"
-                            placeholder="樓層"
+                            placeholder={t(`${ns}.levelPlaceholder`)}
                             value={floorForm.level}
                             onChange={(e) => setFloorForm(prev => ({ ...prev, level: parseInt(e.target.value) || 1 }))}
                         />
                         <Input
                             type="number"
-                            placeholder="寬度(米)"
+                            placeholder={t(`${ns}.widthPlaceholder`)}
                             value={floorForm.realWidth}
                             onChange={(e) => setFloorForm(prev => ({ ...prev, realWidth: parseFloat(e.target.value) || 0 }))}
                         />
                         <Input
                             type="number"
-                            placeholder="高度(米)"
+                            placeholder={t(`${ns}.heightPlaceholder`)}
                             value={floorForm.realHeight}
                             onChange={(e) => setFloorForm(prev => ({ ...prev, realHeight: parseFloat(e.target.value) || 0 }))}
                         />
                         <div className="flex space-x-2">
                             <Button onClick={handleFloorSubmit} className="flex-1">
-                                {isEditing ? '更新' : '創建'}樓層
+                                {isEditing ? t(`${ns}.updateFloor`) : t(`${ns}.createFloor`)}
                             </Button>
                             {isEditing && (
                                 <Button variant="outline" onClick={resetFloorForm}>
-                                    取消
+                                    {t(`${ns}.cancel`)}
                                 </Button>
                             )}
                         </div>
@@ -470,7 +474,7 @@ export default function FieldManagementTest() {
                                     <div className="flex-1">
                                         <div className="font-medium">{floor.name}</div>
                                         <div className="text-sm text-muted-foreground">
-                                            {home?.name} - {floor.level}樓
+                                            {t(`${ns}.floorLevelFormat`, { name: home?.name ?? '', level: floor.level })}
                                         </div>
                                         <div className="text-xs text-muted-foreground">
                                             {floor.realWidth}m × {floor.realHeight}m
@@ -502,24 +506,14 @@ export default function FieldManagementTest() {
             {/* 使用說明 */}
             <Card>
                 <CardHeader>
-                    <CardTitle>使用說明</CardTitle>
+                    <CardTitle>{t(`${ns}.usageTitle`)}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                    <p className="text-sm text-muted-foreground">
-                        1. 確保後端服務器正在運行 (node test-backend-with-db.js)
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                        2. 創建場域：填寫場域信息並點擊「創建場域」
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                        3. 創建樓層：選擇場域後填寫樓層信息並點擊「創建樓層」
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                        4. 編輯：點擊編輯按鈕修改現有項目
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                        5. 刪除：點擊刪除按鈕移除項目
-                    </p>
+                    <p className="text-sm text-muted-foreground">{t(`${ns}.usage1`)}</p>
+                    <p className="text-sm text-muted-foreground">{t(`${ns}.usage2`)}</p>
+                    <p className="text-sm text-muted-foreground">{t(`${ns}.usage3`)}</p>
+                    <p className="text-sm text-muted-foreground">{t(`${ns}.usage4`)}</p>
+                    <p className="text-sm text-muted-foreground">{t(`${ns}.usage5`)}</p>
                 </CardContent>
             </Card>
         </div>

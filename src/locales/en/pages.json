@@ -877,7 +877,10 @@
     },
     "placeholder": {
         "title": "{{title}}",
-        "description": "This page is under development"
+        "description": "This page is under development",
+        "more": "More Features",
+        "help": "Help Center",
+        "notFound": "404 - Page Not Found"
     },
     "heartRate": {
         "title": "Heart Rate Monitor",
@@ -1245,6 +1248,54 @@
             "noNotes": "No notes available",
             "editNotes": "Edit Notes",
             "updateNotes": "Update Notes"
+        }
+    },
+    "fieldManagementTest": {
+        "title": "Field Management Test",
+        "subtitle": "Test field and floor CRUD operations",
+        "reload": "Reload",
+        "homeSection": "Field Management",
+        "homesCount": "{{count}} fields",
+        "homeNamePlaceholder": "Field name",
+        "descriptionPlaceholder": "Description",
+        "addressPlaceholder": "Address",
+        "createHome": "Create field",
+        "updateHome": "Update field",
+        "cancel": "Cancel",
+        "floorsCount": "{{count}} floors",
+        "floorSection": "Floor Management",
+        "floorsCountBadge": "{{count}} floors",
+        "floorNamePlaceholder": "Floor name",
+        "levelPlaceholder": "Level",
+        "widthPlaceholder": "Width (m)",
+        "heightPlaceholder": "Height (m)",
+        "createFloor": "Create floor",
+        "updateFloor": "Update floor",
+        "floorLevelFormat": "{{name}} - Level {{level}}",
+        "usageTitle": "Usage",
+        "usage1": "1. Ensure backend is running (node test-backend-with-db.js)",
+        "usage2": "2. Create field: fill in field info and click \"Create field\"",
+        "usage3": "3. Create floor: select field, fill floor info and click \"Create floor\"",
+        "usage4": "4. Edit: click edit button to modify items",
+        "usage5": "5. Delete: click delete button to remove items",
+        "toast": {
+            "loadFail": "Load failed",
+            "loadFailDesc": "Unable to load data from backend",
+            "validationFail": "Validation failed",
+            "homeNameRequired": "Please enter field name",
+            "floorRequired": "Please enter floor name and select field",
+            "updateSuccess": "Update successful",
+            "homeUpdated": "Field updated",
+            "floorUpdated": "Floor updated",
+            "createSuccess": "Create successful",
+            "homeCreated": "Field created",
+            "floorCreated": "Floor created",
+            "operationFail": "Operation failed",
+            "deleteSuccess": "Delete successful",
+            "homeDeleted": "Field deleted",
+            "floorDeleted": "Floor deleted",
+            "deleteFail": "Delete failed",
+            "unknownError": "Unknown error"
         }
     },
     "uwbLocation": {

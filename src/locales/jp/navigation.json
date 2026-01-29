@@ -88,5 +88,9 @@
                 "description": "ガイド・サポート"
             }
         }
+    },
+    "footer": {
+        "copyright": "© 2024 高齢者ケアシステム",
+        "version": "専門版"
     }
 }

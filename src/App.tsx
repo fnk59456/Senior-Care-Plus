@@ -67,10 +67,10 @@ function App() {
                           <Route path="/test-i18n" element={<TestI18nPage />} />
                           <Route path="/backend-test" element={<BackendConnectionTest />} />
                           <Route path="/field-test" element={<FieldManagementTest />} />
-                          <Route path="/more" element={<Placeholder title="更多功能頁面" />} />
-                          <Route path="/help" element={<Placeholder title="幫助中心" />} />
+                          <Route path="/more" element={<Placeholder titleKey="placeholder.more" />} />
+                          <Route path="/help" element={<Placeholder titleKey="placeholder.help" />} />
                           <Route path="/emergency-call" element={<EmergencyCallPage />} />
-                          <Route path="*" element={<Placeholder title="404 - 頁面不存在" />} />
+                          <Route path="*" element={<Placeholder titleKey="placeholder.notFound" />} />
                         </Routes>
                       </MainLayout>
                     </Router>
@@ -85,11 +85,12 @@ function App() {
   )
 }
 
-function Placeholder({ title }: { title: string }) {
+function Placeholder({ titleKey }: { titleKey: string }) {
   const { t } = useTranslation()
+  const title = t(`pages:${titleKey}`)
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold">{t('pages:placeholder.title', { title })}</h1>
+      <h1 className="text-2xl font-bold">{title}</h1>
       <p>{t('pages:placeholder.description')}</p>
     </div>
   )
