@@ -55,6 +55,14 @@
                 "name": "UWB位置管理",
                 "description": "UWB位置システムの設定管理"
             },
+            "backendTest": {
+                "name": "バックエンドテスト",
+                "description": "フロントエンドとバックエンドの接続をテスト"
+            },
+            "fieldManagementTest": {
+                "name": "フィールド管理テスト",
+                "description": "フィールドのCRUD操作をテスト"
+            },
             "settings": {
                 "name": "設定",
                 "description": "システム設定と個人設定"

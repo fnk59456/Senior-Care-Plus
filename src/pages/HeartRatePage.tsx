@@ -353,7 +353,7 @@ export default function HeartRatePage() {
 
   // ✅ MQTT Bus 連接狀態
   const [cloudConnected, setCloudConnected] = useState(false)
-  const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
+  const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>(t('common:connection.disconnected'))
 
   // 當前MQTT標籤頁狀態
   const [currentMqttTab, setCurrentMqttTab] = useState<string>("cloud")

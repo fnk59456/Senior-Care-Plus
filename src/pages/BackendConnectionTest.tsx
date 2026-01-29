@@ -1,5 +1,6 @@
 // 前端連接測試頁面
 import React, { useState, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -24,6 +25,7 @@ interface TestResult {
 }
 
 export default function BackendConnectionTest() {
+    const { t } = useTranslation()
     const { toast } = useToast()
     const [isRunning, setIsRunning] = useState(false)
     const [results, setResults] = useState<TestResult[]>([])
@@ -250,8 +252,8 @@ export default function BackendConnectionTest() {
                     <div className="flex items-center space-x-2">
                         {getConnectionIcon()}
                         <span className="text-sm font-medium">
-                            {connectionStatus === 'connected' ? '已連接' :
-                                connectionStatus === 'connecting' ? '連接中' : '未連接'}
+                            {connectionStatus === 'connected' ? t('common:connection.connected') :
+                                connectionStatus === 'connecting' ? t('common:connection.connecting') : t('common:connection.notConnected')}
                         </span>
                     </div>
                     <Button
@@ -264,7 +266,7 @@ export default function BackendConnectionTest() {
                         ) : (
                             <Server className="h-4 w-4" />
                         )}
-                        <span>{isRunning ? '測試中...' : '開始測試'}</span>
+                        <span>{isRunning ? t('common:testing.testing') : t('common:testing.startTest')}</span>
                     </Button>
                 </div>
             </div>
@@ -274,7 +276,7 @@ export default function BackendConnectionTest() {
                 <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
                         <Database className="h-5 w-5" />
-                        <span>連接狀態</span>
+                        <span>{t('common:testing.connectionStatus')}</span>
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -290,10 +292,10 @@ export default function BackendConnectionTest() {
                             {getConnectionIcon()}
                             <span className="text-sm">狀態:</span>
                             <span className={`text-sm font-medium ${connectionStatus === 'connected' ? 'text-green-600' :
-                                    connectionStatus === 'connecting' ? 'text-blue-600' : 'text-red-600'
+                                connectionStatus === 'connecting' ? 'text-blue-600' : 'text-red-600'
                                 }`}>
-                                {connectionStatus === 'connected' ? '已連接' :
-                                    connectionStatus === 'connecting' ? '連接中' : '未連接'}
+                                {connectionStatus === 'connected' ? t('common:connection.connected') :
+                                    connectionStatus === 'connecting' ? t('common:connection.connecting') : t('common:connection.notConnected')}
                             </span>
                         </div>
                         {lastTestTime && (

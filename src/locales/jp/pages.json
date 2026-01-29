@@ -44,6 +44,15 @@
             "systemGuide": "システムガイド"
         }
     },
+    "heartTemp": {
+        "title": "心拍・体温監視",
+        "subtitle": "心拍と体温データを統合し、単一接続で300Bデバイスを監視",
+        "tabs": {
+            "heart": "心拍",
+            "temp": "体温"
+        },
+        "deviceNameFallback": "デバイス"
+    },
     "residents": {
         "title": "居住者管理",
         "subtitle": "居住者データとデバイスバインディングの管理",

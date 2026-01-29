@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { wsService } from '@/services/websocketService'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -92,18 +93,20 @@ export default function WebSocketTestPage() {
         }
     }
 
+    const { t } = useTranslation()
+
     const getStatusText = (status: string) => {
         switch (status) {
             case 'connected':
-                return '已連接'
+                return t('common:connection.connected')
             case 'connecting':
-                return '連接中'
+                return t('common:connection.connecting')
             case 'reconnecting':
-                return '重連中'
+                return t('common:connection.reconnectingShort')
             case 'disconnected':
-                return '已斷開'
+                return t('common:connection.disconnectedShort')
             case 'error':
-                return '錯誤'
+                return t('common:status.error')
             default:
                 return status
         }

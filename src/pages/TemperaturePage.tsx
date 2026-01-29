@@ -202,7 +202,7 @@ export default function TemperaturePage() {
 
   // ✅ 實時數據服務連接狀態
   const [cloudConnected, setCloudConnected] = useState(false)
-  const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
+  const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>(t('common:connection.disconnected'))
 
   // 原始 MQTT 數據狀態
   const [cloudMqttData, setCloudMqttData] = useState<CloudMqttData[]>([])

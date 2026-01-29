@@ -1041,7 +1041,7 @@ export default function UWBLocationPage() {
 
     // 雲端 MQTT 相關狀態
     const [cloudConnected, setCloudConnected] = useState(false)
-    const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
+    const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>(t('common:connection.disconnected'))
     const [cloudError, setCloudError] = useState<string>("")
     const [cloudReconnectAttempts, setCloudReconnectAttempts] = useState(0)
     const [cloudGatewayData, setCloudGatewayData] = useState<CloudGatewayData[]>(() => loadFromStorage('cloudGatewayData', []))
@@ -1192,7 +1192,7 @@ export default function UWBLocationPage() {
 
     // Anchor 雲端 MQTT 相關狀態
     const [anchorCloudConnected, setAnchorCloudConnected] = useState(false)
-    const [anchorCloudConnectionStatus, setAnchorCloudConnectionStatus] = useState<string>("未連線")
+    const [anchorCloudConnectionStatus, setAnchorCloudConnectionStatus] = useState<string>(t('common:connection.disconnected'))
     const [anchorCloudError, setAnchorCloudError] = useState<string>("")
     const [cloudAnchorData, setCloudAnchorData] = useState<CloudAnchorData[]>([])
     const [cloudAckData, setCloudAckData] = useState<any[]>([]) // 新增：存儲 Ack 數據
@@ -1236,7 +1236,7 @@ export default function UWBLocationPage() {
 
     // Tag 雲端 MQTT 相關狀態
     const [tagCloudConnected, setTagCloudConnected] = useState(false)
-    const [tagCloudConnectionStatus, setTagCloudConnectionStatus] = useState<string>("未連線")
+    const [tagCloudConnectionStatus, setTagCloudConnectionStatus] = useState<string>(t('common:connection.disconnected'))
     const [tagCloudError, setTagCloudError] = useState<string>("")
     const [cloudTagData, setCloudTagData] = useState<any[]>([])
     const [discoveredCloudTags, setDiscoveredCloudTags] = useState<any[]>([])
@@ -1370,20 +1370,20 @@ export default function UWBLocationPage() {
 
             if (status === 'connected') {
                 setCloudConnected(true)
-                setCloudConnectionStatus("已連線")
+                setCloudConnectionStatus(t('common:connection.connected'))
                 setCloudError("")
                 setCloudReconnectAttempts(0)
             } else if (status === 'connecting' || status === 'reconnecting') {
                 setCloudConnected(false)
                 setCloudReconnectAttempts(prev => prev + 1)
-                setCloudConnectionStatus(`重新連接中... (第${cloudReconnectAttempts + 1}次嘗試)`)
+                setCloudConnectionStatus(t('common:connection.reconnecting'))
             } else if (status === 'error') {
                 setCloudConnected(false)
-                setCloudError("連接錯誤")
-                setCloudConnectionStatus("連接錯誤")
+                setCloudError(t('common:connection.connectionError'))
+                setCloudConnectionStatus(t('common:connection.connectionError'))
             } else {
                 setCloudConnected(false)
-                setCloudConnectionStatus(status === 'disconnected' ? "已斷開" : "離線")
+                setCloudConnectionStatus(status === 'disconnected' ? t('common:connection.disconnectedShort') : t('common:connection.disconnected'))
             }
         })
 
@@ -1605,7 +1605,7 @@ export default function UWBLocationPage() {
         if (!selectedGatewayForAnchors) {
             // 如果沒有選擇 Gateway，清理狀態
             setAnchorCloudConnected(false)
-            setAnchorCloudConnectionStatus("未選擇閘道器")
+            setAnchorCloudConnectionStatus(t('pages:uwbLocation.messages.selectGatewayFirst'))
             setCurrentAnchorTopic("")
             setCurrentAckTopic("")
             setCloudAnchorData([])
@@ -1654,7 +1654,7 @@ export default function UWBLocationPage() {
 
         const gatewayConfig = getGatewayConfig()
         if (!gatewayConfig) {
-            setAnchorCloudConnectionStatus("無法找到閘道器配置 - 請確保已選擇有效的閘道器")
+            setAnchorCloudConnectionStatus(t('pages:uwbLocation.messages.selectGatewayFirst'))
             console.log("❌ 無法找到 Gateway 配置")
             console.log("- 選擇的 Gateway ID:", selectedGatewayForAnchors)
             console.log("- 雲端 Gateway 數量:", cloudGatewayData.length)
@@ -1683,7 +1683,7 @@ export default function UWBLocationPage() {
         const unsubscribeStatus = realtimeDataService.onStatusChange((status) => {
             if (status === 'connected') {
                 setAnchorCloudConnected(true)
-                setAnchorCloudConnectionStatus('已連線')
+                setAnchorCloudConnectionStatus(t('common:connection.connected'))
                 setAnchorCloudError("")
             } else if (status === 'connecting' || status === 'reconnecting') {
                 setAnchorCloudConnected(false)
@@ -1691,10 +1691,10 @@ export default function UWBLocationPage() {
             } else if (status === 'error') {
                 setAnchorCloudConnected(false)
                 setAnchorCloudError("連接錯誤")
-                setAnchorCloudConnectionStatus("連接錯誤")
+                setAnchorCloudConnectionStatus(t('common:connection.connectionError'))
             } else {
                 setAnchorCloudConnected(false)
-                setAnchorCloudConnectionStatus(status === 'disconnected' ? "已斷開" : "離線")
+                setAnchorCloudConnectionStatus(status === 'disconnected' ? t('common:connection.disconnectedShort') : t('common:connection.disconnected'))
             }
         })
 
@@ -1997,7 +1997,7 @@ export default function UWBLocationPage() {
     useEffect(() => {
         if (!selectedGatewayForTags) {
             setTagCloudConnected(false)
-            setTagCloudConnectionStatus("未選擇閘道器")
+            setTagCloudConnectionStatus(t('pages:uwbLocation.messages.selectGatewayFirst'))
             setCurrentTagTopic("")
             setCloudTagData([])
             setDiscoveredCloudTags([])
@@ -2047,7 +2047,7 @@ export default function UWBLocationPage() {
 
         const gatewayConfig = getGatewayConfig()
         if (!gatewayConfig) {
-            setTagCloudConnectionStatus("無法找到閘道器配置 - 請確保已選擇有效的閘道器")
+            setTagCloudConnectionStatus(t('pages:uwbLocation.messages.selectGatewayFirst'))
             console.log("❌ 無法找到 Gateway 配置")
             console.log("- 選擇的 Gateway ID:", selectedGatewayForTags)
             console.log("- 雲端 Gateway 數量:", cloudGatewayData.length)
@@ -2067,7 +2067,7 @@ export default function UWBLocationPage() {
         // 從 MQTT Bus 讀取連線狀態
         const isConnected = mqttBus.isConnected()
         setTagCloudConnected(isConnected)
-        setTagCloudConnectionStatus(isConnected ? "已連線" : "未連線")
+        setTagCloudConnectionStatus(isConnected ? t('common:connection.connected') : t('common:connection.disconnected'))
         setTagCloudError("")
 
         // 從 Tag Store 讀取數據
@@ -2319,8 +2319,8 @@ export default function UWBLocationPage() {
         const unsubscribe = mqttBus.onStatusChange((status) => {
             const isConnected = status === 'connected'
             setTagCloudConnected(isConnected)
-            setTagCloudConnectionStatus(isConnected ? "已連線" : "未連線")
-            setTagCloudError(status === 'error' ? "連接錯誤" : "")
+            setTagCloudConnectionStatus(isConnected ? t('common:connection.connected') : t('common:connection.disconnected'))
+            setTagCloudError(status === 'error' ? t('common:connection.connectionError') : "")
         })
 
         return () => {
@@ -4219,160 +4219,160 @@ export default function UWBLocationPage() {
                                 {floors
                                     .filter(floor => floor.homeId === selectedHomeForFloors)
                                     .map(floor => {
-                                    const floorGateways = gateways.filter(g => g.floorId === floor.id)
+                                        const floorGateways = gateways.filter(g => g.floorId === floor.id)
 
-                                    return (
-                                        <Card key={floor.id}>
-                                            <CardHeader className="pb-3">
-                                                <div className="flex items-center justify-between">
-                                                    <CardTitle className="flex items-center">
-                                                        <Layers3 className="mr-2 h-5 w-5 text-green-500" />
-                                                        {floor.name}
-                                                    </CardTitle>
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => startMapCalibration(floor)}
-                                                            title="地圖標定"
-                                                        >
-                                                            <MapIcon className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                setEditingItem(floor)
-                                                                setFloorForm({
-                                                                    name: floor.name,
-                                                                    level: floor.level,
-                                                                    realWidth: floor.dimensions?.realWidth || 0,
-                                                                    realHeight: floor.dimensions?.realHeight || 0
-                                                                })
-                                                                setShowFloorForm(true)
-                                                            }}
-                                                        >
-                                                            <Edit className="h-4 w-4" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={(e) => {
-                                                                e.preventDefault()
-                                                                e.stopPropagation()
-                                                                console.log('🔘 刪除按鈕被點擊，樓層ID:', floor.id)
-                                                                handleDeleteFloor(floor.id)
-                                                            }}
-                                                        >
-                                                            <Trash2 className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="space-y-2">
+                                        return (
+                                            <Card key={floor.id}>
+                                                <CardHeader className="pb-3">
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.floor')}</span>
-                                                        <span className="font-medium">{floor.level}F</span>
-                                                    </div>
-                                                    {floor.dimensions && (
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.actualSize')}</span>
-                                                            <span className="font-medium">
-                                                                {floor.dimensions.realWidth}m × {floor.dimensions.realHeight}m
-                                                            </span>
+                                                        <CardTitle className="flex items-center">
+                                                            <Layers3 className="mr-2 h-5 w-5 text-green-500" />
+                                                            {floor.name}
+                                                        </CardTitle>
+                                                        <div className="flex gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => startMapCalibration(floor)}
+                                                                title="地圖標定"
+                                                            >
+                                                                <MapIcon className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={() => {
+                                                                    setEditingItem(floor)
+                                                                    setFloorForm({
+                                                                        name: floor.name,
+                                                                        level: floor.level,
+                                                                        realWidth: floor.dimensions?.realWidth || 0,
+                                                                        realHeight: floor.dimensions?.realHeight || 0
+                                                                    })
+                                                                    setShowFloorForm(true)
+                                                                }}
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault()
+                                                                    e.stopPropagation()
+                                                                    console.log('🔘 刪除按鈕被點擊，樓層ID:', floor.id)
+                                                                    handleDeleteFloor(floor.id)
+                                                                }}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
                                                         </div>
-                                                    )}
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.mapStatusLabel')}</span>
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className={
-                                                                floor.calibration?.isCalibrated ? "bg-green-100 text-green-700 border-green-200" :
-                                                                    floor.mapImage ? "bg-yellow-100 text-yellow-700 border-yellow-200" : ""
-                                                            }
-                                                        >
-                                                            {
-                                                                floor.calibration?.isCalibrated ? t('pages:uwbLocation.mapStatus.calibrated') :
-                                                                    floor.mapImage ? t('pages:uwbLocation.mapStatus.uploaded') : t('pages:uwbLocation.mapStatus.noMap')
-                                                            }
-                                                        </Badge>
                                                     </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.stats.gateways')}</span>
-                                                        <Badge variant="outline">{floorGateways.length}</Badge>
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.status.online')}</span>
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className={floorGateways.some(g => g.status === 'online') ? "bg-green-100 text-green-700 border-green-200" : ""}
-                                                        >
-                                                            {floorGateways.filter(g => g.status === 'online').length}/{floorGateways.length}
-                                                        </Badge>
-                                                    </div>
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.floor')}</span>
+                                                            <span className="font-medium">{floor.level}F</span>
+                                                        </div>
+                                                        {floor.dimensions && (
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.actualSize')}</span>
+                                                                <span className="font-medium">
+                                                                    {floor.dimensions.realWidth}m × {floor.dimensions.realHeight}m
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.mapStatusLabel')}</span>
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className={
+                                                                    floor.calibration?.isCalibrated ? "bg-green-100 text-green-700 border-green-200" :
+                                                                        floor.mapImage ? "bg-yellow-100 text-yellow-700 border-yellow-200" : ""
+                                                                }
+                                                            >
+                                                                {
+                                                                    floor.calibration?.isCalibrated ? t('pages:uwbLocation.mapStatus.calibrated') :
+                                                                        floor.mapImage ? t('pages:uwbLocation.mapStatus.uploaded') : t('pages:uwbLocation.mapStatus.noMap')
+                                                                }
+                                                            </Badge>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.stats.gateways')}</span>
+                                                            <Badge variant="outline">{floorGateways.length}</Badge>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.status.online')}</span>
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className={floorGateways.some(g => g.status === 'online') ? "bg-green-100 text-green-700 border-green-200" : ""}
+                                                            >
+                                                                {floorGateways.filter(g => g.status === 'online').length}/{floorGateways.length}
+                                                            </Badge>
+                                                        </div>
 
-                                                    {/* 顯示地圖預覽 */}
-                                                    {floor.mapImage && (
-                                                        <div className="mt-3 pt-3 border-t">
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <span className="text-sm font-medium">{t('pages:uwbLocation.floorCard.mapPreview')}</span>
-                                                                <div className="flex items-center gap-2">
-                                                                    {floor.calibration?.isCalibrated && (
-                                                                        <Badge variant="outline" className="text-xs">
-                                                                            {t('pages:uwbLocation.floorCard.ratio')}: {floor.calibration.pixelToMeterRatio.toFixed(2)}px/m
-                                                                        </Badge>
+                                                        {/* 顯示地圖預覽 */}
+                                                        {floor.mapImage && (
+                                                            <div className="mt-3 pt-3 border-t">
+                                                                <div className="flex items-center justify-between mb-2">
+                                                                    <span className="text-sm font-medium">{t('pages:uwbLocation.floorCard.mapPreview')}</span>
+                                                                    <div className="flex items-center gap-2">
+                                                                        {floor.calibration?.isCalibrated && (
+                                                                            <Badge variant="outline" className="text-xs">
+                                                                                {t('pages:uwbLocation.floorCard.ratio')}: {floor.calibration.pixelToMeterRatio.toFixed(2)}px/m
+                                                                            </Badge>
+                                                                        )}
+                                                                        {getAnchorsForFloor(floor.id).length > 0 && (
+                                                                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                                                                {getAnchorsForFloor(floor.id).length} {t('pages:uwbLocation.floorCard.anchorsCount')}
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="relative">
+                                                                    <img
+                                                                        src={floor.mapImage}
+                                                                        alt={`${floor.name} 地圖`}
+                                                                        className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80"
+                                                                        onClick={() => startMapCalibration(floor)}
+                                                                    />
+                                                                    {floor.calibration?.originPixel && (
+                                                                        <div
+                                                                            className="absolute w-2 h-2 bg-red-500 rounded-full border border-white transform -translate-x-1 -translate-y-1"
+                                                                            style={{
+                                                                                left: `${floor.calibration.originPixel.x}px`,
+                                                                                top: `${floor.calibration.originPixel.y}px`
+                                                                            }}
+                                                                            title="座標原點"
+                                                                        />
                                                                     )}
-                                                                    {getAnchorsForFloor(floor.id).length > 0 && (
-                                                                        <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
-                                                                            {getAnchorsForFloor(floor.id).length} {t('pages:uwbLocation.floorCard.anchorsCount')}
-                                                                        </Badge>
-                                                                    )}
+                                                                    {/* 顯示該樓層的 Anchor 位置 */}
+                                                                    {floor.calibration?.isCalibrated && getAnchorsForFloor(floor.id).map(anchor => {
+                                                                        if (!anchor.position) return null
+                                                                        const pixelPos = convertToMapPixels(anchor.position.x, anchor.position.y, floor)
+                                                                        if (!pixelPos) return null
+
+                                                                        return (
+                                                                            <div
+                                                                                key={anchor.id}
+                                                                                className="absolute w-3 h-3 bg-blue-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-sm"
+                                                                                style={{
+                                                                                    left: `${pixelPos.x}px`,
+                                                                                    top: `${pixelPos.y}px`
+                                                                                }}
+                                                                                title={`${anchor.name} (${anchor.position.x.toFixed(1)}, ${anchor.position.y.toFixed(1)}, ${anchor.position.z.toFixed(1)})`}
+                                                                            />
+                                                                        )
+                                                                    })}
                                                                 </div>
                                                             </div>
-                                                            <div className="relative">
-                                                                <img
-                                                                    src={floor.mapImage}
-                                                                    alt={`${floor.name} 地圖`}
-                                                                    className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-80"
-                                                                    onClick={() => startMapCalibration(floor)}
-                                                                />
-                                                                {floor.calibration?.originPixel && (
-                                                                    <div
-                                                                        className="absolute w-2 h-2 bg-red-500 rounded-full border border-white transform -translate-x-1 -translate-y-1"
-                                                                        style={{
-                                                                            left: `${floor.calibration.originPixel.x}px`,
-                                                                            top: `${floor.calibration.originPixel.y}px`
-                                                                        }}
-                                                                        title="座標原點"
-                                                                    />
-                                                                )}
-                                                                {/* 顯示該樓層的 Anchor 位置 */}
-                                                                {floor.calibration?.isCalibrated && getAnchorsForFloor(floor.id).map(anchor => {
-                                                                    if (!anchor.position) return null
-                                                                    const pixelPos = convertToMapPixels(anchor.position.x, anchor.position.y, floor)
-                                                                    if (!pixelPos) return null
-
-                                                                    return (
-                                                                        <div
-                                                                            key={anchor.id}
-                                                                            className="absolute w-3 h-3 bg-blue-500 rounded-full border-2 border-white transform -translate-x-1/2 -translate-y-1/2 shadow-sm"
-                                                                            style={{
-                                                                                left: `${pixelPos.x}px`,
-                                                                                top: `${pixelPos.y}px`
-                                                                            }}
-                                                                            title={`${anchor.name} (${anchor.position.x.toFixed(1)}, ${anchor.position.y.toFixed(1)}, ${anchor.position.z.toFixed(1)})`}
-                                                                        />
-                                                                    )
-                                                                })}
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )
-                                })}
+                                                        )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        )
+                                    })}
                             </div>
                         )}
 
@@ -4924,7 +4924,7 @@ export default function UWBLocationPage() {
                                         variant="outline"
                                         onClick={() => {
                                             console.log("手動重連雲端連接...")
-                                            setCloudConnectionStatus("手動重連中...")
+                                            setCloudConnectionStatus(t('common:connection.manualReconnecting'))
                                             realtimeDataService.disconnect()
                                             setTimeout(() => {
                                                 realtimeDataService.connect()
@@ -5130,81 +5130,81 @@ export default function UWBLocationPage() {
                                 {gateways
                                     .filter(gateway => gateway.floorId === selectedFloorForGateways)
                                     .map(gateway => {
-                                    const floor = floors.find(f => f.id === gateway.floorId)
+                                        const floor = floors.find(f => f.id === gateway.floorId)
 
-                                    return (
-                                        <Card key={gateway.id}>
-                                            <CardHeader className="pb-3">
-                                                <div className="flex items-center justify-between">
-                                                    <CardTitle className="flex items-center">
-                                                        <Wifi className="mr-2 h-5 w-5 text-purple-500" />
-                                                        {gateway.name}
-                                                    </CardTitle>
-                                                    <div className="flex items-center gap-2">
-                                                        <Badge
-                                                            variant={
-                                                                gateway.status === 'error' ? 'destructive' : 'secondary'
-                                                            }
-                                                            className={
-                                                                gateway.status === 'online' ? 'bg-green-100 text-green-700 border-green-200' : ''
-                                                            }
-                                                        >
-                                                            {gateway.status === 'online' ? t('pages:uwbLocation.status.online') :
-                                                                gateway.status === 'error' ? t('pages:uwbLocation.status.error') : t('pages:uwbLocation.status.offline')}
-                                                        </Badge>
-                                                        <div className="flex gap-1">
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() => {
-                                                                    setEditingItem(gateway)
-                                                                    setGatewayForm({
-                                                                        name: gateway.name,
-                                                                        macAddress: gateway.macAddress,
-                                                                        ipAddress: gateway.ipAddress,
-                                                                        floorId: gateway.floorId
-                                                                    })
-                                                                    setShowGatewayForm(true)
-                                                                }}
+                                        return (
+                                            <Card key={gateway.id}>
+                                                <CardHeader className="pb-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <CardTitle className="flex items-center">
+                                                            <Wifi className="mr-2 h-5 w-5 text-purple-500" />
+                                                            {gateway.name}
+                                                        </CardTitle>
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge
+                                                                variant={
+                                                                    gateway.status === 'error' ? 'destructive' : 'secondary'
+                                                                }
+                                                                className={
+                                                                    gateway.status === 'online' ? 'bg-green-100 text-green-700 border-green-200' : ''
+                                                                }
                                                             >
-                                                                <Edit className="h-4 w-4" />
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() => handleDeleteGateway(gateway.id)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </Button>
+                                                                {gateway.status === 'online' ? t('pages:uwbLocation.status.online') :
+                                                                    gateway.status === 'error' ? t('pages:uwbLocation.status.error') : t('pages:uwbLocation.status.offline')}
+                                                            </Badge>
+                                                            <div className="flex gap-1">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => {
+                                                                        setEditingItem(gateway)
+                                                                        setGatewayForm({
+                                                                            name: gateway.name,
+                                                                            macAddress: gateway.macAddress,
+                                                                            ipAddress: gateway.ipAddress,
+                                                                            floorId: gateway.floorId
+                                                                        })
+                                                                        setShowGatewayForm(true)
+                                                                    }}
+                                                                >
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => handleDeleteGateway(gateway.id)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent>
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.belongingFloor')}</span>
-                                                        <span className="font-medium">{floor?.name}</span>
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.macAddress')}</span>
-                                                        <span className="font-mono text-sm">{gateway.macAddress}</span>
-                                                    </div>
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.ipAddress')}</span>
-                                                        <span className="font-mono text-sm">{gateway.ipAddress}</span>
-                                                    </div>
-                                                    {gateway.lastSeen && (
+                                                </CardHeader>
+                                                <CardContent>
+                                                    <div className="space-y-2">
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.lastConnection')}</span>
-                                                            <span className="text-sm">{gateway.lastSeen.toLocaleString('zh-TW')}</span>
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.belongingFloor')}</span>
+                                                            <span className="font-medium">{floor?.name}</span>
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )
-                                })}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.macAddress')}</span>
+                                                            <span className="font-mono text-sm">{gateway.macAddress}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.ipAddress')}</span>
+                                                            <span className="font-mono text-sm">{gateway.ipAddress}</span>
+                                                        </div>
+                                                        {gateway.lastSeen && (
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-sm text-muted-foreground">{t('pages:uwbLocation.lastConnection')}</span>
+                                                                <span className="text-sm">{gateway.lastSeen.toLocaleString('zh-TW')}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        )
+                                    })}
                             </div>
                         )}
 
@@ -5314,7 +5314,7 @@ export default function UWBLocationPage() {
 
                                         // 重置狀態
                                         setAnchorCloudConnected(false)
-                                        setAnchorCloudConnectionStatus("手動重連中...")
+                                        setAnchorCloudConnectionStatus(t('common:connection.manualReconnecting'))
                                         setAnchorCloudError("")
                                         setCloudAckData([])
 

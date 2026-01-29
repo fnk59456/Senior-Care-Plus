@@ -54,7 +54,8 @@
         "tabs": {
             "heart": "心率",
             "temp": "體溫"
-        }
+        },
+        "deviceNameFallback": "設備"
     },
     "residents": {
         "title": "院友管理",

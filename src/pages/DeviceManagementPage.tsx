@@ -2387,7 +2387,7 @@ export default function DeviceManagementPage() {
                       <SelectItem value={DeviceType.DIAPER_SENSOR}>{t('pages:deviceManagement.addModal.deviceTypes.diaperSensor')}</SelectItem>
                       <SelectItem value={DeviceType.PEDOMETER}>{t('pages:deviceManagement.addModal.deviceTypes.pedometer')}</SelectItem>
                       <SelectItem value={DeviceType.UWB_TAG}>{t('pages:deviceManagement.addModal.deviceTypes.uwbTag')}</SelectItem>
-                      <SelectItem value={DeviceType.UWB_ANCHOR}>{t('pages:deviceManagement.addModal.deviceTypes.uwbAnchor') || 'UWB定位錨點'}</SelectItem>
+                      <SelectItem value={DeviceType.UWB_ANCHOR}>{t('pages:deviceManagement.addModal.deviceTypes.uwbAnchor')}</SelectItem>
                       <SelectItem value={DeviceType.GATEWAY}>{t('pages:deviceManagement.addModal.deviceTypes.gateway')}</SelectItem>
                     </SelectContent>
                   </Select>

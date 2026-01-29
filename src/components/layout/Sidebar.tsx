@@ -86,18 +86,18 @@ const getNavigationItems = (t: any) => [
     description: t('navigation:sidebar.items.uwbLocation.description'),
   },
   {
-    name: '後端測試',
+    name: t('common:testing.backendTest'),
     href: '/backend-test',
     icon: Sparkles,
     color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300',
-    description: '測試前端與後端連接',
+    description: t('common:testing.backendTestDesc'),
   },
   {
-    name: '場域管理測試',
+    name: t('common:testing.fieldManagementTest'),
     href: '/field-test',
     icon: Building2,
     color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300',
-    description: '測試場域增刪改查功能',
+    description: t('common:testing.fieldManagementTestDesc'),
   },
   {
     name: t('navigation:sidebar.items.more.name'),

@@ -44,6 +44,15 @@
             "systemGuide": "System Guide"
         }
     },
+    "heartTemp": {
+        "title": "Heart Rate & Temperature Monitoring",
+        "subtitle": "Combined heart rate and temperature data, monitor 300B devices with a single connection",
+        "tabs": {
+            "heart": "Heart Rate",
+            "temp": "Temperature"
+        },
+        "deviceNameFallback": "Device"
+    },
     "residents": {
         "title": "Resident Management",
         "subtitle": "Manage resident data and device binding",

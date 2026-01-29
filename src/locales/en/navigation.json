@@ -43,6 +43,14 @@
                 "name": "Facility Management",
                 "description": "UWB positioning system facility management"
             },
+            "backendTest": {
+                "name": "Backend Test",
+                "description": "Test frontend and backend connection"
+            },
+            "fieldManagementTest": {
+                "name": "Field Management Test",
+                "description": "Test field CRUD operations"
+            },
             "more": {
                 "name": "More Features",
                 "description": "Explore smart care features"

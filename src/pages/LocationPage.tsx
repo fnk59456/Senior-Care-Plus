@@ -72,7 +72,7 @@ export default function LocationPage() {
   // 本地狀態
   const [patients, setPatients] = useState<Record<string, Patient>>({})
   const [cloudConnected, setCloudConnected] = useState(false)
-  const [cloudConnectionStatus, setCloudConnectionStatus] = useState("未連線")
+  const [cloudConnectionStatus, setCloudConnectionStatus] = useState(t('common:connection.disconnected'))
 
   // ✅ 方案一：設備狀態緩存 - 避免地圖交互時重新計算過期狀態
   const [deviceOnlineStatus, setDeviceOnlineStatus] = useState<Record<string, boolean>>({})
@@ -1242,7 +1242,7 @@ export default function LocationPage() {
                                   : 'border-red-500'    // 離線：紅色
                                   }`}>
                                   <AvatarFallback className="text-xs">
-                                    {patient.residentName ? patient.residentName[0] : '設'}
+                                    {patient.residentName ? patient.residentName[0] : t('common:ui.avatar.defaultFallback')}
                                   </AvatarFallback>
                                 </Avatar>
 
@@ -1410,7 +1410,7 @@ export default function LocationPage() {
                             <div className="relative flex-shrink-0">
                               <Avatar className="h-10 w-10">
                                 <AvatarFallback className="text-sm">
-                                  {patient.residentName ? patient.residentName[0] : '設'}
+                                  {patient.residentName ? patient.residentName[0] : t('common:ui.avatar.defaultFallback')}
                                 </AvatarFallback>
                               </Avatar>
 

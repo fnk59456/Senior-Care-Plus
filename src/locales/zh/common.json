@@ -82,5 +82,78 @@
         "days": "天",
         "weeks": "週",
         "months": "月"
+    },
+    "connection": {
+        "connected": "已連線",
+        "disconnected": "未連線",
+        "connecting": "連接中...",
+        "reconnecting": "重新連接中...",
+        "connectionClosed": "連接已關閉",
+        "clientOffline": "客戶端離線",
+        "connectionError": "連接錯誤",
+        "notConnected": "未連接",
+        "reconnectingShort": "重連中",
+        "disconnectedShort": "已斷開",
+        "manualReconnecting": "手動重連中..."
+    },
+    "error": {
+        "title": "應用錯誤",
+        "message": "應用程序遇到了一個錯誤。請檢查控制台以獲取詳細信息。",
+        "details": "錯誤詳情",
+        "reload": "重新載入頁面",
+        "consolePrefix": "❌ 應用錯誤:"
+    },
+    "ui": {
+        "logo": "護",
+        "notifications": {
+            "title": "通知",
+            "unreadCount": "您有{{count}}條未讀通知",
+            "viewAll": "查看所有通知",
+            "examples": {
+                "residentNeedsHelp": "王老先生需要協助",
+                "bloodPressureAbnormal": "李大媽血壓異常",
+                "medicationReminder": "今日藥物提醒完成度90%"
+            },
+            "timeAgo": {
+                "minutes": "{{count}}分鐘前"
+            }
+        },
+        "theme": {
+            "toggle": "切換主題",
+            "light": "淺色",
+            "dark": "深色",
+            "system": "系統"
+        },
+        "user": {
+            "avatarAlt": "使用者頭像",
+            "avatarFallback": "管理",
+            "admin": "管理員",
+            "superAdmin": "超級管理員",
+            "profile": "個人資料",
+            "security": "安全設置",
+            "logout": "登出",
+            "exampleName": "張志豪",
+            "exampleEmail": "admin@example.com"
+        },
+        "avatar": {
+            "defaultFallback": "設"
+        },
+        "tooltip": {
+            "clickToReturn": "點擊返回原頁面"
+        }
+    },
+    "language": {
+        "chinese": "中文",
+        "english": "English",
+        "japanese": "日本語"
+    },
+    "testing": {
+        "backendTest": "後端測試",
+        "backendTestDesc": "測試前端與後端連接",
+        "fieldManagementTest": "場域管理測試",
+        "fieldManagementTestDesc": "測試場域增刪改查功能",
+        "connectionStatus": "連接狀態",
+        "testing": "測試中...",
+        "startTest": "開始測試"
     }
 }

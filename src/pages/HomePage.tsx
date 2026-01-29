@@ -155,17 +155,17 @@ export default function HomePage() {
             href: "/more",
           },
         ].map((stat, i) => (
-          <Link to={stat.href} key={i}>
-            <Card className="card-float overflow-hidden border-0 shadow-md hover:scale-[1.01] hover:shadow-lg transition-transform">
+          <Link to={stat.href} key={i} className="h-full block">
+            <Card className="h-full flex flex-col card-float overflow-hidden border-0 shadow-md hover:scale-[1.01] hover:shadow-lg transition-transform">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                 <div className={`rounded-full p-2 ${stat.color} ${stat.bgColor}`}>
                   {stat.icon}
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex-1 flex flex-col min-h-[4.5rem]">
                 <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
+                <p className="text-xs text-muted-foreground mt-1 min-h-[1.25rem]">{stat.change || '\u00A0'}</p>
               </CardContent>
             </Card>
           </Link>
@@ -183,8 +183,8 @@ export default function HomePage() {
             <Link to={feature.href} key={feature.title} className="group relative block">
               <Card
                 className={`card-float transition-transform hover:scale-[1.01] hover:shadow-lg border-0 overflow-hidden ${feature.priority
-                    ? 'ring-2 ring-red-200 dark:ring-red-800 shadow-lg'
-                    : ''
+                  ? 'ring-2 ring-red-200 dark:ring-red-800 shadow-lg'
+                  : ''
                   } ${feature.bgLight} ${feature.bgDark}`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-300 ${feature.color} pointer-events-none`} />

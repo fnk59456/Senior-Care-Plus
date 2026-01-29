@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Moon, Sun, Menu, Search, User, ShieldAlert, MessageSquare, LogOut, X } from 'lucide-react'
+import { Bell, Moon, Sun, Menu, Search, User, ShieldAlert, MessageSquare, LogOut, X, HeartPulse } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
@@ -44,7 +44,7 @@ export function TopNav() {
           </Button>
           <a href="/" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center">
-              <span className="text-primary-foreground font-bold">護</span>
+              <HeartPulse className="h-5 w-5 text-primary-foreground" />
             </div>
             <span className="hidden font-bold text-lg md:inline-block">{t('common:app.title')}</span>
           </a>
@@ -81,15 +81,15 @@ export function TopNav() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-80">
               <div className="p-3">
-                <h3 className="font-semibold">通知</h3>
-                <p className="text-sm text-muted-foreground">您有3條未讀通知</p>
+                <h3 className="font-semibold">{t('common:ui.notifications.title')}</h3>
+                <p className="text-sm text-muted-foreground">{t('common:ui.notifications.unreadCount', { count: 3 })}</p>
               </div>
               <DropdownMenuSeparator />
               <div className="py-2 max-h-[300px] overflow-y-auto">
                 {[
-                  { title: "王老先生需要協助", time: "5分鐘前", type: "urgent" },
-                  { title: "李大媽血壓異常", time: "10分鐘前", type: "warning" },
-                  { title: "今日藥物提醒完成度90%", time: "30分鐘前", type: "info" }
+                  { title: t('common:ui.notifications.examples.residentNeedsHelp'), time: t('common:ui.notifications.timeAgo.minutes', { count: 5 }), type: "urgent" },
+                  { title: t('common:ui.notifications.examples.bloodPressureAbnormal'), time: t('common:ui.notifications.timeAgo.minutes', { count: 10 }), type: "warning" },
+                  { title: t('common:ui.notifications.examples.medicationReminder'), time: t('common:ui.notifications.timeAgo.minutes', { count: 30 }), type: "info" }
                 ].map((item, i) => (
                   <div key={i} className="px-4 py-2.5 hover:bg-muted cursor-pointer flex items-center gap-3">
                     <div className={`h-2 w-2 rounded-full ${item.type === 'urgent' ? 'bg-red-500' :
@@ -105,7 +105,7 @@ export function TopNav() {
               </div>
               <DropdownMenuSeparator />
               <div className="p-2">
-                <Button variant="ghost" size="sm" className="w-full">查看所有通知</Button>
+                <Button variant="ghost" size="sm" className="w-full">{t('common:ui.notifications.viewAll')}</Button>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -115,21 +115,21 @@ export function TopNav() {
               <Button variant="ghost" size="icon" className="text-primary hover:text-primary/80 hover:bg-primary/10">
                 <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
                 <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">切換主題</span>
+                <span className="sr-only">{t('common:ui.theme.toggle')}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">
                 <Sun className="mr-2 h-4 w-4" />
-                淺色
+                {t('common:ui.theme.light')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer">
                 <Moon className="mr-2 h-4 w-4" />
-                深色
+                {t('common:ui.theme.dark')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTheme("system")} className="cursor-pointer">
                 <span className="mr-2">💻</span>
-                系統
+                {t('common:ui.theme.system')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -138,32 +138,34 @@ export function TopNav() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-2 ml-2 rounded-full px-2 hover:bg-primary/10">
                 <Avatar className="h-8 w-8 border-2 border-primary/20">
-                  <AvatarImage src="/avatar.png" alt="使用者頭像" />
-                  <AvatarFallback className="bg-primary/10 text-primary">管理</AvatarFallback>
+                  <AvatarImage src="/avatar.png" alt={t('common:ui.user.avatarAlt')} />
+                  <AvatarFallback className="bg-primary/10 text-primary">
+                    <User className="h-4 w-4" />
+                  </AvatarFallback>
                 </Avatar>
                 <div className="hidden md:block text-left">
-                  <span className="block text-sm font-medium">管理員</span>
-                  <span className="block text-xs text-muted-foreground">超級管理員</span>
+                  <span className="block text-sm font-medium">{t('common:ui.user.admin')}</span>
+                  <span className="block text-xs text-muted-foreground">{t('common:ui.user.superAdmin')}</span>
                 </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="p-2 border-b">
-                <p className="font-medium">張志豪</p>
-                <p className="text-xs text-muted-foreground">admin@example.com</p>
+                <p className="font-medium">{t('common:ui.user.exampleName')}</p>
+                <p className="text-xs text-muted-foreground">{t('common:ui.user.exampleEmail')}</p>
               </div>
               <DropdownMenuItem className="cursor-pointer">
                 <User className="mr-2 h-4 w-4" />
-                個人資料
+                {t('common:ui.user.profile')}
               </DropdownMenuItem>
               <DropdownMenuItem className="cursor-pointer">
                 <ShieldAlert className="mr-2 h-4 w-4" />
-                安全設置
+                {t('common:ui.user.security')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
                 <LogOut className="mr-2 h-4 w-4" />
-                登出
+                {t('common:ui.user.logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

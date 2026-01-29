@@ -43,6 +43,14 @@
                 "name": "養老院管理",
                 "description": "UWB定位系統場域管理"
             },
+            "backendTest": {
+                "name": "後端測試",
+                "description": "測試前端與後端連接"
+            },
+            "fieldManagementTest": {
+                "name": "場域管理測試",
+                "description": "測試場域增刪改查功能"
+            },
             "more": {
                 "name": "更多功能",
                 "description": "探索智慧照護功能"

@@ -3,8 +3,9 @@
  */
 
 import React, { Component, ErrorInfo, ReactNode } from 'react'
+import { withTranslation, WithTranslation } from 'react-i18next'
 
-interface Props {
+interface Props extends WithTranslation {
     children: ReactNode
 }
 
@@ -13,7 +14,7 @@ interface State {
     error?: Error
 }
 
-export class ErrorBoundary extends Component<Props, State> {
+class ErrorBoundaryComponent extends Component<Props, State> {
     constructor(props: Props) {
         super(props)
         this.state = { hasError: false }
@@ -24,10 +25,11 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-        console.error('❌ 應用錯誤:', error, errorInfo)
+        console.error(this.props.t('common:error.consolePrefix'), error, errorInfo)
     }
 
     render() {
+        const { t } = this.props
         if (this.state.hasError) {
             return (
                 <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -39,14 +41,14 @@ export class ErrorBoundary extends Component<Props, State> {
                                 </svg>
                             </div>
                             <div className="ml-3">
-                                <h3 className="text-lg font-medium text-gray-900">應用錯誤</h3>
+                                <h3 className="text-lg font-medium text-gray-900">{t('common:error.title')}</h3>
                             </div>
                         </div>
                         <div className="text-sm text-gray-500 mb-4">
-                            <p>應用程序遇到了一個錯誤。請檢查控制台以獲取詳細信息。</p>
+                            <p>{t('common:error.message')}</p>
                             {this.state.error && (
                                 <details className="mt-2">
-                                    <summary className="cursor-pointer text-red-600">錯誤詳情</summary>
+                                    <summary className="cursor-pointer text-red-600">{t('common:error.details')}</summary>
                                     <pre className="mt-2 text-xs bg-gray-100 p-2 rounded overflow-auto">
                                         {this.state.error.toString()}
                                     </pre>
@@ -57,7 +59,7 @@ export class ErrorBoundary extends Component<Props, State> {
                             onClick={() => window.location.reload()}
                             className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                         >
-                            重新載入頁面
+                            {t('common:error.reload')}
                         </button>
                     </div>
                 </div>
@@ -67,5 +69,7 @@ export class ErrorBoundary extends Component<Props, State> {
         return this.props.children
     }
 }
+
+export const ErrorBoundary = withTranslation()(ErrorBoundaryComponent)
 
 

@@ -122,10 +122,21 @@ type CloudDevice = {
 }
 
 export default function HeartTemperaturePage() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const patientName = location.state?.patientName
+
+  // 获取当前语言的locale代码
+  const getLocale = () => {
+    const lang = i18n.language || 'zh'
+    const localeMap: Record<string, string> = {
+      'zh': 'zh-TW',
+      'en': 'en-US',
+      'jp': 'ja-JP'
+    }
+    return localeMap[lang] || 'zh-TW'
+  }
 
   // 隱藏入口：點擊心形圖標10次進入新頁面
   const [heartClickCount, setHeartClickCount] = useState(0)
@@ -239,7 +250,7 @@ export default function HeartTemperaturePage() {
 
   // MQTT 連線狀態
   const [cloudConnected, setCloudConnected] = useState(false)
-  const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
+  const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>(t('common:connection.disconnected'))
 
   // MQTT 狀態監聽
   useEffect(() => {
@@ -346,7 +357,7 @@ export default function HeartTemperaturePage() {
 
           const heartRecord: HeartRecord = {
             MAC: data.MAC,
-            deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${data.MAC.slice(-8)}`,
+            deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `${t('pages:heartTemp.deviceNameFallback')} ${data.MAC.slice(-8)}`,
             hr: data.hr || 0,
             SpO2: data.SpO2 || 0,
             bp_syst: data.bp_syst || 0,
@@ -367,7 +378,7 @@ export default function HeartTemperaturePage() {
 
           const tempRecord: TempRecord = {
             MAC: data.MAC,
-            deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${data.MAC.slice(-8)}`,
+            deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `${t('pages:heartTemp.deviceNameFallback')} ${data.MAC.slice(-8)}`,
             skin_temp: data.skin_temp || 0,
             room_temp: data.room_temp || 0,
             steps: data.steps || 0,
@@ -409,7 +420,7 @@ export default function HeartTemperaturePage() {
             }
             const newDevice: CloudDevice = {
               MAC: data.MAC,
-              deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${data.MAC.slice(-8)}`,
+              deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `${t('pages:heartTemp.deviceNameFallback')} ${data.MAC.slice(-8)}`,
               lastSeen: data.receivedAt,
               recordCount: 1,
               gateway: data.gateway,
@@ -432,7 +443,7 @@ export default function HeartTemperaturePage() {
             }
             const newDevice: CloudDevice = {
               MAC: data.MAC,
-              deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `設備 ${data.MAC.slice(-8)}`,
+              deviceName: residentInfo?.residentName ? `${residentInfo.residentName} (${residentInfo.residentRoom})` : `${t('pages:heartTemp.deviceNameFallback')} ${data.MAC.slice(-8)}`,
               lastSeen: data.receivedAt,
               recordCount: 1,
               gateway: data.gateway,
@@ -489,7 +500,7 @@ export default function HeartTemperaturePage() {
       .reverse()
       .map(record => ({
         time: record.time,
-        hour: record.datetime.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" }),
+        hour: record.datetime.toLocaleTimeString(getLocale(), { hour: "2-digit", minute: "2-digit" }),
         heart_rate: record.hr,
         isAbnormal: record.isAbnormal,
         bp_syst: record.bp_syst || 0,
@@ -517,7 +528,7 @@ export default function HeartTemperaturePage() {
       .reverse()
       .map(record => ({
         time: record.time,
-        hour: record.datetime.toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" }),
+        hour: record.datetime.toLocaleTimeString(getLocale(), { hour: "2-digit", minute: "2-digit" }),
         temperature: record.skin_temp,
         isAbnormal: record.isAbnormal
       }))
@@ -526,9 +537,10 @@ export default function HeartTemperaturePage() {
   const getDateString = (tab: string) => {
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    if (tab === "yesterday") return new Date(today.getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("zh-TW")
-    if (tab === "dayBefore") return new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString("zh-TW")
-    return today.toLocaleDateString("zh-TW")
+    const locale = getLocale()
+    if (tab === "yesterday") return new Date(today.getTime() - 24 * 60 * 60 * 1000).toLocaleDateString(locale)
+    if (tab === "dayBefore") return new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString(locale)
+    return today.toLocaleDateString(locale)
   }
 
   const getHealthTopic = () => {
@@ -734,7 +746,7 @@ export default function HeartTemperaturePage() {
                         <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
                           <div className="flex items-center justify-between">
                             <span className="font-mono font-semibold text-pink-600">{data.content}</span>
-                            <span className="text-muted-foreground">{data.receivedAt.toLocaleTimeString("zh-TW")}</span>
+                            <span className="text-muted-foreground">{data.receivedAt.toLocaleTimeString(getLocale())}</span>
                           </div>
                           {data.MAC && (
                             <div className="text-muted-foreground mt-1">
@@ -963,7 +975,7 @@ export default function HeartTemperaturePage() {
                               {record.isAbnormal ? <AlertTriangle className="h-4 w-4" /> : <Heart className="h-4 w-4" />}
                             </div>
                             <div>
-                              <div className="font-medium">{record.datetime.toLocaleString("zh-TW")}</div>
+                              <div className="font-medium">{record.datetime.toLocaleString(getLocale())}</div>
                               <div className="text-sm text-muted-foreground">
                                 {record.hr > 0 ? `${record.hr} BPM` : t("pages:heartRate.heartRateRecords.noHeartRateData")}
                                 {record.skin_temp > 0 && <span className="ml-2">| {t("pages:heartRate.heartRateRecords.temperature")}: {record.skin_temp}°C</span>}
@@ -1153,7 +1165,7 @@ export default function HeartTemperaturePage() {
                         <div key={index} className="text-xs bg-gray-50 p-2 rounded border">
                           <div className="flex items-center justify-between">
                             <span className="font-mono font-semibold text-blue-600">{data.content}</span>
-                            <span className="text-muted-foreground">{data.receivedAt.toLocaleTimeString("zh-TW")}</span>
+                            <span className="text-muted-foreground">{data.receivedAt.toLocaleTimeString(getLocale())}</span>
                           </div>
                           {data.MAC && (
                             <div className="text-muted-foreground mt-1">
@@ -1349,7 +1361,7 @@ export default function HeartTemperaturePage() {
                               {record.isAbnormal ? <AlertTriangle className="h-4 w-4" /> : <Thermometer className="h-4 w-4" />}
                             </div>
                             <div>
-                              <div className="font-medium">{record.datetime.toLocaleString("zh-TW")}</div>
+                              <div className="font-medium">{record.datetime.toLocaleString(getLocale())}</div>
                               <div className="text-sm text-muted-foreground">
                                 {record.skin_temp > 0 ? `${record.skin_temp}°C` : t("pages:temperature.temperatureRecords.noTemperatureData")}
                                 {record.room_temp && record.room_temp > 0 && <span className="ml-2">| {t("pages:temperature.temperatureRecords.roomTemperature")}: {record.room_temp}°C</span>}

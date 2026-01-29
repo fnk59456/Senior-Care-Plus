@@ -9,15 +9,16 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
-const availableLanguages = [
-    { code: 'zh', name: '中文', flag: '🇨🇳' },
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'jp', name: '日本語', flag: '🇯🇵' },
+const getAvailableLanguages = (t: any) => [
+    { code: 'zh', name: t('common:language.chinese'), flag: '🇨🇳' },
+    { code: 'en', name: t('common:language.english'), flag: '🇺🇸' },
+    { code: 'jp', name: t('common:language.japanese'), flag: '🇯🇵' },
 ]
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-    const { i18n } = useTranslation()
+    const { i18n, t } = useTranslation()
     const [currentLanguage, setCurrentLanguage] = useState(i18n.language || 'zh')
+    const availableLanguages = getAvailableLanguages(t)
 
     const changeLanguage = (language: string) => {
         i18n.changeLanguage(language)

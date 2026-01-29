@@ -291,7 +291,7 @@ export default function DiaperMonitoringPage() {
 
   // ✅ MQTT Bus 連接狀態
   const [cloudConnected, setCloudConnected] = useState(false)
-  const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>("未連線")
+  const [cloudConnectionStatus, setCloudConnectionStatus] = useState<string>(t('common:connection.disconnected'))
 
   // 參考線顯示狀態
   const [showReferenceLines, setShowReferenceLines] = useState<boolean>(true)

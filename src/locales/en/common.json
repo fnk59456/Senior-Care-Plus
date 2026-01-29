@@ -27,7 +27,9 @@
         "loading": "Loading...",
         "saving": "Saving...",
         "saved": "Saved",
-        "view": "View"
+        "view": "View",
+        "scrollForMore": "Scroll down to see more",
+        "optional": "Optional"
     },
     "status": {
         "active": "Active",
@@ -80,5 +82,78 @@
         "days": "days",
         "weeks": "weeks",
         "months": "months"
+    },
+    "connection": {
+        "connected": "Connected",
+        "disconnected": "Disconnected",
+        "connecting": "Connecting...",
+        "reconnecting": "Reconnecting...",
+        "connectionClosed": "Connection Closed",
+        "clientOffline": "Client Offline",
+        "connectionError": "Connection Error",
+        "notConnected": "Not Connected",
+        "reconnectingShort": "Reconnecting",
+        "disconnectedShort": "Disconnected",
+        "manualReconnecting": "Manually Reconnecting..."
+    },
+    "error": {
+        "title": "Application Error",
+        "message": "The application encountered an error. Please check the console for details.",
+        "details": "Error Details",
+        "reload": "Reload Page",
+        "consolePrefix": "❌ Application Error:"
+    },
+    "ui": {
+        "logo": "Care",
+        "notifications": {
+            "title": "Notifications",
+            "unreadCount": "You have {{count}} unread notifications",
+            "viewAll": "View All Notifications",
+            "examples": {
+                "residentNeedsHelp": "Mr. Wang needs assistance",
+                "bloodPressureAbnormal": "Mrs. Li's blood pressure is abnormal",
+                "medicationReminder": "Medication reminder completion: 90%"
+            },
+            "timeAgo": {
+                "minutes": "{{count}} minutes ago"
+            }
+        },
+        "theme": {
+            "toggle": "Toggle Theme",
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+        },
+        "user": {
+            "avatarAlt": "User Avatar",
+            "avatarFallback": "Admin",
+            "admin": "Administrator",
+            "superAdmin": "Super Administrator",
+            "profile": "Profile",
+            "security": "Security Settings",
+            "logout": "Logout",
+            "exampleName": "John Doe",
+            "exampleEmail": "admin@example.com"
+        },
+        "avatar": {
+            "defaultFallback": "D"
+        },
+        "tooltip": {
+            "clickToReturn": "Click to return to previous page"
+        }
+    },
+    "language": {
+        "chinese": "中文",
+        "english": "English",
+        "japanese": "日本語"
+    },
+    "testing": {
+        "backendTest": "Backend Test",
+        "backendTestDesc": "Test frontend and backend connection",
+        "fieldManagementTest": "Field Management Test",
+        "fieldManagementTestDesc": "Test field CRUD operations",
+        "connectionStatus": "Connection Status",
+        "testing": "Testing...",
+        "startTest": "Start Test"
     }
 }

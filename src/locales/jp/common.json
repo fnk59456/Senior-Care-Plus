@@ -27,7 +27,9 @@
         "loading": "読み込み中...",
         "saving": "保存中...",
         "saved": "保存済み",
-        "view": "表示"
+        "view": "表示",
+        "scrollForMore": "下にスクロールして詳細を表示",
+        "optional": "任意"
     },
     "status": {
         "active": "アクティブ",
@@ -80,5 +82,78 @@
         "days": "日",
         "weeks": "週",
         "months": "月"
+    },
+    "connection": {
+        "connected": "接続済み",
+        "disconnected": "未接続",
+        "connecting": "接続中...",
+        "reconnecting": "再接続中...",
+        "connectionClosed": "接続が閉じられました",
+        "clientOffline": "クライアントオフライン",
+        "connectionError": "接続エラー",
+        "notConnected": "未接続",
+        "reconnectingShort": "再接続中",
+        "disconnectedShort": "切断済み",
+        "manualReconnecting": "手動再接続中..."
+    },
+    "error": {
+        "title": "アプリケーションエラー",
+        "message": "アプリケーションでエラーが発生しました。詳細についてはコンソールを確認してください。",
+        "details": "エラー詳細",
+        "reload": "ページを再読み込み",
+        "consolePrefix": "❌ アプリケーションエラー:"
+    },
+    "ui": {
+        "logo": "ケア",
+        "notifications": {
+            "title": "通知",
+            "unreadCount": "未読通知が{{count}}件あります",
+            "viewAll": "すべての通知を表示",
+            "examples": {
+                "residentNeedsHelp": "王さんが支援を必要としています",
+                "bloodPressureAbnormal": "李さんの血圧が異常です",
+                "medicationReminder": "今日の薬物リマインダー完了度: 90%"
+            },
+            "timeAgo": {
+                "minutes": "{{count}}分前"
+            }
+        },
+        "theme": {
+            "toggle": "テーマを切り替え",
+            "light": "ライト",
+            "dark": "ダーク",
+            "system": "システム"
+        },
+        "user": {
+            "avatarAlt": "ユーザーアバター",
+            "avatarFallback": "管理者",
+            "admin": "管理者",
+            "superAdmin": "スーパー管理者",
+            "profile": "プロフィール",
+            "security": "セキュリティ設定",
+            "logout": "ログアウト",
+            "exampleName": "山田太郎",
+            "exampleEmail": "admin@example.com"
+        },
+        "avatar": {
+            "defaultFallback": "設"
+        },
+        "tooltip": {
+            "clickToReturn": "クリックして前のページに戻る"
+        }
+    },
+    "language": {
+        "chinese": "中文",
+        "english": "English",
+        "japanese": "日本語"
+    },
+    "testing": {
+        "backendTest": "バックエンドテスト",
+        "backendTestDesc": "フロントエンドとバックエンドの接続をテスト",
+        "fieldManagementTest": "フィールド管理テスト",
+        "fieldManagementTestDesc": "フィールドのCRUD操作をテスト",
+        "connectionStatus": "接続状態",
+        "testing": "テスト中...",
+        "startTest": "テスト開始"
     }
 }
