@@ -19,7 +19,7 @@ import {
     MapPin
 } from 'lucide-react'
 import { useDeviceManagement } from '@/contexts/DeviceManagementContext'
-import { Device, Resident, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
+import { Device, Resident, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG, isBindableDevice } from '@/types/device-types'
 import { useTranslation } from 'react-i18next'
 
 interface DeviceBindingModalProps {
@@ -59,11 +59,14 @@ export default function DeviceBindingModal({
     const currentBinding = selectedDevice ? getResidentForDevice(selectedDevice.id) : null
     const residentDevices = selectedResident ? getDevicesForResident(selectedResident.id) : []
 
-    // 篩選可用設備
+    // 篩選可用設備（僅顯示可綁定的設備類型）
     const filteredDevices = devices.filter(device =>
-        device.name.toLowerCase().includes(searchDevice.toLowerCase()) ||
+        // 只顯示可綁定的設備類型
+        isBindableDevice(device.deviceType) &&
+        // 搜索過濾
+        (device.name.toLowerCase().includes(searchDevice.toLowerCase()) ||
         device.hardwareId.toLowerCase().includes(searchDevice.toLowerCase()) ||
-        device.deviceUid.toLowerCase().includes(searchDevice.toLowerCase())
+        device.deviceUid.toLowerCase().includes(searchDevice.toLowerCase()))
     )
 
     // 篩選可用院友

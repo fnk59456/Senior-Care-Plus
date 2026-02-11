@@ -37,6 +37,19 @@ export const DEVICE_TOPICS: Record<DeviceType, string[]> = {
     [DeviceType.GATEWAY]: ['UWB/UWB_Gateway']
 }
 
+// 可綁定到院友的設備類型（排除基礎設施設備如 ANCHOR 和 GATEWAY）
+export const BINDABLE_DEVICE_TYPES: DeviceType[] = [
+    DeviceType.SMARTWATCH_300B,
+    DeviceType.DIAPER_SENSOR,
+    DeviceType.PEDOMETER,
+    DeviceType.UWB_TAG
+]
+
+// 檢查設備是否可綁定
+export const isBindableDevice = (deviceType: DeviceType): boolean => {
+    return BINDABLE_DEVICE_TYPES.includes(deviceType)
+}
+
 // 設備配置接口
 interface DeviceTypeConfig {
     label: string

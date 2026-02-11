@@ -10,16 +10,16 @@
       "id": 1770,
       "id(Hex)": "0x06EA",
       "position": {
-        "x": 0.58,
-        "y": -1.05,
-        "z": 2.59,
-        "quality": 74
+        "x": 0.37,
+        "y": -1.56,
+        "z": 3.06,
+        "quality": 72
       },
-      "time": "2026-043 00:34:58.73",
-      "sf number": 277,
-      "serial no": 10781
+      "time": "2026-043 01:08:03.85",
+      "sf number": 1408,
+      "serial no": 11366
     },
-    "timestamp": "2026-02-11T16:34:58.974Z"
+    "timestamp": "2026-02-11T17:08:04.096Z"
   },
   {
     "topic": "UWB/GW16B8_TagConf",
@@ -41,26 +41,60 @@
       "nominal udr(hz)": 1,
       "stationary udr(hz)": 0.2
     },
-    "timestamp": "2026-02-11T16:34:59.179Z"
+    "timestamp": "2026-02-11T17:08:04.301Z"
   },
   {
-    "topic": "UWB/GW16B8_Message",
+    "topic": "UWB/GW16B8_Health",
     "message": {
-      "content": "heartbeat",
+      "content": "300B",
       "gateway id": 4192540344,
       "region id": 0,
       "organiz id": 0,
-      "node": "GW",
-      "name": "GwF9E516B8_40",
-      "fw ver": "0.82838s",
-      "fw serial": 0,
-      "UWB HW Com OK": "yes",
-      "UWB Joined": "yes",
-      "UWB Network ID": 24015,
-      "connected AP": "Epictech",
-      "anchor cfg stack": 0,
-      "current": "2026-043 00:34:59.03"
+      "MAC": "D4:5D:0B:35:72:F7",
+      "SOS": 0,
+      "hr": 0,
+      "SpO2": 0,
+      "bp syst": 0,
+      "bp diast": 0,
+      "skin temp": 0,
+      "room temp": 22.09,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 0,
+      "wear": 0,
+      "battery level": 90,
+      "serial no": 11367
     },
-    "timestamp": "2026-02-11T16:34:59.484Z"
+    "timestamp": "2026-02-11T17:08:05.875Z"
+  },
+  {
+    "topic": "UWB/GW16B8_Health",
+    "message": {
+      "content": "300B",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "MAC": "D7:2A:09:35:D6:F7",
+      "SOS": 0,
+      "hr": 0,
+      "SpO2": 0,
+      "bp syst": 0,
+      "bp diast": 0,
+      "skin temp": 0,
+      "room temp": 23.01,
+      "steps": 0,
+      "sleep time": "00:00",
+      "wake time": "00:00",
+      "light sleep (min)": 0,
+      "deep sleep (min)": 0,
+      "move": 0,
+      "wear": 0,
+      "battery level": 50,
+      "serial no": 11368
+    },
+    "timestamp": "2026-02-11T17:08:06.349Z"
   }
 ]

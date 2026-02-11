@@ -35,7 +35,7 @@ import { useDeviceMonitoring } from '@/contexts/DeviceMonitoringContext'
 import { useUWBLocation } from '@/contexts/UWBLocationContext'
 import DeviceBindingModal from '@/components/DeviceBindingModal'
 import ResidentCard from '@/components/ResidentCard'
-import { Device, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
+import { Device, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG, isBindableDevice } from '@/types/device-types'
 
 // 使用統一的Resident接口
 import { Resident } from '@/types/device-types'
@@ -607,7 +607,10 @@ export default function ResidentsPage() {
 
   // 統計數據
   const deviceStatusSummary = getDeviceStatusSummary()
-  const unboundDevices = devices.filter(device => !device.residentId)
+  // 未綁定設備（僅顯示可綁定的設備類型）
+  const unboundDevices = devices.filter(device => 
+    !device.residentId && isBindableDevice(device.deviceType)
+  )
 
   return (
     <div className="p-6 space-y-6">
