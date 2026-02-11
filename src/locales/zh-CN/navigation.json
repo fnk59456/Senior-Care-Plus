@@ -1,0 +1,72 @@
+{
+    "sidebar": {
+        "title": "长者照护系统",
+        "sections": {
+            "main": "主要功能",
+            "management": "管理功能",
+            "system": "系统"
+        },
+        "items": {
+            "home": {
+                "name": "首页",
+                "description": "返回系统首页"
+            },
+            "emergency": {
+                "name": "紧急呼叫",
+                "description": "快速发送紧急求助信号"
+            },
+            "health": {
+                "name": "健康监控",
+                "description": "实时监测生命体征"
+            },
+            "reminders": {
+                "name": "定时提醒",
+                "description": "服药与照顾提醒"
+            },
+            "location": {
+                "name": "室内定位",
+                "description": "位置追踪与安全区域"
+            },
+            "residents": {
+                "name": "院友管理",
+                "description": "管理院友资料与记录"
+            },
+            "staff": {
+                "name": "员工管理",
+                "description": "护理人员和职员管理"
+            },
+            "devices": {
+                "name": "设备管理",
+                "description": "照护设备管理与维护"
+            },
+            "uwbLocation": {
+                "name": "养老院管理",
+                "description": "UWB定位系统场域管理"
+            },
+            "backendTest": {
+                "name": "后端测试",
+                "description": "测试前端与后端连接"
+            },
+            "fieldManagementTest": {
+                "name": "场域管理测试",
+                "description": "测试场域增删改查功能"
+            },
+            "more": {
+                "name": "更多功能",
+                "description": "探索智慧照护功能"
+            },
+            "settings": {
+                "name": "设置",
+                "description": "系统设置与偏好设定"
+            },
+            "help": {
+                "name": "帮助中心",
+                "description": "使用指南与支援"
+            }
+        }
+    },
+    "footer": {
+        "copyright": "© 2024 长者照护系统",
+        "version": "专业版"
+    }
+}

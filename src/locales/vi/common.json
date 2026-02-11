@@ -1,0 +1,163 @@
+{
+    "app": {
+        "title": "Senior Care Plus",
+        "subtitle": "Giải Pháp Chăm Sóc Người Cao Tuổi Thông Minh",
+        "version": "1.0.0",
+        "lastUpdate": "2023/05/10"
+    },
+    "actions": {
+        "save": "Lưu",
+        "cancel": "Hủy",
+        "confirm": "Xác nhận",
+        "delete": "Xóa",
+        "edit": "Chỉnh sửa",
+        "add": "Thêm",
+        "remove": "Xóa bỏ",
+        "close": "Đóng",
+        "back": "Quay lại",
+        "next": "Tiếp theo",
+        "previous": "Trước đó",
+        "submit": "Gửi",
+        "reset": "Đặt lại",
+        "search": "Tìm kiếm",
+        "filter": "Lọc",
+        "export": "Xuất",
+        "import": "Nhập",
+        "refresh": "Làm mới",
+        "loading": "Đang tải...",
+        "saving": "Đang lưu...",
+        "saved": "Đã lưu",
+        "view": "Xem",
+        "scrollForMore": "Cuộn xuống để xem thêm",
+        "optional": "Tùy chọn"
+    },
+    "status": {
+        "active": "Hoạt động",
+        "inactive": "Không hoạt động",
+        "offline": "Ngoại tuyến",
+        "error": "Lỗi",
+        "good": "Tốt",
+        "attention": "Chú ý",
+        "critical": "Nghiêm trọng",
+        "unknown": "Không xác định"
+    },
+    "placeholders": {
+        "search": "Tìm kiếm cư dân, nhiệm vụ hoặc thiết bị...",
+        "select": "Vui lòng chọn...",
+        "input": "Vui lòng nhập...",
+        "noData": "Không có dữ liệu",
+        "loading": "Đang tải...",
+        "error": "Đã xảy ra lỗi",
+        "details": "Chi tiết"
+    },
+    "messages": {
+        "success": "Thao tác thành công",
+        "error": "Thao tác thất bại",
+        "confirmDelete": "Bạn có chắc chắn muốn xóa? Hành động này không thể hoàn tác.",
+        "confirmReset": "Bạn có chắc chắn muốn đặt lại? Hành động này không thể hoàn tác.",
+        "dataSaved": "Dữ liệu đã được lưu",
+        "dataLoaded": "Dữ liệu đã được tải",
+        "networkError": "Lỗi kết nối mạng",
+        "serverError": "Lỗi máy chủ"
+    },
+    "time": {
+        "today": "Hôm nay",
+        "yesterday": "Hôm qua",
+        "thisWeek": "Tuần này",
+        "thisMonth": "Tháng này",
+        "thisYear": "Năm nay",
+        "lastWeek": "Tuần trước",
+        "lastMonth": "Tháng trước",
+        "lastYear": "Năm ngoái"
+    },
+    "units": {
+        "years": "năm",
+        "yearsOld": "tuổi",
+        "room": "Phòng",
+        "devices": "thiết bị",
+        "residents": "cư dân",
+        "staff": "nhân viên",
+        "minutes": "phút",
+        "hours": "giờ",
+        "days": "ngày",
+        "weeks": "tuần",
+        "months": "tháng"
+    },
+    "connection": {
+        "connected": "Đã kết nối",
+        "disconnected": "Mất kết nối",
+        "connecting": "Đang kết nối...",
+        "reconnecting": "Đang kết nối lại...",
+        "connectionClosed": "Kết nối đã đóng",
+        "clientOffline": "Máy khách ngoại tuyến",
+        "connectionError": "Lỗi kết nối",
+        "notConnected": "Chưa kết nối",
+        "reconnectingShort": "Đang kết nối lại",
+        "disconnectedShort": "Mất kết nối",
+        "manualReconnecting": "Đang kết nối lại thủ công..."
+    },
+    "error": {
+        "title": "Lỗi ứng dụng",
+        "message": "Ứng dụng gặp lỗi. Vui lòng kiểm tra console để biết chi tiết.",
+        "details": "Chi tiết lỗi",
+        "reload": "Tải lại trang",
+        "consolePrefix": "❌ Lỗi ứng dụng:"
+    },
+    "ui": {
+        "logo": "Care",
+        "notifications": {
+            "title": "Thông báo",
+            "unreadCount": "Bạn có {{count}} thông báo chưa đọc",
+            "viewAll": "Xem tất cả thông báo",
+            "examples": {
+                "residentNeedsHelp": "Ông Vương cần hỗ trợ",
+                "bloodPressureAbnormal": "Huyết áp của bà Lý bất thường",
+                "medicationReminder": "Hoàn thành nhắc nhở thuốc: 90%"
+            },
+            "timeAgo": {
+                "minutes": "{{count}} phút trước"
+            }
+        },
+        "theme": {
+            "toggle": "Chuyển đổi chủ đề",
+            "light": "Sáng",
+            "dark": "Tối",
+            "system": "Hệ thống"
+        },
+        "user": {
+            "avatarAlt": "Ảnh đại diện",
+            "avatarFallback": "Admin",
+            "admin": "Quản trị viên",
+            "superAdmin": "Quản trị viên cấp cao",
+            "profile": "Hồ sơ",
+            "security": "Cài đặt bảo mật",
+            "logout": "Đăng xuất",
+            "exampleName": "Nguyễn Văn A",
+            "exampleEmail": "admin@example.com"
+        },
+        "avatar": {
+            "defaultFallback": "D"
+        },
+        "tooltip": {
+            "clickToReturn": "Nhấp để quay lại trang trước"
+        }
+    },
+    "language": {
+        "chinese": "中文（繁體）",
+        "chineseSimplified": "中文（简体）",
+        "english": "English",
+        "indonesian": "Bahasa Indonesia",
+        "vietnamese": "Tiếng Việt",
+        "german": "Deutsch",
+        "japanese": "日本語"
+    },
+    "testing": {
+        "backendTest": "Kiểm tra Backend",
+        "backendTestDesc": "Kiểm tra kết nối frontend và backend",
+        "fieldManagementTest": "Kiểm tra Quản lý Khu vực",
+        "fieldManagementTestDesc": "Kiểm tra các thao tác CRUD khu vực",
+        "connectionStatus": "Trạng thái kết nối",
+        "testing": "Đang kiểm tra...",
+        "startTest": "Bắt đầu kiểm tra"
+    }
+}

@@ -1,0 +1,1743 @@
+﻿{
+    "home": {
+        "title": "甇∟?雿輻?瑁霅瑞頂蝯?,
+        "subtitle": "???券??霅瑞恣??蝣箔??瑁??唳?雿喟??折“??瘜具?摨瑞皜研?蝵株蕭頩方??箸?????,
+        "features": {
+            "emergency": {
+                "title": "蝺亙??,
+                "description": "敹恍???交??拐縑??蝣箔????脣??"
+            },
+            "health": {
+                "title": "?亙熒??",
+                "description": "?單???葫?瑁摨瑞????啣虜霅衣內"
+            },
+            "reminders": {
+                "title": "摰???",
+                "description": "蝞∠????瘞氬葫??摰???"
+            },
+            "location": {
+                "title": "摰文摰?",
+                "description": "餈質馱?瑁?閮剖??券?抒?雿蔭"
+            },
+            "temperature": {
+                "title": "擃澈??葫",
+                "description": "?單????瑁?皞怨????啣虜霅衣內"
+            },
+            "heartRate": {
+                "title": "敹歲??葫",
+                "description": "?單????瑁??????啣虜霅衣內"
+            },
+            "heartTemp": {
+                "title": "敹?擃澈??",
+                "description": "?桐???亦?敹???皞怎皜?
+            },
+            "diaper": {
+                "title": "撠踹???葫",
+                "description": "?單???葫撠踹?瞈漲????湔?閮?"
+            }
+        },
+        "stats": {
+            "totalResidents": "?Ｗ?蝮賣",
+            "todayTasks": "隞隞餃?",
+            "healthAlerts": "?亙熒霅衣內",
+            "monthlyReport": "?祆??梯”",
+            "completed": "撌脣???
+        },
+        "actions": {
+            "startUsing": "蝡??雿輻",
+            "systemGuide": "蝟餌絞???"
+        }
+    },
+    "heartTemp": {
+        "title": "敹?擃澈??",
+        "subtitle": "?蔥敹???皞怨????桐?????喳??? 300B 鋆蔭",
+        "tabs": {
+            "heart": "敹?",
+            "temp": "擃澈"
+        },
+        "deviceNameFallback": "閮剖?"
+    },
+    "residents": {
+        "title": "?Ｗ?蝞∠?",
+        "subtitle": "蝞∠??Ｗ?鞈??身??摰?,
+        "stats": {
+            "totalResidents": "蝮賡??,
+            "activeDevices": "瘣餉?閮剖?",
+            "offlineDevices": "?Ｙ?閮剖?",
+            "errorDevices": "?啣虜閮剖?",
+            "unboundDevices": "?芰?摰身??
+        },
+        "filters": {
+            "all": "?券",
+            "good": "?臬末",
+            "attention": "瘜冽?",
+            "critical": "?望?
+        },
+        "search": {
+            "placeholder": "?揣?Ｗ?憪??楊???輸???.."
+        },
+        "list": {
+            "title": "?Ｗ??”",
+            "count": "??{{count}} 雿??,
+            "noDevices": "撠蝬?隞颱?閮剖?",
+            "boundDevices": "蝬?閮剖?:"
+        },
+        "actions": {
+            "addResident": "?啣??Ｗ?",
+            "showDeviceManagement": "憿舐內閮剖?蝞∠?",
+            "hideDeviceManagement": "?梯?閮剖?蝞∠?",
+            "manageDevices": "蝞∠?閮剖?",
+            "edit": "蝺刻摩",
+            "remove": "蝘駁"
+        },
+        "form": {
+            "name": "憪?",
+            "age": "撟湧翩",
+            "gender": "?批",
+            "room": "?輸???,
+            "status": "???,
+            "avatar": "?剖?",
+            "emergencyContact": "蝺亥蝯∩犖",
+            "relationship": "??",
+            "phone": "?餉店",
+            "careNotes": "?扯風瘜冽?鈭?",
+            "male": "??,
+            "female": "憟?,
+            "good": "?臬末",
+            "attention": "?瘜冽?",
+            "critical": "?望?
+        },
+        "deviceManagement": {
+            "title": "?芰?摰身??,
+            "count": "{{count}} ?身??,
+            "bind": "蝬?"
+        },
+        "deviceCount": "閮剖?",
+        "id": "蝺刻?",
+        "room": "?輸?",
+        "ageUnit": "甇?,
+        "boundDevices": "蝬?閮剖?",
+        "noDevicesBound": "撠蝬?隞颱?閮剖?",
+        "actions": {
+            "addResident": "?啣??Ｗ?",
+            "showDeviceManagement": "憿舐內閮剖?蝞∠?",
+            "hideDeviceManagement": "?梯?閮剖?蝞∠?",
+            "manageDevices": "蝞∠?閮剖?",
+            "edit": "蝺刻摩",
+            "remove": "蝘駁",
+            "info": "閰單?",
+            "unbindDevice": "閫?蝬?"
+        },
+        "monitoring": {
+            "title": "閮剖???",
+            "showControls": "憿舐內?批?Ｘ",
+            "hideControls": "?梯??批?Ｘ",
+            "showTest": "憿舐內皜祈岫?Ｘ",
+            "hideTest": "?梯?皜祈岫?Ｘ",
+            "showDebug": "憿舐內隤輯岫?Ｘ",
+            "hideDebug": "?梯?隤輯岫?Ｘ",
+            "boundDevices": "蝬?閮剖?",
+            "onlineDevices": "蝺?閮剖?",
+            "offlineDevices": "?Ｙ?閮剖?",
+            "errorDevices": "?啣虜閮剖?"
+        },
+        "modal": {
+            "addResident": "?啣??Ｗ?",
+            "name": "憪?",
+            "age": "撟湧翩",
+            "gender": "?批",
+            "room": "?輸???,
+            "status": "???,
+            "avatar": "?剖?",
+            "emergencyContactName": "蝺亥蝯∩犖憪?",
+            "relationship": "??",
+            "phone": "?餉店",
+            "careNotes": "?扯風瘜冽?鈭?",
+            "placeholders": {
+                "name": "頛詨?Ｗ?憪?",
+                "age": "頛詨撟湧翩",
+                "room": "頛詨?輸???,
+                "avatar": "頛詨銵冽?蝚西???摮?,
+                "emergencyContactName": "頛詨蝺亥蝯∩犖憪?",
+                "relationship": "頛詨??",
+                "phone": "頛詨?餉店?Ⅳ",
+                "careNotes": "頛詨?扯風瘜冽?鈭?"
+            },
+            "genderOptions": {
+                "male": "??,
+                "female": "憟?
+            }
+        },
+        "deviceBinding": {
+            "title": "閮剖?蝬?蝞∠?",
+            "currentBinding": "?嗅?蝬?",
+            "deviceBoundToResident": "閮剖? {{deviceName}} 撌脩?摰?Ｗ? {{residentName}}",
+            "unbind": "閫?蝬?",
+            "selectDevice": "?豢?閮剖?",
+            "searchDevicePlaceholder": "??閮剖??迂?′擃楊??..",
+            "alreadyBound": "撌脩?摰?,
+            "selectResident": "?豢??Ｗ?",
+            "searchResidentPlaceholder": "???Ｗ?憪????...",
+            "bindingSettings": "蝬?閮剔蔭",
+            "bindingType": "蝬?憿?",
+            "primaryDevice": "銝餉?閮剖?",
+            "secondaryDevice": "頛閮剖?",
+            "notes": "?酉",
+            "notesPlaceholder": "蝬??酉嚗憛恬?",
+            "residentDevices": "{{name}} ?身??,
+            "confirmBind": "蝣箄?蝬?"
+        },
+        "detailModal": {
+            "editInfo": "蝺刻摩?Ｗ?鞈?",
+            "emergencyContact": "蝺亥蝯∩犖",
+            "careNotes": "?扯風瘜冽?鈭?",
+            "careNotesPlaceholder": "隢撓?亦霅瑟釣????..",
+            "noCareNotes": "?怎?扯風瘜冽?鈭?",
+            "editCareNotes": "蝺刻摩瘜冽?鈭?",
+            "addDevice": "瘛餃?閮剖?",
+            "noDevicesBound": "撠蝬?隞颱?閮剖?",
+            "close": "??"
+        },
+        "unboundDevices": "?芰?摰身??,
+        "bindDevice": "蝬?",
+        "alerts": {
+            "importSuccess": "???豢?撠??嚗釣???Ｗ??豢??閬?蝟餌絞蝞∠??湔",
+            "invalidFormat": "???⊥???撘?,
+            "importFailed": "??撠?豢?憭望?"
+        },
+        "confirms": {
+            "resetSettings": "蝣箏?閬?蝵格???恣?身摰?嚗迨??銝?日嚗?,
+            "removeResident": "蝣箏?閬宏?日??嚗迨???⊥?敺拙???
+        }
+    },
+    "deviceManagement": {
+        "title": "閮剖?蝞∠?",
+        "subtitle": "蝞∠???????扯風閮剖?嚗??00B??倏撣???????雿?蝐?,
+        "searchPlaceholder": "??閮剖??迂?′擃楊??閮剖?UID...",
+        "filters": {
+            "all": "?券",
+            "smartwatch300B": "300B?",
+            "diaperSensor": "撠踹??單???,
+            "pedometer": "???單???,
+            "uwbTag": "摰?璅惜",
+            "uwbAnchor": "摰??券?",
+            "gateway": "UWB????
+        },
+        "actions": {
+            "addDevice": "?啣?閮剖?",
+            "autoDiscovery": "?芸??潛閮剖?",
+            "forceSave": "撘瑕靽?",
+            "exportSettings": "撠閮剖?",
+            "importSettings": "撠閮剖?",
+            "debugStorage": "隤輯岫摮"
+        },
+        "autoAdd": {
+            "enabled": "?芸??嚗歇?",
+            "disabled": "?芸??嚗歇蝳"
+        },
+        "stats": {
+            "totalDevices": "蝮質身?",
+            "activeDevices": "瘣餉?閮剖?",
+            "smartwatch300B": "300B?",
+            "diaperSensor": "撠踹??單???,
+            "otherDevices": "?嗡?閮剖?"
+        },
+        "deviceList": {
+            "title": "閮剖??”",
+            "count": "??{{count}} ?身??,
+            "noDevices": "瘝??曉蝚血?璇辣?身??,
+            "hardwareId": "蝖祇?蝺刻?",
+            "type": "憿?",
+            "gateway": "????,
+            "replace": "?踵?",
+            "remove": "蝘駁"
+        },
+        "addModal": {
+            "title": "?啣?閮剖?",
+            "deviceType": "閮剖?憿?",
+            "deviceName": "閮剖??迂",
+            "hardwareId": "蝖祇?蝺刻?",
+            "macAddress": "MAC ?啣?",
+            "deviceId": "閮剖?ID",
+            "gatewayId": "???沉D (?詨‵)",
+            "deviceTypes": {
+                "smartwatch300B": "300B ?亙熒??葫?",
+                "diaperSensor": "?箄撠踹??單???,
+                "pedometer": "???單???,
+                "uwbTag": "UWB摰?璅惜",
+                "uwbAnchor": "UWB摰??券?",
+                "gateway": "UWB????
+            },
+            "placeholders": {
+                "deviceName": "頛詨閮剖??迂",
+                "hardwareId": "頛詨蝖祇?蝺刻?",
+                "macAddress": "頛詨MAC?啣? (憒? E0:0E:08:36:93:F8)",
+                "deviceId": "頛詨閮剖?ID (憒? 5345)",
+                "gatewayId": "頛詨???沉D"
+            }
+        },
+        "replaceModal": {
+            "title": "?踵?閮剖?",
+            "currentHardwareId": "?嗅?蝖祇?蝺刻?",
+            "deviceUid": "閮剖?UID",
+            "newHardwareId": "?啁′擃楊??,
+            "confirmReplace": "蝣箄??踵?",
+            "placeholders": {
+                "newHardwareId": "頛詨?啁?蝖祇?蝺刻?"
+            }
+        },
+        "alerts": {
+            "importSuccess": "???豢?撠??嚗釣??閮剖??豢??閬?蝟餌絞蝞∠??湔",
+            "invalidFormat": "???⊥???撘?,
+            "importFailed": "??撠?豢?憭望?"
+        },
+        "confirms": {
+            "resetSettings": "蝣箏?閬?蝵格??身?恣?身摰?嚗迨??銝?日嚗?,
+            "removeDevice": "蝣箏?閬宏?日身??嚗?
+        },
+        "monitoring": {
+            "title": "閮剖???",
+            "hideControls": "?梯??批",
+            "showControls": "憿舐內?批",
+            "hideTest": "?梯?皜祈岫",
+            "showTest": "憿舐內皜祈岫",
+            "hideDebug": "?梯?隤輯岫",
+            "showDebug": "憿舐內隤輯岫",
+            "boundDevices": "撌脩?摰身??,
+            "onlineDevices": "蝺?閮剖?",
+            "offlineDevices": "?Ｙ?閮剖?",
+            "errorDevices": "?航炊閮剖?",
+            "deviceCount": "?身??,
+            "noDevices": "瘝?閮剖?",
+            "noMatchingDevices": "瘝?蝚血?蝭拚璇辣?身??
+        },
+        "batchActions": {
+            "batchActions": "?寥???",
+            "selectedCount": "撌脤??,
+            "devices": "?身??,
+            "selectAll": "?券",
+            "deselectAll": "???券",
+            "batchUnbind": "?寥?閫?蝬?",
+            "batchUnbindShort": "閫??",
+            "batchRemove": "?寥?蝘駁閮剖?",
+            "batchRemoveShort": "蝘駁",
+            "confirmUnbind": "蝣箏?閬圾?支誑銝?{{count}} ?身??蝬???\n\n{{devices}}\n\n甇斗?雿瘜?瑯?,
+            "confirmRemove": "蝣箏?閬宏?支誑銝?{{count}} ?身??嚗n\n{{devices}}\n\n甇斗?雿瘜?瑯?,
+            "noBindableDevices": "??貉身?葉瘝?撌脩?摰?閮剖?",
+            "noDevicesSelected": "隢??豢?閬宏?斤?閮剖?",
+            "unbindSuccess": "撌脫??圾??{{count}} ?身??蝬?",
+            "removeSuccess": "撌脫??宏??{{count}} ?身??,
+            "gateway": {
+                "changeNetworkId": "?湔UWB Network ID",
+                "changeLocation": "靽格?撅祇????撅?
+            },
+            "anchor": {
+                "changeHeight": "靽格擃漲(Z??)",
+                "changePower": "靽格??",
+                "requestData": "閬??券?鞈?",
+                "requesting": "?潮葉..."
+            },
+            "tag": {
+                "changeConfig": "?湔?閮剖?",
+                "changePower": "靽格??",
+                "requestData": "閬?璅惜鞈?",
+                "requesting": "?潮葉...",
+                "tagName": "璅惜?迂",
+                "tagId": "Tag ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "?芾身摰?
+            },
+            "anchor": {
+                "anchorName": "?券??迂",
+                "anchorId": "Anchor ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "?芾身摰?,
+                "selectOneAnchor": "隢????雿暺身??,
+                "selectAtLeastOneAnchor": "隢撠????雿暺身??,
+                "enterValidZCoordinate": "隢撓?交???Z???詨?,
+                "enterAllPowerValues": "隢撓?交?????,
+                "powerValueRange": "???澆?? 5.0~30.5 dB 蝭???,
+                "commandSentSuccess": "??撌脫???耨?孵???隞文 {{name}}",
+                "heightCommandSentSuccess": "??撌脫???耨?寥?摨行?隞文 {{name}}\n?豈??: {{zValue}}",
+                "requestDataSuccess": "??撌脫????瘙???隞文 {{count}} ?暺身??,
+                "requestDataPartialSuccess": "?? 撌脫????{{successCount}} ??憭望? {{failCount}} ?n憭望?閮剖?: {{failedDevices}}",
+                "requestDataFailed": "?????隞斤?仃?n憭望?閮剖?: {{failedDevices}}"
+            },
+            "tag": {
+                "changeConfig": "?湔?閮剖?",
+                "changePower": "靽格??",
+                "requestData": "閬?璅惜鞈?",
+                "requesting": "?潮葉...",
+                "tagName": "璅惜?迂",
+                "tagId": "Tag ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "?芾身摰?,
+                "selectOneTag": "隢????雿?蝐方身??,
+                "selectAtLeastOneTag": "隢撠????雿?蝐方身??,
+                "enterAllParameterValues": "隢撓?交????詨?,
+                "enterAllPowerValues": "隢撓?交?????,
+                "powerValueRange": "???澆?? 5.0~30.5 dB 蝭???,
+                "configCommandSentSuccess": "??撌脫????孵??貉身摰?隞文 {{name}}",
+                "powerCommandSentSuccess": "??撌脫???耨?孵???隞文 {{name}}",
+                "requestDataSuccess": "??撌脫????瘙???隞文 {{count}} ??蝐方身??,
+                "requestDataPartialSuccess": "?? 撌脫????{{successCount}} ??憭望? {{failCount}} ?n憭望?閮剖?: {{failedDevices}}",
+                "requestDataFailed": "?????隞斤?仃?n憭望?閮剖?: {{failedDevices}}"
+            },
+            "gateway": {
+                "gatewayId": "Gateway ID",
+                "notSet": "?芾身摰?,
+                "selectOneGateway": "隢?????閮剖?",
+                "networkIdRange": "UWB Network ID 敹???1~65535 蝭???,
+                "networkIdCommandSentSuccess": "??撌脫????酩WB Network ID?誘??{{name}}\nNetwork ID: {{networkId}}",
+                "locationUpdatedSuccess": "???冽?撅祇????撅文歇?湔??嚗?
+            },
+            "common": {
+                "gatewayNotFound": "?曆??啣??????券?蝵殷?隢??具WB摰?蝞∠??葉?啣?????,
+                "downlinkTopicNotFound": "?曆??啣??? Gateway ??downlink 銝駁?",
+                "mqttBusNotConnected": "MQTT Bus ?芷??嚗瘜??隞?,
+                "invalidDeviceIdOrGatewayId": "?⊥??脣????{deviceType}}ID???ID",
+                "selectFloor": "隢??撅?,
+                "commandSendFailed": "?潮?隞文仃?? {{error}}",
+                "commandSendError": "?潮?隞斗??潛??航炊: {{error}}",
+                "updateFailed": "?湔憭望?: {{error}}"
+            }
+        },
+        "deviceInfo": {
+            "title": "閮剖?鞈?",
+            "basicInfo": "?箸鞈?",
+            "deviceName": "閮剖??迂",
+            "deviceType": "閮剖?憿?",
+            "hardwareId": "蝖祇?蝺刻?",
+            "macAddress": "MAC?啣?",
+            "deviceUid": "閮剖?UID",
+            "uid": "UID",
+            "gatewayId": "???沉D",
+            "gatewayName": "???典?蝔?,
+            "firmwareVersion": "???",
+            "batteryLevel": "?駁?",
+            "status": "???,
+            "bindingInfo": "?鞈?",
+            "residentId": "蝬??Ｗ?",
+            "unbound": "?芰?摰?,
+            "dataInfo": "?豢?鞈?",
+            "lastData": "??唳??,
+            "lastSeen": "?敺?蝺?,
+            "systemInfo": "蝟餌絞鞈?",
+            "createdAt": "?萄遣??",
+            "updatedAt": "?湔??",
+            "close": "??"
+        },
+        "monitoringStatus": {
+            "title": "?????,
+            "connected": "撌脤?",
+            "disconnected": "?芷?",
+            "gatewayCount": "{{count}}?ateway",
+            "lastUpdate": "?敺??,
+            "monitoring": "??銝?,
+            "stopped": "撌脣?甇?,
+            "start": "??",
+            "stop": "?迫"
+        },
+        "monitoringControls": {
+            "title": "閮剖????批",
+            "selectGateway": "?豢?Gateway",
+            "stopMonitoring": "?迫??",
+            "online": "蝺?",
+            "offline": "?Ｙ?"
+        },
+        "monitoringDebug": {
+            "title": "MQTT隤輯岫?Ｘ",
+            "monitoring": "??銝?,
+            "stopped": "撌脣?甇?,
+            "hide": "?梯?",
+            "show": "憿舐內",
+            "maxMessages": "?憭扳??舀",
+            "filterByTopic": "?蕪銝駁?",
+            "filterByDevice": "?蕪閮剖?",
+            "topicPlaceholder": "靘?: Health, Loc",
+            "devicePlaceholder": "閮剖??迂?D",
+            "export": "撠",
+            "clear": "皜",
+            "totalMessages": "蝮賣???,
+            "displaying": "憿舐內銝?,
+            "healthData": "?亙熒?豢?",
+            "locationData": "雿蔭?豢?",
+            "ackMessages": "ACK瘨",
+            "noMessages": "?怎隤輯岫瘨",
+            "usageInstructions": "雿輻隤芣?",
+            "instruction1": "甇方矽閰阡?輸＊蝷箏祕??嗥?MQTT瘨",
+            "instruction2": "?臭誑?蜓憿?閮剖??迂?蕪瘨",
+            "instruction3": "暺?銴ˊ???航?鋆賣??芾票??,
+            "instruction4": "?舀?撠隤輯岫?豢??撇SON?辣",
+            "instruction5": "瘨?????憭???摰??
+        },
+        "deviceDiscovery": {
+            "title": "閮剖??潛",
+            "discovering": "?潛銝?..",
+            "existingDevices": "撌脣??函?閮剖?",
+            "newlyDiscovered": "?啁?曄?閮剖?",
+            "scanning": "甇???閮剖?...",
+            "remove": "蝘駁",
+            "add": "瘛餃?",
+            "confirm": "蝣箄?",
+            "cancel": "??",
+            "stopDiscovery": "?迫?潛",
+            "deviceCount": "?身??,
+            "existingCount": "撌脣???,
+            "discoveredCount": "?啁??
+        },
+        "deviceCard": {
+            "online": "蝺?",
+            "offline": "?Ｙ?",
+            "unknown": "?芰",
+            "deviceInfo": "閮剖?鞈?",
+            "bindDevice": "蝬?閮剖?",
+            "removeDevice": "蝘駁閮剖?",
+            "unbind": "閫?蝬?",
+            "battery": "?駁?",
+            "room": "?輸?",
+            "qrCode": "QR蝣?
+        }
+    },
+    "health": {
+        "systemTitle": "?瑁霅瑞頂蝯?,
+        "monitoringTitle": "???",
+        "actions": {
+            "forceSave": "撘瑕靽?",
+            "exportSettings": "撠閮剖?",
+            "importSettings": "撠閮剖?",
+            "debugStorage": "隤輯岫摮"
+        },
+        "stats": {
+            "totalResidents": "蝮賡?",
+            "activeDevices": "瘣餉?閮剖?",
+            "offlineDevices": "?Ｙ?閮剖?",
+            "errorDevices": "?啣虜閮剖?"
+        },
+        "filters": {
+            "?券": "?券",
+            "?啣虜": "?啣虜",
+            "甇?虜": "甇?虜",
+            "?瘜冽?": "?瘜冽?"
+        },
+        "patientInfo": {
+            "age": "撟湧翩",
+            "room": "?輸?",
+            "devices": "閮剖?"
+        },
+        "patientStatus": {
+            "normal": "甇?虜",
+            "error": "?啣虜",
+            "attention": "?瘜冽?",
+            "noDevices": "?∟身??
+        },
+        "monitoringIcons": {
+            "temperature": "擃澈",
+            "heartRate": "敹?",
+            "physiological": "??",
+            "diaper": "撠踹?",
+            "activity": "??",
+            "location": "摰?",
+            "emergency": "蝺?,
+            "reminders": "??",
+            "residents": "?Ｗ?",
+            "devices": "閮剖?"
+        },
+        "emptyState": {
+            "noPatients": "?桀?瘝?{{status}}??????,
+            "goToResidentManagement": "???Ｗ?蝞∠?閮剖?閮剖?"
+        },
+        "alerts": {
+            "importSuccess": "???亙熒??閮剖?撠??嚗?,
+            "invalidFormat": "???⊥???撘?,
+            "importFailed": "??撠?豢?憭望?"
+        },
+        "confirms": {
+            "resetSettings": "蝣箏?閬?蝵格??摨瑞?扯身摰?嚗迨??銝?日嚗?
+        }
+    },
+    "emergencyCall": {
+        "title": "蝺亙??,
+        "subtitle": "敹恍???交??拐縑??蝣箔????脣??",
+        "patient": "???,
+        "location": "雿蔭",
+        "selectPatient": "?豢????,
+        "selectLocation": "?豢?雿蔭",
+        "emergencyButton": "蝺功n?澆",
+        "callHistory": "?澆閮?",
+        "refreshStatus": "?瑟???,
+        "types": {
+            "fall": "頝?,
+            "pain": "?潛?",
+            "toilet": "憒??",
+            "medicine": "?亦?",
+            "help": "?嗡??"
+        },
+        "status": {
+            "responding": "甇??踵?銝?..",
+            "caregiverOnWay": "霅瑞?鈭箏甇??敺?曉...",
+            "completed": "撌脰圾瘙?,
+            "cancelled": "撌脣?瘨?,
+            "pending": "蝑??踵?"
+        },
+        "info": {
+            "patient": "???,
+            "location": "雿蔭",
+            "type": "憿?",
+            "callTime": "?澆??",
+            "waitTime": "蝑???",
+            "responder": "?踵?鈭箏",
+            "responseTime": "?踵???"
+        },
+        "record": {
+            "callTime": "?澆??",
+            "completedTime": "????",
+            "handler": "??鈭箏",
+            "cancelReason": "????"
+        },
+        "emptyState": {
+            "noRecords": "?怎?澆閮?",
+            "completedCalls": "摰????亙?怠?憿舐內?券ㄐ"
+        },
+        "modals": {
+            "selectType": {
+                "title": "?豢?蝺仿???
+            },
+            "cancelCall": {
+                "title": "??蝺亙??,
+                "reasonLabel": "隢撓?亙?瘨???,
+                "reasonPlaceholder": "????",
+                "back": "餈?",
+                "confirm": "蝣箄???"
+            }
+        },
+        "timeUnits": {
+            "minutes": "??,
+            "seconds": "蝘?
+        }
+    },
+    "reminders": {
+        "title": "摰???",
+        "subtitle": "蝞∠??瑁????瘞游??嗡??扯風??",
+        "addReminder": "?啣???",
+        "todayReminders": "隞??",
+        "complete": "摰?",
+        "types": {
+            "medication": "???",
+            "water": "?偌??",
+            "physicalTherapy": "?拍?瘝餌?"
+        },
+        "descriptions": {
+            "hypertension": "擃?憯??,
+            "diabetes": "蝟倏???,
+            "hydration": "蝣箔?瘞游???",
+            "rehabilitation": "?脰??亙虜敺拙??"
+        },
+        "cards": {
+            "periodic": {
+                "title": "?望???",
+                "description": "蝞∠?瘥???望??芸?蝢拚望???????
+            },
+            "statistics": {
+                "title": "??蝯梯?",
+                "description": "?亦???摰????絞閮??
+            },
+            "settings": {
+                "title": "??閮剔蔭",
+                "description": "?芸?蝢拇???孵???????
+            }
+        }
+    },
+    "location": {
+        "title": "摰文摰?",
+        "subtitle": "餈質馱?瑁?閮剖??券?抒?雿蔭嚗Ⅱ靽??典??扯風",
+        "selectArea": {
+            "title": "?豢??????,
+            "nursingHome": "擗",
+            "floor": "璅惜",
+            "gateway": "????,
+            "selectNursingHome": "?豢?擗",
+            "selectFloor": "?豢?璅惜",
+            "selectGateway": "?豢?????,
+            "local": "?砍",
+            "noGateway": "?⊿??"
+        },
+        "mqttStatus": {
+            "title": "MQTT?????,
+            "refreshData": "?瑟?豢?",
+            "refreshTitle": "?瑟璅??豢?",
+            "status": "???,
+            "topic": "銝駁?",
+            "deviceCount": "閮剖??賊?",
+            "error": "?航炊",
+            "none": "??,
+            "mqttBus": "MQTT Bus",
+            "?芷??": "?芷??",
+            "撌脤??": "撌脤??",
+            "??銝?..": "??銝?..",
+            "???銝?..": "???銝?..",
+            "??撌脤???: "??撌脤???,
+            "摰Ｘ蝡舫蝺?: "摰Ｘ蝡舫蝺?,
+            "???航炊": "???航炊",
+            "?芷???": "?芷???",
+            "?⊥??脣????其蜓憿?: "?⊥??脣????其蜓憿?
+        },
+        "connectionStatus": {
+            "title": "MQTT ???,
+            "connected": "撌脤??",
+            "disconnected": "?芷??",
+            "connecting": "??銝?..",
+            "reconnecting": "???銝?..",
+            "connectionError": "???航炊"
+        },
+        "searchFilter": {
+            "title": "?揣??瞈?,
+            "searchPlaceholder": "?揣?Ｗ?憪????...",
+            "allStatus": "?券???,
+            "allDevices": "?券閮剖?",
+            "watch": "?",
+            "uwbTag": "摰?璅惜"
+        },
+        "map": {
+            "realtimeMap": "?單?雿蔭?啣?",
+            "showDevices": "憿舐內 {{count}} ?身??,
+            "zoomIn": "?曉之",
+            "zoomOut": "蝮桀?",
+            "resetView": "?蔭閬?",
+            "zoom": "蝮格",
+            "hideMarkerInfo": "?梯?璅?靽⊥",
+            "showMarkerInfo": "憿舐內璅?靽⊥",
+            "controls": "皛曇憚蝮格 | ?蝘餃?",
+            "noDevices": "撠蝚血?璇辣?身??,
+            "selectGateway": "隢??豢????其蒂撱箇???",
+            "noDimensions": "閰脫?撅文??芾身摰?偕撖?,
+            "selectFloor": "隢??豢?璅惜隞仿＊蝷箏??,
+            "mapStatus": "?啣????,
+            "calibrated": "撌脫?摰?,
+            "notCalibrated": "?芣?摰?,
+            "ratio": "瘥?",
+            "pixelsPerMeter": "??/蝐?,
+            "translate": "撟喟宏",
+            "totalDevices": "蝮質身?",
+            "onlineDevices": "?函?閮剖?",
+            "filtered": "?蕪敺?
+        },
+        "deviceList": {
+            "onlineDevices": "?函?閮剖? ({{count}})",
+            "totalDevices": "蝮質? {{count}} ?身??,
+            "room": "?輸?",
+            "position": "雿蔭",
+            "updated": "?湔",
+            "online": "?函?"
+        }
+    },
+    "temperature": {
+        "title": "擃澈??",
+        "subtitle": "?單????瑁?皞怨??????潛?亙熒?啣虜",
+        "navigationFromHealth": "敺摨瑞?折??Ｗ???,
+        "currentPatient": "?嗅????,
+        "reconnectLocal": "????,
+        "reconnectCloud": "??蝡?,
+        "tabs": {
+            "local": "?砍 MQTT",
+            "cloud": "?脩垢 MQTT"
+        },
+        "patientSelection": {
+            "title": "????,
+            "selectPatient": "?豢????,
+            "patient": "???
+        },
+        "cloudDeviceMonitoring": {
+            "title": "?脩垢閮剖???",
+            "connected": "???甇?虜",
+            "?Ｙ?": "?Ｙ?",
+            "??銝?..": "??銝?..",
+            "???銝?..": "???銝?..",
+            "??撌脤???: "??撌脤???,
+            "???航炊": "???航炊",
+            "?芷???": "?芷???",
+            "selectArea": "?豢??????",
+            "selectNursingHomeFirst": "隢??豢?擗",
+            "selectFloorFirst": "隢??豢?璅惜",
+            "currentGateway": "?嗅??豢????嚗?,
+            "listeningTopic": "??銝駁?",
+            "cannotGetTopic": "?⊥??脣?銝駁?",
+            "discoveredDevices": "撌脩?曇身??,
+            "totalRecords": "蝮質??",
+            "mqttMessages": "MQTT瘨",
+            "selectDevice": "?豢???閮剖?嚗?,
+            "selectCloudDevice": "?豢??脩垢閮剖??脰?閰喟敦??",
+            "records": "蝑???,
+            "noDevices": "撠?潛隞颱??脩垢閮剖?",
+            "pleaseConfirm": "隢Ⅱ隤?",
+            "cloudMqttSimulator": "?脩垢 MQTT 璅⊥?典歇??",
+            "simulatorFormat": "璅⊥?函??content: \"300B\" ?澆????,
+            "dataFields": "?豢?? MAC ??\"skin temp\" 摮挾",
+            "recentData": "?餈?啁??豢?嚗?,
+            "device": "閮剖?",
+            "temperature": "擃澈",
+            "roomTemperature": "摰斗澈",
+            "battery": "?駁?",
+            "diaperDevice": "撠踹?閮剖?",
+            "humidity": "瞈漲",
+            "viewRawData": "?亦???MQTT?豢? (隤輯岫??",
+            "clickToExpand": "暺?銝?豢??臬?????游摰?,
+            "deviceCreationConditions": "閮剖??萄遣璇辣瑼Ｘ嚗?,
+            "condition1": "敹???content: \"300B\"",
+            "condition2": "敹???MAC 摮挾",
+            "condition3": "skin_temp 摮挾?臭誑?箇征??嚗歇?曉祝璇辣嚗?,
+            "condition4": "diaper DV1 憿??豢??桀?銝??萄遣閮剖?閮?"
+        },
+        "deviceTemperatureData": {
+            "title": "閮剖?擃澈?豢?",
+            "unknownDevice": "?芰閮剖?",
+            "skinTemperature": "?株?皞怠漲",
+            "roomTemperature": "?啣?皞怠漲",
+            "steps": "甇交",
+            "battery": "?駁?",
+            "temperatureHigh": "擃澈??",
+            "temperatureLow": "擃澈??",
+            "normal": "甇?虜"
+        },
+        "dateTabs": {
+            "today": "隞",
+            "yesterday": "?典予",
+            "dayBefore": "?予"
+        },
+        "temperatureChart": {
+            "title": "擃澈頞典??,
+            "cloudDevice": "?脩垢閮剖?",
+            "localUser": "?砍?冽",
+            "yAxisLabel": "擃澈 (簞C)",
+            "time": "??",
+            "temperature": "擃澈",
+            "highTempLine": "擃澈霅行?蝺?,
+            "lowTempLine": "雿澈霅行?蝺?,
+            "noData": "?怎{{date}}??皞急??,
+            "cloudSimulatorCheck": "隢Ⅱ隤蝡烘QTT璅⊥?典歇??",
+            "selectValidDevice": "銝阡?????脩垢閮剖?",
+            "localSimulatorCheck": "隢Ⅱ隤?衽QTT璅⊥?典歇??"
+        },
+        "temperatureRecords": {
+            "title": "擃澈閮?",
+            "filters": {
+                "all": "?券",
+                "high": "擃澈",
+                "low": "雿澈"
+            },
+            "timeRanges": {
+                "1day": "1憭?,
+                "3day": "3憭?,
+                "7day": "7憭?
+            },
+            "noTemperatureData": "?⊥澈摨行??,
+            "roomTemperature": "摰斗澈",
+            "temperatureHigh": "擃澈??",
+            "temperatureLow": "擃澈??",
+            "normal": "甇?虜",
+            "noRecords": "?怎蝚血?璇辣????,
+            "selectCloudDeviceFirst": "隢??豢??脩垢閮剖?",
+            "selectedDeviceNoData": "??貉身??⊿?皞急??
+        },
+        "connectionStatus": {
+            "title": "???????,
+            "localMqtt": "?砍 MQTT",
+            "cloudMqtt": "?脩垢 MQTT",
+            "error": "?航炊",
+            "hint": "?內嚗?衽QTT?閬?銵localhost:9001嚗蝡烘QTT????蚜iveMQ?脫???,
+            "connected": "撌脤??",
+            "disconnected": "?芷??",
+            "connecting": "??銝?..",
+            "reconnecting": "???銝?..",
+            "connectionError": "???航炊"
+        }
+    },
+    "settings": {
+        "title": "蝟餌絞閮剔蔭",
+        "subtitle": "蝞∠?蝟餌絞?蔭?犖閮剔蔭???券??,
+        "categories": {
+            "personal": {
+                "title": "?犖閮剔蔭",
+                "description": "蝞∠??函??犖鞈??閉?嗉身蝵?
+            },
+            "notifications": {
+                "title": "?閮剖?",
+                "description": "閮剖?蝟餌絞????撘?
+            },
+            "security": {
+                "title": "摰閮剔蔭",
+                "description": "撖Ⅳ霈?閉?嗅??刻身摰?
+            },
+            "display": {
+                "title": "憿舐內閮剔蔭",
+                "description": "?芸?蝢拍??Ｗ?閫?蜓憿?
+            },
+            "data": {
+                "title": "?豢?蝞∠?",
+                "description": "鞈??遢???箄身蝵?
+            },
+            "language": {
+                "title": "隤???",
+                "description": "閮剖?蝟餌絞隤????"
+            }
+        },
+        "systemInfo": {
+            "title": "蝟餌絞鞈?",
+            "version": "蝟餌絞?",
+            "lastUpdate": "銝活?湔",
+            "terms": "??璇狡",
+            "privacy": "?梁??輻?",
+            "view": "?亦?"
+        },
+        "actions": {
+            "enterSettings": "?脣閮剔蔭"
+        }
+    },
+    "placeholder": {
+        "title": "{{title}}",
+        "description": "甇日??Ｘ迤?券??潔葉",
+        "more": "?游???",
+        "help": "撟怠銝剖?",
+        "notFound": "404 - ?銝???
+    },
+    "heartRate": {
+        "title": "敹歲??葫",
+        "subtitle": "?單????瑁??????啣虜霅衣內",
+        "navigationFromHealth": "敺摨瑞?折??Ｗ???,
+        "currentPatient": "?嗅????,
+        "reconnectLocal": "????,
+        "reconnectCloud": "??蝡?,
+        "tabs": {
+            "local": "?砍 MQTT",
+            "cloud": "?脩垢 MQTT"
+        },
+        "patientSelection": {
+            "title": "????,
+            "selectPatient": "?豢????,
+            "patient": "???
+        },
+        "cloudDeviceMonitoring": {
+            "title": "?脩垢閮剖???",
+            "connected": "???甇?虜",
+            "?Ｙ?": "?Ｙ?",
+            "??銝?..": "??銝?..",
+            "???銝?..": "???銝?..",
+            "??撌脤???: "??撌脤???,
+            "???航炊": "???航炊",
+            "?芷???": "?芷???",
+            "selectArea": "?豢??????",
+            "selectNursingHome": "擗",
+            "selectNursingHomeFirst": "隢??豢?擗",
+            "selectFloor": "璅惜",
+            "selectFloorFirst": "隢??豢?璅惜",
+            "selectGateway": "????,
+            "currentGateway": "?嗅??豢????嚗?,
+            "listeningTopic": "??銝駁?",
+            "cannotGetTopic": "?⊥??脣?銝駁?",
+            "discoveredDevices": "撌脩?曇身??,
+            "totalRecords": "蝮質??",
+            "mqttMessages": "MQTT瘨",
+            "selectDevice": "?豢???閮剖?嚗?,
+            "selectCloudDevice": "?豢??脩垢閮剖??脰?閰喟敦??",
+            "records": "蝑???,
+            "noDevices": "撠?潛隞颱??脩垢閮剖?",
+            "pleaseConfirm": "隢Ⅱ隤?",
+            "cloudMqttSimulator": "?脩垢 MQTT 璅⊥?典歇??",
+            "simulatorFormat": "璅⊥?函??content: \"300B\" ?澆????,
+            "dataFields": "?豢?? MAC ?????畾?,
+            "recentData": "?餈?啁??豢?嚗?,
+            "device": "閮剖?",
+            "heartRate": "敹?",
+            "spo2": "銵瘞?,
+            "bloodPressure": "銵憯?,
+            "temperature": "擃澈",
+            "diaperDevice": "撠踹?閮剖?",
+            "humidity": "瞈漲",
+            "viewRawData": "?亦???MQTT?豢? (隤輯岫??",
+            "clickToExpand": "暺?銝?豢??臬?????游摰?,
+            "deviceCreationConditions": "閮剖??萄遣璇辣瑼Ｘ嚗?,
+            "condition1": "敹???content: \"300B\"",
+            "condition2": "敹???MAC 摮挾",
+            "condition3": "hr, SpO2, bp_syst, bp_diast 摮挾?臭誑?箇征??嚗歇?曉祝璇辣嚗?,
+            "condition4": "diaper DV1 憿??豢??桀?銝??萄遣閮剖?閮?"
+        },
+        "deviceHeartRateData": {
+            "title": "閮剖??擃??豢?",
+            "unknownDevice": "?芰閮剖?",
+            "heartRate": "敹?",
+            "spo2": "銵瘞?,
+            "bloodPressure": "銵憯?,
+            "skinTemperature": "擃澈",
+            "steps": "甇交",
+            "battery": "?駁?",
+            "noData": "?⊥??,
+            "noHeartRateData": "?∪????,
+            "heartRateHigh": "敹???",
+            "heartRateLow": "敹???",
+            "normal": "甇?虜"
+        },
+        "dateTabs": {
+            "today": "隞",
+            "yesterday": "?典予",
+            "dayBefore": "?予"
+        },
+        "heartRateTrendChart": {
+            "title": "敹?頞典??
+        },
+        "bloodPressureTrendChart": {
+            "title": "銵憯隅?Ｗ?",
+            "yAxisLabel": "銵憯?(mmHg)",
+            "noData": "?∟?憯??
+        },
+        "recentMqttData": {
+            "title": "?餈?嗅??MQTT ?豢?",
+            "device": "閮剖?",
+            "heartRate": "敹?",
+            "spo2": "銵瘞?,
+            "bloodPressure": "銵憯?,
+            "diaperDevice": "撠踹?閮剖?",
+            "temperature": "皞怠漲",
+            "humidity": "瞈漲"
+        },
+        "rawMqttData": {
+            "title": "?亦???MQTT?豢? (隤輯岫??",
+            "clickToExpand": "暺?銝?豢??臬?????游摰?,
+            "deviceConditions": {
+                "title": "敹?閮剖??萄遣璇辣瑼Ｘ",
+                "mustHaveContent": "敹???content: \"300B\"",
+                "mustHaveMAC": "敹???MAC 摮挾",
+                "fieldsCanBeEmpty": "hr, SpO2, bp_syst, bp_diast 摮挾?臭誑?箇征?? (撌脫撖祆?隞?",
+                "abnormalWarning": "敹? > 100 BPM ??< 60 BPM ??閫貊?啣虜霅血?"
+            }
+        },
+        "heartRateChart": {
+            "title": "敹?頞典??,
+            "cloudDevice": "?脩垢閮剖?",
+            "localUser": "?砍?冽",
+            "yAxisLabel": "敹? (BPM)",
+            "time": "??",
+            "heartRate": "敹?",
+            "targetHeartRate": "?格?敹?",
+            "highHeartRateLine": "擃??郎??",
+            "lowHeartRateLine": "雿??郎??",
+            "noData": "?怎{{date}}?????,
+            "cloudSimulatorCheck": "隢Ⅱ隤蝡烘QTT璅⊥?典歇??",
+            "selectValidDevice": "銝阡?????脩垢閮剖?",
+            "localSimulatorCheck": "隢Ⅱ隤?衽QTT璅⊥?典歇??",
+            "hideReferenceLines": "?梯???",
+            "showReferenceLines": "憿舐內??",
+            "legend": {
+                "heartRate": "敹? (BPM)",
+                "systolicBP": "?嗥葬憯?(mmHg)",
+                "diastolicBP": "?撐憯?(mmHg)",
+                "referenceLinesVisible": "??撌脤＊蝷?
+            },
+            "referenceLines": {
+                "normalSystolicBP": "甇?虜?嗥葬憯? 120",
+                "normalDiastolicBP": "甇?虜?撐憯? 80",
+                "highSystolicBP": "擃?憯蝮桀?: 140",
+                "highDiastolicBP": "擃?憯?撘萄?: 90"
+            }
+        },
+        "heartRateRecords": {
+            "title": "敹?閮?",
+            "filters": {
+                "all": "?券",
+                "high": "擃???,
+                "low": "雿???,
+                "highBP": "擃?憯?,
+                "lowBP": "雿?憯?
+            },
+            "timeRanges": {
+                "1day": "1憭?,
+                "3day": "3憭?,
+                "7day": "7憭?
+            },
+            "noHeartRateData": "?∪????,
+            "temperature": "擃澈",
+            "bloodPressure": "銵憯?,
+            "heartRateHigh": "敹???",
+            "heartRateLow": "敹???",
+            "normal": "甇?虜",
+            "noRecords": "?怎蝚血?璇辣????,
+            "selectCloudDeviceFirst": "隢??豢??脩垢閮剖?",
+            "selectedDeviceNoData": "??貉身??∪????
+        },
+        "connectionStatus": {
+            "title": "???????,
+            "localMqtt": "?砍 MQTT",
+            "cloudMqtt": "?脩垢 MQTT",
+            "error": "?航炊",
+            "hint": "?內嚗?衽QTT?閬?銵localhost:9001嚗蝡烘QTT????蚜iveMQ?脫???,
+            "connected": "撌脤??",
+            "disconnected": "?芷??",
+            "connecting": "??銝?..",
+            "reconnecting": "???銝?..",
+            "connectionError": "???航炊"
+        }
+    },
+    "diaperMonitoring": {
+        "title": "撠踹???葫",
+        "subtitle": "?單???葫?瑁倏撣?摨衣???蝣箔???摨?,
+        "navigationFromHealth": "敺摨瑞?折??Ｗ???,
+        "currentPatient": "?嗅????,
+        "reconnectLocal": "????,
+        "reconnectCloud": "??蝡?,
+        "tabs": {
+            "local": "?砍 MQTT",
+            "cloud": "?脩垢 MQTT"
+        },
+        "patientSelection": {
+            "title": "????,
+            "selectPatient": "?豢????,
+            "patient": "???
+        },
+        "connectionStatus": {
+            "title": "MQTT ???,
+            "connected": "撌脤??",
+            "disconnected": "?芷??",
+            "connecting": "??銝?..",
+            "reconnecting": "???銝?..",
+            "connectionError": "???航炊",
+            "cloudMqtt": "?脩垢 MQTT",
+            "hint": "?內:?砍MQTT?閬?銵localhost:9001,?脩垢MQTT????蚜iveMQ?脫???
+        },
+        "cloudDeviceMonitoring": {
+            "title": "?脩垢撠踹?閮剖???",
+            "connected": "???甇?虜",
+            "?Ｙ?": "?Ｙ?",
+            "??銝?..": "??銝?..",
+            "???銝?..": "???銝?..",
+            "??撌脤???: "??撌脤???,
+            "???航炊": "???航炊",
+            "?芷???": "?芷???",
+            "selectArea": "?豢??????",
+            "selectNursingHome": "擗",
+            "selectNursingHomeFirst": "?豢?擗",
+            "selectFloor": "璅惜",
+            "selectFloorFirst": "隢??豢?擗",
+            "selectGateway": "????,
+            "selectGatewayFirst": "隢??豢?璅惜",
+            "currentGateway": "?嗅??豢????嚗?,
+            "listeningTopic": "??銝駁?",
+            "cannotGetTopic": "?⊥??脣?銝駁?",
+            "discoveredDevices": "撌脩?曇身??,
+            "totalRecords": "蝮質??",
+            "mqttMessages": "MQTT瘨",
+            "selectDevice": "?豢???閮剖?嚗?,
+            "selectCloudDevice": "?豢??脩垢撠踹?閮剖??脰?閰喟敦??",
+            "noDevices": "撠?潛隞颱??脩垢撠踹?閮剖?",
+            "pleaseConfirm": "隢Ⅱ隤?",
+            "cloudMqttSimulator": "?脩垢 MQTT 璅⊥?典歇??",
+            "simulatorFormat": "璅⊥?函??content: \"diaper DV1\" ?澆????,
+            "dataFields": "?豢?? MAC ??摨衣??畾?,
+            "recentData": "?餈?啁??豢?嚗?,
+            "device": "閮剖?",
+            "humidity": "瞈漲",
+            "temperature": "皞怠漲",
+            "battery": "?駁?",
+            "deviceName": "閮剖??迂",
+            "viewRawData": "?亦???MQTT?豢? (隤輯岫??",
+            "clickToExpand": "暺?銝?豢??臬?????游摰?,
+            "deviceCreationConditions": "撠踹?閮剖??萄遣璇辣瑼Ｘ嚗?,
+            "condition1": "敹???content: \"diaper DV1\"",
+            "condition2": "敹???MAC 摮挾",
+            "condition3": "humi, temp, battery level 摮挾?臭誑?箇征??嚗歇?曉祝璇辣嚗?,
+            "condition4": "瞈漲 > 75% ??閫貊?倏撣郎??
+        },
+        "deviceDiaperData": {
+            "title": "閮剖???葫閮?",
+            "unknownDevice": "?芰閮剖?",
+            "humidity": "瞈漲",
+            "temperature": "皞怠漲",
+            "battery": "?駁?",
+            "noData": "?⊥??,
+            "noHumidityData": "?⊥?摨行??,
+            "needsChange": "?閬??,
+            "wet": "瞏格?",
+            "normal": "甇?虜",
+            "deviceStats": "閮剖?蝯梯?靽⊥",
+            "deviceMAC": "閮剖?MAC",
+            "patientInfo": "?鞈?",
+            "unboundPatient": "?芰?摰???,
+            "lastConnection": "?敺?",
+            "totalRecords": "閮?蝮賣",
+            "currentStatus": "?嗅????,
+            "needsAttention": "?閬?瘜?
+        },
+        "dateTabs": {
+            "today": "隞",
+            "week": "?祇?,
+            "month": "?祆?"
+        },
+        "humidityChart": {
+            "title": "瞈漲頞典??,
+            "cloudDevice": "?脩垢閮剖?",
+            "localPatient": "?砍???,
+            "yAxisLabel": "瞈漲 (%)",
+            "time": "??",
+            "humidity": "瞈漲",
+            "changeAlertLine": "?湔?霅行?蝺? 75%",
+            "attentionLine": "瘜冽?蝺? 50%",
+            "normalLine": "甇?虜蝺? 25%",
+            "noData": "?怎{{date}}??摨行??,
+            "cloudSimulatorCheck": "隢Ⅱ隤蝡烘QTT璅⊥?典歇??",
+            "selectValidDevice": "銝阡?????脩垢閮剖?",
+            "localSimulatorCheck": "隢Ⅱ隤?衽QTT璅⊥?典歇??"
+        },
+        "temperatureChart": {
+            "title": "皞怠漲頞典??,
+            "cloudDevice": "?脩垢閮剖?",
+            "localPatient": "?砍???,
+            "yAxisLabel": "皞怠漲 (簞C)",
+            "time": "??",
+            "temperature": "皞怠漲",
+            "highTempLine": "擃澈霅行?蝺? 40簞C",
+            "warmLine": "皞急?蝺? 35簞C",
+            "normalLine": "甇?虜蝺? 30簞C",
+            "coolLine": "瘨潛蝺? 25簞C",
+            "noData": "?怎{{date}}?澈摨行??,
+            "cloudSimulatorCheck": "隢Ⅱ隤蝡烘QTT璅⊥?典歇??",
+            "selectValidDevice": "銝阡?????脩垢閮剖?",
+            "localSimulatorCheck": "隢Ⅱ隤?衽QTT璅⊥?典歇??"
+        },
+        "currentDiaperStatus": {
+            "title": "?嗅?撠踹????,
+            "autoNotification": "?芸??",
+            "needsChange": "?閬?倏撣?",
+            "humidity": "瞈漲",
+            "device": "閮剖?",
+            "lastChangeTime": "銝活?湔???",
+            "noRecords": "?∟???,
+            "recordChange": "閮?撠踹??湔?"
+        },
+        "deviceStatus": {
+            "humidity": "瞈漲",
+            "temperature": "皞怠漲",
+            "battery": "?駁?",
+            "needsChange": "?閬??,
+            "noData": "?⊥??
+        },
+        "diaperRecords": {
+            "title": "撠踹??湔?閮?",
+            "noRecords": "?怎?湔?閮?",
+            "timestamp": "??",
+            "status": "???,
+            "nurse": "?湔?鈭?
+        },
+        "recordModal": {
+            "title": "閮?撠踹??湔?",
+            "diaperStatus": "撠踹????,
+            "nurse": "霅瑞?鈭箏",
+            "cancel": "??",
+            "confirm": "蝣箄?"
+        },
+        "diaperStatus": {
+            "dry": "銋曄",
+            "slightlyWet": "敺格?",
+            "wet": "瞏格?",
+            "veryWet": "?虜瞏格?",
+            "soiled": "擃情"
+        }
+    },
+    "staffManagement": {
+        "title": "?∪極蝞∠?",
+        "searchPlaceholder": "?揣?∪極憪??楊???券?...",
+        "filters": {
+            "all": "?券",
+            "active": "?刻",
+            "onLeave": "隡?"
+        },
+        "status": {
+            "active": "?刻",
+            "onLeave": "隡?"
+        },
+        "staffList": {
+            "title": "?∪極?”",
+            "count": "??{{count}} 雿撌?,
+            "id": "蝺刻?"
+        },
+        "detailModal": {
+            "contactInfo": "?舐鼠?孵?",
+            "workInfo": "撌乩?鞈?",
+            "hireDate": "?亥?交?",
+            "notes": "?酉鞈?",
+            "notesPlaceholder": "隢撓?亙?閮餉?閮?..",
+            "noNotes": "?怎?酉鞈?",
+            "editNotes": "蝺刻摩?酉",
+            "updateNotes": "?湔?酉"
+        }
+    },
+    "fieldManagementTest": {
+        "title": "?游?蝞∠?皜祈岫",
+        "subtitle": "皜祈岫?游???撅斤?憓?寞?",
+        "reload": "?頛",
+        "homeSection": "?游?蝞∠?",
+        "homesCount": "{{count}} ???,
+        "homeNamePlaceholder": "?游??迂",
+        "descriptionPlaceholder": "?膩",
+        "addressPlaceholder": "?啣?",
+        "createHome": "?萄遣?游?",
+        "updateHome": "?湔?游?",
+        "cancel": "??",
+        "floorsCount": "{{count}} 璅惜",
+        "floorSection": "璅惜蝞∠?",
+        "floorsCountBadge": "{{count}} ??撅?,
+        "floorNamePlaceholder": "璅惜?迂",
+        "levelPlaceholder": "璅惜",
+        "widthPlaceholder": "撖砍漲(蝐?",
+        "heightPlaceholder": "擃漲(蝐?",
+        "createFloor": "?萄遣璅惜",
+        "updateFloor": "?湔璅惜",
+        "floorLevelFormat": "{{name}} - {{level}}璅?,
+        "usageTitle": "雿輻隤芣?",
+        "usage1": "1. 蝣箔?敺垢???冽迤?券?銵?(node test-backend-with-db.js)",
+        "usage2": "2. ?萄遣?游?嚗‵撖怠?縑?臭蒂暺??撱箏??,
+        "usage3": "3. ?萄遣璅惜嚗???憛怠神璅惜靽⊥銝阡??撱箸?撅扎?,
+        "usage4": "4. 蝺刻摩嚗??楊頛舀??耨?寧????,
+        "usage5": "5. ?芷嚗???斗??宏?日???,
+        "toast": {
+            "loadFail": "頛憭望?",
+            "loadFailDesc": "?⊥?敺?蝡航??交??,
+            "validationFail": "撽?憭望?",
+            "homeNameRequired": "隢撓?亙??蝔?,
+            "floorRequired": "隢撓?交?撅文?蝔曹蒂?豢??游?",
+            "updateSuccess": "?湔??",
+            "homeUpdated": "?游?靽⊥撌脫??,
+            "floorUpdated": "璅惜靽⊥撌脫??,
+            "createSuccess": "?萄遣??",
+            "homeCreated": "?游?撌脣撱?,
+            "floorCreated": "璅惜撌脣撱?,
+            "operationFail": "??憭望?",
+            "deleteSuccess": "?芷??",
+            "homeDeleted": "?游?撌脣??,
+            "floorDeleted": "璅惜撌脣??,
+            "deleteFail": "?芷憭望?",
+            "unknownError": "?芰?航炊"
+        }
+    },
+    "uwbLocation": {
+        "title": "擗蝞∠?",
+        "subtitle": "UWB摰?蝟餌絞???撅文????券?蝵桃恣??,
+        "selectHome": "?豢??游?",
+        "tabs": {
+            "overview": "蝟餌絞蝮質汗",
+            "homes": "?游?蝞∠?",
+            "floors": "璅惜蝞∠?",
+            "gateways": "???函恣??,
+            "anchors": "?券???",
+            "tags": "璅惜蝞∠?"
+        },
+        "stats": {
+            "homes": "?游??賊?",
+            "floors": "璅惜?賊?",
+            "gateways": "???冽??,
+            "anchors": "?券??賊?",
+            "tags": "璅惜?賊?"
+        },
+        "actions": {
+            "addHome": "?啣??游?",
+            "editHome": "蝺刻摩?游?",
+            "addFloor": "?啣?璅惜",
+            "editFloor": "蝺刻摩璅惜",
+            "addGateway": "?啣?????,
+            "editGateway": "蝺刻摩????,
+            "addAnchor": "?啣??券?",
+            "addTag": "?啣?璅惜"
+        },
+        "forms": {
+            "homeName": "?游??迂",
+            "homeNamePlaceholder": "隢撓?亙??蝔?,
+            "homeDescription": "?游??膩",
+            "homeDescriptionPlaceholder": "隢撓?亙??餈?,
+            "homeAddress": "?游??啣?",
+            "homeAddressPlaceholder": "隢撓?亙??"
+        },
+        "homeCard": {
+            "floors": "璅惜",
+            "gateways": "????
+        },
+        "floorCard": {
+            "mapPreview": "?啣??汗",
+            "ratio": "瘥?",
+            "anchorsCount": "?暺?
+        },
+        "mapControls": {
+            "zoom": "蝮格",
+            "mouseInstructions": "皛??典??皛曉?蝮格嚗??賜宏??
+        },
+        "messages": {
+            "selectFieldFirst": "隢??豢?銝???,
+            "addFloorFirst": "隢??啣?璅惜??蔭????,
+            "selectGatewayFirst": "隢??豢?????,
+            "noAnchorsFound": "撠?潛隞颱??券?",
+            "noTagsFound": "撠?潛隞颱?璅惜",
+            "noGatewaysFound": "撠?潛隞颱??脩垢????
+        },
+        "currentFieldStatus": "?嗅??游????,
+        "floorInfo": "璅惜 {{level}} | {{width}}m ? {{height}}m",
+        "mapStatus": {
+            "calibrated": "?啣?撌脫?摰?,
+            "uploaded": "?啣?撌脖???,
+            "noMap": "?∪??
+        },
+        "gatewaysOnline": "???典蝺?,
+        "mapCalibrationProgress": "?啣?璅??脣漲",
+        "calibrationStatus": {
+            "completed": "撌脣???摰?,
+            "pending": "敺?摰?,
+            "noMap": "?芯??喳??
+        },
+        "overallProgress": "?湧??脣漲",
+        "floorForm": {
+            "name": "璅惜?迂",
+            "namePlaceholder": "隢撓?交?撅文?蝔?,
+            "level": "璅惜蝺刻?",
+            "realWidth": "撖阡?撖砍漲 (蝐?",
+            "realHeight": "撖阡?擃漲 (蝐?"
+        },
+        "mapCalibration": "?啣?璅?",
+        "anchorLocationMap": "?券?雿蔭?啣?",
+        "showAnchorsOnMap": "?典??憿舐內?券?",
+        "doubleClickAnchorToCalibrate": "???券??脰??⊥迤",
+        "anchorCount": "?券??賊?",
+        "calibrationMode": "?⊥迤璅∪?",
+        "zoomMode": "蝮格璅∪?",
+        "close": "??",
+        "calibrationSteps": {
+            "upload": "銝?啣?",
+            "setOrigin": "閮剖???",
+            "setScale": "閮剖?瘥?"
+        },
+        "uploadFloorMap": "銝璅惜?啣?",
+        "uploadInstructions": "隢???{{floorName}} ?恕?批???PNG?PG?VG ?澆???,
+        "selectMapFile": "?豢??啣??辣",
+        "dragImageHint": "???賢??甇文???,
+        "actualSize": "撖阡?憭批?",
+        "calibratedMap": "撌脫?摰??,
+        "setCoordinateOrigin": "閮剖?摨扳???",
+        "originInstructions": "隢?????遙??蝵株身摰摨扳???嚗敺撓?亥府暺?撖阡?摨扳??虜撱箄降?豢??輸??粥撱?閫雿????,
+        "clickMapSetOrigin": "暺??啣?閮剖???",
+        "clickMapSetNewPosition": "暺??啣???{{name}} 閮剖??唬?蝵?,
+        "originPixelPosition": "????雿蔭",
+        "actualXCoordinate": "撖阡? X 摨扳? (蝐?",
+        "actualYCoordinate": "撖阡? Y 摨扳? (蝐?",
+        "reselectOrigin": "???",
+        "nextStep": "銝?甇?,
+        "setCoordinateScale": "閮剖?摨扳?瘥?",
+        "scaleInstructions": "隢?啣?銝??詨??嚗敺撓?仿暺???撖阡?頝?頂蝯勗??芸?閮????撠箇?頧?瘥???,
+        "clickTwoPointsSetScale": "暺??拙?閮剖?瘥?",
+        "selectedPoints": "?豢???",
+        "point1": "暺?",
+        "point2": "暺?",
+        "clickMapSelect": "隢?????,
+        "pixelDistance": "??頝",
+        "actualDistance": "撖阡?頝 (蝐?",
+        "enterActualDistance": "頛詨?拚?銋??祕????,
+        "calculationResult": "閮?蝯?",
+        "ratio": "瘥?",
+        "pixelsPerMeter": "??/?砍偕",
+        "previousStep": "銝?甇?,
+        "reselectPoints": "?暺?,
+        "saveCalibration": "靽?璅?",
+        "calibrationComplete": "璅?摰?",
+        "calibrationInfo": "璅?鞈?",
+        "floor": "璅惜",
+        "originActualCoordinates": "??撖阡?摨扳?",
+        "meters": "蝐?,
+        "calibrationPoint1": "璅?暺?",
+        "calibrationPoint2": "璅?暺?",
+        "pixels": "??",
+        "complete": "摰?",
+        "recalibrate": "?璅?",
+        "mapStatusLabel": "?啣????,
+        "manualAdd": "???啣?",
+        "reconnectCloud": "??蝡?,
+        "cloudGatewayDiscovery": "?脩垢???函??,
+        "connectionNormal": "???甇?虜",
+        "cloudMqttStatus": "?脩垢 MQTT ???,
+        "server": "隡箸???,
+        "topic": "銝駁?",
+        "waitingForGatewayTopic": "蝑? content: \"gateway topic\"",
+        "error": "?航炊",
+        "discoveredGateways": "?潛???",
+        "onlineGateways": "?函?????,
+        "mqttMessages": "MQTT瘨",
+        "discoveredCloudGateways": "?潛?蝡舫??",
+        "status": {
+            "online": "?函?",
+            "offline": "?Ｙ?",
+            "error": "?航炊"
+        },
+        "id": "ID",
+        "firmware": "??",
+        "network": "蝬脰楝",
+        "ap": "AP",
+        "voltage": "?餃?",
+        "lastUpdate": "?敺??,
+        "addToSystem": "?蝟餌絞",
+        "noCloudGatewaysFound": "撠?潛隞颱??脩垢????,
+        "pleaseConfirm": "隢Ⅱ隤?,
+        "cloudMqttSimulatorStarted": "?脩垢 MQTT 璅⊥?典歇??",
+        "simulatorSendsGatewayTopic": "璅⊥?函??content: \"gateway topic\" ?澆????,
+        "dataContainsGatewayIdAndName": "?豢?? \"gateway id\" ??name 摮挾",
+        "viewRawGatewayMqttData": "?亦??? Gateway MQTT ?豢? (隤輯岫??",
+        "clickDataToExpand": "暺?銝?豢??臬?????游摰?,
+        "gatewayDiscoveryConditions": "???函?暹?隞?,
+        "mustHaveGatewayTopic": "敹???content: \"gateway topic\"",
+        "mustHaveGatewayIdAndName": "敹???\"gateway id\" ??name 摮挾",
+        "uwbJoinedAnd5VPluggedOnline": "UWB Joined: \"yes\" 銝?5V plugged: \"yes\" 閬?函?",
+        "belongingFloor": "?撅祆?撅?,
+        "macAddress": "MAC ?啣?",
+        "ipAddress": "IP ?啣?",
+        "lastConnection": "?敺??",
+        "unknown": "?芰",
+        "editGateway": "蝺刻摩????,
+        "addCloudGatewayToSystem": "??脩垢???典蝟餌絞",
+        "manualAddGateway": "???啣?????,
+        "addDiscoveredGatewayToFloor": "敺蝡舐?曄?????(ID: {{id}}) ??圈摰?璅惜",
+        "gatewayName": "???典?蝔?,
+        "enterGatewayName": "隢撓?仿???迂",
+        "selectFloor": "?豢?璅惜",
+        "reconnectAnchors": "??暺?,
+        "cloudAnchorDiscovery": "?脩垢?券??潛",
+        "anchorMqttStatus": "?券? MQTT ???,
+        "selectedGateway": "?豢????",
+        "notSelected": "?芷??,
+        "listeningTopic": "??銝駁?",
+        "none": "??,
+        "connectionStatus": "??????,
+        "discoveredAnchors": "?潛?暺?,
+        "onlineAnchors": "?函??券?",
+        "ackMessages": "Ack瘨",
+        "discoveredCloudAnchors": "?潛?蝡舫暺?,
+        "mainAnchor": "銝駁暺?,
+        "gateway": "????,
+        "on": "??,
+        "off": "??,
+        "position": "雿蔭",
+        "configure": "?蔭",
+        "gatewayAnchorConfigTopicCorrect": "???函??券??蔭銝駁?甇?Ⅱ",
+        "simulatorSendsAnchorConfigData": "璅⊥?函??content: \"config\", node: \"ANCHOR\" ?澆????,
+        "dataContainsIdAndName": "?豢?? id ??name 摮挾",
+        "anchorPairing": {
+            "title": "?券???蝞∠?",
+            "localAnchorManagement": "?砍?券?蝞∠? (撌脣??亦??券?)",
+            "currentGateway": "?嗅??豢????",
+            "selectGateway": "?豢?????,
+            "startSimulationPairing": "??璅⊥??",
+            "pairingInProgress": "??銝?..",
+            "selectGatewayFirst": "隢??其??寥???隞亦恣?暺?,
+            "noOnlineGateways": "瘝??函???圈???舫脰???",
+            "simulationPairingProgress": "璅⊥???脣漲",
+            "scanningNearbyAnchors": "甇??????暺身??..",
+            "discoveredNewAnchor": "?潛?圈暺?,
+            "add": "瘛餃?",
+            "noPairedAnchors": "閰脤??銝?∪歇???暺?,
+            "anchorStatus": {
+                "running": "??銝?,
+                "paired": "撌脤?撠?,
+                "calibrating": "璅?銝?,
+                "unpaired": "?芷?撠?,
+                "error": "?航炊"
+            },
+            "anchorInfo": {
+                "belongingGateway": "?撅祇??",
+                "macAddress": "MAC ?啣?",
+                "cloudId": "?脩垢 ID",
+                "position": "雿蔭摨扳?",
+                "functionStatus": "????,
+                "signalStrength": "靽∟?撘瑕漲",
+                "batteryLevel": "?餅??駁?",
+                "lastConnection": "?敺??"
+            },
+            "actions": {
+                "calibrate": "?⊥迤摨扳?",
+                "sendConfigToCloud": "?潮?蝵桀?脩垢",
+                "deleteAnchor": "?芷?券?"
+            },
+            "functionStatus": {
+                "led": "LED",
+                "ble": "BLE",
+                "mainAnchor": "銝駁暺?
+            },
+            "mapLegend": {
+                "coordinateOrigin": "摨扳???",
+                "generalAnchor": "銝?祇暺?,
+                "mainAnchor": "銝駁暺?
+            },
+            "debug": {
+                "viewRawAnchorMqttData": "?亦??? Anchor MQTT ?豢? (隤輯岫??",
+                "clickDataToExpand": "暺?銝?豢??臬?????游摰?,
+                "anchorDiscoveryConditions": "?券??潛璇辣",
+                "mustHaveConfig": "敹???content: \"config\"",
+                "mustHaveNodeAnchor": "敹???node: \"ANCHOR\"",
+                "mustHaveIdAndName": "敹???id ??name 摮挾",
+                "initiatorMainAnchor": "initiator: 1 銵函內銝駁暺?,
+                "viewRawAckData": "?亦??? Anchor MQTT ?豢? (隤輯岫?? - Ack ?豢?"
+            },
+            "noAvailableGateways": "閰脫?撅斗?∪?函?????,
+            "doubleClickToCalibrate": "???⊥迤雿蔭",
+            "mainAnchorOption": "銝駁暺?,
+            "generalAnchorOption": "銝?祇暺?,
+            "currentStatus": "?嗅????,
+            "deviceId": "閮剖? ID",
+            "deviceName": "閮剖??迂",
+            "anchorDeviceInfo": "Anchor 閮剖?靽⊥",
+            "sendConfigPreview": "?潮縑?舫?閬?,
+            "sendConfigToCloud": "?潮?蝵桀?脩垢",
+            "cancelCalibration": "???⊥迤",
+            "cancel": "??",
+            "confirm": "蝣箄?"
+        },
+        "notifications": {
+            "ackReceived": "Ack 瘨?交",
+            "gatewayId": "Gateway ID",
+            "command": "?賭誘",
+            "nodeType": "蝭暺???,
+            "deviceId": "閮剖?ID",
+            "topic": "銝駁?",
+            "receivedAt": "?交??",
+            "messageType": "瘨憿?",
+            "ackMessage": "Ack 瘨"
+        },
+        "anchorCalibration": {
+            "title": "?⊥迤 {{name}}",
+            "mapClickMode": "?啣?暺??⊥迤璅∪?",
+            "mapClickInstruction": "?湔暺?撌血?啣?靘身摰?{{name}} ?雿蔭",
+            "manualInputInstruction": "?銝??頛詨蝎曄Ⅱ摨扳???,
+            "coordinateType": "摨扳?憿?",
+            "realCoordinates": "?祕摨扳? (蝐?",
+            "pixelCoordinates": "??摨扳? (px)",
+            "xCoordinate": "X 摨扳?",
+            "yCoordinate": "Y 摨扳?",
+            "zCoordinate": "Z 摨扳? (蝐?",
+            "realCoordinatesHint": "? 頛詨?祕銝??漣璅??桐?嚗掖嚗?,
+            "pixelCoordinatesHint": "? 頛詨??銝???摨扳?嚗頂蝯望??芸?頧??箇?撖血漣璅?,
+            "saveManualCoordinates": "靽???頛詨摨扳?",
+            "quickOperation": "??敹恍?雿?,
+            "quickOperationDescription": "暺?撌血?啣? = 敹恍身摰?| ??頛詨 = 蝎曄Ⅱ摨扳?",
+            "coordinatesUpdated": "{{name}} 摨扳?撌脫?堆?",
+            "sendToCloudQuestion": "?臬閬??啣漣璅??脩垢蝖祇?嚗?,
+            "sendToCloudInstruction": "暺??Ⅱ摰?脖?甇仿?蝵桀??訾蒂?潮?,
+            "sendConfigToCloud": "Send Config to Cloud - {{name}}",
+            "newCoordinatePosition": "?? ?啣漣璅?蝵?,
+            "anchorConfigParameters": "? Anchor ?蔭?",
+            "firmwareUpdate": "???湔",
+            "ledStatus": "LED ???,
+            "bleStatus": "BLE ???,
+            "initiator": "?潸絲??,
+            "serialNo": "Serial No",
+            "serialNoRange": "蝭?: 1306-9999嚗?甈∠?????憓?,
+            "anchorDeviceInfo": "?儭?Anchor 閮剖?靽⊥:",
+            "deviceName": "閮剖??迂",
+            "deviceId": "閮剖?ID",
+            "macAddress": "MAC ?啣?",
+            "currentStatus": "?嗅????,
+            "sendConfigPreview": "? ?潮縑?舫?閬?",
+            "topic": "銝駁?",
+            "gatewayId": "Gateway ID",
+            "sending": "?潮葉...",
+            "sendToCloudHardware": "?潮?脩垢蝖祇?",
+            "coordinatesSentToCloud": "撌脣? {{name}} ?摨扳??潮?脩垢蝖祇?",
+            "on": "??",
+            "off": "??",
+            "generalAnchor": "銝?祇暺?,
+            "mainAnchor": "銝駁暺?,
+            "unknown": "?芰"
+        },
+        "tagManagement": {
+            "title": "璅惜閮剖?蝞∠?",
+            "subtitle": "蝞∠?UWB摰?璅惜閮剖?嚗??砌犖?⊥?蝐扎身??蝐文?鞈璅惜",
+            "controls": {
+                "selectGateway": "?豢?????,
+                "reconnectTags": "???蝐?,
+                "addTag": "?啣?璅惜"
+            },
+            "stats": {
+                "personnelTags": "鈭箏璅惜",
+                "activeTags": "瘣餉?銝?,
+                "cloudTags": "?脩垢璅惜"
+            },
+            "cloudDiscovery": {
+                "title": "?脩垢璅惜?潛",
+                "mqttStatus": "璅惜 MQTT ???,
+                "selectedGateway": "?豢????",
+                "notSelected": "?芷??,
+                "listeningTopic": "??銝駁?",
+                "none": "??,
+                "connectionStatus": "??????,
+                "gatewayNotSelected": "?芷???",
+                "discoveredTags": "?潛??蝐?,
+                "onlineTags": "?函?璅惜",
+                "mqttMessages": "MQTT瘨",
+                "discoveredCloudTags": "?潛?蝡舀?蝐?,
+                "autoAddedToSystem": "撌脰???亦頂蝯?
+            },
+            "tagList": {
+                "noTagsUnderGateway": "閰脤??銝?⊥?蝐方身??,
+                "pleaseConfirm": "隢Ⅱ隤?",
+                "gatewayMessageLocationTopics": "1. ???函? message ??location 銝駁?甇?Ⅱ",
+                "simulatorSendsInfoLocation": "2. 璅⊥?函??content: \"info\"/\"location\", node: \"TAG\" ?澆????,
+                "dataContainsFields": "3. ?豢?? id?attery level?osition?ime 蝑?畾?,
+                "viewRawTagMqttData": "?亦??? Tag MQTT ?豢? (隤輯岫??",
+                "clickDataToExpand": "暺?銝?豢??臬?????游摰?,
+                "tagDiscoveryConditions": "璅惜?潛璇辣嚗?,
+                "messageTopic": "??message 銝駁?: content: \"info\", node: \"TAG\"",
+                "locationTopic": "??location 銝駁?: content: \"location\", node: \"TAG\"",
+                "mustHaveId": "??敹???id 摮挾",
+                "messageContainsBattery": "??message ? battery level 靽⊥",
+                "locationContainsPosition": "??location ? position ??time 靽⊥"
+            },
+            "tagCard": {
+                "macAddress": "MAC ?啣?",
+                "type": "憿?",
+                "personnel": "鈭箏",
+                "assignedTo": "??蝯?,
+                "batteryLevel": "?餅??駁?",
+                "lastPosition": "?敺?蝵?,
+                "updateTime": "?湔??",
+                "cloud": "?脩垢",
+                "edit": "蝺刻摩",
+                "delete": "?芷"
+            },
+            "tagForm": {
+                "editTag": "蝺刻摩璅惜",
+                "addTag": "?啣?璅惜",
+                "tagName": "璅惜?迂",
+                "tagNamePlaceholder": "隢撓?交?蝐文?蝔?,
+                "macAddress": "MAC ?啣?",
+                "macAddressPlaceholder": "AA:BB:CC:DD:EE:FF",
+                "tagType": "璅惜憿?",
+                "selectType": "?豢?憿?",
+                "person": "鈭箏",
+                "equipment": "閮剖?",
+                "asset": "鞈",
+                "assignedTo": "??蝯?,
+                "assignedToPlaceholder": "??蝯西狐嚗?賂?",
+                "cancel": "??",
+                "save": "靽?"
+            },
+            "tagStatus": {
+                "running": "??銝?,
+                "inactive": "?芣?瘣?,
+                "lowBattery": "?駁?銝雲",
+                "lost": "憭梯",
+                "online": "?函?",
+                "offline": "?Ｙ?"
+            },
+            "tagTypes": {
+                "person": "鈭箏",
+                "equipment": "閮剖?",
+                "asset": "鞈"
+            },
+            "messages": {
+                "selectGatewayFirst": "隢??豢?????,
+                "noTagsFound": "撠?潛隞颱?璅惜",
+                "connectionError": "?航炊",
+                "connectionNormal": "???甇?虜",
+                "manualReconnecting": "????葉..."
+            }
+        }
+    }
+}

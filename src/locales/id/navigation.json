@@ -1,0 +1,72 @@
+{
+    "sidebar": {
+        "title": "Senior Care Plus",
+        "sections": {
+            "main": "Fitur Utama",
+            "management": "Manajemen",
+            "system": "Sistem"
+        },
+        "items": {
+            "home": {
+                "name": "Beranda",
+                "description": "Halaman utama sistem"
+            },
+            "emergency": {
+                "name": "Panggilan Darurat",
+                "description": "Sinyal darurat cepat"
+            },
+            "health": {
+                "name": "Pemantauan Kesehatan",
+                "description": "Tanda vital waktu nyata"
+            },
+            "reminders": {
+                "name": "Pengingat",
+                "description": "Pengingat obat & perawatan"
+            },
+            "location": {
+                "name": "Lokasi Dalam Ruangan",
+                "description": "Pelacakan & zona keamanan"
+            },
+            "residents": {
+                "name": "Manajemen Penghuni",
+                "description": "Data & catatan penghuni"
+            },
+            "staff": {
+                "name": "Manajemen Staf",
+                "description": "Staf & personel"
+            },
+            "devices": {
+                "name": "Manajemen Perangkat",
+                "description": "Perangkat & pemeliharaan perawatan"
+            },
+            "uwbLocation": {
+                "name": "Manajemen Fasilitas",
+                "description": "Manajemen fasilitas UWB"
+            },
+            "backendTest": {
+                "name": "Tes Backend",
+                "description": "Koneksi frontend-backend"
+            },
+            "fieldManagementTest": {
+                "name": "Tes Manajemen Area",
+                "description": "Operasi CRUD area"
+            },
+            "more": {
+                "name": "Fitur Lainnya",
+                "description": "Fitur perawatan pintar"
+            },
+            "settings": {
+                "name": "Pengaturan",
+                "description": "Pengaturan & preferensi"
+            },
+            "help": {
+                "name": "Pusat Bantuan",
+                "description": "Panduan & dukungan"
+            }
+        }
+    },
+    "footer": {
+        "copyright": "© 2024 Senior Care Plus",
+        "version": "Profesional"
+    }
+}

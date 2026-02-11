@@ -1,0 +1,163 @@
+{
+    "app": {
+        "title": "Senior Care Plus",
+        "subtitle": "Solusi Perawatan Lansia Pintar",
+        "version": "1.0.0",
+        "lastUpdate": "2023/05/10"
+    },
+    "actions": {
+        "save": "Simpan",
+        "cancel": "Batal",
+        "confirm": "Konfirmasi",
+        "delete": "Hapus",
+        "edit": "Edit",
+        "add": "Tambah",
+        "remove": "Hapus",
+        "close": "Tutup",
+        "back": "Kembali",
+        "next": "Selanjutnya",
+        "previous": "Sebelumnya",
+        "submit": "Kirim",
+        "reset": "Reset",
+        "search": "Cari",
+        "filter": "Filter",
+        "export": "Ekspor",
+        "import": "Impor",
+        "refresh": "Segarkan",
+        "loading": "Memuat...",
+        "saving": "Menyimpan...",
+        "saved": "Tersimpan",
+        "view": "Lihat",
+        "scrollForMore": "Gulir ke bawah untuk melihat lebih banyak",
+        "optional": "Opsional"
+    },
+    "status": {
+        "active": "Aktif",
+        "inactive": "Tidak Aktif",
+        "offline": "Offline",
+        "error": "Error",
+        "good": "Baik",
+        "attention": "Perhatian",
+        "critical": "Kritis",
+        "unknown": "Tidak Diketahui"
+    },
+    "placeholders": {
+        "search": "Cari penghuni, tugas atau perangkat...",
+        "select": "Silakan pilih...",
+        "input": "Silakan masukkan...",
+        "noData": "Tidak ada data tersedia",
+        "loading": "Memuat...",
+        "error": "Terjadi kesalahan",
+        "details": "Detail"
+    },
+    "messages": {
+        "success": "Operasi berhasil",
+        "error": "Operasi gagal",
+        "confirmDelete": "Apakah Anda yakin ingin menghapus? Tindakan ini tidak dapat dibatalkan.",
+        "confirmReset": "Apakah Anda yakin ingin mereset? Tindakan ini tidak dapat dibatalkan.",
+        "dataSaved": "Data tersimpan",
+        "dataLoaded": "Data dimuat",
+        "networkError": "Kesalahan koneksi jaringan",
+        "serverError": "Kesalahan server"
+    },
+    "time": {
+        "today": "Hari Ini",
+        "yesterday": "Kemarin",
+        "thisWeek": "Minggu Ini",
+        "thisMonth": "Bulan Ini",
+        "thisYear": "Tahun Ini",
+        "lastWeek": "Minggu Lalu",
+        "lastMonth": "Bulan Lalu",
+        "lastYear": "Tahun Lalu"
+    },
+    "units": {
+        "years": "tahun",
+        "yearsOld": "tahun",
+        "room": "Kamar",
+        "devices": "perangkat",
+        "residents": "penghuni",
+        "staff": "staf",
+        "minutes": "menit",
+        "hours": "jam",
+        "days": "hari",
+        "weeks": "minggu",
+        "months": "bulan"
+    },
+    "connection": {
+        "connected": "Terhubung",
+        "disconnected": "Terputus",
+        "connecting": "Menghubungkan...",
+        "reconnecting": "Menghubungkan ulang...",
+        "connectionClosed": "Koneksi Ditutup",
+        "clientOffline": "Klien Offline",
+        "connectionError": "Kesalahan Koneksi",
+        "notConnected": "Tidak Terhubung",
+        "reconnectingShort": "Menghubungkan ulang",
+        "disconnectedShort": "Terputus",
+        "manualReconnecting": "Menghubungkan Ulang Manual..."
+    },
+    "error": {
+        "title": "Kesalahan Aplikasi",
+        "message": "Aplikasi mengalami kesalahan. Silakan periksa konsol untuk detail.",
+        "details": "Detail Kesalahan",
+        "reload": "Muat Ulang Halaman",
+        "consolePrefix": "❌ Kesalahan Aplikasi:"
+    },
+    "ui": {
+        "logo": "Care",
+        "notifications": {
+            "title": "Notifikasi",
+            "unreadCount": "Anda memiliki {{count}} notifikasi yang belum dibaca",
+            "viewAll": "Lihat Semua Notifikasi",
+            "examples": {
+                "residentNeedsHelp": "Pak Wang membutuhkan bantuan",
+                "bloodPressureAbnormal": "Tekanan darah Bu Li abnormal",
+                "medicationReminder": "Penyelesaian pengingat obat: 90%"
+            },
+            "timeAgo": {
+                "minutes": "{{count}} menit yang lalu"
+            }
+        },
+        "theme": {
+            "toggle": "Ganti Tema",
+            "light": "Terang",
+            "dark": "Gelap",
+            "system": "Sistem"
+        },
+        "user": {
+            "avatarAlt": "Avatar Pengguna",
+            "avatarFallback": "Admin",
+            "admin": "Administrator",
+            "superAdmin": "Super Administrator",
+            "profile": "Profil",
+            "security": "Pengaturan Keamanan",
+            "logout": "Keluar",
+            "exampleName": "John Doe",
+            "exampleEmail": "admin@example.com"
+        },
+        "avatar": {
+            "defaultFallback": "D"
+        },
+        "tooltip": {
+            "clickToReturn": "Klik untuk kembali ke halaman sebelumnya"
+        }
+    },
+    "language": {
+        "chinese": "中文（繁體）",
+        "chineseSimplified": "中文（简体）",
+        "english": "English",
+        "indonesian": "Bahasa Indonesia",
+        "vietnamese": "Tiếng Việt",
+        "german": "Deutsch",
+        "japanese": "日本語"
+    },
+    "testing": {
+        "backendTest": "Tes Backend",
+        "backendTestDesc": "Tes koneksi frontend dan backend",
+        "fieldManagementTest": "Tes Manajemen Area",
+        "fieldManagementTestDesc": "Tes operasi CRUD area",
+        "connectionStatus": "Status Koneksi",
+        "testing": "Mengetes...",
+        "startTest": "Mulai Tes"
+    }
+}

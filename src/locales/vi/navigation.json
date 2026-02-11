@@ -1,0 +1,72 @@
+{
+    "sidebar": {
+        "title": "Senior Care Plus",
+        "sections": {
+            "main": "Tính năng chính",
+            "management": "Quản lý",
+            "system": "Hệ thống"
+        },
+        "items": {
+            "home": {
+                "name": "Trang chủ",
+                "description": "Trang chủ hệ thống"
+            },
+            "emergency": {
+                "name": "Cuộc gọi khẩn cấp",
+                "description": "Tín hiệu khẩn cấp nhanh"
+            },
+            "health": {
+                "name": "Giám sát sức khỏe",
+                "description": "Dấu hiệu sinh tồn trực tiếp"
+            },
+            "reminders": {
+                "name": "Nhắc nhở",
+                "description": "Nhắc nhở thuốc & chăm sóc"
+            },
+            "location": {
+                "name": "Vị trí trong nhà",
+                "description": "Theo dõi & vùng an toàn"
+            },
+            "residents": {
+                "name": "Quản lý cư dân",
+                "description": "Dữ liệu & hồ sơ cư dân"
+            },
+            "staff": {
+                "name": "Quản lý nhân viên",
+                "description": "Nhân viên & nhân sự"
+            },
+            "devices": {
+                "name": "Quản lý thiết bị",
+                "description": "Thiết bị chăm sóc & bảo trì"
+            },
+            "uwbLocation": {
+                "name": "Quản lý cơ sở",
+                "description": "Quản lý cơ sở UWB"
+            },
+            "backendTest": {
+                "name": "Kiểm tra Backend",
+                "description": "Kết nối frontend-backend"
+            },
+            "fieldManagementTest": {
+                "name": "Kiểm tra Quản lý Khu vực",
+                "description": "Thao tác CRUD khu vực"
+            },
+            "more": {
+                "name": "Tính năng khác",
+                "description": "Tính năng chăm sóc thông minh"
+            },
+            "settings": {
+                "name": "Cài đặt",
+                "description": "Cài đặt & tùy chọn"
+            },
+            "help": {
+                "name": "Trung tâm trợ giúp",
+                "description": "Hướng dẫn & hỗ trợ"
+            }
+        }
+    },
+    "footer": {
+        "copyright": "© 2024 Senior Care Plus",
+        "version": "Chuyên nghiệp"
+    }
+}

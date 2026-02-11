@@ -18,12 +18,38 @@ import jpNavigation from './locales/jp/navigation.json'
 import jpPages from './locales/jp/pages.json'
 import jpStatus from './locales/jp/status.json'
 
+import zhCNCommon from './locales/zh-CN/common.json'
+import zhCNNavigation from './locales/zh-CN/navigation.json'
+import zhCNPages from './locales/zh-CN/pages.json'
+import zhCNStatus from './locales/zh-CN/status.json'
+
+import idCommon from './locales/id/common.json'
+import idNavigation from './locales/id/navigation.json'
+import idPages from './locales/id/pages.json'
+import idStatus from './locales/id/status.json'
+
+import viCommon from './locales/vi/common.json'
+import viNavigation from './locales/vi/navigation.json'
+import viPages from './locales/vi/pages.json'
+import viStatus from './locales/vi/status.json'
+
+import deCommon from './locales/de/common.json'
+import deNavigation from './locales/de/navigation.json'
+import dePages from './locales/de/pages.json'
+import deStatus from './locales/de/status.json'
+
 const resources = {
     zh: {
         common: zhCommon,
         navigation: zhNavigation,
         pages: zhPages,
         status: zhStatus,
+    },
+    'zh-CN': {
+        common: zhCNCommon,
+        navigation: zhCNNavigation,
+        pages: zhCNPages,
+        status: zhCNStatus,
     },
     en: {
         common: enCommon,
@@ -36,6 +62,24 @@ const resources = {
         navigation: jpNavigation,
         pages: jpPages,
         status: jpStatus,
+    },
+    id: {
+        common: idCommon,
+        navigation: idNavigation,
+        pages: idPages,
+        status: idStatus,
+    },
+    vi: {
+        common: viCommon,
+        navigation: viNavigation,
+        pages: viPages,
+        status: viStatus,
+    },
+    de: {
+        common: deCommon,
+        navigation: deNavigation,
+        pages: dePages,
+        status: deStatus,
     },
 }
 

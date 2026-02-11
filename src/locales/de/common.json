@@ -1,0 +1,163 @@
+{
+    "app": {
+        "title": "Senior Care Plus",
+        "subtitle": "Intelligente Seniorenpflege-Lösung",
+        "version": "1.0.0",
+        "lastUpdate": "2023/05/10"
+    },
+    "actions": {
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "confirm": "Bestätigen",
+        "delete": "Löschen",
+        "edit": "Bearbeiten",
+        "add": "Hinzufügen",
+        "remove": "Entfernen",
+        "close": "Schließen",
+        "back": "Zurück",
+        "next": "Weiter",
+        "previous": "Zurück",
+        "submit": "Absenden",
+        "reset": "Zurücksetzen",
+        "search": "Suchen",
+        "filter": "Filtern",
+        "export": "Exportieren",
+        "import": "Importieren",
+        "refresh": "Aktualisieren",
+        "loading": "Wird geladen...",
+        "saving": "Wird gespeichert...",
+        "saved": "Gespeichert",
+        "view": "Anzeigen",
+        "scrollForMore": "Nach unten scrollen für mehr",
+        "optional": "Optional"
+    },
+    "status": {
+        "active": "Aktiv",
+        "inactive": "Inaktiv",
+        "offline": "Offline",
+        "error": "Fehler",
+        "good": "Gut",
+        "attention": "Achtung",
+        "critical": "Kritisch",
+        "unknown": "Unbekannt"
+    },
+    "placeholders": {
+        "search": "Bewohner, Aufgaben oder Geräte suchen...",
+        "select": "Bitte auswählen...",
+        "input": "Bitte eingeben...",
+        "noData": "Keine Daten verfügbar",
+        "loading": "Wird geladen...",
+        "error": "Ein Fehler ist aufgetreten",
+        "details": "Details"
+    },
+    "messages": {
+        "success": "Vorgang erfolgreich",
+        "error": "Vorgang fehlgeschlagen",
+        "confirmDelete": "Möchten Sie wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "confirmReset": "Möchten Sie wirklich zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "dataSaved": "Daten gespeichert",
+        "dataLoaded": "Daten geladen",
+        "networkError": "Netzwerkverbindungsfehler",
+        "serverError": "Serverfehler"
+    },
+    "time": {
+        "today": "Heute",
+        "yesterday": "Gestern",
+        "thisWeek": "Diese Woche",
+        "thisMonth": "Dieser Monat",
+        "thisYear": "Dieses Jahr",
+        "lastWeek": "Letzte Woche",
+        "lastMonth": "Letzter Monat",
+        "lastYear": "Letztes Jahr"
+    },
+    "units": {
+        "years": "Jahre",
+        "yearsOld": "Jahre alt",
+        "room": "Zimmer",
+        "devices": "Geräte",
+        "residents": "Bewohner",
+        "staff": "Personal",
+        "minutes": "Minuten",
+        "hours": "Stunden",
+        "days": "Tage",
+        "weeks": "Wochen",
+        "months": "Monate"
+    },
+    "connection": {
+        "connected": "Verbunden",
+        "disconnected": "Getrennt",
+        "connecting": "Verbinde...",
+        "reconnecting": "Verbinde erneut...",
+        "connectionClosed": "Verbindung geschlossen",
+        "clientOffline": "Client offline",
+        "connectionError": "Verbindungsfehler",
+        "notConnected": "Nicht verbunden",
+        "reconnectingShort": "Verbinde erneut",
+        "disconnectedShort": "Getrennt",
+        "manualReconnecting": "Manuelle Neuverbindung..."
+    },
+    "error": {
+        "title": "Anwendungsfehler",
+        "message": "Die Anwendung hat einen Fehler festgestellt. Bitte überprüfen Sie die Konsole für Details.",
+        "details": "Fehlerdetails",
+        "reload": "Seite neu laden",
+        "consolePrefix": "❌ Anwendungsfehler:"
+    },
+    "ui": {
+        "logo": "Care",
+        "notifications": {
+            "title": "Benachrichtigungen",
+            "unreadCount": "Sie haben {{count}} ungelesene Benachrichtigungen",
+            "viewAll": "Alle Benachrichtigungen anzeigen",
+            "examples": {
+                "residentNeedsHelp": "Herr Wang benötigt Hilfe",
+                "bloodPressureAbnormal": "Frau Lis Blutdruck ist abnormal",
+                "medicationReminder": "Medikamentenerinnerung abgeschlossen: 90%"
+            },
+            "timeAgo": {
+                "minutes": "vor {{count}} Minuten"
+            }
+        },
+        "theme": {
+            "toggle": "Design umschalten",
+            "light": "Hell",
+            "dark": "Dunkel",
+            "system": "System"
+        },
+        "user": {
+            "avatarAlt": "Benutzer-Avatar",
+            "avatarFallback": "Admin",
+            "admin": "Administrator",
+            "superAdmin": "Super-Administrator",
+            "profile": "Profil",
+            "security": "Sicherheitseinstellungen",
+            "logout": "Abmelden",
+            "exampleName": "Max Mustermann",
+            "exampleEmail": "admin@example.com"
+        },
+        "avatar": {
+            "defaultFallback": "D"
+        },
+        "tooltip": {
+            "clickToReturn": "Klicken, um zur vorherigen Seite zurückzukehren"
+        }
+    },
+    "language": {
+        "chinese": "中文（繁體）",
+        "chineseSimplified": "中文（简体）",
+        "english": "English",
+        "indonesian": "Bahasa Indonesia",
+        "vietnamese": "Tiếng Việt",
+        "german": "Deutsch",
+        "japanese": "日本語"
+    },
+    "testing": {
+        "backendTest": "Backend-Test",
+        "backendTestDesc": "Frontend- und Backend-Verbindung testen",
+        "fieldManagementTest": "Bereichsverwaltungstest",
+        "fieldManagementTestDesc": "Bereichs-CRUD-Operationen testen",
+        "connectionStatus": "Verbindungsstatus",
+        "testing": "Testen...",
+        "startTest": "Test starten"
+    }
+}

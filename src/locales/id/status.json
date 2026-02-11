@@ -1,0 +1,49 @@
+{
+    "device": {
+        "status": {
+            "active": "Aktif",
+            "inactive": "Tidak Aktif",
+            "offline": "Offline",
+            "error": "Error"
+        },
+        "types": {
+            "smartwatch": "Jam Pintar",
+            "diaperSensor": "Sensor Popok",
+            "pedometer": "Pedometer",
+            "uwbTag": "Tag UWB"
+        }
+    },
+    "resident": {
+        "status": {
+            "good": "Baik",
+            "attention": "Perhatian",
+            "critical": "Kritis",
+            "unknown": "Tidak Diketahui"
+        },
+        "gender": {
+            "male": "Laki-laki",
+            "female": "Perempuan"
+        }
+    },
+    "system": {
+        "persistence": {
+            "status": "Status Persistensi:",
+            "saving": "Menyimpan...",
+            "saved": "Tersimpan",
+            "lastSave": "Penyimpanan Terakhir:",
+            "loadError": "Kesalahan Memuat:"
+        },
+        "actions": {
+            "forceSave": "Paksa Simpan",
+            "exportSettings": "Ekspor Pengaturan",
+            "importSettings": "Impor Pengaturan",
+            "debugStorage": "Debug Penyimpanan"
+        }
+    },
+    "alerts": {
+        "emergency": "Darurat",
+        "priority": "Prioritas",
+        "warning": "Peringatan",
+        "info": "Info"
+    }
+}

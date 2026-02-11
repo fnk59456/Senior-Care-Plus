@@ -10,8 +10,12 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 const getAvailableLanguages = (t: any) => [
-    { code: 'zh', name: t('common:language.chinese'), flag: '🇨🇳' },
+    { code: 'zh', name: t('common:language.chinese'), flag: '🇹🇼' },
+    { code: 'zh-CN', name: t('common:language.chineseSimplified'), flag: '🇨🇳' },
     { code: 'en', name: t('common:language.english'), flag: '🇺🇸' },
+    { code: 'id', name: t('common:language.indonesian'), flag: '🇮🇩' },
+    { code: 'vi', name: t('common:language.vietnamese'), flag: '🇻🇳' },
+    { code: 'de', name: t('common:language.german'), flag: '🇩🇪' },
     { code: 'jp', name: t('common:language.japanese'), flag: '🇯🇵' },
 ]
 

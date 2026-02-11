@@ -1,0 +1,1720 @@
+{
+    "home": {
+        "title": "Chào mừng đến với Senior Care Plus",
+        "subtitle": "Quản lý chăm sóc người cao tuổi toàn diện để đảm bảo chăm sóc và chú ý tốt nhất cho người cao tuổi. Tích hợp giám sát sức khỏe, theo dõi vị trí và tính năng nhắc nhở thông minh.",
+        "features": {
+            "emergency": {
+                "title": "Cuộc gọi khẩn cấp",
+                "description": "Tín hiệu trợ giúp khẩn cấp nhanh chóng để đảm bảo hỗ trợ kịp thời"
+            },
+            "health": {
+                "title": "Giám sát sức khỏe",
+                "description": "Giám sát thời gian thực tình trạng sức khỏe người cao tuổi và cảnh báo"
+            },
+            "reminders": {
+                "title": "Nhắc nhở",
+                "description": "Quản lý nhắc nhở thuốc, uống nước và đo lường"
+            },
+            "location": {
+                "title": "Vị trí trong nhà",
+                "description": "Theo dõi người cao tuổi và thiết bị trong cơ sở"
+            },
+            "temperature": {
+                "title": "Giám sát nhiệt độ",
+                "description": "Giám sát thời gian thực thay đổi nhiệt độ và cảnh báo"
+            },
+            "heartRate": {
+                "title": "Giám sát nhịp tim",
+                "description": "Giám sát thời gian thực thay đổi nhịp tim và cảnh báo"
+            },
+            "diaper": {
+                "title": "Giám sát tã",
+                "description": "Giám sát thời gian thực tình trạng độ ẩm tã và hồ sơ thay đổi"
+            }
+        },
+        "stats": {
+            "totalResidents": "Tổng số cư dân",
+            "todayTasks": "Nhiệm vụ hôm nay",
+            "healthAlerts": "Cảnh báo sức khỏe",
+            "monthlyReport": "Báo cáo tháng",
+            "completed": "Hoàn thành"
+        },
+        "actions": {
+            "startUsing": "Bắt đầu sử dụng ngay",
+            "systemGuide": "Hướng dẫn hệ thống"
+        }
+    },
+    "heartTemp": {
+        "title": "Giám sát nhịp tim & nhiệt độ",
+        "subtitle": "Dữ liệu nhịp tim và nhiệt độ kết hợp, giám sát thiết bị 300B với kết nối đơn",
+        "tabs": {
+            "heart": "Nhịp tim",
+            "temp": "Nhiệt độ"
+        },
+        "deviceNameFallback": "Thiết bị"
+    },
+    "residents": {
+        "title": "Quản lý cư dân",
+        "subtitle": "Quản lý dữ liệu cư dân và liên kết thiết bị",
+        "stats": {
+            "totalResidents": "Tổng số cư dân",
+            "activeDevices": "Thiết bị hoạt động",
+            "offlineDevices": "Thiết bị ngoại tuyến",
+            "errorDevices": "Thiết bị lỗi",
+            "unboundDevices": "Thiết bị chưa liên kết"
+        },
+        "filters": {
+            "all": "Tất cả",
+            "good": "Tốt",
+            "attention": "Chú ý",
+            "critical": "Nghiêm trọng"
+        },
+        "search": {
+            "placeholder": "Tìm kiếm theo tên, ID hoặc số phòng..."
+        },
+        "list": {
+            "title": "Danh sách cư dân",
+            "count": "Tổng {{count}} cư dân",
+            "noDevices": "Chưa có thiết bị liên kết",
+            "boundDevices": "Thiết bị đã liên kết:"
+        },
+        "actions": {
+            "addResident": "Thêm cư dân",
+            "showDeviceManagement": "Hiển thị quản lý thiết bị",
+            "hideDeviceManagement": "Ẩn quản lý thiết bị",
+            "manageDevices": "Quản lý thiết bị",
+            "edit": "Chỉnh sửa",
+            "remove": "Xóa",
+            "info": "Thông tin",
+            "unbindDevice": "Hủy liên kết thiết bị"
+        },
+        "form": {
+            "name": "Tên",
+            "age": "Tuổi",
+            "gender": "Giới tính",
+            "room": "Số phòng",
+            "status": "Trạng thái",
+            "avatar": "Ảnh đại diện",
+            "emergencyContact": "Liên hệ khẩn cấp",
+            "relationship": "Quan hệ",
+            "phone": "Điện thoại",
+            "careNotes": "Ghi chú chăm sóc",
+            "male": "Nam",
+            "female": "Nữ",
+            "good": "Tốt",
+            "attention": "Chú ý",
+            "critical": "Nghiêm trọng"
+        },
+        "deviceManagement": {
+            "title": "Thiết bị chưa liên kết",
+            "count": "{{count}} thiết bị",
+            "bind": "Liên kết"
+        },
+        "deviceCount": "Thiết bị",
+        "id": "ID",
+        "room": "Phòng",
+        "ageUnit": "tuổi",
+        "boundDevices": "Thiết bị đã liên kết",
+        "noDevicesBound": "Không có thiết bị liên kết",
+        "monitoring": {
+            "title": "Giám sát thiết bị",
+            "showControls": "Hiển thị điều khiển",
+            "hideControls": "Ẩn điều khiển",
+            "showTest": "Hiển thị bảng kiểm tra",
+            "hideTest": "Ẩn bảng kiểm tra",
+            "showDebug": "Hiển thị bảng gỡ lỗi",
+            "hideDebug": "Ẩn bảng gỡ lỗi",
+            "boundDevices": "Thiết bị đã liên kết",
+            "onlineDevices": "Thiết bị trực tuyến",
+            "offlineDevices": "Thiết bị ngoại tuyến",
+            "errorDevices": "Thiết bị lỗi"
+        },
+        "modal": {
+            "addResident": "Thêm cư dân",
+            "name": "Tên",
+            "age": "Tuổi",
+            "gender": "Giới tính",
+            "room": "Số phòng",
+            "status": "Trạng thái",
+            "avatar": "Ảnh đại diện",
+            "emergencyContactName": "Tên liên hệ khẩn cấp",
+            "relationship": "Quan hệ",
+            "phone": "Điện thoại",
+            "careNotes": "Ghi chú chăm sóc",
+            "placeholders": {
+                "name": "Nhập tên cư dân",
+                "age": "Nhập tuổi",
+                "room": "Nhập số phòng",
+                "avatar": "Nhập emoji hoặc văn bản",
+                "emergencyContactName": "Nhập tên liên hệ khẩn cấp",
+                "relationship": "Nhập quan hệ",
+                "phone": "Nhập số điện thoại",
+                "careNotes": "Nhập ghi chú chăm sóc"
+            },
+            "genderOptions": {
+                "male": "Nam",
+                "female": "Nữ"
+            }
+        },
+        "deviceBinding": {
+            "title": "Quản lý liên kết thiết bị",
+            "currentBinding": "Liên kết hiện tại",
+            "deviceBoundToResident": "Thiết bị {{deviceName}} đã liên kết với cư dân {{residentName}}",
+            "unbind": "Hủy liên kết",
+            "selectDevice": "Chọn thiết bị",
+            "searchDevicePlaceholder": "Tìm kiếm tên thiết bị, ID phần cứng...",
+            "alreadyBound": "Đã liên kết",
+            "selectResident": "Chọn cư dân",
+            "searchResidentPlaceholder": "Tìm kiếm tên cư dân, số phòng...",
+            "bindingSettings": "Cài đặt liên kết",
+            "bindingType": "Loại liên kết",
+            "primaryDevice": "Thiết bị chính",
+            "secondaryDevice": "Thiết bị phụ",
+            "notes": "Ghi chú",
+            "notesPlaceholder": "Ghi chú liên kết (tùy chọn)",
+            "residentDevices": "Thiết bị của {{name}}",
+            "confirmBind": "Xác nhận liên kết"
+        },
+        "detailModal": {
+            "editInfo": "Chỉnh sửa thông tin cư dân",
+            "emergencyContact": "Liên hệ khẩn cấp",
+            "careNotes": "Ghi chú chăm sóc",
+            "careNotesPlaceholder": "Vui lòng nhập ghi chú chăm sóc...",
+            "noCareNotes": "Không có ghi chú chăm sóc",
+            "editCareNotes": "Chỉnh sửa ghi chú chăm sóc",
+            "addDevice": "Thêm thiết bị",
+            "noDevicesBound": "Chưa có thiết bị liên kết",
+            "close": "Đóng"
+        },
+        "unboundDevices": "Thiết bị chưa liên kết",
+        "bindDevice": "Liên kết",
+        "alerts": {
+            "importSuccess": "✅ Nhập dữ liệu thành công! Lưu ý: Dữ liệu cư dân cần được cập nhật qua quản lý hệ thống",
+            "invalidFormat": "❌ Định dạng dữ liệu không hợp lệ",
+            "importFailed": "❌ Nhập dữ liệu thất bại"
+        },
+        "confirms": {
+            "resetSettings": "Bạn có chắc chắn muốn đặt lại tất cả cài đặt quản lý cư dân? Hành động này không thể hoàn tác!",
+            "removeResident": "Bạn có chắc chắn muốn xóa cư dân này? Hành động này không thể hoàn tác."
+        }
+    },
+    "deviceManagement": {
+        "title": "Quản lý thiết bị",
+        "subtitle": "Quản lý tất cả các loại thiết bị chăm sóc, hỗ trợ đồng hồ 300B, cảm biến tã, cảm biến chuyển động và thẻ vị trí",
+        "searchPlaceholder": "Tìm kiếm tên thiết bị, ID phần cứng hoặc UID thiết bị...",
+        "filters": {
+            "all": "Tất cả",
+            "smartwatch300B": "300B",
+            "diaperSensor": "Tã",
+            "pedometer": "Chuyển động",
+            "uwbTag": "Thẻ",
+            "uwbAnchor": "Anchor",
+            "gateway": "Gateway"
+        },
+        "actions": {
+            "addDevice": "Thêm thiết bị",
+            "autoDiscovery": "Tìm kiếm tự động",
+            "forceSave": "Buộc lưu",
+            "exportSettings": "Xuất cài đặt",
+            "importSettings": "Nhập cài đặt",
+            "debugStorage": "Gỡ lỗi bộ nhớ"
+        },
+        "autoAdd": {
+            "enabled": "Tự động thêm: Bật",
+            "disabled": "Tự động thêm: Tắt"
+        },
+        "stats": {
+            "totalDevices": "Tổng số thiết bị",
+            "activeDevices": "Thiết bị hoạt động",
+            "smartwatch300B": "Đồng hồ 300B",
+            "diaperSensor": "Cảm biến tã",
+            "otherDevices": "Thiết bị khác"
+        },
+        "deviceList": {
+            "title": "Danh sách thiết bị",
+            "count": "Tổng {{count}} thiết bị",
+            "noDevices": "Không có thiết bị phù hợp với tiêu chí",
+            "hardwareId": "ID phần cứng",
+            "type": "Loại",
+            "gateway": "Gateway",
+            "replace": "Thay thế",
+            "remove": "Xóa"
+        },
+        "addModal": {
+            "title": "Thêm thiết bị",
+            "deviceType": "Loại thiết bị",
+            "deviceName": "Tên thiết bị",
+            "hardwareId": "ID phần cứng",
+            "macAddress": "Địa chỉ MAC",
+            "deviceId": "ID thiết bị",
+            "gatewayId": "ID Gateway (Tùy chọn)",
+            "deviceTypes": {
+                "smartwatch300B": "Đồng hồ giám sát sức khỏe 300B",
+                "diaperSensor": "Cảm biến tã thông minh",
+                "pedometer": "Cảm biến chuyển động",
+                "uwbTag": "Thẻ vị trí UWB",
+                "uwbAnchor": "Anchor vị trí UWB",
+                "gateway": "Gateway UWB"
+            },
+            "placeholders": {
+                "deviceName": "Nhập tên thiết bị",
+                "hardwareId": "Nhập ID phần cứng",
+                "macAddress": "Nhập địa chỉ MAC (ví dụ: E0:0E:08:36:93:F8)",
+                "deviceId": "Nhập ID thiết bị (ví dụ: 5345)",
+                "gatewayId": "Nhập ID gateway"
+            }
+        },
+        "replaceModal": {
+            "title": "Thay thế thiết bị",
+            "currentHardwareId": "ID phần cứng hiện tại",
+            "deviceUid": "UID thiết bị",
+            "newHardwareId": "ID phần cứng mới",
+            "confirmReplace": "Xác nhận thay thế",
+            "placeholders": {
+                "newHardwareId": "Nhập ID phần cứng mới"
+            }
+        },
+        "alerts": {
+            "importSuccess": "✅ Nhập dữ liệu thành công! Lưu ý: Dữ liệu thiết bị cần được cập nhật qua quản lý hệ thống",
+            "invalidFormat": "❌ Định dạng dữ liệu không hợp lệ",
+            "importFailed": "❌ Nhập dữ liệu thất bại"
+        },
+        "confirms": {
+            "resetSettings": "Bạn có chắc chắn muốn đặt lại tất cả cài đặt quản lý thiết bị? Hành động này không thể hoàn tác!",
+            "removeDevice": "Bạn có chắc chắn muốn xóa thiết bị này?"
+        },
+        "monitoring": {
+            "title": "Giám sát thiết bị",
+            "hideControls": "Ẩn điều khiển",
+            "showControls": "Hiển thị điều khiển",
+            "hideTest": "Ẩn kiểm tra",
+            "showTest": "Hiển thị kiểm tra",
+            "hideDebug": "Ẩn gỡ lỗi",
+            "showDebug": "Hiển thị gỡ lỗi",
+            "boundDevices": "Thiết bị đã liên kết",
+            "onlineDevices": "Thiết bị trực tuyến",
+            "offlineDevices": "Thiết bị ngoại tuyến",
+            "errorDevices": "Thiết bị lỗi",
+            "deviceCount": "thiết bị",
+            "noDevices": "Không có thiết bị",
+            "noMatchingDevices": "Không có thiết bị phù hợp với tiêu chí lọc"
+        },
+        "batchActions": {
+            "batchActions": "Thao tác hàng loạt",
+            "selectedCount": "Đã chọn",
+            "devices": "thiết bị",
+            "selectAll": "Chọn tất cả",
+            "deselectAll": "Bỏ chọn tất cả",
+            "batchUnbind": "Hủy liên kết hàng loạt",
+            "batchUnbindShort": "Hủy liên kết",
+            "batchRemove": "Xóa hàng loạt",
+            "batchRemoveShort": "Xóa",
+            "confirmUnbind": "Bạn có chắc chắn muốn hủy liên kết {{count}} thiết bị sau?\n\n{{devices}}\n\nHành động này không thể hoàn tác.",
+            "confirmRemove": "Bạn có chắc chắn muốn xóa {{count}} thiết bị sau?\n\n{{devices}}\n\nHành động này không thể hoàn tác.",
+            "noBindableDevices": "Không có thiết bị đã liên kết trong lựa chọn",
+            "noDevicesSelected": "Vui lòng chọn thiết bị để xóa",
+            "unbindSuccess": "Đã hủy liên kết thành công {{count}} thiết bị",
+            "removeSuccess": "Đã xóa thành công {{count}} thiết bị",
+            "gateway": {
+                "changeNetworkId": "Thay đổi ID mạng UWB",
+                "changeLocation": "Sửa đổi viện d양ão và tầng",
+                "gatewayId": "ID Gateway",
+                "notSet": "Chưa thiết lập",
+                "selectOneGateway": "Vui lòng chọn 1 thiết bị gateway",
+                "networkIdRange": "ID mạng UWB phải từ 1~65535",
+                "networkIdCommandSentSuccess": "✅ Đã gửi thành công lệnh thay đổi ID mạng UWB tới {{name}}\nID mạng: {{networkId}}",
+                "locationUpdatedSuccess": "Viện dưỡng lão và tầng của gateway đã được cập nhật thành công!"
+            },
+            "anchor": {
+                "changeHeight": "Sửa đổi độ cao (Tọa độ Z)",
+                "changePower": "Sửa đổi công suất",
+                "requestData": "Yêu cầu dữ liệu Anchor",
+                "requesting": "Đang gửi...",
+                "anchorName": "Tên Anchor",
+                "anchorId": "ID Anchor",
+                "gatewayId": "ID Gateway",
+                "notSet": "Chưa thiết lập",
+                "selectOneAnchor": "Vui lòng chọn 1 thiết bị anchor",
+                "selectAtLeastOneAnchor": "Vui lòng chọn ít nhất 1 thiết bị anchor",
+                "enterValidZCoordinate": "Vui lòng nhập giá trị tọa độ Z hợp lệ",
+                "enterAllPowerValues": "Vui lòng nhập tất cả giá trị công suất",
+                "powerValueRange": "Giá trị công suất phải từ 5.0~30.5 dB",
+                "commandSentSuccess": "✅ Đã gửi thành công lệnh sửa đổi công suất tới {{name}}",
+                "heightCommandSentSuccess": "✅ Đã gửi thành công lệnh sửa đổi độ cao tới {{name}}\nTọa độ Z mới: {{zValue}}",
+                "requestDataSuccess": "✅ Đã gửi thành công lệnh yêu cầu dữ liệu tới {{count}} thiết bị anchor",
+                "requestDataPartialSuccess": "⚠️ Đã gửi thành công {{successCount}}, thất bại {{failCount}}\nThiết bị thất bại: {{failedDevices}}",
+                "requestDataFailed": "❌ Tất cả lệnh đều thất bại\nThiết bị thất bại: {{failedDevices}}"
+            },
+            "tag": {
+                "changeConfig": "Thay đổi cài đặt tham số",
+                "changePower": "Sửa đổi công suất",
+                "requestData": "Yêu cầu dữ liệu Tag",
+                "requesting": "Đang gửi...",
+                "tagName": "Tên Tag",
+                "tagId": "ID Tag",
+                "gatewayId": "ID Gateway",
+                "notSet": "Chưa thiết lập",
+                "selectOneTag": "Vui lòng chọn 1 thiết bị tag",
+                "selectAtLeastOneTag": "Vui lòng chọn ít nhất 1 thiết bị tag",
+                "enterAllParameterValues": "Vui lòng nhập tất cả giá trị tham số",
+                "enterAllPowerValues": "Vui lòng nhập tất cả giá trị công suất",
+                "powerValueRange": "Giá trị công suất phải từ 5.0~30.5 dB",
+                "configCommandSentSuccess": "✅ Đã gửi thành công lệnh thay đổi cài đặt tham số tới {{name}}",
+                "powerCommandSentSuccess": "✅ Đã gửi thành công lệnh sửa đổi công suất tới {{name}}",
+                "requestDataSuccess": "✅ Đã gửi thành công lệnh yêu cầu dữ liệu tới {{count}} thiết bị tag",
+                "requestDataPartialSuccess": "⚠️ Đã gửi thành công {{successCount}}, thất bại {{failCount}}\nThiết bị thất bại: {{failedDevices}}",
+                "requestDataFailed": "❌ Tất cả lệnh đều thất bại\nThiết bị thất bại: {{failedDevices}}"
+            },
+            "common": {
+                "gatewayNotFound": "Không tìm thấy cấu hình gateway, vui lòng thêm gateway trong \"Quản lý vị trí UWB\" trước",
+                "downlinkTopicNotFound": "Không tìm thấy gateway hoặc chủ đề downlink",
+                "mqttBusNotConnected": "Bus MQTT chưa kết nối, không thể gửi lệnh",
+                "invalidDeviceIdOrGatewayId": "Không thể lấy ID {{deviceType}} hoặc ID Gateway hợp lệ",
+                "selectFloor": "Vui lòng chọn tầng",
+                "commandSendFailed": "Gửi lệnh thất bại: {{error}}",
+                "commandSendError": "Đã xảy ra lỗi khi gửi lệnh: {{error}}",
+                "updateFailed": "Cập nhật thất bại: {{error}}"
+            }
+        },
+        "deviceInfo": {
+            "title": "Thông tin thiết bị",
+            "basicInfo": "Thông tin cơ bản",
+            "deviceName": "Tên thiết bị",
+            "deviceType": "Loại thiết bị",
+            "hardwareId": "ID phần cứng",
+            "macAddress": "Địa chỉ MAC",
+            "deviceUid": "UID thiết bị",
+            "uid": "UID",
+            "gatewayId": "ID Gateway",
+            "gatewayName": "Tên Gateway",
+            "firmwareVersion": "Phiên bản firmware",
+            "batteryLevel": "Mức pin",
+            "status": "Trạng thái",
+            "bindingInfo": "Thông tin liên kết",
+            "residentId": "Cư dân đã liên kết",
+            "unbound": "Chưa liên kết",
+            "dataInfo": "Thông tin dữ liệu",
+            "lastData": "Dữ liệu mới nhất",
+            "lastSeen": "Lần xuất hiện cuối",
+            "systemInfo": "Thông tin hệ thống",
+            "createdAt": "Được tạo lúc",
+            "updatedAt": "Được cập nhật lúc",
+            "close": "Đóng"
+        },
+        "monitoringStatus": {
+            "title": "Trạng thái giám sát",
+            "connected": "Đã kết nối",
+            "disconnected": "Mất kết nối",
+            "gatewayCount": "{{count}} Gateway",
+            "lastUpdate": "Cập nhật cuối",
+            "monitoring": "Đang giám sát",
+            "stopped": "Đã dừng",
+            "start": "Bắt đầu",
+            "stop": "Dừng"
+        },
+        "monitoringControls": {
+            "title": "Điều khiển giám sát thiết bị",
+            "selectGateway": "Chọn Gateway",
+            "stopMonitoring": "Dừng giám sát",
+            "online": "Trực tuyến",
+            "offline": "Ngoại tuyến"
+        },
+        "monitoringDebug": {
+            "title": "Bảng gỡ lỗi MQTT",
+            "monitoring": "Đang giám sát",
+            "stopped": "Đã dừng",
+            "hide": "Ẩn",
+            "show": "Hiển thị",
+            "maxMessages": "Tin nhắn tối đa",
+            "filterByTopic": "Lọc theo chủ đề",
+            "filterByDevice": "Lọc theo thiết bị",
+            "topicPlaceholder": "ví dụ: Health, Loc",
+            "devicePlaceholder": "Tên thiết bị hoặc ID",
+            "export": "Xuất",
+            "clear": "Xóa",
+            "totalMessages": "Tổng số tin nhắn",
+            "displaying": "Đang hiển thị",
+            "healthData": "Dữ liệu sức khỏe",
+            "locationData": "Dữ liệu vị trí",
+            "ackMessages": "Tin nhắn Ack",
+            "noMessages": "Chưa có tin nhắn gỡ lỗi",
+            "usageInstructions": "Hướng dẫn sử dụng",
+            "instruction1": "Bảng gỡ lỗi này hiển thị tin nhắn MQTT thời gian thực",
+            "instruction2": "Tin nhắn có thể được lọc theo chủ đề hoặc tên thiết bị",
+            "instruction3": "Nhấp nút sao chép để sao chép dữ liệu vào clipboard",
+            "instruction4": "Hỗ trợ xuất dữ liệu gỡ lỗi dưới dạng tệp JSON",
+            "instruction5": "Tin nhắn được cập nhật tự động, giữ số lượng tối đa đã chỉ định"
+        },
+        "deviceDiscovery": {
+            "title": "Tìm kiếm thiết bị",
+            "discovering": "Đang tìm kiếm...",
+            "existingDevices": "Thiết bị hiện có",
+            "newlyDiscovered": "Thiết bị mới phát hiện",
+            "scanning": "Đang quét thiết bị...",
+            "remove": "Xóa",
+            "add": "Thêm",
+            "confirm": "Xác nhận",
+            "cancel": "Hủy",
+            "stopDiscovery": "Dừng tìm kiếm",
+            "deviceCount": "thiết bị",
+            "existingCount": "Hiện có",
+            "discoveredCount": "Phát hiện"
+        },
+        "deviceCard": {
+            "online": "Trực tuyến",
+            "offline": "Ngoại tuyến",
+            "unknown": "Không xác định",
+            "deviceInfo": "Thông tin thiết bị",
+            "bindDevice": "Liên kết thiết bị",
+            "removeDevice": "Xóa thiết bị",
+            "unbind": "Hủy liên kết",
+            "battery": "Pin",
+            "room": "Phòng",
+            "qrCode": "Mã QR"
+        }
+    },
+    "health": {
+        "systemTitle": "Hệ thống chăm sóc người cao tuổi",
+        "monitoringTitle": "Giám sát bệnh nhân",
+        "actions": {
+            "forceSave": "Buộc lưu",
+            "exportSettings": "Xuất cài đặt",
+            "importSettings": "Nhập cài đặt",
+            "debugStorage": "Gỡ lỗi bộ nhớ"
+        },
+        "stats": {
+            "totalResidents": "Tổng số cư dân",
+            "activeDevices": "Thiết bị hoạt động",
+            "offlineDevices": "Thiết bị ngoại tuyến",
+            "errorDevices": "Thiết bị lỗi"
+        },
+        "filters": {
+            "全部": "Tất cả",
+            "異常": "Lỗi",
+            "正常": "Bình thường",
+            "需注意": "Chú ý"
+        },
+        "patientInfo": {
+            "age": "Tuổi",
+            "room": "Phòng",
+            "devices": "Thiết bị"
+        },
+        "patientStatus": {
+            "normal": "Bình thường",
+            "error": "Lỗi",
+            "attention": "Chú ý",
+            "noDevices": "Không có thiết bị"
+        },
+        "monitoringIcons": {
+            "temperature": "Nhiệt độ",
+            "heartRate": "Nhịp tim",
+            "physiological": "Sinh lý",
+            "diaper": "Tã",
+            "activity": "Hoạt động",
+            "location": "Vị trí",
+            "emergency": "Khẩn cấp",
+            "reminders": "Nhắc nhở",
+            "residents": "Cư dân",
+            "devices": "Thiết bị"
+        },
+        "emptyState": {
+            "noPatients": "Hiện tại không có bệnh nhân với trạng thái {{status}}",
+            "goToResidentManagement": "Đi đến Quản lý cư dân để thiết lập thiết bị"
+        },
+        "alerts": {
+            "importSuccess": "✅ Cài đặt giám sát sức khỏe đã được nhập thành công!",
+            "invalidFormat": "❌ Định dạng dữ liệu không hợp lệ",
+            "importFailed": "❌ Nhập dữ liệu thất bại"
+        },
+        "confirms": {
+            "resetSettings": "Bạn có chắc chắn muốn đặt lại tất cả cài đặt giám sát sức khỏe? Hành động này không thể hoàn tác!"
+        }
+    },
+    "emergencyCall": {
+        "title": "Cuộc gọi khẩn cấp",
+        "subtitle": "Gửi tín hiệu trợ giúp khẩn cấp nhanh chóng để đảm bảo hỗ trợ kịp thời",
+        "patient": "Bệnh nhân",
+        "location": "Vị trí",
+        "selectPatient": "Chọn bệnh nhân",
+        "selectLocation": "Chọn vị trí",
+        "emergencyButton": "Cuộc gọi\nKhẩn cấp",
+        "callHistory": "Lịch sử cuộc gọi",
+        "refreshStatus": "Làm mới trạng thái",
+        "types": {
+            "fall": "Ngã",
+            "pain": "Đau",
+            "toilet": "Hỗ trợ nhà vệ sinh",
+            "medicine": "Hỗ trợ thuốc",
+            "help": "Hỗ trợ khác"
+        },
+        "status": {
+            "responding": "Đang phản hồi...",
+            "caregiverOnWay": "Người chăm sóc đang trên đường...",
+            "completed": "Hoàn thành",
+            "cancelled": "Đã hủy",
+            "pending": "Đang chờ phản hồi"
+        },
+        "info": {
+            "patient": "Bệnh nhân",
+            "location": "Vị trí",
+            "type": "Loại",
+            "callTime": "Thời gian gọi",
+            "waitTime": "Thời gian chờ",
+            "responder": "Người phản hồi",
+            "responseTime": "Thời gian phản hồi"
+        },
+        "record": {
+            "callTime": "Thời gian gọi",
+            "completedTime": "Thời gian hoàn thành",
+            "handler": "Người xử lý",
+            "cancelReason": "Lý do hủy"
+        },
+        "emptyState": {
+            "noRecords": "Không có hồ sơ cuộc gọi",
+            "completedCalls": "Cuộc gọi khẩn cấp đã hoàn thành sẽ được hiển thị ở đây"
+        },
+        "modals": {
+            "selectType": {
+                "title": "Chọn loại khẩn cấp"
+            },
+            "cancelCall": {
+                "title": "Hủy cuộc gọi khẩn cấp",
+                "reasonLabel": "Vui lòng nhập lý do hủy",
+                "reasonPlaceholder": "Lý do hủy",
+                "back": "Quay lại",
+                "confirm": "Xác nhận hủy"
+            }
+        },
+        "timeUnits": {
+            "minutes": "phút",
+            "seconds": "giây"
+        }
+    },
+    "reminders": {
+        "title": "Nhắc nhở theo lịch",
+        "subtitle": "Quản lý nhắc nhở thuốc, uống nước và chăm sóc khác cho người cao tuổi",
+        "addReminder": "Thêm nhắc nhở",
+        "todayReminders": "Nhắc nhở hôm nay",
+        "complete": "Hoàn thành",
+        "types": {
+            "medication": "Nhắc nhở thuốc",
+            "water": "Nhắc nhở uống nước",
+            "physicalTherapy": "Vật lý trị liệu"
+        },
+        "descriptions": {
+            "hypertension": "Thuốc huyết áp cao",
+            "diabetes": "Thuốc tiểu đường",
+            "hydration": "Đảm bảo uống đủ nước",
+            "rehabilitation": "Bài tập phục hồi chức năng hàng ngày"
+        },
+        "cards": {
+            "periodic": {
+                "title": "Nhắc nhở định kỳ",
+                "description": "Quản lý nhiệm vụ nhắc nhở hàng ngày, hàng tuần hoặc định kỳ tùy chỉnh"
+            },
+            "statistics": {
+                "title": "Thống kê nhắc nhở",
+                "description": "Xem trạng thái hoàn thành nhắc nhở và dữ liệu thống kê"
+            },
+            "settings": {
+                "title": "Cài đặt nhắc nhở",
+                "description": "Tùy chỉnh phương thức thông báo nhắc nhở và quy tắc nhắc nhở"
+            }
+        }
+    },
+    "location": {
+        "title": "Vị trí trong nhà",
+        "subtitle": "Theo dõi vị trí người cao tuổi và thiết bị trong cơ sở để đảm bảo an toàn và chăm sóc",
+        "selectArea": {
+            "title": "Chọn khu vực giám sát",
+            "nursingHome": "Viện dưỡng lão",
+            "floor": "Tầng",
+            "gateway": "Gateway",
+            "selectNursingHome": "Chọn viện dưỡng lão",
+            "selectFloor": "Chọn tầng",
+            "selectGateway": "Chọn Gateway",
+            "local": "Địa phương",
+            "noGateway": "Không có Gateway"
+        },
+        "mqttStatus": {
+            "title": "Trạng thái kết nối MQTT",
+            "refreshData": "Làm mới dữ liệu",
+            "refreshTitle": "Làm mới dữ liệu hiệu chuẩn",
+            "status": "Trạng thái",
+            "topic": "Chủ đề",
+            "deviceCount": "Số lượng thiết bị",
+            "error": "Lỗi",
+            "none": "Không có",
+            "mqttBus": "Bus MQTT",
+            "未連線": "Mất kết nối",
+            "已連線": "Đã kết nối",
+            "連接中...": "Đang kết nối...",
+            "重新連接中...": "Đang kết nối lại...",
+            "連接已關閉": "Kết nối đã đóng",
+            "客戶端離線": "Máy khách ngoại tuyến",
+            "連接錯誤": "Lỗi kết nối",
+            "未選擇閘道器": "Không có Gateway được chọn",
+            "無法獲取閘道器主題": "Không thể lấy chủ đề Gateway"
+        },
+        "connectionStatus": {
+            "title": "Trạng thái MQTT",
+            "connected": "Đã kết nối",
+            "disconnected": "Mất kết nối",
+            "connecting": "Đang kết nối...",
+            "reconnecting": "Đang kết nối lại...",
+            "connectionError": "Lỗi kết nối"
+        },
+        "searchFilter": {
+            "title": "Tìm kiếm và lọc",
+            "searchPlaceholder": "Tìm kiếm tên cư dân hoặc số phòng...",
+            "allStatus": "Tất cả trạng thái",
+            "allDevices": "Tất cả thiết bị",
+            "watch": "Đồng hồ",
+            "uwbTag": "Thẻ UWB"
+        },
+        "map": {
+            "realtimeMap": "Bản đồ vị trí thời gian thực",
+            "showDevices": "Hiển thị {{count}} thiết bị",
+            "zoomIn": "Phóng to",
+            "zoomOut": "Thu nhỏ",
+            "resetView": "Đặt lại chế độ xem",
+            "zoom": "Phóng to",
+            "hideMarkerInfo": "Ẩn thông tin đánh dấu",
+            "showMarkerInfo": "Hiển thị thông tin đánh dấu",
+            "controls": "Cuộn để phóng to | Kéo để di chuyển",
+            "noDevices": "Không có thiết bị phù hợp với tiêu chí",
+            "selectGateway": "Vui lòng chọn gateway và tạo kết nối trước",
+            "noDimensions": "Tầng này chưa thiết lập kích thước bản đồ",
+            "selectFloor": "Vui lòng chọn tầng để hiển thị bản đồ",
+            "mapStatus": "Trạng thái bản đồ",
+            "calibrated": "Đã hiệu chuẩn",
+            "notCalibrated": "Chưa hiệu chuẩn",
+            "ratio": "Tỷ lệ",
+            "pixelsPerMeter": "pixel/mét",
+            "translate": "Dịch",
+            "totalDevices": "Tổng số thiết bị",
+            "onlineDevices": "Thiết bị trực tuyến",
+            "filtered": "Đã lọc"
+        },
+        "deviceList": {
+            "onlineDevices": "Thiết bị trực tuyến ({{count}})",
+            "totalDevices": "Tổng {{count}} thiết bị",
+            "room": "Phòng",
+            "position": "Vị trí",
+            "updated": "Đã cập nhật",
+            "online": "Trực tuyến"
+        }
+    },
+    "temperature": {
+        "title": "Giám sát nhiệt độ",
+        "subtitle": "Giám sát thời gian thực thay đổi nhiệt độ người cao tuổi để phát hiện bất thường sức khỏe kịp thời",
+        "navigationFromHealth": "Điều hướng từ trang Giám sát sức khỏe",
+        "currentPatient": "Bệnh nhân hiện tại",
+        "reconnectLocal": "Kết nối lại địa phương",
+        "reconnectCloud": "Kết nối lại đám mây",
+        "tabs": {
+            "local": "MQTT địa phương",
+            "cloud": "MQTT đám mây"
+        },
+        "patientSelection": {
+            "title": "Chọn bệnh nhân",
+            "selectPatient": "Chọn bệnh nhân",
+            "patient": "Bệnh nhân"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Giám sát thiết bị đám mây",
+            "connected": "Đã kết nối",
+            "離線": "Ngoại tuyến",
+            "連接中...": "Đang kết nối...",
+            "重新連接中...": "Đang kết nối lại...",
+            "連接已關閉": "Kết nối đã đóng",
+            "連接錯誤": "Lỗi kết nối",
+            "未選擇閘道器": "Không có Gateway được chọn",
+            "selectArea": "Chọn khu vực giám sát:",
+            "selectNursingHomeFirst": "Vui lòng chọn viện dưỡng lão trước",
+            "selectFloorFirst": "Vui lòng chọn tầng trước",
+            "currentGateway": "Gateway hiện đang chọn:",
+            "listeningTopic": "Chủ đề đang nghe",
+            "cannotGetTopic": "Không thể lấy chủ đề",
+            "discoveredDevices": "Thiết bị phát hiện",
+            "totalRecords": "Tổng số bản ghi",
+            "mqttMessages": "Tin nhắn MQTT",
+            "selectDevice": "Chọn thiết bị giám sát:",
+            "selectCloudDevice": "Chọn thiết bị đám mây để giám sát chi tiết",
+            "records": " bản ghi",
+            "noDevices": "Chưa phát hiện thiết bị đám mây",
+            "pleaseConfirm": "Vui lòng xác nhận:",
+            "cloudMqttSimulator": "Trình mô phỏng MQTT đám mây đang chạy",
+            "simulatorFormat": "Trình mô phỏng gửi dữ liệu với định dạng nội dung: \"300B\"",
+            "dataFields": "Dữ liệu chứa trường MAC và \"skin temp\"",
+            "recentData": "Dữ liệu mới nhận:",
+            "device": "Thiết bị",
+            "temperature": "Nhiệt độ",
+            "roomTemperature": "Nhiệt độ phòng",
+            "battery": "Pin",
+            "diaperDevice": "Thiết bị tã",
+            "humidity": "Độ ẩm",
+            "viewRawData": "Xem dữ liệu MQTT thô (Gỡ lỗi)",
+            "clickToExpand": "Nhấp vào dữ liệu bên dưới để mở rộng và xem nội dung đầy đủ",
+            "deviceCreationConditions": "Kiểm tra điều kiện tạo thiết bị:",
+            "condition1": "Phải có nội dung: \"300B\"",
+            "condition2": "Phải có trường MAC",
+            "condition3": "Trường skin_temp có thể trống hoặc 0 (điều kiện nới lỏng)",
+            "condition4": "Dữ liệu loại DV1 tã hiện tại không tạo bản ghi thiết bị"
+        },
+        "deviceTemperatureData": {
+            "title": "Dữ liệu nhiệt độ thiết bị",
+            "unknownDevice": "Thiết bị không xác định",
+            "skinTemperature": "Nhiệt độ da",
+            "roomTemperature": "Nhiệt độ phòng",
+            "steps": "Bước",
+            "battery": "Pin",
+            "temperatureHigh": "Nhiệt độ cao",
+            "temperatureLow": "Nhiệt độ thấp",
+            "normal": "Bình thường"
+        },
+        "dateTabs": {
+            "today": "Hôm nay",
+            "yesterday": "Hôm qua",
+            "dayBefore": "Ngày kia"
+        },
+        "temperatureChart": {
+            "title": "Biểu đồ xu hướng nhiệt độ",
+            "cloudDevice": "Thiết bị đám mây",
+            "localUser": "Người dùng địa phương",
+            "yAxisLabel": "Nhiệt độ (°C)",
+            "time": "Thời gian",
+            "temperature": "Nhiệt độ",
+            "highTempLine": "Đường cảnh báo nhiệt độ cao",
+            "lowTempLine": "Đường cảnh báo nhiệt độ thấp",
+            "noData": "Không có dữ liệu nhiệt độ cho {{date}}",
+            "cloudSimulatorCheck": "Vui lòng xác nhận trình mô phỏng MQTT đám mây đang chạy",
+            "selectValidDevice": "và chọn thiết bị đám mây hợp lệ",
+            "localSimulatorCheck": "Vui lòng xác nhận trình mô phỏng MQTT địa phương đang chạy"
+        },
+        "temperatureRecords": {
+            "title": "Bản ghi nhiệt độ",
+            "filters": {
+                "all": "Tất cả",
+                "high": "Cao",
+                "low": "Thấp"
+            },
+            "timeRanges": {
+                "1day": "1 Ngày",
+                "3day": "3 Ngày",
+                "7day": "7 Ngày"
+            },
+            "noTemperatureData": "Không có dữ liệu nhiệt độ",
+            "roomTemperature": "Nhiệt độ phòng",
+            "temperatureHigh": "Nhiệt độ cao",
+            "temperatureLow": "Nhiệt độ thấp",
+            "normal": "Bình thường",
+            "noRecords": "Không có bản ghi phù hợp",
+            "selectCloudDeviceFirst": "Vui lòng chọn thiết bị đám mây trước",
+            "selectedDeviceNoData": "Thiết bị đã chọn không có dữ liệu nhiệt độ"
+        },
+        "connectionStatus": {
+            "title": "Giám sát trạng thái kết nối",
+            "localMqtt": "MQTT địa phương",
+            "cloudMqtt": "MQTT đám mây",
+            "error": "Lỗi",
+            "hint": "Gợi ý: MQTT địa phương cần chạy tại localhost:9001, MQTT đám mây sẽ tự động kết nối tới dịch vụ đám mây HiveMQ",
+            "connected": "Đã kết nối",
+            "disconnected": "Mất kết nối",
+            "connecting": "Đang kết nối...",
+            "reconnecting": "Đang kết nối lại...",
+            "connectionError": "Lỗi kết nối"
+        }
+    },
+    "settings": {
+        "title": "Cài đặt hệ thống",
+        "subtitle": "Quản lý cấu hình hệ thống, cài đặt cá nhân và tùy chọn bảo mật",
+        "categories": {
+            "personal": {
+                "title": "Cài đặt cá nhân",
+                "description": "Quản lý dữ liệu cá nhân và cài đặt tài khoản của bạn"
+            },
+            "notifications": {
+                "title": "Cài đặt thông báo",
+                "description": "Cấu hình thông báo hệ thống và phương thức nhắc nhở"
+            },
+            "security": {
+                "title": "Cài đặt bảo mật",
+                "description": "Thay đổi mật khẩu và cài đặt bảo mật tài khoản"
+            },
+            "display": {
+                "title": "Cài đặt hiển thị",
+                "description": "Tùy chỉnh giao diện hiển thị và chủ đề"
+            },
+            "data": {
+                "title": "Quản lý dữ liệu",
+                "description": "Cài đặt sao lưu và xuất dữ liệu"
+            },
+            "language": {
+                "title": "Ngôn ngữ & Khu vực",
+                "description": "Thiết lập ngôn ngữ hệ thống và múi giờ"
+            }
+        },
+        "systemInfo": {
+            "title": "Thông tin hệ thống",
+            "version": "Phiên bản hệ thống",
+            "lastUpdate": "Cập nhật cuối",
+            "terms": "Điều khoản dịch vụ",
+            "privacy": "Chính sách bảo mật",
+            "view": "Xem"
+        },
+        "actions": {
+            "enterSettings": "Vào cài đặt"
+        }
+    },
+    "placeholder": {
+        "title": "{{title}}",
+        "description": "Trang này đang được phát triển",
+        "more": "Tính năng khác",
+        "help": "Trung tâm trợ giúp",
+        "notFound": "404 - Không tìm thấy trang"
+    },
+    "heartRate": {
+        "title": "Giám sát nhịp tim",
+        "subtitle": "Giám sát thời gian thực thay đổi nhịp tim và cảnh báo",
+        "navigationFromHealth": "Điều hướng từ trang Giám sát sức khỏe",
+        "currentPatient": "Bệnh nhân hiện tại",
+        "reconnectLocal": "Kết nối lại địa phương",
+        "reconnectCloud": "Kết nối lại đám mây",
+        "tabs": {
+            "local": "MQTT địa phương",
+            "cloud": "MQTT đám mây"
+        },
+        "patientSelection": {
+            "title": "Chọn bệnh nhân",
+            "selectPatient": "Chọn bệnh nhân",
+            "patient": "Bệnh nhân"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Giám sát thiết bị đám mây",
+            "connected": "Đã kết nối",
+            "離線": "Ngoại tuyến",
+            "連接中...": "Đang kết nối...",
+            "重新連接中...": "Đang kết nối lại...",
+            "連接已關閉": "Kết nối đã đóng",
+            "連接錯誤": "Lỗi kết nối",
+            "未選擇閘道器": "Không có Gateway được chọn",
+            "selectArea": "Chọn khu vực giám sát:",
+            "selectNursingHome": "Viện dưỡng lão",
+            "selectNursingHomeFirst": "Vui lòng chọn viện dưỡng lão trước",
+            "selectFloor": "Tầng",
+            "selectFloorFirst": "Vui lòng chọn tầng trước",
+            "selectGateway": "Gateway",
+            "currentGateway": "Gateway hiện đang chọn:",
+            "listeningTopic": "Chủ đề đang nghe",
+            "cannotGetTopic": "Không thể lấy chủ đề",
+            "discoveredDevices": "Thiết bị phát hiện",
+            "totalRecords": "Tổng số bản ghi",
+            "mqttMessages": "Tin nhắn MQTT",
+            "selectDevice": "Chọn thiết bị giám sát:",
+            "selectCloudDevice": "Chọn thiết bị đám mây để giám sát chi tiết",
+            "records": " bản ghi",
+            "noDevices": "Chưa phát hiện thiết bị đám mây",
+            "pleaseConfirm": "Vui lòng xác nhận:",
+            "cloudMqttSimulator": "Trình mô phỏng MQTT đám mây đang chạy",
+            "simulatorFormat": "Trình mô phỏng gửi dữ liệu với định dạng nội dung: \"300B\"",
+            "dataFields": "Dữ liệu chứa trường MAC và liên quan đến nhịp tim",
+            "recentData": "Dữ liệu mới nhận:",
+            "device": "Thiết bị",
+            "heartRate": "Nhịp tim",
+            "spo2": "SpO2",
+            "bloodPressure": "Huyết áp",
+            "temperature": "Nhiệt độ",
+            "diaperDevice": "Thiết bị tã",
+            "humidity": "Độ ẩm",
+            "viewRawData": "Xem dữ liệu MQTT thô (Gỡ lỗi)",
+            "clickToExpand": "Nhấp vào dữ liệu bên dưới để mở rộng và xem nội dung đầy đủ",
+            "deviceCreationConditions": "Kiểm tra điều kiện tạo thiết bị:",
+            "condition1": "Phải có nội dung: \"300B\"",
+            "condition2": "Phải có trường MAC",
+            "condition3": "Trường hr, SpO2, bp_syst, bp_diast có thể trống hoặc 0 (điều kiện nới lỏng)",
+            "condition4": "Dữ liệu loại DV1 tã hiện tại không tạo bản ghi thiết bị"
+        },
+        "deviceHeartRateData": {
+            "title": "Dữ liệu dấu hiệu sinh tồn thiết bị",
+            "unknownDevice": "Thiết bị không xác định",
+            "heartRate": "Nhịp tim",
+            "spo2": "SpO2",
+            "bloodPressure": "Huyết áp",
+            "skinTemperature": "Nhiệt độ da",
+            "steps": "Bước",
+            "battery": "Pin",
+            "noData": "Không có dữ liệu",
+            "noHeartRateData": "Không có dữ liệu nhịp tim",
+            "heartRateHigh": "Nhịp tim cao",
+            "heartRateLow": "Nhịp tim thấp",
+            "normal": "Bình thường"
+        },
+        "dateTabs": {
+            "today": "Hôm nay",
+            "yesterday": "Hôm qua",
+            "dayBefore": "Ngày kia"
+        },
+        "heartRateTrendChart": {
+            "title": "Biểu đồ xu hướng nhịp tim"
+        },
+        "bloodPressureTrendChart": {
+            "title": "Biểu đồ xu hướng huyết áp",
+            "yAxisLabel": "Huyết áp (mmHg)",
+            "noData": "Không có dữ liệu huyết áp"
+        },
+        "recentMqttData": {
+            "title": "Dữ liệu MQTT mới nhận",
+            "device": "Thiết bị",
+            "heartRate": "Nhịp tim",
+            "spo2": "SpO2",
+            "bloodPressure": "Huyết áp",
+            "diaperDevice": "Thiết bị tã",
+            "temperature": "Nhiệt độ",
+            "humidity": "Độ ẩm"
+        },
+        "rawMqttData": {
+            "title": "Xem dữ liệu MQTT thô (Gỡ lỗi)",
+            "clickToExpand": "Nhấp vào dữ liệu bên dưới để mở rộng và xem nội dung đầy đủ",
+            "deviceConditions": {
+                "title": "Điều kiện tạo thiết bị nhịp tim",
+                "mustHaveContent": "Phải có nội dung: \"300B\"",
+                "mustHaveMAC": "Phải có trường MAC",
+                "fieldsCanBeEmpty": "Trường hr, SpO2, bp_syst, bp_diast có thể trống hoặc 0 (điều kiện nới lỏng)",
+                "abnormalWarning": "Nhịp tim > 100 BPM hoặc < 60 BPM sẽ kích hoạt cảnh báo bất thường"
+            }
+        },
+        "heartRateChart": {
+            "title": "Biểu đồ xu hướng nhịp tim",
+            "cloudDevice": "Thiết bị đám mây",
+            "localUser": "Người dùng địa phương",
+            "yAxisLabel": "Nhịp tim (BPM)",
+            "time": "Thời gian",
+            "heartRate": "Nhịp tim",
+            "targetHeartRate": "Nhịp tim mục tiêu",
+            "highHeartRateLine": "Đường cảnh báo nhịp tim cao",
+            "lowHeartRateLine": "Đường cảnh báo nhịp tim thấp",
+            "noData": "Không có dữ liệu nhịp tim cho {{date}}",
+            "cloudSimulatorCheck": "Vui lòng xác nhận trình mô phỏng MQTT đám mây đang chạy",
+            "selectValidDevice": "và chọn thiết bị đám mây hợp lệ",
+            "localSimulatorCheck": "Vui lòng xác nhận trình mô phỏng MQTT địa phương đang chạy",
+            "hideReferenceLines": "Ẩn đường tham chiếu",
+            "showReferenceLines": "Hiển thị đường tham chiếu",
+            "legend": {
+                "heartRate": "Nhịp tim (BPM)",
+                "systolicBP": "Huyết áp tâm thu (mmHg)",
+                "diastolicBP": "Huyết áp tâm trương (mmHg)",
+                "referenceLinesVisible": "Đường tham chiếu hiển thị"
+            },
+            "referenceLines": {
+                "normalSystolicBP": "Tâm thu bình thường: 120",
+                "normalDiastolicBP": "Tâm trương bình thường: 80",
+                "highSystolicBP": "Tâm thu cao: 140",
+                "highDiastolicBP": "Tâm trương cao: 90"
+            }
+        },
+        "heartRateRecords": {
+            "title": "Bản ghi nhịp tim",
+            "filters": {
+                "all": "Tất cả",
+                "high": "Nhịp cao",
+                "low": "Nhịp thấp",
+                "highBP": "Huyết áp cao",
+                "lowBP": "Huyết áp thấp"
+            },
+            "timeRanges": {
+                "1day": "1 Ngày",
+                "3day": "3 Ngày",
+                "7day": "7 Ngày"
+            },
+            "noHeartRateData": "Không có dữ liệu nhịp tim",
+            "temperature": "Nhiệt độ",
+            "bloodPressure": "Huyết áp",
+            "heartRateHigh": "Nhịp tim cao",
+            "heartRateLow": "Nhịp tim thấp",
+            "normal": "Bình thường",
+            "noRecords": "Không có bản ghi phù hợp",
+            "selectCloudDeviceFirst": "Vui lòng chọn thiết bị đám mây trước",
+            "selectedDeviceNoData": "Thiết bị đã chọn không có dữ liệu nhịp tim"
+        },
+        "connectionStatus": {
+            "title": "Giám sát trạng thái kết nối",
+            "localMqtt": "MQTT địa phương",
+            "cloudMqtt": "MQTT đám mây",
+            "error": "Lỗi",
+            "hint": "Gợi ý: MQTT địa phương cần chạy tại localhost:9001, MQTT đám mây sẽ tự động kết nối tới dịch vụ đám mây HiveMQ",
+            "connected": "Đã kết nối",
+            "disconnected": "Mất kết nối",
+            "connecting": "Đang kết nối...",
+            "reconnecting": "Đang kết nối lại...",
+            "connectionError": "Lỗi kết nối"
+        }
+    },
+    "diaperMonitoring": {
+        "title": "Giám sát tã",
+        "subtitle": "Giám sát thời gian thực tình trạng độ ẩm tã người cao tuổi để đảm bảo sự thoải mái và sức khỏe",
+        "navigationFromHealth": "Điều hướng từ trang Giám sát sức khỏe",
+        "currentPatient": "Bệnh nhân hiện tại",
+        "reconnectLocal": "Kết nối lại địa phương",
+        "reconnectCloud": "Kết nối lại đám mây",
+        "tabs": {
+            "local": "MQTT địa phương",
+            "cloud": "MQTT đám mây"
+        },
+        "patientSelection": {
+            "title": "Chọn bệnh nhân",
+            "selectPatient": "Chọn bệnh nhân",
+            "patient": "Bệnh nhân"
+        },
+        "connectionStatus": {
+            "title": "Trạng thái MQTT",
+            "connected": "Đã kết nối",
+            "disconnected": "Mất kết nối",
+            "connecting": "Đang kết nối...",
+            "reconnecting": "Đang kết nối lại...",
+            "connectionError": "Lỗi kết nối",
+            "cloudMqtt": "MQTT đám mây",
+            "hint": "Gợi ý: MQTT địa phương cần chạy tại localhost:9001, MQTT đám mây sẽ tự động kết nối tới dịch vụ đám mây HiveMQ"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Giám sát thiết bị tã đám mây",
+            "connected": "Đã kết nối",
+            "離線": "Ngoại tuyến",
+            "連接中...": "Đang kết nối...",
+            "重新連接中...": "Đang kết nối lại...",
+            "連接已關閉": "Kết nối đã đóng",
+            "連接錯誤": "Lỗi kết nối",
+            "未選擇閘道器": "Không có Gateway được chọn",
+            "selectArea": "Chọn khu vực giám sát:",
+            "selectNursingHome": "Viện dưỡng lão",
+            "selectNursingHomeFirst": "Chọn viện dưỡng lão",
+            "selectFloor": "Tầng",
+            "selectFloorFirst": "Vui lòng chọn viện dưỡng lão trước",
+            "selectGateway": "Gateway",
+            "selectGatewayFirst": "Vui lòng chọn tầng trước",
+            "currentGateway": "Gateway hiện đang chọn:",
+            "listeningTopic": "Chủ đề đang nghe",
+            "cannotGetTopic": "Không thể lấy chủ đề",
+            "discoveredDevices": "Thiết bị phát hiện",
+            "totalRecords": "Tổng số bản ghi",
+            "mqttMessages": "Tin nhắn MQTT",
+            "selectDevice": "Chọn thiết bị giám sát:",
+            "selectCloudDevice": "Chọn thiết bị tã đám mây để giám sát chi tiết",
+            "noDevices": "Chưa phát hiện thiết bị tã đám mây",
+            "pleaseConfirm": "Vui lòng xác nhận:",
+            "cloudMqttSimulator": "Trình mô phỏng MQTT đám mây đang chạy",
+            "simulatorFormat": "Trình mô phỏng gửi dữ liệu với định dạng nội dung: \"diaper DV1\"",
+            "dataFields": "Dữ liệu chứa trường MAC và liên quan đến độ ẩm",
+            "recentData": "Dữ liệu mới nhận:",
+            "device": "Thiết bị",
+            "humidity": "Độ ẩm",
+            "temperature": "Nhiệt độ",
+            "battery": "Pin",
+            "deviceName": "Tên thiết bị",
+            "viewRawData": "Xem dữ liệu MQTT thô (Gỡ lỗi)",
+            "clickToExpand": "Nhấp vào dữ liệu bên dưới để mở rộng và xem nội dung đầy đủ",
+            "deviceCreationConditions": "Kiểm tra điều kiện tạo thiết bị tã:",
+            "condition1": "Phải có nội dung: \"diaper DV1\"",
+            "condition2": "Phải có trường MAC",
+            "condition3": "Trường humi, temp, battery level có thể trống hoặc 0 (điều kiện nới lỏng)",
+            "condition4": "Độ ẩm > 75% sẽ kích hoạt cảnh báo thay tã"
+        },
+        "deviceDiaperData": {
+            "title": "Bản ghi giám sát thiết bị",
+            "unknownDevice": "Thiết bị không xác định",
+            "humidity": "Độ ẩm",
+            "temperature": "Nhiệt độ",
+            "battery": "Pin",
+            "noData": "Không có dữ liệu",
+            "noHumidityData": "Không có dữ liệu độ ẩm",
+            "needsChange": "Cần thay",
+            "wet": "Ướt",
+            "normal": "Bình thường",
+            "deviceStats": "Thống kê thiết bị",
+            "deviceMAC": "MAC thiết bị",
+            "patientInfo": "Thông tin bệnh nhân",
+            "unboundPatient": "Bệnh nhân chưa liên kết",
+            "lastConnection": "Kết nối cuối",
+            "totalRecords": "Tổng số bản ghi",
+            "currentStatus": "Trạng thái hiện tại",
+            "needsAttention": "Cần chú ý"
+        },
+        "dateTabs": {
+            "today": "Hôm nay",
+            "week": "Tuần này",
+            "month": "Tháng này"
+        },
+        "humidityChart": {
+            "title": "Biểu đồ xu hướng độ ẩm",
+            "cloudDevice": "Thiết bị đám mây",
+            "localPatient": "Bệnh nhân địa phương",
+            "yAxisLabel": "Độ ẩm (%)",
+            "time": "Thời gian",
+            "humidity": "Độ ẩm",
+            "changeAlertLine": "Đường cảnh báo thay: 75%",
+            "attentionLine": "Đường chú ý: 50%",
+            "normalLine": "Đường bình thường: 25%",
+            "noData": "Không có dữ liệu độ ẩm cho {{date}}",
+            "cloudSimulatorCheck": "Vui lòng xác nhận trình mô phỏng MQTT đám mây đang chạy",
+            "selectValidDevice": "và chọn thiết bị đám mây hợp lệ",
+            "localSimulatorCheck": "Vui lòng xác nhận trình mô phỏng MQTT địa phương đang chạy"
+        },
+        "temperatureChart": {
+            "title": "Biểu đồ xu hướng nhiệt độ",
+            "cloudDevice": "Thiết bị đám mây",
+            "localPatient": "Bệnh nhân địa phương",
+            "yAxisLabel": "Nhiệt độ (°C)",
+            "time": "Thời gian",
+            "temperature": "Nhiệt độ",
+            "highTempLine": "Cảnh báo nhiệt độ cao: 40°C",
+            "warmLine": "Đường ấm: 35°C",
+            "normalLine": "Đường bình thường: 30°C",
+            "coolLine": "Đường mát: 25°C",
+            "noData": "Không có dữ liệu nhiệt độ cho {{date}}",
+            "cloudSimulatorCheck": "Vui lòng xác nhận trình mô phỏng MQTT đám mây đang chạy",
+            "selectValidDevice": "và chọn thiết bị đám mây hợp lệ",
+            "localSimulatorCheck": "Vui lòng xác nhận trình mô phỏng MQTT địa phương đang chạy"
+        },
+        "currentDiaperStatus": {
+            "title": "Trạng thái tã hiện tại",
+            "autoNotification": "Thông báo tự động",
+            "needsChange": "Tã cần thay!",
+            "humidity": "Độ ẩm",
+            "device": "Thiết bị",
+            "lastChangeTime": "Thời gian thay cuối",
+            "noRecords": "Không có bản ghi",
+            "recordChange": "Ghi nhận thay tã"
+        },
+        "deviceStatus": {
+            "humidity": "Độ ẩm",
+            "temperature": "Nhiệt độ",
+            "battery": "Pin",
+            "needsChange": "Cần thay",
+            "noData": "Không có dữ liệu"
+        },
+        "diaperRecords": {
+            "title": "Bản ghi thay tã",
+            "noRecords": "Không có bản ghi thay",
+            "timestamp": "Thời gian",
+            "status": "Trạng thái",
+            "nurse": "Thay bởi"
+        },
+        "recordModal": {
+            "title": "Ghi nhận thay tã",
+            "diaperStatus": "Trạng thái tã",
+            "nurse": "Y tá",
+            "cancel": "Hủy",
+            "confirm": "Xác nhận"
+        },
+        "diaperStatus": {
+            "dry": "Khô",
+            "slightlyWet": "Hơi ướt",
+            "wet": "Ướt",
+            "veryWet": "Rất ướt",
+            "soiled": "Bẩn"
+        }
+    },
+    "staffManagement": {
+        "title": "Quản lý nhân viên",
+        "searchPlaceholder": "Tìm kiếm theo tên, ID hoặc phòng ban...",
+        "filters": {
+            "all": "Tất cả",
+            "active": "Hoạt động",
+            "onLeave": "Nghỉ phép"
+        },
+        "status": {
+            "active": "Hoạt động",
+            "onLeave": "Nghỉ phép"
+        },
+        "staffList": {
+            "title": "Danh sách nhân viên",
+            "count": "{{count}} nhân viên",
+            "id": "ID"
+        },
+        "detailModal": {
+            "contactInfo": "Thông tin liên hệ",
+            "workInfo": "Thông tin công việc",
+            "hireDate": "Ngày vào làm",
+            "notes": "Ghi chú",
+            "notesPlaceholder": "Nhập ghi chú...",
+            "noNotes": "Không có ghi chú",
+            "editNotes": "Chỉnh sửa ghi chú",
+            "updateNotes": "Cập nhật ghi chú"
+        }
+    },
+    "fieldManagementTest": {
+        "title": "Kiểm tra quản lý khu vực",
+        "subtitle": "Kiểm tra thao tác CRUD khu vực và tầng",
+        "reload": "Tải lại",
+        "homeSection": "Quản lý khu vực",
+        "homesCount": "{{count}} khu vực",
+        "homeNamePlaceholder": "Tên khu vực",
+        "descriptionPlaceholder": "Mô tả",
+        "addressPlaceholder": "Địa chỉ",
+        "createHome": "Tạo khu vực",
+        "updateHome": "Cập nhật khu vực",
+        "cancel": "Hủy",
+        "floorsCount": "{{count}} tầng",
+        "floorSection": "Quản lý tầng",
+        "floorsCountBadge": "{{count}} tầng",
+        "floorNamePlaceholder": "Tên tầng",
+        "levelPlaceholder": "Cấp độ",
+        "widthPlaceholder": "Rộng (m)",
+        "heightPlaceholder": "Cao (m)",
+        "createFloor": "Tạo tầng",
+        "updateFloor": "Cập nhật tầng",
+        "floorLevelFormat": "{{name}} - Cấp {{level}}",
+        "usageTitle": "Sử dụng",
+        "usage1": "1. Đảm bảo backend đang chạy (node test-backend-with-db.js)",
+        "usage2": "2. Tạo khu vực: điền thông tin khu vực và nhấp \"Tạo khu vực\"",
+        "usage3": "3. Tạo tầng: chọn khu vực, điền thông tin tầng và nhấp \"Tạo tầng\"",
+        "usage4": "4. Chỉnh sửa: nhấp nút chỉnh sửa để sửa đổi mục",
+        "usage5": "5. Xóa: nhấp nút xóa để xóa mục",
+        "toast": {
+            "loadFail": "Tải thất bại",
+            "loadFailDesc": "Không thể tải dữ liệu từ backend",
+            "validationFail": "Xác thực thất bại",
+            "homeNameRequired": "Vui lòng nhập tên khu vực",
+            "floorRequired": "Vui lòng nhập tên tầng và chọn khu vực",
+            "updateSuccess": "Cập nhật thành công",
+            "homeUpdated": "Khu vực đã cập nhật",
+            "floorUpdated": "Tầng đã cập nhật",
+            "createSuccess": "Tạo thành công",
+            "homeCreated": "Khu vực đã tạo",
+            "floorCreated": "Tầng đã tạo",
+            "operationFail": "Thao tác thất bại",
+            "deleteSuccess": "Xóa thành công",
+            "homeDeleted": "Khu vực đã xóa",
+            "floorDeleted": "Tầng đã xóa",
+            "deleteFail": "Xóa thất bại",
+            "unknownError": "Lỗi không xác định"
+        }
+    },
+    "uwbLocation": {
+        "title": "Quản lý viện dưỡng lão",
+        "subtitle": "Quản lý cấu hình khu vực hệ thống định vị UWB, tầng và gateway",
+        "selectHome": "Chọn khu vực",
+        "tabs": {
+            "overview": "Tổng quan hệ thống",
+            "homes": "Quản lý khu vực",
+            "floors": "Quản lý tầng",
+            "gateways": "Quản lý Gateway",
+            "anchors": "Lắp đặt Anchor",
+            "tags": "Quản lý Tag"
+        },
+        "stats": {
+            "homes": "Số lượng khu vực",
+            "floors": "Số lượng tầng",
+            "gateways": "Số lượng Gateway",
+            "anchors": "Số lượng Anchor",
+            "tags": "Số lượng Tag"
+        },
+        "status": {
+            "online": "Trạng thái trực tuyến"
+        },
+        "actions": {
+            "addHome": "Thêm khu vực",
+            "editHome": "Chỉnh sửa khu vực",
+            "addFloor": "Thêm tầng",
+            "editFloor": "Chỉnh sửa tầng",
+            "addGateway": "Thêm Gateway",
+            "editGateway": "Chỉnh sửa Gateway",
+            "addAnchor": "Thêm Anchor",
+            "addTag": "Thêm Tag"
+        },
+        "forms": {
+            "homeName": "Tên khu vực",
+            "homeNamePlaceholder": "Nhập tên khu vực",
+            "homeDescription": "Mô tả khu vực",
+            "homeDescriptionPlaceholder": "Nhập mô tả khu vực",
+            "homeAddress": "Địa chỉ khu vực",
+            "homeAddressPlaceholder": "Nhập địa chỉ khu vực"
+        },
+        "homeCard": {
+            "floors": "Tầng",
+            "gateways": "Gateway"
+        },
+        "floorCard": {
+            "mapPreview": "Xem trước bản đồ",
+            "ratio": "Tỷ lệ",
+            "anchorsCount": "anchor"
+        },
+        "mapControls": {
+            "zoom": "Phóng to",
+            "mouseInstructions": "Cuộn để phóng to, kéo để di chuyển trên bản đồ"
+        },
+        "messages": {
+            "selectFieldFirst": "Vui lòng chọn khu vực trước",
+            "addFloorFirst": "Vui lòng thêm tầng trước để cấu hình gateway",
+            "selectGatewayFirst": "Vui lòng chọn gateway trước",
+            "noAnchorsFound": "Không tìm thấy anchor",
+            "noTagsFound": "Không tìm thấy tag",
+            "noGatewaysFound": "Không tìm thấy gateway đám mây"
+        },
+        "currentFieldStatus": "Trạng thái khu vực hiện tại",
+        "floorInfo": "Tầng {{level}} | {{width}}m × {{height}}m",
+        "mapStatus": {
+            "calibrated": "Bản đồ đã hiệu chuẩn",
+            "uploaded": "Bản đồ đã tải lên",
+            "noMap": "Không có bản đồ"
+        },
+        "gatewaysOnline": "Gateway trực tuyến",
+        "mapCalibrationProgress": "Tiến độ hiệu chuẩn bản đồ",
+        "calibrationStatus": {
+            "completed": "Hiệu chuẩn hoàn thành",
+            "pending": "Hiệu chuẩn đang chờ",
+            "noMap": "Bản đồ chưa tải lên"
+        },
+        "overallProgress": "Tiến độ tổng thể",
+        "floorForm": {
+            "name": "Tên tầng",
+            "namePlaceholder": "Nhập tên tầng",
+            "level": "Số tầng",
+            "realWidth": "Rộng thực tế (mét)",
+            "realHeight": "Cao thực tế (mét)"
+        },
+        "mapCalibration": "Hiệu chuẩn bản đồ",
+        "anchorLocationMap": "Bản đồ vị trí Anchor",
+        "showAnchorsOnMap": "Hiển thị Anchor trên bản đồ",
+        "doubleClickAnchorToCalibrate": "Nhấp đúp Anchor để hiệu chuẩn",
+        "anchorCount": "Số lượng Anchor",
+        "calibrationMode": "Chế độ hiệu chuẩn",
+        "zoomMode": "Chế độ phóng to",
+        "close": "Đóng",
+        "calibrationSteps": {
+            "upload": "Tải lên bản đồ",
+            "setOrigin": "Đặt điểm gốc",
+            "setScale": "Đặt tỷ lệ"
+        },
+        "uploadFloorMap": "Tải lên bản đồ tầng",
+        "uploadInstructions": "Vui lòng tải lên bản đồ trong nhà {{floorName}}. Hỗ trợ định dạng PNG, JPG, SVG.",
+        "selectMapFile": "Chọn tệp bản đồ",
+        "dragImageHint": "hoặc kéo và thả hình ảnh vào khu vực này",
+        "actualSize": "Kích thước thực tế",
+        "calibratedMap": "Bản đồ đã hiệu chuẩn",
+        "setCoordinateOrigin": "Đặt điểm gốc tọa độ",
+        "originInstructions": "Vui lòng nhấp vào bất kỳ vị trí nào trên bản đồ để đặt làm điểm gốc tọa độ, sau đó nhập tọa độ thực tế của điểm đó. Thường được khuyến nghị chọn góc phòng hoặc hành lang làm điểm tham chiếu.",
+        "clickMapSetOrigin": "Nhấp vào bản đồ để đặt điểm gốc",
+        "clickMapSetNewPosition": "Nhấp vào bản đồ để đặt vị trí mới cho {{name}}",
+        "originPixelPosition": "Vị trí pixel điểm gốc",
+        "actualXCoordinate": "Tọa độ X thực tế (mét)",
+        "actualYCoordinate": "Tọa độ Y thực tế (mét)",
+        "reselectOrigin": "Chọn lại điểm gốc",
+        "nextStep": "Bước tiếp theo",
+        "setCoordinateScale": "Đặt tỷ lệ tọa độ",
+        "scaleInstructions": "Vui lòng nhấp vào hai điểm trên bản đồ, sau đó nhập khoảng cách thực tế giữa hai điểm này. Hệ thống sẽ tự động tính toán tỷ lệ chuyển đổi giữa pixel và mét.",
+        "clickTwoPointsSetScale": "Nhấp vào hai điểm để đặt tỷ lệ",
+        "selectedPoints": "Điểm đã chọn",
+        "point1": "Điểm 1",
+        "point2": "Điểm 2",
+        "clickMapSelect": "Vui lòng nhấp vào bản đồ để chọn",
+        "pixelDistance": "Khoảng cách pixel",
+        "actualDistance": "Khoảng cách thực tế (mét)",
+        "enterActualDistance": "Nhập khoảng cách thực tế giữa hai điểm",
+        "calculationResult": "Kết quả tính toán",
+        "ratio": "Tỷ lệ",
+        "pixelsPerMeter": "pixel/mét",
+        "previousStep": "Bước trước",
+        "reselectPoints": "Chọn lại điểm",
+        "saveCalibration": "Lưu hiệu chuẩn",
+        "calibrationComplete": "Hiệu chuẩn hoàn thành",
+        "calibrationInfo": "Thông tin hiệu chuẩn",
+        "floor": "Tầng",
+        "originActualCoordinates": "Tọa độ thực tế điểm gốc",
+        "meters": "mét",
+        "calibrationPoint1": "Điểm hiệu chuẩn 1",
+        "calibrationPoint2": "Điểm hiệu chuẩn 2",
+        "pixels": "pixel",
+        "complete": "Hoàn thành",
+        "recalibrate": "Hiệu chuẩn lại",
+        "mapStatusLabel": "Trạng thái bản đồ",
+        "manualAdd": "Thêm thủ công",
+        "reconnectCloud": "Kết nối lại đám mây",
+        "cloudGatewayDiscovery": "Tìm kiếm Gateway đám mây",
+        "connectionNormal": "Kết nối bình thường",
+        "cloudMqttStatus": "Trạng thái MQTT đám mây",
+        "server": "Máy chủ",
+        "topic": "Chủ đề",
+        "waitingForGatewayTopic": "Đang chờ nội dung: \"chủ đề gateway\"",
+        "error": "Lỗi",
+        "discoveredGateways": "Gateway phát hiện",
+        "onlineGateways": "Gateway trực tuyến",
+        "mqttMessages": "Tin nhắn MQTT",
+        "discoveredCloudGateways": "Gateway đám mây phát hiện",
+        "status": {
+            "online": "Trực tuyến",
+            "offline": "Ngoại tuyến",
+            "error": "Lỗi"
+        },
+        "id": "ID",
+        "firmware": "Firmware",
+        "network": "Mạng",
+        "ap": "AP",
+        "voltage": "Điện áp",
+        "lastUpdate": "Cập nhật cuối",
+        "addToSystem": "Thêm vào hệ thống",
+        "noCloudGatewaysFound": "Không tìm thấy gateway đám mây",
+        "pleaseConfirm": "Vui lòng xác nhận",
+        "cloudMqttSimulatorStarted": "Trình mô phỏng MQTT đám mây đã khởi động",
+        "simulatorSendsGatewayTopic": "Trình mô phỏng gửi dữ liệu định dạng nội dung: \"chủ đề gateway\"",
+        "dataContainsGatewayIdAndName": "Dữ liệu chứa \"id gateway\" và trường tên",
+        "viewRawGatewayMqttData": "Xem dữ liệu MQTT Gateway thô (Gỡ lỗi)",
+        "clickDataToExpand": "Nhấp vào dữ liệu bên dưới để mở rộng và xem nội dung đầy đủ",
+        "gatewayDiscoveryConditions": "Điều kiện tìm kiếm Gateway",
+        "mustHaveGatewayTopic": "Phải có nội dung: \"chủ đề gateway\"",
+        "mustHaveGatewayIdAndName": "Phải có \"id gateway\" và trường tên",
+        "uwbJoinedAnd5VPluggedOnline": "UWB đã tham gia: \"yes\" và 5V đã cắm: \"yes\" được coi là trực tuyến",
+        "belongingFloor": "Tầng thuộc về",
+        "macAddress": "Địa chỉ MAC",
+        "ipAddress": "Địa chỉ IP",
+        "lastConnection": "Kết nối cuối",
+        "unknown": "Không xác định",
+        "editGateway": "Chỉnh sửa Gateway",
+        "addCloudGatewayToSystem": "Thêm Gateway đám mây vào hệ thống",
+        "manualAddGateway": "Thêm Gateway thủ công",
+        "addDiscoveredGatewayToFloor": "Thêm gateway phát hiện từ đám mây (ID: {{id}}) vào tầng đã chọn",
+        "gatewayName": "Tên Gateway",
+        "enterGatewayName": "Nhập tên gateway",
+        "selectFloor": "Chọn tầng",
+        "reconnectAnchors": "Kết nối lại Anchor",
+        "cloudAnchorDiscovery": "Tìm kiếm Anchor đám mây",
+        "anchorMqttStatus": "Trạng thái MQTT Anchor",
+        "selectedGateway": "Gateway đã chọn",
+        "notSelected": "Chưa chọn",
+        "listeningTopic": "Chủ đề đang nghe",
+        "none": "Không có",
+        "connectionStatus": "Trạng thái kết nối",
+        "discoveredAnchors": "Anchor phát hiện",
+        "onlineAnchors": "Anchor trực tuyến",
+        "ackMessages": "Tin nhắn Ack",
+        "discoveredCloudAnchors": "Anchor đám mây phát hiện",
+        "mainAnchor": "Anchor chính",
+        "gateway": "Gateway",
+        "on": "Bật",
+        "off": "Tắt",
+        "position": "Vị trí",
+        "configure": "Cấu hình",
+        "gatewayAnchorConfigTopicCorrect": "Chủ đề cấu hình anchor gateway đúng",
+        "simulatorSendsAnchorConfigData": "Trình mô phỏng gửi dữ liệu định dạng nội dung: \"config\", node: \"ANCHOR\"",
+        "dataContainsIdAndName": "Dữ liệu chứa id và trường tên",
+        "anchorPairing": {
+            "title": "Quản lý lắp đặt Anchor",
+            "localAnchorManagement": "Quản lý Anchor địa phương (Anchor đã thêm)",
+            "currentGateway": "Gateway hiện đang chọn",
+            "selectGateway": "Chọn Gateway",
+            "startSimulationPairing": "Bắt đầu lắp đặt mô phỏng",
+            "pairingInProgress": "Đang lắp đặt...",
+            "selectGatewayFirst": "Vui lòng chọn gateway ở trên để quản lý anchor",
+            "noOnlineGateways": "Không có gateway địa phương trực tuyến có sẵn cho lắp đặt",
+            "simulationPairingProgress": "Tiến độ lắp đặt mô phỏng",
+            "scanningNearbyAnchors": "Đang quét thiết bị anchor gần đây...",
+            "discoveredNewAnchor": "Anchor mới phát hiện",
+            "add": "Thêm",
+            "noPairedAnchors": "Không có anchor được lắp đặt dưới gateway này",
+            "anchorStatus": {
+                "running": "Đang chạy",
+                "paired": "Đã lắp đặt",
+                "calibrating": "Đang hiệu chuẩn",
+                "unpaired": "Chưa lắp đặt",
+                "error": "Lỗi"
+            },
+            "anchorInfo": {
+                "belongingGateway": "Gateway thuộc về",
+                "macAddress": "Địa chỉ MAC",
+                "cloudId": "ID đám mây",
+                "position": "Tọa độ vị trí",
+                "functionStatus": "Trạng thái chức năng",
+                "signalStrength": "Cường độ tín hiệu",
+                "batteryLevel": "Mức pin",
+                "lastConnection": "Kết nối cuối"
+            },
+            "actions": {
+                "calibrate": "Hiệu chuẩn tọa độ",
+                "sendConfigToCloud": "Gửi cấu hình lên đám mây",
+                "deleteAnchor": "Xóa Anchor"
+            },
+            "functionStatus": {
+                "led": "LED",
+                "ble": "BLE",
+                "mainAnchor": "Anchor chính"
+            },
+            "mapLegend": {
+                "coordinateOrigin": "Điểm gốc tọa độ",
+                "generalAnchor": "Anchor thông thường",
+                "mainAnchor": "Anchor chính"
+            },
+            "debug": {
+                "viewRawAnchorMqttData": "Xem dữ liệu MQTT Anchor thô (Gỡ lỗi)",
+                "clickDataToExpand": "Nhấp vào dữ liệu bên dưới để mở rộng và xem nội dung đầy đủ",
+                "anchorDiscoveryConditions": "Điều kiện tìm kiếm Anchor",
+                "mustHaveConfig": "Phải có nội dung: \"config\"",
+                "mustHaveNodeAnchor": "Phải có node: \"ANCHOR\"",
+                "mustHaveIdAndName": "Phải có id và trường tên",
+                "initiatorMainAnchor": "initiator: 1 chỉ anchor chính",
+                "viewRawAckData": "Xem dữ liệu MQTT Anchor thô (Gỡ lỗi) - Dữ liệu Ack"
+            },
+            "noAvailableGateways": "Không có gateway có sẵn trên tầng này",
+            "doubleClickToCalibrate": "Nhấp đúp để hiệu chuẩn vị trí",
+            "mainAnchorOption": "Anchor chính",
+            "generalAnchorOption": "Anchor thông thường",
+            "currentStatus": "Trạng thái hiện tại",
+            "deviceId": "ID thiết bị",
+            "deviceName": "Tên thiết bị",
+            "anchorDeviceInfo": "Thông tin thiết bị Anchor",
+            "sendConfigPreview": "Xem trước gửi cấu hình",
+            "sendConfigToCloud": "Gửi cấu hình lên đám mây",
+            "cancelCalibration": "Hủy hiệu chuẩn",
+            "cancel": "Hủy",
+            "confirm": "Xác nhận"
+        },
+        "notifications": {
+            "ackReceived": "Tin nhắn Ack đã nhận",
+            "gatewayId": "ID Gateway",
+            "command": "Lệnh",
+            "nodeType": "Loại Node",
+            "deviceId": "ID thiết bị",
+            "topic": "Chủ đề",
+            "receivedAt": "Nhận lúc",
+            "messageType": "Loại tin nhắn",
+            "ackMessage": "Tin nhắn Ack"
+        },
+        "anchorCalibration": {
+            "title": "Hiệu chuẩn {{name}}",
+            "mapClickMode": "Chế độ hiệu chuẩn nhấp bản đồ",
+            "mapClickInstruction": "Nhấp trực tiếp vào bản đồ bên trái để đặt vị trí mới cho {{name}}",
+            "manualInputInstruction": "Hoặc nhập giá trị tọa độ chính xác thủ công bên dưới",
+            "coordinateType": "Loại tọa độ",
+            "realCoordinates": "Tọa độ thực tế (mét)",
+            "pixelCoordinates": "Tọa độ pixel (px)",
+            "xCoordinate": "Tọa độ X",
+            "yCoordinate": "Tọa độ Y",
+            "zCoordinate": "Tọa độ Z (mét)",
+            "realCoordinatesHint": "💡 Nhập tọa độ thế giới thực (đơn vị: mét)",
+            "pixelCoordinatesHint": "💡 Nhập tọa độ pixel trên hình ảnh, hệ thống sẽ tự động chuyển đổi sang tọa độ thực",
+            "saveManualCoordinates": "Lưu tọa độ nhập thủ công",
+            "quickOperation": "⚡ Thao tác nhanh",
+            "quickOperationDescription": "Nhấp bản đồ trái = Thiết lập nhanh | Nhập thủ công = Tọa độ chính xác",
+            "coordinatesUpdated": "Tọa độ {{name}} đã cập nhật!",
+            "sendToCloudQuestion": "Bạn có muốn gửi tọa độ mới lên phần cứng đám mây?",
+            "sendToCloudInstruction": "Nhấp \"Xác nhận\" để cấu hình tham số thêm và gửi",
+            "sendConfigToCloud": "Gửi cấu hình lên đám mây - {{name}}",
+            "newCoordinatePosition": "📍 Vị trí tọa độ mới",
+            "anchorConfigParameters": "🔧 Tham số cấu hình Anchor",
+            "firmwareUpdate": "Cập nhật Firmware",
+            "ledStatus": "Trạng thái LED",
+            "bleStatus": "Trạng thái BLE",
+            "initiator": "Khởi tạo",
+            "serialNo": "Số seri",
+            "serialNoRange": "Phạm vi: 1306-9999, tăng tự động sau mỗi lần gửi",
+            "anchorDeviceInfo": "🏷️ Thông tin thiết bị Anchor:",
+            "deviceName": "Tên thiết bị",
+            "deviceId": "ID thiết bị",
+            "macAddress": "Địa chỉ MAC",
+            "currentStatus": "Trạng thái hiện tại",
+            "sendConfigPreview": "📤 Xem trước gửi cấu hình:",
+            "topic": "Chủ đề",
+            "gatewayId": "ID Gateway",
+            "sending": "Đang gửi...",
+            "sendToCloudHardware": "Gửi lên phần cứng đám mây",
+            "coordinatesSentToCloud": "Tọa độ mới của {{name}} đã được gửi lên phần cứng đám mây",
+            "on": "Bật",
+            "off": "Tắt",
+            "generalAnchor": "Anchor thông thường",
+            "mainAnchor": "Anchor chính",
+            "unknown": "Không xác định"
+        },
+        "tagManagement": {
+            "title": "Quản lý thiết bị Tag",
+            "subtitle": "Quản lý thiết bị tag vị trí UWB, bao gồm tag nhân viên, tag thiết bị và tag tài sản",
+            "controls": {
+                "selectGateway": "Chọn Gateway",
+                "reconnectTags": "Kết nối lại Tag",
+                "addTag": "Thêm Tag"
+            },
+            "stats": {
+                "personnelTags": "Tag nhân viên",
+                "activeTags": "Hoạt động",
+                "cloudTags": "Tag đám mây"
+            },
+            "cloudDiscovery": {
+                "title": "Tìm kiếm Tag đám mây",
+                "mqttStatus": "Trạng thái MQTT Tag",
+                "selectedGateway": "Gateway đã chọn",
+                "notSelected": "Chưa chọn",
+                "listeningTopic": "Chủ đề đang nghe",
+                "none": "Không có",
+                "connectionStatus": "Trạng thái kết nối",
+                "gatewayNotSelected": "Gateway chưa được chọn",
+                "discoveredTags": "Tag phát hiện",
+                "onlineTags": "Tag trực tuyến",
+                "mqttMessages": "Tin nhắn MQTT",
+                "discoveredCloudTags": "Tag đám mây phát hiện",
+                "autoAddedToSystem": "Tự động thêm vào hệ thống"
+            },
+            "tagList": {
+                "noTagsUnderGateway": "Không có thiết bị tag dưới gateway này",
+                "pleaseConfirm": "Vui lòng xác nhận:",
+                "gatewayMessageLocationTopics": "1. Chủ đề tin nhắn và vị trí gateway đúng",
+                "simulatorSendsInfoLocation": "2. Trình mô phỏng gửi dữ liệu định dạng nội dung: \"info\"/\"location\", node: \"TAG\"",
+                "dataContainsFields": "3. Dữ liệu chứa id, mức pin, vị trí, thời gian và các trường khác",
+                "viewRawTagMqttData": "Xem dữ liệu MQTT Tag thô (Gỡ lỗi)",
+                "clickDataToExpand": "Nhấp vào dữ liệu bên dưới để mở rộng và xem nội dung đầy đủ",
+                "tagDiscoveryConditions": "Điều kiện tìm kiếm Tag:",
+                "messageTopic": "• chủ đề tin nhắn: nội dung: \"info\", node: \"TAG\"",
+                "locationTopic": "• chủ đề vị trí: nội dung: \"location\", node: \"TAG\"",
+                "mustHaveId": "• Phải có trường id",
+                "messageContainsBattery": "• tin nhắn chứa thông tin mức pin",
+                "locationContainsPosition": "• vị trí chứa thông tin vị trí và thời gian"
+            },
+            "tagCard": {
+                "macAddress": "Địa chỉ MAC",
+                "type": "Loại",
+                "personnel": "Nhân viên",
+                "assignedTo": "Giao cho",
+                "batteryLevel": "Mức pin",
+                "lastPosition": "Vị trí cuối",
+                "updateTime": "Thời gian cập nhật",
+                "cloud": "Đám mây",
+                "edit": "Chỉnh sửa",
+                "delete": "Xóa"
+            },
+            "tagForm": {
+                "editTag": "Chỉnh sửa Tag",
+                "addTag": "Thêm Tag",
+                "tagName": "Tên Tag",
+                "tagNamePlaceholder": "Nhập tên tag",
+                "macAddress": "Địa chỉ MAC",
+                "macAddressPlaceholder": "AA:BB:CC:DD:EE:FF",
+                "tagType": "Loại Tag",
+                "selectType": "Chọn loại",
+                "person": "Nhân viên",
+                "equipment": "Thiết bị",
+                "asset": "Tài sản",
+                "assignedTo": "Giao cho",
+                "assignedToPlaceholder": "Giao cho ai (tùy chọn)",
+                "cancel": "Hủy",
+                "save": "Lưu"
+            },
+            "tagStatus": {
+                "running": "Đang chạy",
+                "inactive": "Không hoạt động",
+                "lowBattery": "Pin yếu",
+                "lost": "Mất",
+                "online": "Trực tuyến",
+                "offline": "Ngoại tuyến"
+            },
+            "tagTypes": {
+                "person": "Nhân viên",
+                "equipment": "Thiết bị",
+                "asset": "Tài sản"
+            },
+            "messages": {
+                "selectGatewayFirst": "Vui lòng chọn gateway trước",
+                "noTagsFound": "Chưa tìm thấy tag",
+                "connectionError": "Lỗi",
+                "connectionNormal": "Kết nối bình thường",
+                "manualReconnecting": "Đang kết nối lại thủ công..."
+            }
+        }
+    }
+}

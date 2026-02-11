@@ -1,0 +1,49 @@
+{
+    "device": {
+        "status": {
+            "active": "Aktiv",
+            "inactive": "Inaktiv",
+            "offline": "Offline",
+            "error": "Fehler"
+        },
+        "types": {
+            "smartwatch": "Smartwatch",
+            "diaperSensor": "Windelsensor",
+            "pedometer": "Schrittzähler",
+            "uwbTag": "UWB-Tag"
+        }
+    },
+    "resident": {
+        "status": {
+            "good": "Gut",
+            "attention": "Achtung",
+            "critical": "Kritisch",
+            "unknown": "Unbekannt"
+        },
+        "gender": {
+            "male": "Männlich",
+            "female": "Weiblich"
+        }
+    },
+    "system": {
+        "persistence": {
+            "status": "Persistenzstatus:",
+            "saving": "Wird gespeichert...",
+            "saved": "Gespeichert",
+            "lastSave": "Letzte Speicherung:",
+            "loadError": "Ladefehler:"
+        },
+        "actions": {
+            "forceSave": "Speichern erzwingen",
+            "exportSettings": "Einstellungen exportieren",
+            "importSettings": "Einstellungen importieren",
+            "debugStorage": "Speicher debuggen"
+        }
+    },
+    "alerts": {
+        "emergency": "Notfall",
+        "priority": "Priorität",
+        "warning": "Warnung",
+        "info": "Info"
+    }
+}

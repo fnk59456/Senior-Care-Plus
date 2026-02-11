@@ -1,0 +1,1720 @@
+{
+    "home": {
+        "title": "Selamat Datang di Senior Care Plus",
+        "subtitle": "Manajemen perawatan lansia komprehensif untuk memastikan perawatan terbaik dan perhatian untuk lansia. Mengintegrasikan pemantauan kesehatan, pelacakan lokasi, dan fitur pengingat cerdas.",
+        "features": {
+            "emergency": {
+                "title": "Panggilan Darurat",
+                "description": "Sinyal bantuan darurat cepat untuk memastikan bantuan tepat waktu"
+            },
+            "health": {
+                "title": "Pemantauan Kesehatan",
+                "description": "Pemantauan waktu nyata status kesehatan lansia dan peringatan"
+            },
+            "reminders": {
+                "title": "Pengingat",
+                "description": "Kelola pengingat obat, hidrasi, dan pengukuran"
+            },
+            "location": {
+                "title": "Lokasi Dalam Ruangan",
+                "description": "Lacak lansia dan perangkat di dalam fasilitas"
+            },
+            "temperature": {
+                "title": "Pemantauan Suhu",
+                "description": "Pemantauan waktu nyata perubahan suhu dan peringatan"
+            },
+            "heartRate": {
+                "title": "Pemantauan Detak Jantung",
+                "description": "Pemantauan waktu nyata perubahan detak jantung dan peringatan"
+            },
+            "diaper": {
+                "title": "Pemantauan Popok",
+                "description": "Pemantauan waktu nyata status kelembaban popok dan catatan penggantian"
+            }
+        },
+        "stats": {
+            "totalResidents": "Total Penghuni",
+            "todayTasks": "Tugas Hari Ini",
+            "healthAlerts": "Peringatan Kesehatan",
+            "monthlyReport": "Laporan Bulanan",
+            "completed": "Selesai"
+        },
+        "actions": {
+            "startUsing": "Mulai Gunakan Sekarang",
+            "systemGuide": "Panduan Sistem"
+        }
+    },
+    "heartTemp": {
+        "title": "Pemantauan Detak Jantung & Suhu",
+        "subtitle": "Data detak jantung dan suhu gabungan, pantau perangkat 300B dengan koneksi tunggal",
+        "tabs": {
+            "heart": "Detak Jantung",
+            "temp": "Suhu"
+        },
+        "deviceNameFallback": "Perangkat"
+    },
+    "residents": {
+        "title": "Manajemen Penghuni",
+        "subtitle": "Kelola data penghuni dan pengikatan perangkat",
+        "stats": {
+            "totalResidents": "Total Penghuni",
+            "activeDevices": "Perangkat Aktif",
+            "offlineDevices": "Perangkat Offline",
+            "errorDevices": "Perangkat Error",
+            "unboundDevices": "Perangkat Tidak Terikat"
+        },
+        "filters": {
+            "all": "Semua",
+            "good": "Baik",
+            "attention": "Perhatian",
+            "critical": "Kritis"
+        },
+        "search": {
+            "placeholder": "Cari berdasarkan nama, ID, atau nomor kamar..."
+        },
+        "list": {
+            "title": "Daftar Penghuni",
+            "count": "{{count}} penghuni total",
+            "noDevices": "Belum ada perangkat terikat",
+            "boundDevices": "Perangkat Terikat:"
+        },
+        "actions": {
+            "addResident": "Tambah Penghuni",
+            "showDeviceManagement": "Tampilkan Manajemen Perangkat",
+            "hideDeviceManagement": "Sembunyikan Manajemen Perangkat",
+            "manageDevices": "Kelola Perangkat",
+            "edit": "Edit",
+            "remove": "Hapus",
+            "info": "Info",
+            "unbindDevice": "Lepas Perangkat"
+        },
+        "form": {
+            "name": "Nama",
+            "age": "Usia",
+            "gender": "Jenis Kelamin",
+            "room": "Nomor Kamar",
+            "status": "Status",
+            "avatar": "Avatar",
+            "emergencyContact": "Kontak Darurat",
+            "relationship": "Hubungan",
+            "phone": "Telepon",
+            "careNotes": "Catatan Perawatan",
+            "male": "Laki-laki",
+            "female": "Perempuan",
+            "good": "Baik",
+            "attention": "Perhatian",
+            "critical": "Kritis"
+        },
+        "deviceManagement": {
+            "title": "Perangkat Tidak Terikat",
+            "count": "{{count}} perangkat",
+            "bind": "Ikat"
+        },
+        "deviceCount": "Perangkat",
+        "id": "ID",
+        "room": "Kamar",
+        "ageUnit": "tahun",
+        "boundDevices": "Perangkat Terikat",
+        "noDevicesBound": "Tidak ada perangkat terikat",
+        "monitoring": {
+            "title": "Pemantauan Perangkat",
+            "showControls": "Tampilkan Kontrol",
+            "hideControls": "Sembunyikan Kontrol",
+            "showTest": "Tampilkan Panel Tes",
+            "hideTest": "Sembunyikan Panel Tes",
+            "showDebug": "Tampilkan Panel Debug",
+            "hideDebug": "Sembunyikan Panel Debug",
+            "boundDevices": "Perangkat Terikat",
+            "onlineDevices": "Perangkat Online",
+            "offlineDevices": "Perangkat Offline",
+            "errorDevices": "Perangkat Error"
+        },
+        "modal": {
+            "addResident": "Tambah Penghuni",
+            "name": "Nama",
+            "age": "Usia",
+            "gender": "Jenis Kelamin",
+            "room": "Nomor Kamar",
+            "status": "Status",
+            "avatar": "Avatar",
+            "emergencyContactName": "Nama Kontak Darurat",
+            "relationship": "Hubungan",
+            "phone": "Telepon",
+            "careNotes": "Catatan Perawatan",
+            "placeholders": {
+                "name": "Masukkan nama penghuni",
+                "age": "Masukkan usia",
+                "room": "Masukkan nomor kamar",
+                "avatar": "Masukkan emoji atau teks",
+                "emergencyContactName": "Masukkan nama kontak darurat",
+                "relationship": "Masukkan hubungan",
+                "phone": "Masukkan nomor telepon",
+                "careNotes": "Masukkan catatan perawatan"
+            },
+            "genderOptions": {
+                "male": "Laki-laki",
+                "female": "Perempuan"
+            }
+        },
+        "deviceBinding": {
+            "title": "Manajemen Pengikatan Perangkat",
+            "currentBinding": "Pengikatan Saat Ini",
+            "deviceBoundToResident": "Perangkat {{deviceName}} terikat pada penghuni {{residentName}}",
+            "unbind": "Lepas",
+            "selectDevice": "Pilih Perangkat",
+            "searchDevicePlaceholder": "Cari nama perangkat, ID perangkat keras...",
+            "alreadyBound": "Sudah Terikat",
+            "selectResident": "Pilih Penghuni",
+            "searchResidentPlaceholder": "Cari nama penghuni, nomor kamar...",
+            "bindingSettings": "Pengaturan Pengikatan",
+            "bindingType": "Jenis Pengikatan",
+            "primaryDevice": "Perangkat Utama",
+            "secondaryDevice": "Perangkat Sekunder",
+            "notes": "Catatan",
+            "notesPlaceholder": "Catatan pengikatan (opsional)",
+            "residentDevices": "Perangkat {{name}}",
+            "confirmBind": "Konfirmasi Ikat"
+        },
+        "detailModal": {
+            "editInfo": "Edit Informasi Penghuni",
+            "emergencyContact": "Kontak Darurat",
+            "careNotes": "Catatan Perawatan",
+            "careNotesPlaceholder": "Silakan masukkan catatan perawatan...",
+            "noCareNotes": "Tidak ada catatan perawatan tersedia",
+            "editCareNotes": "Edit Catatan Perawatan",
+            "addDevice": "Tambah Perangkat",
+            "noDevicesBound": "Belum ada perangkat terikat",
+            "close": "Tutup"
+        },
+        "unboundDevices": "Perangkat Tidak Terikat",
+        "bindDevice": "Ikat",
+        "alerts": {
+            "importSuccess": "✅ Impor data berhasil! Catatan: Data penghuni perlu diperbarui melalui manajemen sistem",
+            "invalidFormat": "❌ Format data tidak valid",
+            "importFailed": "❌ Impor data gagal"
+        },
+        "confirms": {
+            "resetSettings": "Apakah Anda yakin ingin mereset semua pengaturan manajemen penghuni? Tindakan ini tidak dapat dibatalkan!",
+            "removeResident": "Apakah Anda yakin ingin menghapus penghuni ini? Tindakan ini tidak dapat dibatalkan."
+        }
+    },
+    "deviceManagement": {
+        "title": "Manajemen Perangkat",
+        "subtitle": "Kelola semua jenis perangkat perawatan, mendukung jam tangan 300B, sensor popok, sensor gerak, dan tag posisi",
+        "searchPlaceholder": "Cari nama perangkat, ID perangkat keras, atau UID perangkat...",
+        "filters": {
+            "all": "Semua",
+            "smartwatch300B": "300B",
+            "diaperSensor": "Popok",
+            "pedometer": "Gerak",
+            "uwbTag": "Tag",
+            "uwbAnchor": "Anchor",
+            "gateway": "Gateway"
+        },
+        "actions": {
+            "addDevice": "Tambah Perangkat",
+            "autoDiscovery": "Pencarian Otomatis",
+            "forceSave": "Paksa Simpan",
+            "exportSettings": "Ekspor Pengaturan",
+            "importSettings": "Impor Pengaturan",
+            "debugStorage": "Debug Penyimpanan"
+        },
+        "autoAdd": {
+            "enabled": "Tambah Otomatis: Aktif",
+            "disabled": "Tambah Otomatis: Nonaktif"
+        },
+        "stats": {
+            "totalDevices": "Total Perangkat",
+            "activeDevices": "Perangkat Aktif",
+            "smartwatch300B": "Jam 300B",
+            "diaperSensor": "Sensor Popok",
+            "otherDevices": "Perangkat Lain"
+        },
+        "deviceList": {
+            "title": "Daftar Perangkat",
+            "count": "{{count}} perangkat total",
+            "noDevices": "Tidak ada perangkat yang sesuai kriteria",
+            "hardwareId": "ID Perangkat Keras",
+            "type": "Jenis",
+            "gateway": "Gateway",
+            "replace": "Ganti",
+            "remove": "Hapus"
+        },
+        "addModal": {
+            "title": "Tambah Perangkat",
+            "deviceType": "Jenis Perangkat",
+            "deviceName": "Nama Perangkat",
+            "hardwareId": "ID Perangkat Keras",
+            "macAddress": "Alamat MAC",
+            "deviceId": "ID Perangkat",
+            "gatewayId": "ID Gateway (Opsional)",
+            "deviceTypes": {
+                "smartwatch300B": "Jam Pemantauan Kesehatan 300B",
+                "diaperSensor": "Sensor Popok Pintar",
+                "pedometer": "Sensor Gerak",
+                "uwbTag": "Tag Posisi UWB",
+                "uwbAnchor": "Anchor Posisi UWB",
+                "gateway": "Gateway UWB"
+            },
+            "placeholders": {
+                "deviceName": "Masukkan nama perangkat",
+                "hardwareId": "Masukkan ID perangkat keras",
+                "macAddress": "Masukkan alamat MAC (contoh: E0:0E:08:36:93:F8)",
+                "deviceId": "Masukkan ID perangkat (contoh: 5345)",
+                "gatewayId": "Masukkan ID gateway"
+            }
+        },
+        "replaceModal": {
+            "title": "Ganti Perangkat",
+            "currentHardwareId": "ID Perangkat Keras Saat Ini",
+            "deviceUid": "UID Perangkat",
+            "newHardwareId": "ID Perangkat Keras Baru",
+            "confirmReplace": "Konfirmasi Ganti",
+            "placeholders": {
+                "newHardwareId": "Masukkan ID perangkat keras baru"
+            }
+        },
+        "alerts": {
+            "importSuccess": "✅ Impor data berhasil! Catatan: Data perangkat perlu diperbarui melalui manajemen sistem",
+            "invalidFormat": "❌ Format data tidak valid",
+            "importFailed": "❌ Impor data gagal"
+        },
+        "confirms": {
+            "resetSettings": "Apakah Anda yakin ingin mereset semua pengaturan manajemen perangkat? Tindakan ini tidak dapat dibatalkan!",
+            "removeDevice": "Apakah Anda yakin ingin menghapus perangkat ini?"
+        },
+        "monitoring": {
+            "title": "Pemantauan Perangkat",
+            "hideControls": "Sembunyikan Kontrol",
+            "showControls": "Tampilkan Kontrol",
+            "hideTest": "Sembunyikan Tes",
+            "showTest": "Tampilkan Tes",
+            "hideDebug": "Sembunyikan Debug",
+            "showDebug": "Tampilkan Debug",
+            "boundDevices": "Perangkat Terikat",
+            "onlineDevices": "Perangkat Online",
+            "offlineDevices": "Perangkat Offline",
+            "errorDevices": "Perangkat Error",
+            "deviceCount": "perangkat",
+            "noDevices": "Tidak ada perangkat",
+            "noMatchingDevices": "Tidak ada perangkat yang sesuai kriteria filter"
+        },
+        "batchActions": {
+            "batchActions": "Aksi Batch",
+            "selectedCount": "Terpilih",
+            "devices": "perangkat",
+            "selectAll": "Pilih Semua",
+            "deselectAll": "Batal Pilih Semua",
+            "batchUnbind": "Lepas Batch",
+            "batchUnbindShort": "Lepas",
+            "batchRemove": "Hapus Batch",
+            "batchRemoveShort": "Hapus",
+            "confirmUnbind": "Apakah Anda yakin ingin melepas {{count}} perangkat berikut?\n\n{{devices}}\n\nTindakan ini tidak dapat dibatalkan.",
+            "confirmRemove": "Apakah Anda yakin ingin menghapus {{count}} perangkat berikut?\n\n{{devices}}\n\nTindakan ini tidak dapat dibatalkan.",
+            "noBindableDevices": "Tidak ada perangkat terikat dalam pilihan",
+            "noDevicesSelected": "Silakan pilih perangkat untuk dihapus",
+            "unbindSuccess": "Berhasil melepas {{count}} perangkat",
+            "removeSuccess": "Berhasil menghapus {{count}} perangkat",
+            "gateway": {
+                "changeNetworkId": "Ubah ID Jaringan UWB",
+                "changeLocation": "Modifikasi Panti Jompo dan Lantai",
+                "gatewayId": "ID Gateway",
+                "notSet": "Belum Diatur",
+                "selectOneGateway": "Silakan pilih 1 perangkat gateway",
+                "networkIdRange": "ID Jaringan UWB harus antara 1~65535",
+                "networkIdCommandSentSuccess": "✅ Berhasil mengirim perintah ubah ID Jaringan UWB ke {{name}}\nID Jaringan: {{networkId}}",
+                "locationUpdatedSuccess": "Panti jompo dan lantai gateway berhasil diperbarui!"
+            },
+            "anchor": {
+                "changeHeight": "Modifikasi Tinggi (Koordinat Z)",
+                "changePower": "Modifikasi Daya",
+                "requestData": "Minta Data Anchor",
+                "requesting": "Mengirim...",
+                "anchorName": "Nama Anchor",
+                "anchorId": "ID Anchor",
+                "gatewayId": "ID Gateway",
+                "notSet": "Belum Diatur",
+                "selectOneAnchor": "Silakan pilih 1 perangkat anchor",
+                "selectAtLeastOneAnchor": "Silakan pilih minimal 1 perangkat anchor",
+                "enterValidZCoordinate": "Silakan masukkan nilai koordinat Z yang valid",
+                "enterAllPowerValues": "Silakan masukkan semua nilai daya",
+                "powerValueRange": "Nilai daya harus antara 5.0~30.5 dB",
+                "commandSentSuccess": "✅ Berhasil mengirim perintah modifikasi daya ke {{name}}",
+                "heightCommandSentSuccess": "✅ Berhasil mengirim perintah modifikasi tinggi ke {{name}}\nKoordinat Z baru: {{zValue}}",
+                "requestDataSuccess": "✅ Berhasil mengirim perintah minta data ke {{count}} perangkat anchor",
+                "requestDataPartialSuccess": "⚠️ Berhasil mengirim {{successCount}}, gagal {{failCount}}\nPerangkat gagal: {{failedDevices}}",
+                "requestDataFailed": "❌ Semua perintah gagal\nPerangkat gagal: {{failedDevices}}"
+            },
+            "tag": {
+                "changeConfig": "Ubah Pengaturan Parameter",
+                "changePower": "Modifikasi Daya",
+                "requestData": "Minta Data Tag",
+                "requesting": "Mengirim...",
+                "tagName": "Nama Tag",
+                "tagId": "ID Tag",
+                "gatewayId": "ID Gateway",
+                "notSet": "Belum Diatur",
+                "selectOneTag": "Silakan pilih 1 perangkat tag",
+                "selectAtLeastOneTag": "Silakan pilih minimal 1 perangkat tag",
+                "enterAllParameterValues": "Silakan masukkan semua nilai parameter",
+                "enterAllPowerValues": "Silakan masukkan semua nilai daya",
+                "powerValueRange": "Nilai daya harus antara 5.0~30.5 dB",
+                "configCommandSentSuccess": "✅ Berhasil mengirim perintah ubah pengaturan parameter ke {{name}}",
+                "powerCommandSentSuccess": "✅ Berhasil mengirim perintah modifikasi daya ke {{name}}",
+                "requestDataSuccess": "✅ Berhasil mengirim perintah minta data ke {{count}} perangkat tag",
+                "requestDataPartialSuccess": "⚠️ Berhasil mengirim {{successCount}}, gagal {{failCount}}\nPerangkat gagal: {{failedDevices}}",
+                "requestDataFailed": "❌ Semua perintah gagal\nPerangkat gagal: {{failedDevices}}"
+            },
+            "common": {
+                "gatewayNotFound": "Konfigurasi gateway tidak ditemukan, silakan tambahkan gateway di \"Manajemen Lokasi UWB\" terlebih dahulu",
+                "downlinkTopicNotFound": "Gateway atau topik downlink tidak ditemukan",
+                "mqttBusNotConnected": "Bus MQTT tidak terhubung, tidak dapat mengirim perintah",
+                "invalidDeviceIdOrGatewayId": "Tidak dapat mendapatkan ID {{deviceType}} atau ID Gateway yang valid",
+                "selectFloor": "Silakan pilih lantai",
+                "commandSendFailed": "Pengiriman perintah gagal: {{error}}",
+                "commandSendError": "Terjadi kesalahan saat mengirim perintah: {{error}}",
+                "updateFailed": "Pembaruan gagal: {{error}}"
+            }
+        },
+        "deviceInfo": {
+            "title": "Informasi Perangkat",
+            "basicInfo": "Informasi Dasar",
+            "deviceName": "Nama Perangkat",
+            "deviceType": "Jenis Perangkat",
+            "hardwareId": "ID Perangkat Keras",
+            "macAddress": "Alamat MAC",
+            "deviceUid": "UID Perangkat",
+            "uid": "UID",
+            "gatewayId": "ID Gateway",
+            "gatewayName": "Nama Gateway",
+            "firmwareVersion": "Versi Firmware",
+            "batteryLevel": "Level Baterai",
+            "status": "Status",
+            "bindingInfo": "Informasi Pengikatan",
+            "residentId": "Penghuni Terikat",
+            "unbound": "Tidak Terikat",
+            "dataInfo": "Informasi Data",
+            "lastData": "Data Terbaru",
+            "lastSeen": "Terakhir Terlihat",
+            "systemInfo": "Informasi Sistem",
+            "createdAt": "Dibuat Pada",
+            "updatedAt": "Diperbarui Pada",
+            "close": "Tutup"
+        },
+        "monitoringStatus": {
+            "title": "Status Pemantauan",
+            "connected": "Terhubung",
+            "disconnected": "Terputus",
+            "gatewayCount": "{{count}} Gateway",
+            "lastUpdate": "Pembaruan Terakhir",
+            "monitoring": "Memantau",
+            "stopped": "Berhenti",
+            "start": "Mulai",
+            "stop": "Berhenti"
+        },
+        "monitoringControls": {
+            "title": "Kontrol Pemantauan Perangkat",
+            "selectGateway": "Pilih Gateway",
+            "stopMonitoring": "Hentikan Pemantauan",
+            "online": "Online",
+            "offline": "Offline"
+        },
+        "monitoringDebug": {
+            "title": "Panel Debug MQTT",
+            "monitoring": "Memantau",
+            "stopped": "Berhenti",
+            "hide": "Sembunyikan",
+            "show": "Tampilkan",
+            "maxMessages": "Pesan Maksimal",
+            "filterByTopic": "Filter berdasarkan Topik",
+            "filterByDevice": "Filter berdasarkan Perangkat",
+            "topicPlaceholder": "contoh: Health, Loc",
+            "devicePlaceholder": "Nama perangkat atau ID",
+            "export": "Ekspor",
+            "clear": "Bersihkan",
+            "totalMessages": "Total Pesan",
+            "displaying": "Menampilkan",
+            "healthData": "Data Kesehatan",
+            "locationData": "Data Lokasi",
+            "ackMessages": "Pesan Ack",
+            "noMessages": "Belum ada pesan debug",
+            "usageInstructions": "Instruksi Penggunaan",
+            "instruction1": "Panel debug ini menampilkan pesan MQTT waktu nyata",
+            "instruction2": "Pesan dapat difilter berdasarkan topik atau nama perangkat",
+            "instruction3": "Klik tombol salin untuk menyalin data ke clipboard",
+            "instruction4": "Mendukung ekspor data debug sebagai file JSON",
+            "instruction5": "Pesan diperbarui secara otomatis, mempertahankan jumlah maksimal yang ditentukan"
+        },
+        "deviceDiscovery": {
+            "title": "Pencarian Perangkat",
+            "discovering": "Mencari...",
+            "existingDevices": "Perangkat yang Ada",
+            "newlyDiscovered": "Perangkat Baru Ditemukan",
+            "scanning": "Memindai perangkat...",
+            "remove": "Hapus",
+            "add": "Tambah",
+            "confirm": "Konfirmasi",
+            "cancel": "Batal",
+            "stopDiscovery": "Hentikan Pencarian",
+            "deviceCount": "perangkat",
+            "existingCount": "Yang Ada",
+            "discoveredCount": "Ditemukan"
+        },
+        "deviceCard": {
+            "online": "Online",
+            "offline": "Offline",
+            "unknown": "Tidak Diketahui",
+            "deviceInfo": "Info Perangkat",
+            "bindDevice": "Ikat Perangkat",
+            "removeDevice": "Hapus Perangkat",
+            "unbind": "Lepas",
+            "battery": "Baterai",
+            "room": "Kamar",
+            "qrCode": "Kode QR"
+        }
+    },
+    "health": {
+        "systemTitle": "Sistem Perawatan Lansia",
+        "monitoringTitle": "Pemantauan Pasien",
+        "actions": {
+            "forceSave": "Paksa Simpan",
+            "exportSettings": "Ekspor Pengaturan",
+            "importSettings": "Impor Pengaturan",
+            "debugStorage": "Debug Penyimpanan"
+        },
+        "stats": {
+            "totalResidents": "Total Penghuni",
+            "activeDevices": "Perangkat Aktif",
+            "offlineDevices": "Perangkat Offline",
+            "errorDevices": "Perangkat Error"
+        },
+        "filters": {
+            "全部": "Semua",
+            "異常": "Error",
+            "正常": "Normal",
+            "需注意": "Perhatian"
+        },
+        "patientInfo": {
+            "age": "Usia",
+            "room": "Kamar",
+            "devices": "Perangkat"
+        },
+        "patientStatus": {
+            "normal": "Normal",
+            "error": "Error",
+            "attention": "Perhatian",
+            "noDevices": "Tidak Ada Perangkat"
+        },
+        "monitoringIcons": {
+            "temperature": "Suhu",
+            "heartRate": "Detak Jantung",
+            "physiological": "Fisiologis",
+            "diaper": "Popok",
+            "activity": "Aktivitas",
+            "location": "Lokasi",
+            "emergency": "Darurat",
+            "reminders": "Pengingat",
+            "residents": "Penghuni",
+            "devices": "Perangkat"
+        },
+        "emptyState": {
+            "noPatients": "Tidak ada pasien dengan status {{status}} saat ini",
+            "goToResidentManagement": "Buka Manajemen Penghuni untuk mengatur perangkat"
+        },
+        "alerts": {
+            "importSuccess": "✅ Pengaturan pemantauan kesehatan berhasil diimpor!",
+            "invalidFormat": "❌ Format data tidak valid",
+            "importFailed": "❌ Impor data gagal"
+        },
+        "confirms": {
+            "resetSettings": "Apakah Anda yakin ingin mereset semua pengaturan pemantauan kesehatan? Tindakan ini tidak dapat dibatalkan!"
+        }
+    },
+    "emergencyCall": {
+        "title": "Panggilan Darurat",
+        "subtitle": "Kirim sinyal bantuan darurat dengan cepat untuk memastikan bantuan tepat waktu",
+        "patient": "Pasien",
+        "location": "Lokasi",
+        "selectPatient": "Pilih Pasien",
+        "selectLocation": "Pilih Lokasi",
+        "emergencyButton": "Panggilan\nDarurat",
+        "callHistory": "Riwayat Panggilan",
+        "refreshStatus": "Segarkan Status",
+        "types": {
+            "fall": "Jatuh",
+            "pain": "Nyeri",
+            "toilet": "Bantuan Toilet",
+            "medicine": "Bantuan Obat",
+            "help": "Bantuan Lain"
+        },
+        "status": {
+            "responding": "Merespons...",
+            "caregiverOnWay": "Perawat sedang dalam perjalanan...",
+            "completed": "Selesai",
+            "cancelled": "Dibatalkan",
+            "pending": "Menunggu Respons"
+        },
+        "info": {
+            "patient": "Pasien",
+            "location": "Lokasi",
+            "type": "Jenis",
+            "callTime": "Waktu Panggilan",
+            "waitTime": "Waktu Tunggu",
+            "responder": "Perespons",
+            "responseTime": "Waktu Respons"
+        },
+        "record": {
+            "callTime": "Waktu Panggilan",
+            "completedTime": "Waktu Selesai",
+            "handler": "Penangan",
+            "cancelReason": "Alasan Pembatalan"
+        },
+        "emptyState": {
+            "noRecords": "Tidak ada catatan panggilan",
+            "completedCalls": "Panggilan darurat yang selesai akan ditampilkan di sini"
+        },
+        "modals": {
+            "selectType": {
+                "title": "Pilih Jenis Darurat"
+            },
+            "cancelCall": {
+                "title": "Batalkan Panggilan Darurat",
+                "reasonLabel": "Silakan masukkan alasan pembatalan",
+                "reasonPlaceholder": "Alasan pembatalan",
+                "back": "Kembali",
+                "confirm": "Konfirmasi Batal"
+            }
+        },
+        "timeUnits": {
+            "minutes": "menit",
+            "seconds": "detik"
+        }
+    },
+    "reminders": {
+        "title": "Pengingat Berjadwal",
+        "subtitle": "Kelola pengingat obat, hidrasi, dan perawatan lain untuk lansia",
+        "addReminder": "Tambah Pengingat",
+        "todayReminders": "Pengingat Hari Ini",
+        "complete": "Selesai",
+        "types": {
+            "medication": "Pengingat Obat",
+            "water": "Pengingat Air",
+            "physicalTherapy": "Terapi Fisik"
+        },
+        "descriptions": {
+            "hypertension": "Obat hipertensi",
+            "diabetes": "Obat diabetes",
+            "hydration": "Pastikan hidrasi cukup",
+            "rehabilitation": "Latihan rehabilitasi harian"
+        },
+        "cards": {
+            "periodic": {
+                "title": "Pengingat Periodik",
+                "description": "Kelola tugas pengingat harian, mingguan, atau periodik khusus"
+            },
+            "statistics": {
+                "title": "Statistik Pengingat",
+                "description": "Lihat status penyelesaian pengingat dan data statistik"
+            },
+            "settings": {
+                "title": "Pengaturan Pengingat",
+                "description": "Sesuaikan metode notifikasi pengingat dan aturan pengingat"
+            }
+        }
+    },
+    "location": {
+        "title": "Lokasi Dalam Ruangan",
+        "subtitle": "Lacak lokasi lansia dan perangkat di fasilitas untuk memastikan keamanan dan perawatan",
+        "selectArea": {
+            "title": "Pilih Area Pemantauan",
+            "nursingHome": "Panti Jompo",
+            "floor": "Lantai",
+            "gateway": "Gateway",
+            "selectNursingHome": "Pilih Panti Jompo",
+            "selectFloor": "Pilih Lantai",
+            "selectGateway": "Pilih Gateway",
+            "local": "Lokal",
+            "noGateway": "Tidak Ada Gateway"
+        },
+        "mqttStatus": {
+            "title": "Status Koneksi MQTT",
+            "refreshData": "Segarkan Data",
+            "refreshTitle": "Segarkan Data Kalibrasi",
+            "status": "Status",
+            "topic": "Topik",
+            "deviceCount": "Jumlah Perangkat",
+            "error": "Error",
+            "none": "Tidak Ada",
+            "mqttBus": "Bus MQTT",
+            "未連線": "Terputus",
+            "已連線": "Terhubung",
+            "連接中...": "Menghubungkan...",
+            "重新連接中...": "Menghubungkan ulang...",
+            "連接已關閉": "Koneksi Ditutup",
+            "客戶端離線": "Klien Offline",
+            "連接錯誤": "Kesalahan Koneksi",
+            "未選擇閘道器": "Tidak Ada Gateway Terpilih",
+            "無法獲取閘道器主題": "Tidak Dapat Mendapatkan Topik Gateway"
+        },
+        "connectionStatus": {
+            "title": "Status MQTT",
+            "connected": "Terhubung",
+            "disconnected": "Terputus",
+            "connecting": "Menghubungkan...",
+            "reconnecting": "Menghubungkan ulang...",
+            "connectionError": "Kesalahan Koneksi"
+        },
+        "searchFilter": {
+            "title": "Cari dan Filter",
+            "searchPlaceholder": "Cari nama penghuni atau nomor kamar...",
+            "allStatus": "Semua Status",
+            "allDevices": "Semua Perangkat",
+            "watch": "Jam",
+            "uwbTag": "Tag UWB"
+        },
+        "map": {
+            "realtimeMap": "Peta Lokasi Waktu Nyata",
+            "showDevices": "Tampilkan {{count}} perangkat",
+            "zoomIn": "Perbesar",
+            "zoomOut": "Perkecil",
+            "resetView": "Reset Tampilan",
+            "zoom": "Zoom",
+            "hideMarkerInfo": "Sembunyikan Info Penanda",
+            "showMarkerInfo": "Tampilkan Info Penanda",
+            "controls": "Roda untuk zoom | Seret untuk memindahkan",
+            "noDevices": "Tidak ada perangkat yang sesuai kriteria",
+            "selectGateway": "Silakan pilih gateway dan buat koneksi terlebih dahulu",
+            "noDimensions": "Lantai ini belum mengatur dimensi peta",
+            "selectFloor": "Silakan pilih lantai untuk menampilkan peta",
+            "mapStatus": "Status Peta",
+            "calibrated": "Terkalibrasi",
+            "notCalibrated": "Tidak Terkalibrasi",
+            "ratio": "Rasio",
+            "pixelsPerMeter": "piksel/meter",
+            "translate": "Terjemahkan",
+            "totalDevices": "Total Perangkat",
+            "onlineDevices": "Perangkat Online",
+            "filtered": "Terfilter"
+        },
+        "deviceList": {
+            "onlineDevices": "Perangkat Online ({{count}})",
+            "totalDevices": "Total {{count}} perangkat",
+            "room": "Kamar",
+            "position": "Posisi",
+            "updated": "Diperbarui",
+            "online": "Online"
+        }
+    },
+    "temperature": {
+        "title": "Pemantauan Suhu",
+        "subtitle": "Pemantauan waktu nyata perubahan suhu lansia untuk mendeteksi kelainan kesehatan tepat waktu",
+        "navigationFromHealth": "Dinavigasi dari halaman Pemantauan Kesehatan",
+        "currentPatient": "Pasien Saat Ini",
+        "reconnectLocal": "Hubungkan Ulang Lokal",
+        "reconnectCloud": "Hubungkan Ulang Cloud",
+        "tabs": {
+            "local": "MQTT Lokal",
+            "cloud": "MQTT Cloud"
+        },
+        "patientSelection": {
+            "title": "Pemilihan Pasien",
+            "selectPatient": "Pilih Pasien",
+            "patient": "Pasien"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Pemantauan Perangkat Cloud",
+            "connected": "Terhubung",
+            "離線": "Offline",
+            "連接中...": "Menghubungkan...",
+            "重新連接中...": "Menghubungkan ulang...",
+            "連接已關閉": "Koneksi Ditutup",
+            "連接錯誤": "Kesalahan Koneksi",
+            "未選擇閘道器": "Tidak Ada Gateway Terpilih",
+            "selectArea": "Pilih Area Pemantauan:",
+            "selectNursingHomeFirst": "Silakan pilih panti jompo terlebih dahulu",
+            "selectFloorFirst": "Silakan pilih lantai terlebih dahulu",
+            "currentGateway": "Gateway yang Dipilih Saat Ini:",
+            "listeningTopic": "Topik yang Didengarkan",
+            "cannotGetTopic": "Tidak dapat mendapatkan topik",
+            "discoveredDevices": "Perangkat Ditemukan",
+            "totalRecords": "Total Catatan",
+            "mqttMessages": "Pesan MQTT",
+            "selectDevice": "Pilih Perangkat Pemantauan:",
+            "selectCloudDevice": "Pilih perangkat cloud untuk pemantauan terperinci",
+            "records": " catatan",
+            "noDevices": "Belum ada perangkat cloud ditemukan",
+            "pleaseConfirm": "Silakan konfirmasi:",
+            "cloudMqttSimulator": "Simulator MQTT cloud sedang berjalan",
+            "simulatorFormat": "Simulator mengirim data dalam format konten: \"300B\"",
+            "dataFields": "Data berisi field MAC dan \"skin temp\"",
+            "recentData": "Data yang Baru Diterima:",
+            "device": "Perangkat",
+            "temperature": "Suhu",
+            "roomTemperature": "Suhu Ruangan",
+            "battery": "Baterai",
+            "diaperDevice": "Perangkat Popok",
+            "humidity": "Kelembaban",
+            "viewRawData": "Lihat Data MQTT Mentah (Debug)",
+            "clickToExpand": "Klik pada data di bawah untuk memperluas dan melihat konten lengkap",
+            "deviceCreationConditions": "Pemeriksaan Kondisi Pembuatan Perangkat:",
+            "condition1": "Harus memiliki konten: \"300B\"",
+            "condition2": "Harus memiliki field MAC",
+            "condition3": "Field skin_temp bisa kosong atau 0 (kondisi dilonggarkan)",
+            "condition4": "Data jenis DV1 popok saat ini tidak membuat catatan perangkat"
+        },
+        "deviceTemperatureData": {
+            "title": "Data Suhu Perangkat",
+            "unknownDevice": "Perangkat Tidak Dikenal",
+            "skinTemperature": "Suhu Kulit",
+            "roomTemperature": "Suhu Ruangan",
+            "steps": "Langkah",
+            "battery": "Baterai",
+            "temperatureHigh": "Suhu Tinggi",
+            "temperatureLow": "Suhu Rendah",
+            "normal": "Normal"
+        },
+        "dateTabs": {
+            "today": "Hari Ini",
+            "yesterday": "Kemarin",
+            "dayBefore": "Lusa"
+        },
+        "temperatureChart": {
+            "title": "Grafik Tren Suhu",
+            "cloudDevice": "Perangkat Cloud",
+            "localUser": "Pengguna Lokal",
+            "yAxisLabel": "Suhu (°C)",
+            "time": "Waktu",
+            "temperature": "Suhu",
+            "highTempLine": "Garis Peringatan Suhu Tinggi",
+            "lowTempLine": "Garis Peringatan Suhu Rendah",
+            "noData": "Tidak ada data suhu untuk {{date}}",
+            "cloudSimulatorCheck": "Silakan konfirmasi simulator MQTT cloud sedang berjalan",
+            "selectValidDevice": "dan pilih perangkat cloud yang valid",
+            "localSimulatorCheck": "Silakan konfirmasi simulator MQTT lokal sedang berjalan"
+        },
+        "temperatureRecords": {
+            "title": "Catatan Suhu",
+            "filters": {
+                "all": "Semua",
+                "high": "Tinggi",
+                "low": "Rendah"
+            },
+            "timeRanges": {
+                "1day": "1 Hari",
+                "3day": "3 Hari",
+                "7day": "7 Hari"
+            },
+            "noTemperatureData": "Tidak Ada Data Suhu",
+            "roomTemperature": "Suhu Ruangan",
+            "temperatureHigh": "Suhu Tinggi",
+            "temperatureLow": "Suhu Rendah",
+            "normal": "Normal",
+            "noRecords": "Tidak ada catatan yang sesuai",
+            "selectCloudDeviceFirst": "Silakan pilih perangkat cloud terlebih dahulu",
+            "selectedDeviceNoData": "Perangkat yang dipilih tidak memiliki data suhu"
+        },
+        "connectionStatus": {
+            "title": "Pemantauan Status Koneksi",
+            "localMqtt": "MQTT Lokal",
+            "cloudMqtt": "MQTT Cloud",
+            "error": "Error",
+            "hint": "Petunjuk: MQTT Lokal perlu berjalan di localhost:9001, MQTT Cloud akan terhubung otomatis ke layanan cloud HiveMQ",
+            "connected": "Terhubung",
+            "disconnected": "Terputus",
+            "connecting": "Menghubungkan...",
+            "reconnecting": "Menghubungkan ulang...",
+            "connectionError": "Kesalahan Koneksi"
+        }
+    },
+    "settings": {
+        "title": "Pengaturan Sistem",
+        "subtitle": "Kelola konfigurasi sistem, pengaturan pribadi, dan opsi keamanan",
+        "categories": {
+            "personal": {
+                "title": "Pengaturan Pribadi",
+                "description": "Kelola data pribadi dan pengaturan akun Anda"
+            },
+            "notifications": {
+                "title": "Pengaturan Notifikasi",
+                "description": "Konfigurasikan notifikasi sistem dan metode pengingat"
+            },
+            "security": {
+                "title": "Pengaturan Keamanan",
+                "description": "Perubahan kata sandi dan pengaturan keamanan akun"
+            },
+            "display": {
+                "title": "Pengaturan Tampilan",
+                "description": "Sesuaikan tampilan antarmuka dan tema"
+            },
+            "data": {
+                "title": "Manajemen Data",
+                "description": "Pengaturan cadangan dan ekspor data"
+            },
+            "language": {
+                "title": "Bahasa & Wilayah",
+                "description": "Atur bahasa sistem dan zona waktu"
+            }
+        },
+        "systemInfo": {
+            "title": "Informasi Sistem",
+            "version": "Versi Sistem",
+            "lastUpdate": "Pembaruan Terakhir",
+            "terms": "Ketentuan Layanan",
+            "privacy": "Kebijakan Privasi",
+            "view": "Lihat"
+        },
+        "actions": {
+            "enterSettings": "Masuk Pengaturan"
+        }
+    },
+    "placeholder": {
+        "title": "{{title}}",
+        "description": "Halaman ini sedang dalam pengembangan",
+        "more": "Fitur Lainnya",
+        "help": "Pusat Bantuan",
+        "notFound": "404 - Halaman Tidak Ditemukan"
+    },
+    "heartRate": {
+        "title": "Pemantauan Detak Jantung",
+        "subtitle": "Pemantauan waktu nyata perubahan detak jantung dan peringatan",
+        "navigationFromHealth": "Dinavigasi dari halaman Pemantauan Kesehatan",
+        "currentPatient": "Pasien Saat Ini",
+        "reconnectLocal": "Hubungkan Ulang Lokal",
+        "reconnectCloud": "Hubungkan Ulang Cloud",
+        "tabs": {
+            "local": "MQTT Lokal",
+            "cloud": "MQTT Cloud"
+        },
+        "patientSelection": {
+            "title": "Pemilihan Pasien",
+            "selectPatient": "Pilih Pasien",
+            "patient": "Pasien"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Pemantauan Perangkat Cloud",
+            "connected": "Terhubung",
+            "離線": "Offline",
+            "連接中...": "Menghubungkan...",
+            "重新連接中...": "Menghubungkan ulang...",
+            "連接已關閉": "Koneksi Ditutup",
+            "連接錯誤": "Kesalahan Koneksi",
+            "未選擇閘道器": "Tidak Ada Gateway Terpilih",
+            "selectArea": "Pilih Area Pemantauan:",
+            "selectNursingHome": "Panti Jompo",
+            "selectNursingHomeFirst": "Silakan pilih panti jompo terlebih dahulu",
+            "selectFloor": "Lantai",
+            "selectFloorFirst": "Silakan pilih lantai terlebih dahulu",
+            "selectGateway": "Gateway",
+            "currentGateway": "Gateway yang Dipilih Saat Ini:",
+            "listeningTopic": "Topik yang Didengarkan",
+            "cannotGetTopic": "Tidak dapat mendapatkan topik",
+            "discoveredDevices": "Perangkat Ditemukan",
+            "totalRecords": "Total Catatan",
+            "mqttMessages": "Pesan MQTT",
+            "selectDevice": "Pilih Perangkat Pemantauan:",
+            "selectCloudDevice": "Pilih perangkat cloud untuk pemantauan terperinci",
+            "records": " catatan",
+            "noDevices": "Belum ada perangkat cloud ditemukan",
+            "pleaseConfirm": "Silakan konfirmasi:",
+            "cloudMqttSimulator": "Simulator MQTT cloud sedang berjalan",
+            "simulatorFormat": "Simulator mengirim data dalam format konten: \"300B\"",
+            "dataFields": "Data berisi MAC dan field terkait detak jantung",
+            "recentData": "Data yang Baru Diterima:",
+            "device": "Perangkat",
+            "heartRate": "Detak Jantung",
+            "spo2": "SpO2",
+            "bloodPressure": "Tekanan Darah",
+            "temperature": "Suhu",
+            "diaperDevice": "Perangkat Popok",
+            "humidity": "Kelembaban",
+            "viewRawData": "Lihat Data MQTT Mentah (Debug)",
+            "clickToExpand": "Klik pada data di bawah untuk memperluas dan melihat konten lengkap",
+            "deviceCreationConditions": "Pemeriksaan Kondisi Pembuatan Perangkat:",
+            "condition1": "Harus memiliki konten: \"300B\"",
+            "condition2": "Harus memiliki field MAC",
+            "condition3": "Field hr, SpO2, bp_syst, bp_diast bisa kosong atau 0 (kondisi dilonggarkan)",
+            "condition4": "Data jenis DV1 popok saat ini tidak membuat catatan perangkat"
+        },
+        "deviceHeartRateData": {
+            "title": "Data Tanda Vital Perangkat",
+            "unknownDevice": "Perangkat Tidak Dikenal",
+            "heartRate": "Detak Jantung",
+            "spo2": "SpO2",
+            "bloodPressure": "Tekanan Darah",
+            "skinTemperature": "Suhu Kulit",
+            "steps": "Langkah",
+            "battery": "Baterai",
+            "noData": "Tidak Ada Data",
+            "noHeartRateData": "Tidak Ada Data Detak Jantung",
+            "heartRateHigh": "Detak Jantung Tinggi",
+            "heartRateLow": "Detak Jantung Rendah",
+            "normal": "Normal"
+        },
+        "dateTabs": {
+            "today": "Hari Ini",
+            "yesterday": "Kemarin",
+            "dayBefore": "Lusa"
+        },
+        "heartRateTrendChart": {
+            "title": "Grafik Tren Detak Jantung"
+        },
+        "bloodPressureTrendChart": {
+            "title": "Grafik Tren Tekanan Darah",
+            "yAxisLabel": "Tekanan Darah (mmHg)",
+            "noData": "Tidak Ada Data Tekanan Darah"
+        },
+        "recentMqttData": {
+            "title": "Data MQTT yang Baru Diterima",
+            "device": "Perangkat",
+            "heartRate": "Detak Jantung",
+            "spo2": "SpO2",
+            "bloodPressure": "Tekanan Darah",
+            "diaperDevice": "Perangkat Popok",
+            "temperature": "Suhu",
+            "humidity": "Kelembaban"
+        },
+        "rawMqttData": {
+            "title": "Lihat Data MQTT Mentah (Debug)",
+            "clickToExpand": "Klik data di bawah untuk memperluas dan melihat konten lengkap",
+            "deviceConditions": {
+                "title": "Kondisi Pembuatan Perangkat Detak Jantung",
+                "mustHaveContent": "Harus memiliki konten: \"300B\"",
+                "mustHaveMAC": "Harus memiliki field MAC",
+                "fieldsCanBeEmpty": "Field hr, SpO2, bp_syst, bp_diast bisa kosong atau 0 (kondisi dilonggarkan)",
+                "abnormalWarning": "Detak jantung > 100 BPM atau < 60 BPM akan memicu peringatan abnormal"
+            }
+        },
+        "heartRateChart": {
+            "title": "Grafik Tren Detak Jantung",
+            "cloudDevice": "Perangkat Cloud",
+            "localUser": "Pengguna Lokal",
+            "yAxisLabel": "Detak Jantung (BPM)",
+            "time": "Waktu",
+            "heartRate": "Detak Jantung",
+            "targetHeartRate": "Detak Jantung Target",
+            "highHeartRateLine": "Garis Peringatan Detak Jantung Tinggi",
+            "lowHeartRateLine": "Garis Peringatan Detak Jantung Rendah",
+            "noData": "Tidak ada data detak jantung untuk {{date}}",
+            "cloudSimulatorCheck": "Silakan konfirmasi simulator MQTT cloud sedang berjalan",
+            "selectValidDevice": "dan pilih perangkat cloud yang valid",
+            "localSimulatorCheck": "Silakan konfirmasi simulator MQTT lokal sedang berjalan",
+            "hideReferenceLines": "Sembunyikan Garis Referensi",
+            "showReferenceLines": "Tampilkan Garis Referensi",
+            "legend": {
+                "heartRate": "Detak Jantung (BPM)",
+                "systolicBP": "Tekanan Sistolik (mmHg)",
+                "diastolicBP": "Tekanan Diastolik (mmHg)",
+                "referenceLinesVisible": "Garis Referensi Terlihat"
+            },
+            "referenceLines": {
+                "normalSystolicBP": "Sistolik Normal: 120",
+                "normalDiastolicBP": "Diastolik Normal: 80",
+                "highSystolicBP": "Sistolik Tinggi: 140",
+                "highDiastolicBP": "Diastolik Tinggi: 90"
+            }
+        },
+        "heartRateRecords": {
+            "title": "Catatan Detak Jantung",
+            "filters": {
+                "all": "Semua",
+                "high": "Detak Tinggi",
+                "low": "Detak Rendah",
+                "highBP": "Tekanan Tinggi",
+                "lowBP": "Tekanan Rendah"
+            },
+            "timeRanges": {
+                "1day": "1 Hari",
+                "3day": "3 Hari",
+                "7day": "7 Hari"
+            },
+            "noHeartRateData": "Tidak Ada Data Detak Jantung",
+            "temperature": "Suhu",
+            "bloodPressure": "Tekanan Darah",
+            "heartRateHigh": "Detak Jantung Tinggi",
+            "heartRateLow": "Detak Jantung Rendah",
+            "normal": "Normal",
+            "noRecords": "Tidak ada catatan yang sesuai",
+            "selectCloudDeviceFirst": "Silakan pilih perangkat cloud terlebih dahulu",
+            "selectedDeviceNoData": "Perangkat yang dipilih tidak memiliki data detak jantung"
+        },
+        "connectionStatus": {
+            "title": "Pemantauan Status Koneksi",
+            "localMqtt": "MQTT Lokal",
+            "cloudMqtt": "MQTT Cloud",
+            "error": "Error",
+            "hint": "Petunjuk: MQTT Lokal perlu berjalan di localhost:9001, MQTT Cloud akan terhubung otomatis ke layanan cloud HiveMQ",
+            "connected": "Terhubung",
+            "disconnected": "Terputus",
+            "connecting": "Menghubungkan...",
+            "reconnecting": "Menghubungkan ulang...",
+            "connectionError": "Kesalahan Koneksi"
+        }
+    },
+    "diaperMonitoring": {
+        "title": "Pemantauan Popok",
+        "subtitle": "Pemantauan waktu nyata status kelembaban popok lansia untuk kenyamanan dan kesehatan",
+        "navigationFromHealth": "Dinavigasi dari halaman Pemantauan Kesehatan",
+        "currentPatient": "Pasien Saat Ini",
+        "reconnectLocal": "Hubungkan Ulang Lokal",
+        "reconnectCloud": "Hubungkan Ulang Cloud",
+        "tabs": {
+            "local": "MQTT Lokal",
+            "cloud": "MQTT Cloud"
+        },
+        "patientSelection": {
+            "title": "Pemilihan Pasien",
+            "selectPatient": "Pilih Pasien",
+            "patient": "Pasien"
+        },
+        "connectionStatus": {
+            "title": "Status MQTT",
+            "connected": "Terhubung",
+            "disconnected": "Terputus",
+            "connecting": "Menghubungkan...",
+            "reconnecting": "Menghubungkan ulang...",
+            "connectionError": "Kesalahan Koneksi",
+            "cloudMqtt": "MQTT Cloud",
+            "hint": "Petunjuk: MQTT Lokal perlu berjalan di localhost:9001, MQTT Cloud akan terhubung otomatis ke Layanan Cloud HiveMQ"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Pemantauan Perangkat Popok Cloud",
+            "connected": "Terhubung",
+            "離線": "Offline",
+            "連接中...": "Menghubungkan...",
+            "重新連接中...": "Menghubungkan ulang...",
+            "連接已關閉": "Koneksi Ditutup",
+            "連接錯誤": "Kesalahan Koneksi",
+            "未選擇閘道器": "Tidak Ada Gateway Terpilih",
+            "selectArea": "Pilih Area Pemantauan:",
+            "selectNursingHome": "Panti Jompo",
+            "selectNursingHomeFirst": "Pilih panti jompo",
+            "selectFloor": "Lantai",
+            "selectFloorFirst": "Silakan pilih panti jompo terlebih dahulu",
+            "selectGateway": "Gateway",
+            "selectGatewayFirst": "Silakan pilih lantai terlebih dahulu",
+            "currentGateway": "Gateway yang Dipilih Saat Ini:",
+            "listeningTopic": "Topik yang Didengarkan",
+            "cannotGetTopic": "Tidak dapat mendapatkan topik",
+            "discoveredDevices": "Perangkat Ditemukan",
+            "totalRecords": "Total Catatan",
+            "mqttMessages": "Pesan MQTT",
+            "selectDevice": "Pilih Perangkat Pemantauan:",
+            "selectCloudDevice": "Pilih perangkat popok cloud untuk pemantauan terperinci",
+            "noDevices": "Belum ada perangkat popok cloud ditemukan",
+            "pleaseConfirm": "Silakan konfirmasi:",
+            "cloudMqttSimulator": "Simulator MQTT cloud sedang berjalan",
+            "simulatorFormat": "Simulator mengirim data dalam format konten: \"diaper DV1\"",
+            "dataFields": "Data berisi MAC dan field terkait kelembaban",
+            "recentData": "Data yang Baru Diterima:",
+            "device": "Perangkat",
+            "humidity": "Kelembaban",
+            "temperature": "Suhu",
+            "battery": "Baterai",
+            "deviceName": "Nama Perangkat",
+            "viewRawData": "Lihat Data MQTT Mentah (Debug)",
+            "clickToExpand": "Klik pada data di bawah untuk memperluas dan melihat konten lengkap",
+            "deviceCreationConditions": "Pemeriksaan Kondisi Pembuatan Perangkat Popok:",
+            "condition1": "Harus memiliki konten: \"diaper DV1\"",
+            "condition2": "Harus memiliki field MAC",
+            "condition3": "Field humi, temp, battery level bisa kosong atau 0 (kondisi dilonggarkan)",
+            "condition4": "Kelembaban > 75% akan memicu peringatan ganti popok"
+        },
+        "deviceDiaperData": {
+            "title": "Catatan Pemantauan Perangkat",
+            "unknownDevice": "Perangkat Tidak Dikenal",
+            "humidity": "Kelembaban",
+            "temperature": "Suhu",
+            "battery": "Baterai",
+            "noData": "Tidak Ada Data",
+            "noHumidityData": "Tidak Ada Data Kelembaban",
+            "needsChange": "Perlu Diganti",
+            "wet": "Basah",
+            "normal": "Normal",
+            "deviceStats": "Statistik Perangkat",
+            "deviceMAC": "MAC Perangkat",
+            "patientInfo": "Info Pasien",
+            "unboundPatient": "Pasien Tidak Terikat",
+            "lastConnection": "Koneksi Terakhir",
+            "totalRecords": "Total Catatan",
+            "currentStatus": "Status Saat Ini",
+            "needsAttention": "Perlu Perhatian"
+        },
+        "dateTabs": {
+            "today": "Hari Ini",
+            "week": "Minggu Ini",
+            "month": "Bulan Ini"
+        },
+        "humidityChart": {
+            "title": "Grafik Tren Kelembaban",
+            "cloudDevice": "Perangkat Cloud",
+            "localPatient": "Pasien Lokal",
+            "yAxisLabel": "Kelembaban (%)",
+            "time": "Waktu",
+            "humidity": "Kelembaban",
+            "changeAlertLine": "Garis Peringatan Ganti: 75%",
+            "attentionLine": "Garis Perhatian: 50%",
+            "normalLine": "Garis Normal: 25%",
+            "noData": "Tidak ada data kelembaban untuk {{date}}",
+            "cloudSimulatorCheck": "Silakan konfirmasi simulator MQTT cloud sedang berjalan",
+            "selectValidDevice": "dan pilih perangkat cloud yang valid",
+            "localSimulatorCheck": "Silakan konfirmasi simulator MQTT lokal sedang berjalan"
+        },
+        "temperatureChart": {
+            "title": "Grafik Tren Suhu",
+            "cloudDevice": "Perangkat Cloud",
+            "localPatient": "Pasien Lokal",
+            "yAxisLabel": "Suhu (°C)",
+            "time": "Waktu",
+            "temperature": "Suhu",
+            "highTempLine": "Peringatan Suhu Tinggi: 40°C",
+            "warmLine": "Garis Hangat: 35°C",
+            "normalLine": "Garis Normal: 30°C",
+            "coolLine": "Garis Dingin: 25°C",
+            "noData": "Tidak ada data suhu untuk {{date}}",
+            "cloudSimulatorCheck": "Silakan konfirmasi simulator MQTT cloud sedang berjalan",
+            "selectValidDevice": "dan pilih perangkat cloud yang valid",
+            "localSimulatorCheck": "Silakan konfirmasi simulator MQTT lokal sedang berjalan"
+        },
+        "currentDiaperStatus": {
+            "title": "Status Popok Saat Ini",
+            "autoNotification": "Notifikasi Otomatis",
+            "needsChange": "Popok Perlu Diganti!",
+            "humidity": "Kelembaban",
+            "device": "Perangkat",
+            "lastChangeTime": "Waktu Ganti Terakhir",
+            "noRecords": "Tidak Ada Catatan",
+            "recordChange": "Catat Penggantian Popok"
+        },
+        "deviceStatus": {
+            "humidity": "Kelembaban",
+            "temperature": "Suhu",
+            "battery": "Baterai",
+            "needsChange": "Perlu Diganti",
+            "noData": "Tidak Ada Data"
+        },
+        "diaperRecords": {
+            "title": "Catatan Penggantian Popok",
+            "noRecords": "Tidak ada catatan penggantian",
+            "timestamp": "Waktu",
+            "status": "Status",
+            "nurse": "Diganti Oleh"
+        },
+        "recordModal": {
+            "title": "Catat Penggantian Popok",
+            "diaperStatus": "Status Popok",
+            "nurse": "Perawat",
+            "cancel": "Batal",
+            "confirm": "Konfirmasi"
+        },
+        "diaperStatus": {
+            "dry": "Kering",
+            "slightlyWet": "Sedikit Basah",
+            "wet": "Basah",
+            "veryWet": "Sangat Basah",
+            "soiled": "Kotor"
+        }
+    },
+    "staffManagement": {
+        "title": "Manajemen Staf",
+        "searchPlaceholder": "Cari berdasarkan nama, ID, atau departemen...",
+        "filters": {
+            "all": "Semua",
+            "active": "Aktif",
+            "onLeave": "Cuti"
+        },
+        "status": {
+            "active": "Aktif",
+            "onLeave": "Cuti"
+        },
+        "staffList": {
+            "title": "Daftar Staf",
+            "count": "{{count}} anggota staf",
+            "id": "ID"
+        },
+        "detailModal": {
+            "contactInfo": "Informasi Kontak",
+            "workInfo": "Informasi Pekerjaan",
+            "hireDate": "Tanggal Masuk",
+            "notes": "Catatan",
+            "notesPlaceholder": "Masukkan catatan...",
+            "noNotes": "Tidak ada catatan tersedia",
+            "editNotes": "Edit Catatan",
+            "updateNotes": "Perbarui Catatan"
+        }
+    },
+    "fieldManagementTest": {
+        "title": "Tes Manajemen Area",
+        "subtitle": "Tes operasi CRUD area dan lantai",
+        "reload": "Muat Ulang",
+        "homeSection": "Manajemen Area",
+        "homesCount": "{{count}} area",
+        "homeNamePlaceholder": "Nama area",
+        "descriptionPlaceholder": "Deskripsi",
+        "addressPlaceholder": "Alamat",
+        "createHome": "Buat area",
+        "updateHome": "Perbarui area",
+        "cancel": "Batal",
+        "floorsCount": "{{count}} lantai",
+        "floorSection": "Manajemen Lantai",
+        "floorsCountBadge": "{{count}} lantai",
+        "floorNamePlaceholder": "Nama lantai",
+        "levelPlaceholder": "Level",
+        "widthPlaceholder": "Lebar (m)",
+        "heightPlaceholder": "Tinggi (m)",
+        "createFloor": "Buat lantai",
+        "updateFloor": "Perbarui lantai",
+        "floorLevelFormat": "{{name}} - Level {{level}}",
+        "usageTitle": "Penggunaan",
+        "usage1": "1. Pastikan backend berjalan (node test-backend-with-db.js)",
+        "usage2": "2. Buat area: isi info area dan klik \"Buat area\"",
+        "usage3": "3. Buat lantai: pilih area, isi info lantai dan klik \"Buat lantai\"",
+        "usage4": "4. Edit: klik tombol edit untuk mengubah item",
+        "usage5": "5. Hapus: klik tombol hapus untuk menghapus item",
+        "toast": {
+            "loadFail": "Gagal memuat",
+            "loadFailDesc": "Tidak dapat memuat data dari backend",
+            "validationFail": "Validasi gagal",
+            "homeNameRequired": "Silakan masukkan nama area",
+            "floorRequired": "Silakan masukkan nama lantai dan pilih area",
+            "updateSuccess": "Perbaruan berhasil",
+            "homeUpdated": "Area diperbarui",
+            "floorUpdated": "Lantai diperbarui",
+            "createSuccess": "Pembuatan berhasil",
+            "homeCreated": "Area dibuat",
+            "floorCreated": "Lantai dibuat",
+            "operationFail": "Operasi gagal",
+            "deleteSuccess": "Penghapusan berhasil",
+            "homeDeleted": "Area dihapus",
+            "floorDeleted": "Lantai dihapus",
+            "deleteFail": "Penghapusan gagal",
+            "unknownError": "Kesalahan tidak dikenal"
+        }
+    },
+    "uwbLocation": {
+        "title": "Manajemen Panti Jompo",
+        "subtitle": "Manajemen konfigurasi area sistem posisi UWB, lantai dan gateway",
+        "selectHome": "Pilih Area",
+        "tabs": {
+            "overview": "Ikhtisar Sistem",
+            "homes": "Manajemen Area",
+            "floors": "Manajemen Lantai",
+            "gateways": "Manajemen Gateway",
+            "anchors": "Pemasangan Anchor",
+            "tags": "Manajemen Tag"
+        },
+        "stats": {
+            "homes": "Jumlah Area",
+            "floors": "Jumlah Lantai",
+            "gateways": "Jumlah Gateway",
+            "anchors": "Jumlah Anchor",
+            "tags": "Jumlah Tag"
+        },
+        "status": {
+            "online": "Status Online"
+        },
+        "actions": {
+            "addHome": "Tambah Area",
+            "editHome": "Edit Area",
+            "addFloor": "Tambah Lantai",
+            "editFloor": "Edit Lantai",
+            "addGateway": "Tambah Gateway",
+            "editGateway": "Edit Gateway",
+            "addAnchor": "Tambah Anchor",
+            "addTag": "Tambah Tag"
+        },
+        "forms": {
+            "homeName": "Nama Area",
+            "homeNamePlaceholder": "Masukkan nama area",
+            "homeDescription": "Deskripsi Area",
+            "homeDescriptionPlaceholder": "Masukkan deskripsi area",
+            "homeAddress": "Alamat Area",
+            "homeAddressPlaceholder": "Masukkan alamat area"
+        },
+        "homeCard": {
+            "floors": "Lantai",
+            "gateways": "Gateway"
+        },
+        "floorCard": {
+            "mapPreview": "Pratinjau Peta",
+            "ratio": "Rasio",
+            "anchorsCount": "anchor"
+        },
+        "mapControls": {
+            "zoom": "Zoom",
+            "mouseInstructions": "Gulir untuk zoom, seret untuk memindahkan di peta"
+        },
+        "messages": {
+            "selectFieldFirst": "Silakan pilih area terlebih dahulu",
+            "addFloorFirst": "Silakan tambahkan lantai terlebih dahulu untuk mengkonfigurasi gateway",
+            "selectGatewayFirst": "Silakan pilih gateway terlebih dahulu",
+            "noAnchorsFound": "Tidak ada anchor ditemukan",
+            "noTagsFound": "Tidak ada tag ditemukan",
+            "noGatewaysFound": "Tidak ada gateway cloud ditemukan"
+        },
+        "currentFieldStatus": "Status Area Saat Ini",
+        "floorInfo": "Lantai {{level}} | {{width}}m × {{height}}m",
+        "mapStatus": {
+            "calibrated": "Peta Terkalibrasi",
+            "uploaded": "Peta Diunggah",
+            "noMap": "Tidak Ada Peta"
+        },
+        "gatewaysOnline": "Gateway Online",
+        "mapCalibrationProgress": "Kemajuan Kalibrasi Peta",
+        "calibrationStatus": {
+            "completed": "Kalibrasi Selesai",
+            "pending": "Kalibrasi Tertunda",
+            "noMap": "Peta Belum Diunggah"
+        },
+        "overallProgress": "Kemajuan Keseluruhan",
+        "floorForm": {
+            "name": "Nama Lantai",
+            "namePlaceholder": "Masukkan nama lantai",
+            "level": "Nomor Lantai",
+            "realWidth": "Lebar Aktual (meter)",
+            "realHeight": "Tinggi Aktual (meter)"
+        },
+        "mapCalibration": "Kalibrasi Peta",
+        "anchorLocationMap": "Peta Lokasi Anchor",
+        "showAnchorsOnMap": "Tampilkan Anchor di Peta",
+        "doubleClickAnchorToCalibrate": "Klik dua kali Anchor untuk Kalibrasi",
+        "anchorCount": "Jumlah Anchor",
+        "calibrationMode": "Mode Kalibrasi",
+        "zoomMode": "Mode Zoom",
+        "close": "Tutup",
+        "calibrationSteps": {
+            "upload": "Unggah Peta",
+            "setOrigin": "Atur Titik Asal",
+            "setScale": "Atur Skala"
+        },
+        "uploadFloorMap": "Unggah Peta Lantai",
+        "uploadInstructions": "Silakan unggah peta dalam ruangan {{floorName}}. Mendukung format PNG, JPG, SVG.",
+        "selectMapFile": "Pilih File Peta",
+        "dragImageHint": "atau seret dan lepas gambar ke area ini",
+        "actualSize": "Ukuran Aktual",
+        "calibratedMap": "Peta Terkalibrasi",
+        "setCoordinateOrigin": "Atur Titik Asal Koordinat",
+        "originInstructions": "Silakan klik posisi mana pun di peta untuk mengaturnya sebagai titik asal koordinat, lalu masukkan koordinat aktual dari titik tersebut. Biasanya disarankan untuk memilih sudut ruangan atau koridor sebagai titik referensi.",
+        "clickMapSetOrigin": "Klik Peta untuk Mengatur Titik Asal",
+        "clickMapSetNewPosition": "Klik Peta untuk Mengatur Posisi Baru untuk {{name}}",
+        "originPixelPosition": "Posisi Piksel Titik Asal",
+        "actualXCoordinate": "Koordinat X Aktual (meter)",
+        "actualYCoordinate": "Koordinat Y Aktual (meter)",
+        "reselectOrigin": "Pilih Ulang Titik Asal",
+        "nextStep": "Langkah Selanjutnya",
+        "setCoordinateScale": "Atur Skala Koordinat",
+        "scaleInstructions": "Silakan klik dua titik di peta, lalu masukkan jarak aktual antara dua titik ini. Sistem akan secara otomatis menghitung rasio konversi antara piksel dan meter.",
+        "clickTwoPointsSetScale": "Klik Dua Titik untuk Mengatur Skala",
+        "selectedPoints": "Titik yang Dipilih",
+        "point1": "Titik 1",
+        "point2": "Titik 2",
+        "clickMapSelect": "Silakan klik peta untuk memilih",
+        "pixelDistance": "Jarak Piksel",
+        "actualDistance": "Jarak Aktual (meter)",
+        "enterActualDistance": "Masukkan jarak aktual antara dua titik",
+        "calculationResult": "Hasil Perhitungan",
+        "ratio": "Rasio",
+        "pixelsPerMeter": "piksel/meter",
+        "previousStep": "Langkah Sebelumnya",
+        "reselectPoints": "Pilih Ulang Titik",
+        "saveCalibration": "Simpan Kalibrasi",
+        "calibrationComplete": "Kalibrasi Selesai",
+        "calibrationInfo": "Informasi Kalibrasi",
+        "floor": "Lantai",
+        "originActualCoordinates": "Koordinat Aktual Titik Asal",
+        "meters": "meter",
+        "calibrationPoint1": "Titik Kalibrasi 1",
+        "calibrationPoint2": "Titik Kalibrasi 2",
+        "pixels": "piksel",
+        "complete": "Selesai",
+        "recalibrate": "Kalibrasi Ulang",
+        "mapStatusLabel": "Status Peta",
+        "manualAdd": "Tambah Manual",
+        "reconnectCloud": "Hubungkan Ulang Cloud",
+        "cloudGatewayDiscovery": "Pencarian Gateway Cloud",
+        "connectionNormal": "Koneksi Normal",
+        "cloudMqttStatus": "Status MQTT Cloud",
+        "server": "Server",
+        "topic": "Topik",
+        "waitingForGatewayTopic": "Menunggu konten: \"topik gateway\"",
+        "error": "Error",
+        "discoveredGateways": "Gateway Ditemukan",
+        "onlineGateways": "Gateway Online",
+        "mqttMessages": "Pesan MQTT",
+        "discoveredCloudGateways": "Gateway Cloud Ditemukan",
+        "status": {
+            "online": "Online",
+            "offline": "Offline",
+            "error": "Error"
+        },
+        "id": "ID",
+        "firmware": "Firmware",
+        "network": "Jaringan",
+        "ap": "AP",
+        "voltage": "Tegangan",
+        "lastUpdate": "Pembaruan Terakhir",
+        "addToSystem": "Tambah ke Sistem",
+        "noCloudGatewaysFound": "Tidak ada gateway cloud ditemukan",
+        "pleaseConfirm": "Silakan konfirmasi",
+        "cloudMqttSimulatorStarted": "Simulator MQTT cloud telah dimulai",
+        "simulatorSendsGatewayTopic": "Simulator mengirim data format konten: \"topik gateway\"",
+        "dataContainsGatewayIdAndName": "Data berisi \"id gateway\" dan field nama",
+        "viewRawGatewayMqttData": "Lihat Data MQTT Gateway Mentah (Debug)",
+        "clickDataToExpand": "Klik data di bawah untuk memperluas dan melihat konten lengkap",
+        "gatewayDiscoveryConditions": "Kondisi Pencarian Gateway",
+        "mustHaveGatewayTopic": "Harus memiliki konten: \"topik gateway\"",
+        "mustHaveGatewayIdAndName": "Harus memiliki \"id gateway\" dan field nama",
+        "uwbJoinedAnd5VPluggedOnline": "UWB Bergabung: \"yes\" dan 5V terpasang: \"yes\" dianggap online",
+        "belongingFloor": "Lantai Milik",
+        "macAddress": "Alamat MAC",
+        "ipAddress": "Alamat IP",
+        "lastConnection": "Koneksi Terakhir",
+        "unknown": "Tidak Dikenal",
+        "editGateway": "Edit Gateway",
+        "addCloudGatewayToSystem": "Tambah Gateway Cloud ke Sistem",
+        "manualAddGateway": "Tambah Gateway Manual",
+        "addDiscoveredGatewayToFloor": "Tambahkan gateway yang ditemukan dari cloud (ID: {{id}}) ke lantai yang dipilih",
+        "gatewayName": "Nama Gateway",
+        "enterGatewayName": "Masukkan nama gateway",
+        "selectFloor": "Pilih Lantai",
+        "reconnectAnchors": "Hubungkan Ulang Anchor",
+        "cloudAnchorDiscovery": "Pencarian Anchor Cloud",
+        "anchorMqttStatus": "Status MQTT Anchor",
+        "selectedGateway": "Gateway yang Dipilih",
+        "notSelected": "Tidak Dipilih",
+        "listeningTopic": "Topik yang Didengarkan",
+        "none": "Tidak Ada",
+        "connectionStatus": "Status Koneksi",
+        "discoveredAnchors": "Anchor Ditemukan",
+        "onlineAnchors": "Anchor Online",
+        "ackMessages": "Pesan Ack",
+        "discoveredCloudAnchors": "Anchor Cloud Ditemukan",
+        "mainAnchor": "Anchor Utama",
+        "gateway": "Gateway",
+        "on": "Aktif",
+        "off": "Nonaktif",
+        "position": "Posisi",
+        "configure": "Konfigurasi",
+        "gatewayAnchorConfigTopicCorrect": "Topik konfigurasi anchor gateway benar",
+        "simulatorSendsAnchorConfigData": "Simulator mengirim data format konten: \"config\", node: \"ANCHOR\"",
+        "dataContainsIdAndName": "Data berisi id dan field nama",
+        "anchorPairing": {
+            "title": "Manajemen Pemasangan Anchor",
+            "localAnchorManagement": "Manajemen Anchor Lokal (Anchor yang Ditambahkan)",
+            "currentGateway": "Gateway yang Dipilih Saat Ini",
+            "selectGateway": "Pilih Gateway",
+            "startSimulationPairing": "Mulai Pemasangan Simulasi",
+            "pairingInProgress": "Memasang...",
+            "selectGatewayFirst": "Silakan pilih gateway di atas untuk mengelola anchor",
+            "noOnlineGateways": "Tidak ada gateway lokal online yang tersedia untuk pemasangan",
+            "simulationPairingProgress": "Kemajuan Pemasangan Simulasi",
+            "scanningNearbyAnchors": "Memindai perangkat anchor terdekat...",
+            "discoveredNewAnchor": "Anchor Baru Ditemukan",
+            "add": "Tambah",
+            "noPairedAnchors": "Tidak ada anchor yang dipasangkan di bawah gateway ini",
+            "anchorStatus": {
+                "running": "Berjalan",
+                "paired": "Dipasangkan",
+                "calibrating": "Mengkalibrasi",
+                "unpaired": "Tidak Dipasangkan",
+                "error": "Error"
+            },
+            "anchorInfo": {
+                "belongingGateway": "Gateway Milik",
+                "macAddress": "Alamat MAC",
+                "cloudId": "ID Cloud",
+                "position": "Koordinat Posisi",
+                "functionStatus": "Status Fungsi",
+                "signalStrength": "Kekuatan Sinyal",
+                "batteryLevel": "Level Baterai",
+                "lastConnection": "Koneksi Terakhir"
+            },
+            "actions": {
+                "calibrate": "Kalibrasi Koordinat",
+                "sendConfigToCloud": "Kirim Konfigurasi ke Cloud",
+                "deleteAnchor": "Hapus Anchor"
+            },
+            "functionStatus": {
+                "led": "LED",
+                "ble": "BLE",
+                "mainAnchor": "Anchor Utama"
+            },
+            "mapLegend": {
+                "coordinateOrigin": "Titik Asal Koordinat",
+                "generalAnchor": "Anchor Umum",
+                "mainAnchor": "Anchor Utama"
+            },
+            "debug": {
+                "viewRawAnchorMqttData": "Lihat Data MQTT Anchor Mentah (Debug)",
+                "clickDataToExpand": "Klik data di bawah untuk memperluas dan melihat konten lengkap",
+                "anchorDiscoveryConditions": "Kondisi Pencarian Anchor",
+                "mustHaveConfig": "Harus memiliki konten: \"config\"",
+                "mustHaveNodeAnchor": "Harus memiliki node: \"ANCHOR\"",
+                "mustHaveIdAndName": "Harus memiliki id dan field nama",
+                "initiatorMainAnchor": "initiator: 1 menunjukkan anchor utama",
+                "viewRawAckData": "Lihat Data MQTT Anchor Mentah (Debug) - Data Ack"
+            },
+            "noAvailableGateways": "Tidak ada gateway tersedia di lantai ini",
+            "doubleClickToCalibrate": "Klik dua kali untuk kalibrasi posisi",
+            "mainAnchorOption": "Anchor Utama",
+            "generalAnchorOption": "Anchor Umum",
+            "currentStatus": "Status Saat Ini",
+            "deviceId": "ID Perangkat",
+            "deviceName": "Nama Perangkat",
+            "anchorDeviceInfo": "Info Perangkat Anchor",
+            "sendConfigPreview": "Pratinjau Kirim Konfigurasi",
+            "sendConfigToCloud": "Kirim Konfigurasi ke Cloud",
+            "cancelCalibration": "Batalkan Kalibrasi",
+            "cancel": "Batal",
+            "confirm": "Konfirmasi"
+        },
+        "notifications": {
+            "ackReceived": "Pesan Ack Diterima",
+            "gatewayId": "ID Gateway",
+            "command": "Perintah",
+            "nodeType": "Jenis Node",
+            "deviceId": "ID Perangkat",
+            "topic": "Topik",
+            "receivedAt": "Diterima Pada",
+            "messageType": "Jenis Pesan",
+            "ackMessage": "Pesan Ack"
+        },
+        "anchorCalibration": {
+            "title": "Kalibrasi {{name}}",
+            "mapClickMode": "Mode Kalibrasi Klik Peta",
+            "mapClickInstruction": "Klik langsung peta di sebelah kiri untuk mengatur posisi baru {{name}}",
+            "manualInputInstruction": "Atau masukkan nilai koordinat yang tepat secara manual di bawah",
+            "coordinateType": "Jenis Koordinat",
+            "realCoordinates": "Koordinat Nyata (meter)",
+            "pixelCoordinates": "Koordinat Piksel (px)",
+            "xCoordinate": "Koordinat X",
+            "yCoordinate": "Koordinat Y",
+            "zCoordinate": "Koordinat Z (meter)",
+            "realCoordinatesHint": "💡 Masukkan koordinat dunia nyata (satuan: meter)",
+            "pixelCoordinatesHint": "💡 Masukkan koordinat piksel pada gambar, sistem akan secara otomatis mengkonversi ke koordinat nyata",
+            "saveManualCoordinates": "Simpan Koordinat yang Dimasukkan Manual",
+            "quickOperation": "⚡ Operasi Cepat",
+            "quickOperationDescription": "Klik peta kiri = Pengaturan cepat | Input manual = Koordinat tepat",
+            "coordinatesUpdated": "Koordinat {{name}} diperbarui!",
+            "sendToCloudQuestion": "Apakah Anda ingin mengirim koordinat baru ke perangkat keras cloud?",
+            "sendToCloudInstruction": "Klik \"Konfirmasi\" untuk konfigurasi parameter lebih lanjut dan kirim",
+            "sendConfigToCloud": "Kirim Konfigurasi ke Cloud - {{name}}",
+            "newCoordinatePosition": "📍 Posisi Koordinat Baru",
+            "anchorConfigParameters": "🔧 Parameter Konfigurasi Anchor",
+            "firmwareUpdate": "Pembaruan Firmware",
+            "ledStatus": "Status LED",
+            "bleStatus": "Status BLE",
+            "initiator": "Inisiator",
+            "serialNo": "Nomor Seri",
+            "serialNoRange": "Rentang: 1306-9999, bertambah otomatis setelah setiap pengiriman",
+            "anchorDeviceInfo": "🏷️ Info Perangkat Anchor:",
+            "deviceName": "Nama Perangkat",
+            "deviceId": "ID Perangkat",
+            "macAddress": "Alamat MAC",
+            "currentStatus": "Status Saat Ini",
+            "sendConfigPreview": "📤 Pratinjau Kirim Konfigurasi:",
+            "topic": "Topik",
+            "gatewayId": "ID Gateway",
+            "sending": "Mengirim...",
+            "sendToCloudHardware": "Kirim ke Perangkat Keras Cloud",
+            "coordinatesSentToCloud": "Koordinat baru {{name}} telah dikirim ke perangkat keras cloud",
+            "on": "Aktif",
+            "off": "Nonaktif",
+            "generalAnchor": "Anchor Umum",
+            "mainAnchor": "Anchor Utama",
+            "unknown": "Tidak Dikenal"
+        },
+        "tagManagement": {
+            "title": "Manajemen Perangkat Tag",
+            "subtitle": "Kelola perangkat tag posisi UWB, termasuk tag personel, tag peralatan, dan tag aset",
+            "controls": {
+                "selectGateway": "Pilih Gateway",
+                "reconnectTags": "Hubungkan Ulang Tag",
+                "addTag": "Tambah Tag"
+            },
+            "stats": {
+                "personnelTags": "Tag Personel",
+                "activeTags": "Aktif",
+                "cloudTags": "Tag Cloud"
+            },
+            "cloudDiscovery": {
+                "title": "Pencarian Tag Cloud",
+                "mqttStatus": "Status MQTT Tag",
+                "selectedGateway": "Gateway yang Dipilih",
+                "notSelected": "Tidak Dipilih",
+                "listeningTopic": "Topik yang Didengarkan",
+                "none": "Tidak Ada",
+                "connectionStatus": "Status Koneksi",
+                "gatewayNotSelected": "Gateway Tidak Dipilih",
+                "discoveredTags": "Tag Ditemukan",
+                "onlineTags": "Tag Online",
+                "mqttMessages": "Pesan MQTT",
+                "discoveredCloudTags": "Tag Cloud Ditemukan",
+                "autoAddedToSystem": "Ditambahkan Otomatis ke Sistem"
+            },
+            "tagList": {
+                "noTagsUnderGateway": "Tidak ada perangkat tag di bawah gateway ini",
+                "pleaseConfirm": "Silakan konfirmasi:",
+                "gatewayMessageLocationTopics": "1. Topik pesan dan lokasi gateway benar",
+                "simulatorSendsInfoLocation": "2. Simulator mengirim data format konten: \"info\"/\"location\", node: \"TAG\"",
+                "dataContainsFields": "3. Data berisi id, level baterai, posisi, waktu dan field lainnya",
+                "viewRawTagMqttData": "Lihat Data MQTT Tag Mentah (Debug)",
+                "clickDataToExpand": "Klik data di bawah untuk memperluas dan melihat konten lengkap",
+                "tagDiscoveryConditions": "Kondisi Pencarian Tag:",
+                "messageTopic": "• topik pesan: konten: \"info\", node: \"TAG\"",
+                "locationTopic": "• topik lokasi: konten: \"location\", node: \"TAG\"",
+                "mustHaveId": "• Harus memiliki field id",
+                "messageContainsBattery": "• pesan berisi informasi level baterai",
+                "locationContainsPosition": "• lokasi berisi informasi posisi dan waktu"
+            },
+            "tagCard": {
+                "macAddress": "Alamat MAC",
+                "type": "Jenis",
+                "personnel": "Personel",
+                "assignedTo": "Ditugaskan Kepada",
+                "batteryLevel": "Level Baterai",
+                "lastPosition": "Posisi Terakhir",
+                "updateTime": "Waktu Pembaruan",
+                "cloud": "Cloud",
+                "edit": "Edit",
+                "delete": "Hapus"
+            },
+            "tagForm": {
+                "editTag": "Edit Tag",
+                "addTag": "Tambah Tag",
+                "tagName": "Nama Tag",
+                "tagNamePlaceholder": "Masukkan nama tag",
+                "macAddress": "Alamat MAC",
+                "macAddressPlaceholder": "AA:BB:CC:DD:EE:FF",
+                "tagType": "Jenis Tag",
+                "selectType": "Pilih Jenis",
+                "person": "Personel",
+                "equipment": "Peralatan",
+                "asset": "Aset",
+                "assignedTo": "Ditugaskan Kepada",
+                "assignedToPlaceholder": "Ditugaskan kepada siapa (opsional)",
+                "cancel": "Batal",
+                "save": "Simpan"
+            },
+            "tagStatus": {
+                "running": "Berjalan",
+                "inactive": "Tidak Aktif",
+                "lowBattery": "Baterai Rendah",
+                "lost": "Hilang",
+                "online": "Online",
+                "offline": "Offline"
+            },
+            "tagTypes": {
+                "person": "Personel",
+                "equipment": "Peralatan",
+                "asset": "Aset"
+            },
+            "messages": {
+                "selectGatewayFirst": "Silakan pilih gateway terlebih dahulu",
+                "noTagsFound": "Belum ada tag ditemukan",
+                "connectionError": "Error",
+                "connectionNormal": "Koneksi Normal",
+                "manualReconnecting": "Menghubungkan Ulang Manual..."
+            }
+        }
+    }
+}

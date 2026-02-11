@@ -1,0 +1,1720 @@
+{
+    "home": {
+        "title": "Willkommen bei Senior Care Plus",
+        "subtitle": "Umfassendes Pflegemanagement für Senioren, um die beste Betreuung und Aufmerksamkeit zu gewährleisten. Integriert Gesundheitsüberwachung, Standortverfolgung und intelligente Erinnerungsfunktionen.",
+        "features": {
+            "emergency": {
+                "title": "Notruf",
+                "description": "Schnelles Notfallsignal für zeitnahe Hilfe"
+            },
+            "health": {
+                "title": "Gesundheitsüberwachung",
+                "description": "Echtzeitüberwachung des Gesundheitszustands und Warnungen"
+            },
+            "reminders": {
+                "title": "Erinnerungen",
+                "description": "Verwalten Sie Medikamenten-, Hydrations- und Messerinnerungen"
+            },
+            "location": {
+                "title": "Innenortung",
+                "description": "Verfolgen Sie Senioren und Geräte innerhalb der Einrichtung"
+            },
+            "temperature": {
+                "title": "Temperaturüberwachung",
+                "description": "Echtzeitüberwachung von Temperaturänderungen und Warnungen"
+            },
+            "heartRate": {
+                "title": "Herzfrequenzüberwachung",
+                "description": "Echtzeitüberwachung von Herzfrequenzänderungen und Warnungen"
+            },
+            "diaper": {
+                "title": "Windelüberwachung",
+                "description": "Echtzeitüberwachung des Feuchtigkeitsstatus und Wechselaufzeichnungen"
+            }
+        },
+        "stats": {
+            "totalResidents": "Gesamtzahl Bewohner",
+            "todayTasks": "Heutige Aufgaben",
+            "healthAlerts": "Gesundheitswarnungen",
+            "monthlyReport": "Monatsbericht",
+            "completed": "Abgeschlossen"
+        },
+        "actions": {
+            "startUsing": "Jetzt starten",
+            "systemGuide": "Systemhandbuch"
+        }
+    },
+    "heartTemp": {
+        "title": "Herzfrequenz- & Temperaturüberwachung",
+        "subtitle": "Kombinierte Herzfrequenz- und Temperaturdaten, überwachen Sie 300B-Geräte mit einer einzigen Verbindung",
+        "tabs": {
+            "heart": "Herzfrequenz",
+            "temp": "Temperatur"
+        },
+        "deviceNameFallback": "Gerät"
+    },
+    "residents": {
+        "title": "Bewohnerverwaltung",
+        "subtitle": "Verwalten Sie Bewohnerdaten und Gerätebindung",
+        "stats": {
+            "totalResidents": "Gesamtzahl Bewohner",
+            "activeDevices": "Aktive Geräte",
+            "offlineDevices": "Offline-Geräte",
+            "errorDevices": "Fehlerhafte Geräte",
+            "unboundDevices": "Ungebundene Geräte"
+        },
+        "filters": {
+            "all": "Alle",
+            "good": "Gut",
+            "attention": "Achtung",
+            "critical": "Kritisch"
+        },
+        "search": {
+            "placeholder": "Nach Name, ID oder Zimmernummer suchen..."
+        },
+        "list": {
+            "title": "Bewohnerliste",
+            "count": "{{count}} Bewohner insgesamt",
+            "noDevices": "Noch keine Geräte gebunden",
+            "boundDevices": "Gebundene Geräte:"
+        },
+        "actions": {
+            "addResident": "Bewohner hinzufügen",
+            "showDeviceManagement": "Geräteverwaltung anzeigen",
+            "hideDeviceManagement": "Geräteverwaltung ausblenden",
+            "manageDevices": "Geräte verwalten",
+            "edit": "Bearbeiten",
+            "remove": "Entfernen",
+            "info": "Info",
+            "unbindDevice": "Gerät lösen"
+        },
+        "form": {
+            "name": "Name",
+            "age": "Alter",
+            "gender": "Geschlecht",
+            "room": "Zimmernummer",
+            "status": "Status",
+            "avatar": "Avatar",
+            "emergencyContact": "Notfallkontakt",
+            "relationship": "Beziehung",
+            "phone": "Telefon",
+            "careNotes": "Pflegenotizen",
+            "male": "Männlich",
+            "female": "Weiblich",
+            "good": "Gut",
+            "attention": "Achtung",
+            "critical": "Kritisch"
+        },
+        "deviceManagement": {
+            "title": "Ungebundene Geräte",
+            "count": "{{count}} Geräte",
+            "bind": "Binden"
+        },
+        "deviceCount": "Geräte",
+        "id": "ID",
+        "room": "Zimmer",
+        "ageUnit": "Jahre",
+        "boundDevices": "Gebundene Geräte",
+        "noDevicesBound": "Keine Geräte gebunden",
+        "monitoring": {
+            "title": "Geräteüberwachung",
+            "showControls": "Steuerung anzeigen",
+            "hideControls": "Steuerung ausblenden",
+            "showTest": "Testpanel anzeigen",
+            "hideTest": "Testpanel ausblenden",
+            "showDebug": "Debug-Panel anzeigen",
+            "hideDebug": "Debug-Panel ausblenden",
+            "boundDevices": "Gebundene Geräte",
+            "onlineDevices": "Online-Geräte",
+            "offlineDevices": "Offline-Geräte",
+            "errorDevices": "Fehlerhafte Geräte"
+        },
+        "modal": {
+            "addResident": "Bewohner hinzufügen",
+            "name": "Name",
+            "age": "Alter",
+            "gender": "Geschlecht",
+            "room": "Zimmernummer",
+            "status": "Status",
+            "avatar": "Avatar",
+            "emergencyContactName": "Name Notfallkontakt",
+            "relationship": "Beziehung",
+            "phone": "Telefon",
+            "careNotes": "Pflegenotizen",
+            "placeholders": {
+                "name": "Bewohnername eingeben",
+                "age": "Alter eingeben",
+                "room": "Zimmernummer eingeben",
+                "avatar": "Emoji oder Text eingeben",
+                "emergencyContactName": "Name Notfallkontakt eingeben",
+                "relationship": "Beziehung eingeben",
+                "phone": "Telefonnummer eingeben",
+                "careNotes": "Pflegenotizen eingeben"
+            },
+            "genderOptions": {
+                "male": "Männlich",
+                "female": "Weiblich"
+            }
+        },
+        "deviceBinding": {
+            "title": "Gerätebindungsverwaltung",
+            "currentBinding": "Aktuelle Bindung",
+            "deviceBoundToResident": "Gerät {{deviceName}} ist an Bewohner {{residentName}} gebunden",
+            "unbind": "Lösen",
+            "selectDevice": "Gerät auswählen",
+            "searchDevicePlaceholder": "Gerätename, Hardware-ID suchen...",
+            "alreadyBound": "Bereits gebunden",
+            "selectResident": "Bewohner auswählen",
+            "searchResidentPlaceholder": "Bewohnername, Zimmernummer suchen...",
+            "bindingSettings": "Bindungseinstellungen",
+            "bindingType": "Bindungstyp",
+            "primaryDevice": "Hauptgerät",
+            "secondaryDevice": "Zusatzgerät",
+            "notes": "Notizen",
+            "notesPlaceholder": "Bindungsnotizen (optional)",
+            "residentDevices": "Geräte von {{name}}",
+            "confirmBind": "Bindung bestätigen"
+        },
+        "detailModal": {
+            "editInfo": "Bewohnerinformationen bearbeiten",
+            "emergencyContact": "Notfallkontakt",
+            "careNotes": "Pflegenotizen",
+            "careNotesPlaceholder": "Bitte Pflegenotizen eingeben...",
+            "noCareNotes": "Keine Pflegenotizen vorhanden",
+            "editCareNotes": "Pflegenotizen bearbeiten",
+            "addDevice": "Gerät hinzufügen",
+            "noDevicesBound": "Noch keine Geräte gebunden",
+            "close": "Schließen"
+        },
+        "unboundDevices": "Ungebundene Geräte",
+        "bindDevice": "Binden",
+        "alerts": {
+            "importSuccess": "✅ Daten erfolgreich importiert! Hinweis: Bewohnerdaten müssen über die Systemverwaltung aktualisiert werden",
+            "invalidFormat": "❌ Ungültiges Datenformat",
+            "importFailed": "❌ Datenimport fehlgeschlagen"
+        },
+        "confirms": {
+            "resetSettings": "Möchten Sie wirklich alle Einstellungen der Bewohnerverwaltung zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden!",
+            "removeResident": "Möchten Sie diesen Bewohner wirklich entfernen? Diese Aktion kann nicht rückgängig gemacht werden."
+        }
+    },
+    "deviceManagement": {
+        "title": "Geräteverwaltung",
+        "subtitle": "Verwalten Sie alle Arten von Pflegegeräten, unterstützt 300B-Uhren, Windelsensoren, Bewegungssensoren und Positions-Tags",
+        "searchPlaceholder": "Gerätename, Hardware-ID oder Geräte-UID suchen...",
+        "filters": {
+            "all": "Alle",
+            "smartwatch300B": "300B",
+            "diaperSensor": "Windel",
+            "pedometer": "Bewegung",
+            "uwbTag": "Tag",
+            "uwbAnchor": "Anker",
+            "gateway": "Gateway"
+        },
+        "actions": {
+            "addDevice": "Gerät hinzufügen",
+            "autoDiscovery": "Automatische Suche",
+            "forceSave": "Speichern erzwingen",
+            "exportSettings": "Einstellungen exportieren",
+            "importSettings": "Einstellungen importieren",
+            "debugStorage": "Speicher debuggen"
+        },
+        "autoAdd": {
+            "enabled": "Auto-Hinzufügen: Ein",
+            "disabled": "Auto-Hinzufügen: Aus"
+        },
+        "stats": {
+            "totalDevices": "Gesamtzahl Geräte",
+            "activeDevices": "Aktive Geräte",
+            "smartwatch300B": "300B-Uhren",
+            "diaperSensor": "Windelsensoren",
+            "otherDevices": "Andere Geräte"
+        },
+        "deviceList": {
+            "title": "Geräteliste",
+            "count": "{{count}} Geräte insgesamt",
+            "noDevices": "Keine Geräte entsprechen den Kriterien",
+            "hardwareId": "Hardware-ID",
+            "type": "Typ",
+            "gateway": "Gateway",
+            "replace": "Ersetzen",
+            "remove": "Entfernen"
+        },
+        "addModal": {
+            "title": "Gerät hinzufügen",
+            "deviceType": "Gerätetyp",
+            "deviceName": "Gerätename",
+            "hardwareId": "Hardware-ID",
+            "macAddress": "MAC-Adresse",
+            "deviceId": "Geräte-ID",
+            "gatewayId": "Gateway-ID (Optional)",
+            "deviceTypes": {
+                "smartwatch300B": "300B Gesundheitsüberwachungsuhr",
+                "diaperSensor": "Intelligenter Windelsensor",
+                "pedometer": "Bewegungssensor",
+                "uwbTag": "UWB-Positions-Tag",
+                "uwbAnchor": "UWB-Positions-Anker",
+                "gateway": "UWB-Gateway"
+            },
+            "placeholders": {
+                "deviceName": "Gerätename eingeben",
+                "hardwareId": "Hardware-ID eingeben",
+                "macAddress": "MAC-Adresse eingeben (z.B.: E0:0E:08:36:93:F8)",
+                "deviceId": "Geräte-ID eingeben (z.B.: 5345)",
+                "gatewayId": "Gateway-ID eingeben"
+            }
+        },
+        "replaceModal": {
+            "title": "Gerät ersetzen",
+            "currentHardwareId": "Aktuelle Hardware-ID",
+            "deviceUid": "Geräte-UID",
+            "newHardwareId": "Neue Hardware-ID",
+            "confirmReplace": "Ersetzung bestätigen",
+            "placeholders": {
+                "newHardwareId": "Neue Hardware-ID eingeben"
+            }
+        },
+        "alerts": {
+            "importSuccess": "✅ Daten erfolgreich importiert! Hinweis: Gerätedaten müssen über die Systemverwaltung aktualisiert werden",
+            "invalidFormat": "❌ Ungültiges Datenformat",
+            "importFailed": "❌ Datenimport fehlgeschlagen"
+        },
+        "confirms": {
+            "resetSettings": "Möchten Sie wirklich alle Einstellungen der Geräteverwaltung zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden!",
+            "removeDevice": "Möchten Sie dieses Gerät wirklich entfernen?"
+        },
+        "monitoring": {
+            "title": "Geräteüberwachung",
+            "hideControls": "Steuerung ausblenden",
+            "showControls": "Steuerung anzeigen",
+            "hideTest": "Test ausblenden",
+            "showTest": "Test anzeigen",
+            "hideDebug": "Debug ausblenden",
+            "showDebug": "Debug anzeigen",
+            "boundDevices": "Gebundene Geräte",
+            "onlineDevices": "Online-Geräte",
+            "offlineDevices": "Offline-Geräte",
+            "errorDevices": "Fehlerhafte Geräte",
+            "deviceCount": "Geräte",
+            "noDevices": "Keine Geräte",
+            "noMatchingDevices": "Keine Geräte entsprechen den Filterkriterien"
+        },
+        "batchActions": {
+            "batchActions": "Stapelaktionen",
+            "selectedCount": "Ausgewählt",
+            "devices": "Geräte",
+            "selectAll": "Alle auswählen",
+            "deselectAll": "Auswahl aufheben",
+            "batchUnbind": "Stapel lösen",
+            "batchUnbindShort": "Lösen",
+            "batchRemove": "Stapel entfernen",
+            "batchRemoveShort": "Entfernen",
+            "confirmUnbind": "Möchten Sie wirklich die folgenden {{count}} Geräte lösen?\n\n{{devices}}\n\nDiese Aktion kann nicht rückgängig gemacht werden.",
+            "confirmRemove": "Möchten Sie wirklich die folgenden {{count}} Geräte entfernen?\n\n{{devices}}\n\nDiese Aktion kann nicht rückgängig gemacht werden.",
+            "noBindableDevices": "Keine gebundenen Geräte in der Auswahl",
+            "noDevicesSelected": "Bitte wählen Sie Geräte zum Entfernen aus",
+            "unbindSuccess": "{{count}} Geräte erfolgreich gelöst",
+            "removeSuccess": "{{count}} Geräte erfolgreich entfernt",
+            "gateway": {
+                "changeNetworkId": "UWB-Netzwerk-ID ändern",
+                "changeLocation": "Pflegeheim und Etage ändern",
+                "gatewayId": "Gateway-ID",
+                "notSet": "Nicht festgelegt",
+                "selectOneGateway": "Bitte 1 Gateway-Gerät auswählen",
+                "networkIdRange": "UWB-Netzwerk-ID muss zwischen 1~65535 liegen",
+                "networkIdCommandSentSuccess": "✅ Befehl zum Ändern der UWB-Netzwerk-ID erfolgreich an {{name}} gesendet\nNetzwerk-ID: {{networkId}}",
+                "locationUpdatedSuccess": "Pflegeheim und Etage des Gateways erfolgreich aktualisiert!"
+            },
+            "anchor": {
+                "changeHeight": "Höhe ändern (Z-Koordinate)",
+                "changePower": "Leistung ändern",
+                "requestData": "Ankerdaten anfordern",
+                "requesting": "Sende...",
+                "anchorName": "Ankername",
+                "anchorId": "Anker-ID",
+                "gatewayId": "Gateway-ID",
+                "notSet": "Nicht festgelegt",
+                "selectOneAnchor": "Bitte 1 Anker-Gerät auswählen",
+                "selectAtLeastOneAnchor": "Bitte mindestens 1 Anker-Gerät auswählen",
+                "enterValidZCoordinate": "Bitte gültigen Z-Koordinatenwert eingeben",
+                "enterAllPowerValues": "Bitte alle Leistungswerte eingeben",
+                "powerValueRange": "Leistungswert muss zwischen 5.0~30.5 dB liegen",
+                "commandSentSuccess": "✅ Leistungsänderungsbefehl erfolgreich an {{name}} gesendet",
+                "heightCommandSentSuccess": "✅ Höhenänderungsbefehl erfolgreich an {{name}} gesendet\nNeue Z-Koordinate: {{zValue}}",
+                "requestDataSuccess": "✅ Datenanforderungsbefehl erfolgreich an {{count}} Anker-Geräte gesendet",
+                "requestDataPartialSuccess": "⚠️ {{successCount}} erfolgreich gesendet, {{failCount}} fehlgeschlagen\nFehlgeschlagene Geräte: {{failedDevices}}",
+                "requestDataFailed": "❌ Alle Befehle fehlgeschlagen\nFehlgeschlagene Geräte: {{failedDevices}}"
+            },
+            "tag": {
+                "changeConfig": "Parametereinstellungen ändern",
+                "changePower": "Leistung ändern",
+                "requestData": "Tag-Daten anfordern",
+                "requesting": "Sende...",
+                "tagName": "Tag-Name",
+                "tagId": "Tag-ID",
+                "gatewayId": "Gateway-ID",
+                "notSet": "Nicht festgelegt",
+                "selectOneTag": "Bitte 1 Tag-Gerät auswählen",
+                "selectAtLeastOneTag": "Bitte mindestens 1 Tag-Gerät auswählen",
+                "enterAllParameterValues": "Bitte alle Parameterwerte eingeben",
+                "enterAllPowerValues": "Bitte alle Leistungswerte eingeben",
+                "powerValueRange": "Leistungswert muss zwischen 5.0~30.5 dB liegen",
+                "configCommandSentSuccess": "✅ Parameteränderungsbefehl erfolgreich an {{name}} gesendet",
+                "powerCommandSentSuccess": "✅ Leistungsänderungsbefehl erfolgreich an {{name}} gesendet",
+                "requestDataSuccess": "✅ Datenanforderungsbefehl erfolgreich an {{count}} Tag-Geräte gesendet",
+                "requestDataPartialSuccess": "⚠️ {{successCount}} erfolgreich gesendet, {{failCount}} fehlgeschlagen\nFehlgeschlagene Geräte: {{failedDevices}}",
+                "requestDataFailed": "❌ Alle Befehle fehlgeschlagen\nFehlgeschlagene Geräte: {{failedDevices}}"
+            },
+            "common": {
+                "gatewayNotFound": "Gateway-Konfiguration nicht gefunden, bitte Gateway unter \"UWB-Standortverwaltung\" zuerst hinzufügen",
+                "downlinkTopicNotFound": "Gateway oder Downlink-Thema nicht gefunden",
+                "mqttBusNotConnected": "MQTT-Bus nicht verbunden, kann keinen Befehl senden",
+                "invalidDeviceIdOrGatewayId": "Kann keine gültige {{deviceType}}-ID oder Gateway-ID erhalten",
+                "selectFloor": "Bitte Etage auswählen",
+                "commandSendFailed": "Befehlssendung fehlgeschlagen: {{error}}",
+                "commandSendError": "Fehler beim Senden des Befehls aufgetreten: {{error}}",
+                "updateFailed": "Aktualisierung fehlgeschlagen: {{error}}"
+            }
+        },
+        "deviceInfo": {
+            "title": "Geräteinformationen",
+            "basicInfo": "Grundinformationen",
+            "deviceName": "Gerätename",
+            "deviceType": "Gerätetyp",
+            "hardwareId": "Hardware-ID",
+            "macAddress": "MAC-Adresse",
+            "deviceUid": "Geräte-UID",
+            "uid": "UID",
+            "gatewayId": "Gateway-ID",
+            "gatewayName": "Gateway-Name",
+            "firmwareVersion": "Firmware-Version",
+            "batteryLevel": "Batteriestand",
+            "status": "Status",
+            "bindingInfo": "Bindungsinformationen",
+            "residentId": "Gebundener Bewohner",
+            "unbound": "Ungebunden",
+            "dataInfo": "Dateninformationen",
+            "lastData": "Letzte Daten",
+            "lastSeen": "Zuletzt gesehen",
+            "systemInfo": "Systeminformationen",
+            "createdAt": "Erstellt am",
+            "updatedAt": "Aktualisiert am",
+            "close": "Schließen"
+        },
+        "monitoringStatus": {
+            "title": "Überwachungsstatus",
+            "connected": "Verbunden",
+            "disconnected": "Getrennt",
+            "gatewayCount": "{{count}} Gateway",
+            "lastUpdate": "Letzte Aktualisierung",
+            "monitoring": "Überwacht",
+            "stopped": "Gestoppt",
+            "start": "Starten",
+            "stop": "Stoppen"
+        },
+        "monitoringControls": {
+            "title": "Geräteüberwachungssteuerung",
+            "selectGateway": "Gateway auswählen",
+            "stopMonitoring": "Überwachung stoppen",
+            "online": "Online",
+            "offline": "Offline"
+        },
+        "monitoringDebug": {
+            "title": "MQTT-Debug-Panel",
+            "monitoring": "Überwacht",
+            "stopped": "Gestoppt",
+            "hide": "Ausblenden",
+            "show": "Anzeigen",
+            "maxMessages": "Max. Nachrichten",
+            "filterByTopic": "Nach Thema filtern",
+            "filterByDevice": "Nach Gerät filtern",
+            "topicPlaceholder": "z.B.: Health, Loc",
+            "devicePlaceholder": "Gerätename oder ID",
+            "export": "Exportieren",
+            "clear": "Löschen",
+            "totalMessages": "Gesamtnachrichten",
+            "displaying": "Anzeige",
+            "healthData": "Gesundheitsdaten",
+            "locationData": "Standortdaten",
+            "ackMessages": "Ack-Nachrichten",
+            "noMessages": "Noch keine Debug-Nachrichten",
+            "usageInstructions": "Nutzungsanleitung",
+            "instruction1": "Dieses Debug-Panel zeigt Echtzeit-MQTT-Nachrichten",
+            "instruction2": "Nachrichten können nach Thema oder Gerätename gefiltert werden",
+            "instruction3": "Klicken Sie auf die Kopierschaltfläche, um Daten in die Zwischenablage zu kopieren",
+            "instruction4": "Unterstützt Export von Debug-Daten als JSON-Datei",
+            "instruction5": "Nachrichten werden automatisch aktualisiert, behält die angegebene Maximalanzahl bei"
+        },
+        "deviceDiscovery": {
+            "title": "Gerätesuche",
+            "discovering": "Suche...",
+            "existingDevices": "Vorhandene Geräte",
+            "newlyDiscovered": "Neu entdeckte Geräte",
+            "scanning": "Geräte scannen...",
+            "remove": "Entfernen",
+            "add": "Hinzufügen",
+            "confirm": "Bestätigen",
+            "cancel": "Abbrechen",
+            "stopDiscovery": "Suche stoppen",
+            "deviceCount": "Geräte",
+            "existingCount": "Vorhanden",
+            "discoveredCount": "Entdeckt"
+        },
+        "deviceCard": {
+            "online": "Online",
+            "offline": "Offline",
+            "unknown": "Unbekannt",
+            "deviceInfo": "Geräteinformationen",
+            "bindDevice": "Gerät binden",
+            "removeDevice": "Gerät entfernen",
+            "unbind": "Lösen",
+            "battery": "Batterie",
+            "room": "Zimmer",
+            "qrCode": "QR-Code"
+        }
+    },
+    "health": {
+        "systemTitle": "Seniorenpflegesystem",
+        "monitoringTitle": "Patientenüberwachung",
+        "actions": {
+            "forceSave": "Speichern erzwingen",
+            "exportSettings": "Einstellungen exportieren",
+            "importSettings": "Einstellungen importieren",
+            "debugStorage": "Speicher debuggen"
+        },
+        "stats": {
+            "totalResidents": "Gesamtzahl Bewohner",
+            "activeDevices": "Aktive Geräte",
+            "offlineDevices": "Offline-Geräte",
+            "errorDevices": "Fehlerhafte Geräte"
+        },
+        "filters": {
+            "全部": "Alle",
+            "異常": "Fehler",
+            "正常": "Normal",
+            "需注意": "Achtung"
+        },
+        "patientInfo": {
+            "age": "Alter",
+            "room": "Zimmer",
+            "devices": "Geräte"
+        },
+        "patientStatus": {
+            "normal": "Normal",
+            "error": "Fehler",
+            "attention": "Achtung",
+            "noDevices": "Keine Geräte"
+        },
+        "monitoringIcons": {
+            "temperature": "Temperatur",
+            "heartRate": "Herzfrequenz",
+            "physiological": "Physiologisch",
+            "diaper": "Windel",
+            "activity": "Aktivität",
+            "location": "Standort",
+            "emergency": "Notfall",
+            "reminders": "Erinnerungen",
+            "residents": "Bewohner",
+            "devices": "Geräte"
+        },
+        "emptyState": {
+            "noPatients": "Derzeit keine Patienten mit Status {{status}}",
+            "goToResidentManagement": "Zur Bewohnerverwaltung gehen, um Geräte einzurichten"
+        },
+        "alerts": {
+            "importSuccess": "✅ Gesundheitsüberwachungseinstellungen erfolgreich importiert!",
+            "invalidFormat": "❌ Ungültiges Datenformat",
+            "importFailed": "❌ Datenimport fehlgeschlagen"
+        },
+        "confirms": {
+            "resetSettings": "Möchten Sie wirklich alle Gesundheitsüberwachungseinstellungen zurücksetzen? Diese Aktion kann nicht rückgängig gemacht werden!"
+        }
+    },
+    "emergencyCall": {
+        "title": "Notruf",
+        "subtitle": "Schnelles Notfallsignal senden, um zeitnahe Hilfe sicherzustellen",
+        "patient": "Patient",
+        "location": "Standort",
+        "selectPatient": "Patient auswählen",
+        "selectLocation": "Standort auswählen",
+        "emergencyButton": "Not\nruf",
+        "callHistory": "Anrufverlauf",
+        "refreshStatus": "Status aktualisieren",
+        "types": {
+            "fall": "Sturz",
+            "pain": "Schmerzen",
+            "toilet": "Toiletten-Hilfe",
+            "medicine": "Medikamenten-Hilfe",
+            "help": "Sonstige Hilfe"
+        },
+        "status": {
+            "responding": "Reagiert...",
+            "caregiverOnWay": "Pfleger ist unterwegs...",
+            "completed": "Abgeschlossen",
+            "cancelled": "Abgebrochen",
+            "pending": "Wartet auf Antwort"
+        },
+        "info": {
+            "patient": "Patient",
+            "location": "Standort",
+            "type": "Typ",
+            "callTime": "Anrufzeit",
+            "waitTime": "Wartezeit",
+            "responder": "Antwortender",
+            "responseTime": "Antwortzeit"
+        },
+        "record": {
+            "callTime": "Anrufzeit",
+            "completedTime": "Abschlusszeit",
+            "handler": "Bearbeiter",
+            "cancelReason": "Abbruchgrund"
+        },
+        "emptyState": {
+            "noRecords": "Keine Anrufaufzeichnungen",
+            "completedCalls": "Abgeschlossene Notrufe werden hier angezeigt"
+        },
+        "modals": {
+            "selectType": {
+                "title": "Notfalltyp auswählen"
+            },
+            "cancelCall": {
+                "title": "Notruf abbrechen",
+                "reasonLabel": "Bitte Abbruchgrund eingeben",
+                "reasonPlaceholder": "Abbruchgrund",
+                "back": "Zurück",
+                "confirm": "Abbruch bestätigen"
+            }
+        },
+        "timeUnits": {
+            "minutes": "Minuten",
+            "seconds": "Sekunden"
+        }
+    },
+    "reminders": {
+        "title": "Geplante Erinnerungen",
+        "subtitle": "Verwalten Sie Medikamenten-, Hydrations- und andere Pflegeerinnerungen für Senioren",
+        "addReminder": "Erinnerung hinzufügen",
+        "todayReminders": "Heutige Erinnerungen",
+        "complete": "Abgeschlossen",
+        "types": {
+            "medication": "Medikamentenerinnerung",
+            "water": "Wassererinnerung",
+            "physicalTherapy": "Physiotherapie"
+        },
+        "descriptions": {
+            "hypertension": "Bluthochdruckmedikament",
+            "diabetes": "Diabetes-Medikament",
+            "hydration": "Ausreichende Flüssigkeitszufuhr sicherstellen",
+            "rehabilitation": "Tägliche Rehabilitationsübungen"
+        },
+        "cards": {
+            "periodic": {
+                "title": "Periodische Erinnerungen",
+                "description": "Verwalten Sie tägliche, wöchentliche oder benutzerdefinierte periodische Erinnerungsaufgaben"
+            },
+            "statistics": {
+                "title": "Erinnerungsstatistiken",
+                "description": "Anzeige des Erinnerungsabschlussstatus und statistischer Daten"
+            },
+            "settings": {
+                "title": "Erinnerungseinstellungen",
+                "description": "Benachrichtigungsmethoden und Erinnerungsregeln anpassen"
+            }
+        }
+    },
+    "location": {
+        "title": "Innenortung",
+        "subtitle": "Verfolgen Sie Standorte von Senioren und Geräten in der Einrichtung für Sicherheit und Pflege",
+        "selectArea": {
+            "title": "Überwachungsbereich auswählen",
+            "nursingHome": "Pflegeheim",
+            "floor": "Etage",
+            "gateway": "Gateway",
+            "selectNursingHome": "Pflegeheim auswählen",
+            "selectFloor": "Etage auswählen",
+            "selectGateway": "Gateway auswählen",
+            "local": "Lokal",
+            "noGateway": "Kein Gateway"
+        },
+        "mqttStatus": {
+            "title": "MQTT-Verbindungsstatus",
+            "refreshData": "Daten aktualisieren",
+            "refreshTitle": "Kalibrie​rungsdaten aktualisieren",
+            "status": "Status",
+            "topic": "Thema",
+            "deviceCount": "Geräteanzahl",
+            "error": "Fehler",
+            "none": "Keine",
+            "mqttBus": "MQTT-Bus",
+            "未連線": "Getrennt",
+            "已連線": "Verbunden",
+            "連接中...": "Verbinde...",
+            "重新連接中...": "Verbinde erneut...",
+            "連接已關閉": "Verbindung geschlossen",
+            "客戶端離線": "Client offline",
+            "連接錯誤": "Verbindungsfehler",
+            "未選擇閘道器": "Kein Gateway ausgewählt",
+            "無法獲取閘道器主題": "Kann Gateway-Thema nicht abrufen"
+        },
+        "connectionStatus": {
+            "title": "MQTT-Status",
+            "connected": "Verbunden",
+            "disconnected": "Getrennt",
+            "connecting": "Verbinde...",
+            "reconnecting": "Verbinde erneut...",
+            "connectionError": "Verbindungsfehler"
+        },
+        "searchFilter": {
+            "title": "Suchen und Filtern",
+            "searchPlaceholder": "Bewohnername oder Zimmernummer suchen...",
+            "allStatus": "Alle Status",
+            "allDevices": "Alle Geräte",
+            "watch": "Uhr",
+            "uwbTag": "UWB-Tag"
+        },
+        "map": {
+            "realtimeMap": "Echtzeit-Standortkarte",
+            "showDevices": "{{count}} Geräte anzeigen",
+            "zoomIn": "Vergrößern",
+            "zoomOut": "Verkleinern",
+            "resetView": "Ansicht zurücksetzen",
+            "zoom": "Zoom",
+            "hideMarkerInfo": "Marker-Info ausblenden",
+            "showMarkerInfo": "Marker-Info anzeigen",
+            "controls": "Rad zum Zoomen | Ziehen zum Verschieben",
+            "noDevices": "Keine Geräte entsprechen den Kriterien",
+            "selectGateway": "Bitte Gateway auswählen und Verbindung herstellen",
+            "noDimensions": "Diese Etage hat noch keine Kartenabmessungen festgelegt",
+            "selectFloor": "Bitte Etage auswählen, um Karte anzuzeigen",
+            "mapStatus": "Kartenstatus",
+            "calibrated": "Kalibriert",
+            "notCalibrated": "Nicht kalibriert",
+            "ratio": "Verhältnis",
+            "pixelsPerMeter": "Pixel/Meter",
+            "translate": "Übersetzen",
+            "totalDevices": "Gesamtzahl Geräte",
+            "onlineDevices": "Online-Geräte",
+            "filtered": "Gefiltert"
+        },
+        "deviceList": {
+            "onlineDevices": "Online-Geräte ({{count}})",
+            "totalDevices": "Insgesamt {{count}} Geräte",
+            "room": "Zimmer",
+            "position": "Position",
+            "updated": "Aktualisiert",
+            "online": "Online"
+        }
+    },
+    "temperature": {
+        "title": "Temperaturüberwachung",
+        "subtitle": "Echtzeitüberwachung von Temperaturänderungen bei Senioren zur rechtzeitigen Erkennung von Gesundheitsanomalien",
+        "navigationFromHealth": "Navigation von Gesundheitsüberwachungsseite",
+        "currentPatient": "Aktueller Patient",
+        "reconnectLocal": "Lokal erneut verbinden",
+        "reconnectCloud": "Cloud erneut verbinden",
+        "tabs": {
+            "local": "Lokales MQTT",
+            "cloud": "Cloud MQTT"
+        },
+        "patientSelection": {
+            "title": "Patientenauswahl",
+            "selectPatient": "Patient auswählen",
+            "patient": "Patient"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Cloud-Geräteüberwachung",
+            "connected": "Verbunden",
+            "離線": "Offline",
+            "連接中...": "Verbinde...",
+            "重新連接中...": "Verbinde erneut...",
+            "連接已關閉": "Verbindung geschlossen",
+            "連接錯誤": "Verbindungsfehler",
+            "未選擇閘道器": "Kein Gateway ausgewählt",
+            "selectArea": "Überwachungsbereich auswählen:",
+            "selectNursingHomeFirst": "Bitte zuerst Pflegeheim auswählen",
+            "selectFloorFirst": "Bitte zuerst Etage auswählen",
+            "currentGateway": "Aktuell ausgewähltes Gateway:",
+            "listeningTopic": "Hörendes Thema",
+            "cannotGetTopic": "Kann Thema nicht abrufen",
+            "discoveredDevices": "Entdeckte Geräte",
+            "totalRecords": "Gesamtaufzeichnungen",
+            "mqttMessages": "MQTT-Nachrichten",
+            "selectDevice": "Überwachungsgerät auswählen:",
+            "selectCloudDevice": "Cloud-Gerät für detaillierte Überwachung auswählen",
+            "records": " Aufzeichnungen",
+            "noDevices": "Noch keine Cloud-Geräte entdeckt",
+            "pleaseConfirm": "Bitte bestätigen:",
+            "cloudMqttSimulator": "Cloud-MQTT-Simulator läuft",
+            "simulatorFormat": "Simulator sendet Daten im Inhaltsformat: \"300B\"",
+            "dataFields": "Daten enthalten MAC-Feld und \"skin temp\"",
+            "recentData": "Kürzlich empfangene Daten:",
+            "device": "Gerät",
+            "temperature": "Temperatur",
+            "roomTemperature": "Raumtemperatur",
+            "battery": "Batterie",
+            "diaperDevice": "Windelgerät",
+            "humidity": "Luftfeuchtigkeit",
+            "viewRawData": "MQTT-Rohdaten anzeigen (Debug)",
+            "clickToExpand": "Auf untenstehende Daten klicken zum Erweitern und vollständigen Inhalt anzeigen",
+            "deviceCreationConditions": "Geräteerstellungsbedingungen prüfen:",
+            "condition1": "Muss Inhalt haben: \"300B\"",
+            "condition2": "Muss MAC-Feld haben",
+            "condition3": "skin_temp-Feld kann leer oder 0 sein (Bedingung gelockert)",
+            "condition4": "Aktuelle DV1-Windeltyp-Daten erstellen keine Geräteaufzeichnung"
+        },
+        "deviceTemperatureData": {
+            "title": "Geräte-Temperaturdaten",
+            "unknownDevice": "Unbekanntes Gerät",
+            "skinTemperature": "Hauttemperatur",
+            "roomTemperature": "Raumtemperatur",
+            "steps": "Schritte",
+            "battery": "Batterie",
+            "temperatureHigh": "Temperatur hoch",
+            "temperatureLow": "Temperatur niedrig",
+            "normal": "Normal"
+        },
+        "dateTabs": {
+            "today": "Heute",
+            "yesterday": "Gestern",
+            "dayBefore": "Vorgestern"
+        },
+        "temperatureChart": {
+            "title": "Temperaturtrend-Diagramm",
+            "cloudDevice": "Cloud-Gerät",
+            "localUser": "Lokaler Benutzer",
+            "yAxisLabel": "Temperatur (°C)",
+            "time": "Zeit",
+            "temperature": "Temperatur",
+            "highTempLine": "Hohe-Temperatur-Warnlinie",
+            "lowTempLine": "Niedrige-Temperatur-Warnlinie",
+            "noData": "Keine Temperaturdaten für {{date}}",
+            "cloudSimulatorCheck": "Bitte bestätigen, dass Cloud-MQTT-Simulator läuft",
+            "selectValidDevice": "und ein gültiges Cloud-Gerät auswählen",
+            "localSimulatorCheck": "Bitte bestätigen, dass lokaler MQTT-Simulator läuft"
+        },
+        "temperatureRecords": {
+            "title": "Temperaturaufzeichnungen",
+            "filters": {
+                "all": "Alle",
+                "high": "Hoch",
+                "low": "Niedrig"
+            },
+            "timeRanges": {
+                "1day": "1 Tag",
+                "3day": "3 Tage",
+                "7day": "7 Tage"
+            },
+            "noTemperatureData": "Keine Temperaturdaten",
+            "roomTemperature": "Raumtemperatur",
+            "temperatureHigh": "Temperatur hoch",
+            "temperatureLow": "Temperatur niedrig",
+            "normal": "Normal",
+            "noRecords": "Keine übereinstimmenden Aufzeichnungen",
+            "selectCloudDeviceFirst": "Bitte zuerst Cloud-Gerät auswählen",
+            "selectedDeviceNoData": "Ausgewähltes Gerät hat keine Temperaturdaten"
+        },
+        "connectionStatus": {
+            "title": "Verbindungsstatusüberwachung",
+            "localMqtt": "Lokales MQTT",
+            "cloudMqtt": "Cloud MQTT",
+            "error": "Fehler",
+            "hint": "Hinweis: Lokales MQTT muss auf localhost:9001 laufen, Cloud MQTT verbindet sich automatisch mit HiveMQ Cloud-Dienst",
+            "connected": "Verbunden",
+            "disconnected": "Getrennt",
+            "connecting": "Verbinde...",
+            "reconnecting": "Verbinde erneut...",
+            "connectionError": "Verbindungsfehler"
+        }
+    },
+    "settings": {
+        "title": "Systemeinstellungen",
+        "subtitle": "Systemkonfiguration, persönliche Einstellungen und Sicherheitsoptionen verwalten",
+        "categories": {
+            "personal": {
+                "title": "Persönliche Einstellungen",
+                "description": "Verwalten Sie Ihre persönlichen Daten und Kontoeinstellungen"
+            },
+            "notifications": {
+                "title": "Benachrichtigungseinstellungen",
+                "description": "Systembenachrichtigungen und Erinnerungsmethoden konfigurieren"
+            },
+            "security": {
+                "title": "Sicherheitseinstellungen",
+                "description": "Passwortänderungen und Kontosicherheitseinstellungen"
+            },
+            "display": {
+                "title": "Anzeigeeinstellungen",
+                "description": "Benutzeroberfläche und Design anpassen"
+            },
+            "data": {
+                "title": "Datenverwaltung",
+                "description": "Datensicherungs- und Exporteinstellungen"
+            },
+            "language": {
+                "title": "Sprache & Region",
+                "description": "Systemsprache und Zeitzone einstellen"
+            }
+        },
+        "systemInfo": {
+            "title": "Systeminformationen",
+            "version": "Systemversion",
+            "lastUpdate": "Letzte Aktualisierung",
+            "terms": "Nutzungsbedingungen",
+            "privacy": "Datenschutzrichtlinie",
+            "view": "Anzeigen"
+        },
+        "actions": {
+            "enterSettings": "Einstellungen öffnen"
+        }
+    },
+    "placeholder": {
+        "title": "{{title}}",
+        "description": "Diese Seite wird derzeit entwickelt",
+        "more": "Weitere Funktionen",
+        "help": "Hilfecenter",
+        "notFound": "404 - Seite nicht gefunden"
+    },
+    "heartRate": {
+        "title": "Herzfrequenzüberwachung",
+        "subtitle": "Echtzeitüberwachung von Herzfrequenzänderungen und Warnungen",
+        "navigationFromHealth": "Navigation von Gesundheitsüberwachungsseite",
+        "currentPatient": "Aktueller Patient",
+        "reconnectLocal": "Lokal erneut verbinden",
+        "reconnectCloud": "Cloud erneut verbinden",
+        "tabs": {
+            "local": "Lokales MQTT",
+            "cloud": "Cloud MQTT"
+        },
+        "patientSelection": {
+            "title": "Patientenauswahl",
+            "selectPatient": "Patient auswählen",
+            "patient": "Patient"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Cloud-Geräteüberwachung",
+            "connected": "Verbunden",
+            "離線": "Offline",
+            "連接中...": "Verbinde...",
+            "重新連接中...": "Verbinde erneut...",
+            "連接已關閉": "Verbindung geschlossen",
+            "連接錯誤": "Verbindungsfehler",
+            "未選擇閘道器": "Kein Gateway ausgewählt",
+            "selectArea": "Überwachungsbereich auswählen:",
+            "selectNursingHome": "Pflegeheim",
+            "selectNursingHomeFirst": "Bitte zuerst Pflegeheim auswählen",
+            "selectFloor": "Etage",
+            "selectFloorFirst": "Bitte zuerst Etage auswählen",
+            "selectGateway": "Gateway",
+            "currentGateway": "Aktuell ausgewähltes Gateway:",
+            "listeningTopic": "Hörendes Thema",
+            "cannotGetTopic": "Kann Thema nicht abrufen",
+            "discoveredDevices": "Entdeckte Geräte",
+            "totalRecords": "Gesamtaufzeichnungen",
+            "mqttMessages": "MQTT-Nachrichten",
+            "selectDevice": "Überwachungsgerät auswählen:",
+            "selectCloudDevice": "Cloud-Gerät für detaillierte Überwachung auswählen",
+            "records": " Aufzeichnungen",
+            "noDevices": "Noch keine Cloud-Geräte entdeckt",
+            "pleaseConfirm": "Bitte bestätigen:",
+            "cloudMqttSimulator": "Cloud-MQTT-Simulator läuft",
+            "simulatorFormat": "Simulator sendet Daten im Inhaltsformat: \"300B\"",
+            "dataFields": "Daten enthalten MAC-Feld und herzfrequenzbezogene Felder",
+            "recentData": "Kürzlich empfangene Daten:",
+            "device": "Gerät",
+            "heartRate": "Herzfrequenz",
+            "spo2": "SpO2",
+            "bloodPressure": "Blutdruck",
+            "temperature": "Temperatur",
+            "diaperDevice": "Windelgerät",
+            "humidity": "Luftfeuchtigkeit",
+            "viewRawData": "MQTT-Rohdaten anzeigen (Debug)",
+            "clickToExpand": "Auf untenstehende Daten klicken zum Erweitern und vollständigen Inhalt anzeigen",
+            "deviceCreationConditions": "Geräteerstellungsbedingungen prüfen:",
+            "condition1": "Muss Inhalt haben: \"300B\"",
+            "condition2": "Muss MAC-Feld haben",
+            "condition3": "hr-, SpO2-, bp_syst-, bp_diast-Felder können leer oder 0 sein (Bedingung gelockert)",
+            "condition4": "Aktuelle DV1-Windeltyp-Daten erstellen keine Geräteaufzeichnung"
+        },
+        "deviceHeartRateData": {
+            "title": "Geräte-Vitalzeichendaten",
+            "unknownDevice": "Unbekanntes Gerät",
+            "heartRate": "Herzfrequenz",
+            "spo2": "SpO2",
+            "bloodPressure": "Blutdruck",
+            "skinTemperature": "Hauttemperatur",
+            "steps": "Schritte",
+            "battery": "Batterie",
+            "noData": "Keine Daten",
+            "noHeartRateData": "Keine Herzfrequenzdaten",
+            "heartRateHigh": "Herzfrequenz hoch",
+            "heartRateLow": "Herzfrequenz niedrig",
+            "normal": "Normal"
+        },
+        "dateTabs": {
+            "today": "Heute",
+            "yesterday": "Gestern",
+            "dayBefore": "Vorgestern"
+        },
+        "heartRateTrendChart": {
+            "title": "Herzfrequenztrend-Diagramm"
+        },
+        "bloodPressureTrendChart": {
+            "title": "Blutdrucktrend-Diagramm",
+            "yAxisLabel": "Blutdruck (mmHg)",
+            "noData": "Keine Blutdruckdaten"
+        },
+        "recentMqttData": {
+            "title": "Kürzlich empfangene MQTT-Daten",
+            "device": "Gerät",
+            "heartRate": "Herzfrequenz",
+            "spo2": "SpO2",
+            "bloodPressure": "Blutdruck",
+            "diaperDevice": "Windelgerät",
+            "temperature": "Temperatur",
+            "humidity": "Luftfeuchtigkeit"
+        },
+        "rawMqttData": {
+            "title": "MQTT-Rohdaten anzeigen (Debug)",
+            "clickToExpand": "Auf untenstehende Daten klicken zum Erweitern und vollständigen Inhalt anzeigen",
+            "deviceConditions": {
+                "title": "Herzfrequenz-Geräteerstellungsbedingungen",
+                "mustHaveContent": "Muss Inhalt haben: \"300B\"",
+                "mustHaveMAC": "Muss MAC-Feld haben",
+                "fieldsCanBeEmpty": "hr-, SpO2-, bp_syst-, bp_diast-Felder können leer oder 0 sein (Bedingung gelockert)",
+                "abnormalWarning": "Herzfrequenz > 100 BPM oder < 60 BPM löst abnormale Warnung aus"
+            }
+        },
+        "heartRateChart": {
+            "title": "Herzfrequenztrend-Diagramm",
+            "cloudDevice": "Cloud-Gerät",
+            "localUser": "Lokaler Benutzer",
+            "yAxisLabel": "Herzfrequenz (BPM)",
+            "time": "Zeit",
+            "heartRate": "Herzfrequenz",
+            "targetHeartRate": "Ziel-Herzfrequenz",
+            "highHeartRateLine": "Hohe-Herzfrequenz-Warnlinie",
+            "lowHeartRateLine": "Niedrige-Herzfrequenz-Warnlinie",
+            "noData": "Keine Herzfrequenzdaten für {{date}}",
+            "cloudSimulatorCheck": "Bitte bestätigen, dass Cloud-MQTT-Simulator läuft",
+            "selectValidDevice": "und ein gültiges Cloud-Gerät auswählen",
+            "localSimulatorCheck": "Bitte bestätigen, dass lokaler MQTT-Simulator läuft",
+            "hideReferenceLines": "Referenzlinien ausblenden",
+            "showReferenceLines": "Referenzlinien anzeigen",
+            "legend": {
+                "heartRate": "Herzfrequenz (BPM)",
+                "systolicBP": "Systolischer Blutdruck (mmHg)",
+                "diastolicBP": "Diastolischer Blutdruck (mmHg)",
+                "referenceLinesVisible": "Referenzlinien sichtbar"
+            },
+            "referenceLines": {
+                "normalSystolicBP": "Normal systolisch: 120",
+                "normalDiastolicBP": "Normal diastolisch: 80",
+                "highSystolicBP": "Hoch systolisch: 140",
+                "highDiastolicBP": "Hoch diastolisch: 90"
+            }
+        },
+        "heartRateRecords": {
+            "title": "Herzfrequenzaufzeichnungen",
+            "filters": {
+                "all": "Alle",
+                "high": "Hoher Puls",
+                "low": "Niedriger Puls",
+                "highBP": "Hoher Blutdruck",
+                "lowBP": "Niedriger Blutdruck"
+            },
+            "timeRanges": {
+                "1day": "1 Tag",
+                "3day": "3 Tage",
+                "7day": "7 Tage"
+            },
+            "noHeartRateData": "Keine Herzfrequenzdaten",
+            "temperature": "Temperatur",
+            "bloodPressure": "Blutdruck",
+            "heartRateHigh": "Herzfrequenz hoch",
+            "heartRateLow": "Herzfrequenz niedrig",
+            "normal": "Normal",
+            "noRecords": "Keine übereinstimmenden Aufzeichnungen",
+            "selectCloudDeviceFirst": "Bitte zuerst Cloud-Gerät auswählen",
+            "selectedDeviceNoData": "Ausgewähltes Gerät hat keine Herzfrequenzdaten"
+        },
+        "connectionStatus": {
+            "title": "Verbindungsstatusüberwachung",
+            "localMqtt": "Lokales MQTT",
+            "cloudMqtt": "Cloud MQTT",
+            "error": "Fehler",
+            "hint": "Hinweis: Lokales MQTT muss auf localhost:9001 laufen, Cloud MQTT verbindet sich automatisch mit HiveMQ Cloud-Dienst",
+            "connected": "Verbunden",
+            "disconnected": "Getrennt",
+            "connecting": "Verbinde...",
+            "reconnecting": "Verbinde erneut...",
+            "connectionError": "Verbindungsfehler"
+        }
+    },
+    "diaperMonitoring": {
+        "title": "Windelüberwachung",
+        "subtitle": "Echtzeitüberwachung des Feuchtigkeitsstatus der Windeln von Senioren für Komfort und Gesundheit",
+        "navigationFromHealth": "Navigation von Gesundheitsüberwachungsseite",
+        "currentPatient": "Aktueller Patient",
+        "reconnectLocal": "Lokal erneut verbinden",
+        "reconnectCloud": "Cloud erneut verbinden",
+        "tabs": {
+            "local": "Lokales MQTT",
+            "cloud": "Cloud MQTT"
+        },
+        "patientSelection": {
+            "title": "Patientenauswahl",
+            "selectPatient": "Patient auswählen",
+            "patient": "Patient"
+        },
+        "connectionStatus": {
+            "title": "MQTT-Status",
+            "connected": "Verbunden",
+            "disconnected": "Getrennt",
+            "connecting": "Verbinde...",
+            "reconnecting": "Verbinde erneut...",
+            "connectionError": "Verbindungsfehler",
+            "cloudMqtt": "Cloud MQTT",
+            "hint": "Hinweis: Lokales MQTT muss auf localhost:9001 laufen, Cloud MQTT verbindet sich automatisch mit HiveMQ Cloud-Dienst"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "Cloud-Windelgerät-Überwachung",
+            "connected": "Verbunden",
+            "離線": "Offline",
+            "連接中...": "Verbinde...",
+            "重新連接中...": "Verbinde erneut...",
+            "連接已關閉": "Verbindung geschlossen",
+            "連接錯誤": "Verbindungsfehler",
+            "未選擇閘道器": "Kein Gateway ausgewählt",
+            "selectArea": "Überwachungsbereich auswählen:",
+            "selectNursingHome": "Pflegeheim",
+            "selectNursingHomeFirst": "Pflegeheim auswählen",
+            "selectFloor": "Etage",
+            "selectFloorFirst": "Bitte zuerst Pflegeheim auswählen",
+            "selectGateway": "Gateway",
+            "selectGatewayFirst": "Bitte zuerst Etage auswählen",
+            "currentGateway": "Aktuell ausgewähltes Gateway:",
+            "listeningTopic": "Hörendes Thema",
+            "cannotGetTopic": "Kann Thema nicht abrufen",
+            "discoveredDevices": "Entdeckte Geräte",
+            "totalRecords": "Gesamtaufzeichnungen",
+            "mqttMessages": "MQTT-Nachrichten",
+            "selectDevice": "Überwachungsgerät auswählen:",
+            "selectCloudDevice": "Cloud-Windelgerät für detaillierte Überwachung auswählen",
+            "noDevices": "Noch keine Cloud-Windelgeräte entdeckt",
+            "pleaseConfirm": "Bitte bestätigen:",
+            "cloudMqttSimulator": "Cloud-MQTT-Simulator läuft",
+            "simulatorFormat": "Simulator sendet Daten im Inhaltsformat: \"diaper DV1\"",
+            "dataFields": "Daten enthalten MAC-Feld und feuchtigkeitsbezogene Felder",
+            "recentData": "Kürzlich empfangene Daten:",
+            "device": "Gerät",
+            "humidity": "Luftfeuchtigkeit",
+            "temperature": "Temperatur",
+            "battery": "Batterie",
+            "deviceName": "Gerätename",
+            "viewRawData": "MQTT-Rohdaten anzeigen (Debug)",
+            "clickToExpand": "Auf untenstehende Daten klicken zum Erweitern und vollständigen Inhalt anzeigen",
+            "deviceCreationConditions": "Windelgerät-Erstellungsbedingungen prüfen:",
+            "condition1": "Muss Inhalt haben: \"diaper DV1\"",
+            "condition2": "Muss MAC-Feld haben",
+            "condition3": "humi-, temp-, battery level-Felder können leer oder 0 sein (Bedingung gelockert)",
+            "condition4": "Luftfeuchtigkeit > 75% löst Windelwechsel-Warnung aus"
+        },
+        "deviceDiaperData": {
+            "title": "Geräteüberwachungsaufzeichnungen",
+            "unknownDevice": "Unbekanntes Gerät",
+            "humidity": "Luftfeuchtigkeit",
+            "temperature": "Temperatur",
+            "battery": "Batterie",
+            "noData": "Keine Daten",
+            "noHumidityData": "Keine Luftfeuchtigkeitsdaten",
+            "needsChange": "Wechsel erforderlich",
+            "wet": "Feucht",
+            "normal": "Normal",
+            "deviceStats": "Gerätestatistiken",
+            "deviceMAC": "Geräte-MAC",
+            "patientInfo": "Patienteninformation",
+            "unboundPatient": "Ungebundener Patient",
+            "lastConnection": "Letzte Verbindung",
+            "totalRecords": "Gesamtaufzeichnungen",
+            "currentStatus": "Aktueller Status",
+            "needsAttention": "Benötigt Aufmerksamkeit"
+        },
+        "dateTabs": {
+            "today": "Heute",
+            "week": "Diese Woche",
+            "month": "Dieser Monat"
+        },
+        "humidityChart": {
+            "title": "Luftfeuchtigkeitstrend-Diagramm",
+            "cloudDevice": "Cloud-Gerät",
+            "localPatient": "Lokaler Patient",
+            "yAxisLabel": "Luftfeuchtigkeit (%)",
+            "time": "Zeit",
+            "humidity": "Luftfeuchtigkeit",
+            "changeAlertLine": "Wechsel-Warnlinie: 75%",
+            "attentionLine": "Aufmerksamkeitslinie: 50%",
+            "normalLine": "Normallinie: 25%",
+            "noData": "Keine Luftfeuchtigkeitsdaten für {{date}}",
+            "cloudSimulatorCheck": "Bitte bestätigen, dass Cloud-MQTT-Simulator läuft",
+            "selectValidDevice": "und ein gültiges Cloud-Gerät auswählen",
+            "localSimulatorCheck": "Bitte bestätigen, dass lokaler MQTT-Simulator läuft"
+        },
+        "temperatureChart": {
+            "title": "Temperaturtrend-Diagramm",
+            "cloudDevice": "Cloud-Gerät",
+            "localPatient": "Lokaler Patient",
+            "yAxisLabel": "Temperatur (°C)",
+            "time": "Zeit",
+            "temperature": "Temperatur",
+            "highTempLine": "Hohe-Temperatur-Warnung: 40°C",
+            "warmLine": "Warme Linie: 35°C",
+            "normalLine": "Normallinie: 30°C",
+            "coolLine": "Kühle Linie: 25°C",
+            "noData": "Keine Temperaturdaten für {{date}}",
+            "cloudSimulatorCheck": "Bitte bestätigen, dass Cloud-MQTT-Simulator läuft",
+            "selectValidDevice": "und ein gültiges Cloud-Gerät auswählen",
+            "localSimulatorCheck": "Bitte bestätigen, dass lokaler MQTT-Simulator läuft"
+        },
+        "currentDiaperStatus": {
+            "title": "Aktueller Windelstatus",
+            "autoNotification": "Automatische Benachrichtigung",
+            "needsChange": "Windel muss gewechselt werden!",
+            "humidity": "Luftfeuchtigkeit",
+            "device": "Gerät",
+            "lastChangeTime": "Letzte Wechselzeit",
+            "noRecords": "Keine Aufzeichnungen",
+            "recordChange": "Windelwechsel aufzeichnen"
+        },
+        "deviceStatus": {
+            "humidity": "Luftfeuchtigkeit",
+            "temperature": "Temperatur",
+            "battery": "Batterie",
+            "needsChange": "Wechsel erforderlich",
+            "noData": "Keine Daten"
+        },
+        "diaperRecords": {
+            "title": "Windelwechselaufzeichnungen",
+            "noRecords": "Keine Wechselaufzeichnungen",
+            "timestamp": "Zeit",
+            "status": "Status",
+            "nurse": "Gewechselt von"
+        },
+        "recordModal": {
+            "title": "Windelwechsel aufzeichnen",
+            "diaperStatus": "Windelstatus",
+            "nurse": "Pflegekraft",
+            "cancel": "Abbrechen",
+            "confirm": "Bestätigen"
+        },
+        "diaperStatus": {
+            "dry": "Trocken",
+            "slightlyWet": "Leicht feucht",
+            "wet": "Feucht",
+            "veryWet": "Sehr feucht",
+            "soiled": "Verschmutzt"
+        }
+    },
+    "staffManagement": {
+        "title": "Personalverwaltung",
+        "searchPlaceholder": "Nach Name, ID oder Abteilung suchen...",
+        "filters": {
+            "all": "Alle",
+            "active": "Aktiv",
+            "onLeave": "Im Urlaub"
+        },
+        "status": {
+            "active": "Aktiv",
+            "onLeave": "Im Urlaub"
+        },
+        "staffList": {
+            "title": "Personalliste",
+            "count": "{{count}} Mitarbeiter",
+            "id": "ID"
+        },
+        "detailModal": {
+            "contactInfo": "Kontaktinformationen",
+            "workInfo": "Arbeitsinformationen",
+            "hireDate": "Einstellungsdatum",
+            "notes": "Notizen",
+            "notesPlaceholder": "Notizen eingeben...",
+            "noNotes": "Keine Notizen vorhanden",
+            "editNotes": "Notizen bearbeiten",
+            "updateNotes": "Notizen aktualisieren"
+        }
+    },
+    "fieldManagementTest": {
+        "title": "Bereichsverwaltungstest",
+        "subtitle": "Bereichs- und Etagen-CRUD-Operationen testen",
+        "reload": "Neu laden",
+        "homeSection": "Bereichsverwaltung",
+        "homesCount": "{{count}} Bereiche",
+        "homeNamePlaceholder": "Bereichsname",
+        "descriptionPlaceholder": "Beschreibung",
+        "addressPlaceholder": "Adresse",
+        "createHome": "Bereich erstellen",
+        "updateHome": "Bereich aktualisieren",
+        "cancel": "Abbrechen",
+        "floorsCount": "{{count}} Etagen",
+        "floorSection": "Etagenverwaltung",
+        "floorsCountBadge": "{{count}} Etagen",
+        "floorNamePlaceholder": "Etagenname",
+        "levelPlaceholder": "Level",
+        "widthPlaceholder": "Breite (m)",
+        "heightPlaceholder": "Höhe (m)",
+        "createFloor": "Etage erstellen",
+        "updateFloor": "Etage aktualisieren",
+        "floorLevelFormat": "{{name}} - Level {{level}}",
+        "usageTitle": "Verwendung",
+        "usage1": "1. Stellen Sie sicher, dass das Backend läuft (node test-backend-with-db.js)",
+        "usage2": "2. Bereich erstellen: Bereichsinfo ausfüllen und auf \"Bereich erstellen\" klicken",
+        "usage3": "3. Etage erstellen: Bereich auswählen, Etageninfo ausfüllen und auf \"Etage erstellen\" klicken",
+        "usage4": "4. Bearbeiten: Bearbeitungsschaltfläche klicken zum Ändern des Elements",
+        "usage5": "5. Löschen: Löschschaltfläche klicken zum Löschen des Elements",
+        "toast": {
+            "loadFail": "Laden fehlgeschlagen",
+            "loadFailDesc": "Daten vom Backend konnten nicht geladen werden",
+            "validationFail": "Validierung fehlgeschlagen",
+            "homeNameRequired": "Bitte Bereichsname eingeben",
+            "floorRequired": "Bitte Etagenname eingeben und Bereich auswählen",
+            "updateSuccess": "Aktualisierung erfolgreich",
+            "homeUpdated": "Bereich aktualisiert",
+            "floorUpdated": "Etage aktualisiert",
+            "createSuccess": "Erstellung erfolgreich",
+            "homeCreated": "Bereich erstellt",
+            "floorCreated": "Etage erstellt",
+            "operationFail": "Vorgang fehlgeschlagen",
+            "deleteSuccess": "Löschen erfolgreich",
+            "homeDeleted": "Bereich gelöscht",
+            "floorDeleted": "Etage gelöscht",
+            "deleteFail": "Löschen fehlgeschlagen",
+            "unknownError": "Unbekannter Fehler"
+        }
+    },
+    "uwbLocation": {
+        "title": "Pflegeheimverwaltung",
+        "subtitle": "UWB-Positionssystem Bereichskonfiguration, Etagen und Gateways verwalten",
+        "selectHome": "Bereich auswählen",
+        "tabs": {
+            "overview": "Systemübersicht",
+            "homes": "Bereichsverwaltung",
+            "floors": "Etagenverwaltung",
+            "gateways": "Gateway-Verwaltung",
+            "anchors": "Anker-Installation",
+            "tags": "Tag-Verwaltung"
+        },
+        "stats": {
+            "homes": "Anzahl Bereiche",
+            "floors": "Anzahl Etagen",
+            "gateways": "Anzahl Gateways",
+            "anchors": "Anzahl Anker",
+            "tags": "Anzahl Tags"
+        },
+        "status": {
+            "online": "Online-Status"
+        },
+        "actions": {
+            "addHome": "Bereich hinzufügen",
+            "editHome": "Bereich bearbeiten",
+            "addFloor": "Etage hinzufügen",
+            "editFloor": "Etage bearbeiten",
+            "addGateway": "Gateway hinzufügen",
+            "editGateway": "Gateway bearbeiten",
+            "addAnchor": "Anker hinzufügen",
+            "addTag": "Tag hinzufügen"
+        },
+        "forms": {
+            "homeName": "Bereichsname",
+            "homeNamePlaceholder": "Bereichsname eingeben",
+            "homeDescription": "Bereichsbeschreibung",
+            "homeDescriptionPlaceholder": "Bereichsbeschreibung eingeben",
+            "homeAddress": "Bereichsadresse",
+            "homeAddressPlaceholder": "Bereichsadresse eingeben"
+        },
+        "homeCard": {
+            "floors": "Etagen",
+            "gateways": "Gateways"
+        },
+        "floorCard": {
+            "mapPreview": "Kartenvorschau",
+            "ratio": "Verhältnis",
+            "anchorsCount": "Anker"
+        },
+        "mapControls": {
+            "zoom": "Zoom",
+            "mouseInstructions": "Scrollen zum Zoomen, Ziehen zum Verschieben auf der Karte"
+        },
+        "messages": {
+            "selectFieldFirst": "Bitte zuerst Bereich auswählen",
+            "addFloorFirst": "Bitte zuerst Etage hinzufügen, um Gateway zu konfigurieren",
+            "selectGatewayFirst": "Bitte zuerst Gateway auswählen",
+            "noAnchorsFound": "Keine Anker gefunden",
+            "noTagsFound": "Keine Tags gefunden",
+            "noGatewaysFound": "Keine Cloud-Gateways gefunden"
+        },
+        "currentFieldStatus": "Aktueller Bereichsstatus",
+        "floorInfo": "Etage {{level}} | {{width}}m × {{height}}m",
+        "mapStatus": {
+            "calibrated": "Karte kalibriert",
+            "uploaded": "Karte hochgeladen",
+            "noMap": "Keine Karte"
+        },
+        "gatewaysOnline": "Gateways online",
+        "mapCalibrationProgress": "Kartenkalibrierungsfortschritt",
+        "calibrationStatus": {
+            "completed": "Kalibrierung abgeschlossen",
+            "pending": "Kalibrierung ausstehend",
+            "noMap": "Karte noch nicht hochgeladen"
+        },
+        "overallProgress": "Gesamtfortschritt",
+        "floorForm": {
+            "name": "Etagenname",
+            "namePlaceholder": "Etagenname eingeben",
+            "level": "Etagennummer",
+            "realWidth": "Tatsächliche Breite (Meter)",
+            "realHeight": "Tatsächliche Höhe (Meter)"
+        },
+        "mapCalibration": "Kartenkalibrierung",
+        "anchorLocationMap": "Anker-Standortkarte",
+        "showAnchorsOnMap": "Anker auf Karte anzeigen",
+        "doubleClickAnchorToCalibrate": "Doppelklick auf Anker zur Kalibrierung",
+        "anchorCount": "Ankeranzahl",
+        "calibrationMode": "Kalibrierungsmodus",
+        "zoomMode": "Zoom-Modus",
+        "close": "Schließen",
+        "calibrationSteps": {
+            "upload": "Karte hochladen",
+            "setOrigin": "Ursprung festlegen",
+            "setScale": "Maßstab festlegen"
+        },
+        "uploadFloorMap": "Etagenkarte hochladen",
+        "uploadInstructions": "Bitte Innenkarte von {{floorName}} hochladen. Unterstützt PNG-, JPG-, SVG-Formate.",
+        "selectMapFile": "Kartendatei auswählen",
+        "dragImageHint": "oder Bild in diesen Bereich ziehen und ablegen",
+        "actualSize": "Tatsächliche Größe",
+        "calibratedMap": "Kalibrierte Karte",
+        "setCoordinateOrigin": "Koordinatenursprung festlegen",
+        "originInstructions": "Bitte auf beliebige Position auf der Karte klicken, um sie als Koordinatenursprung festzulegen, dann die tatsächlichen Koordinaten dieses Punkts eingeben. Es wird normalerweise empfohlen, eine Raumecke oder einen Korridor als Referenzpunkt zu wählen.",
+        "clickMapSetOrigin": "Karte klicken, um Ursprung festzulegen",
+        "clickMapSetNewPosition": "Karte klicken, um neue Position für {{name}} festzulegen",
+        "originPixelPosition": "Pixel-Position des Ursprungs",
+        "actualXCoordinate": "Tatsächliche X-Koordinate (Meter)",
+        "actualYCoordinate": "Tatsächliche Y-Koordinate (Meter)",
+        "reselectOrigin": "Ursprung neu auswählen",
+        "nextStep": "Nächster Schritt",
+        "setCoordinateScale": "Koordinatenmaßstab festlegen",
+        "scaleInstructions": "Bitte zwei Punkte auf der Karte klicken, dann den tatsächlichen Abstand zwischen diesen beiden Punkten eingeben. Das System berechnet automatisch das Konvertierungsverhältnis zwischen Pixel und Meter.",
+        "clickTwoPointsSetScale": "Zwei Punkte klicken, um Maßstab festzulegen",
+        "selectedPoints": "Ausgewählte Punkte",
+        "point1": "Punkt 1",
+        "point2": "Punkt 2",
+        "clickMapSelect": "Bitte Karte klicken zum Auswählen",
+        "pixelDistance": "Pixel-Abstand",
+        "actualDistance": "Tatsächlicher Abstand (Meter)",
+        "enterActualDistance": "Tatsächlichen Abstand zwischen beiden Punkten eingeben",
+        "calculationResult": "Berechnungsergebnis",
+        "ratio": "Verhältnis",
+        "pixelsPerMeter": "Pixel/Meter",
+        "previousStep": "Vorheriger Schritt",
+        "reselectPoints": "Punkte neu auswählen",
+        "saveCalibration": "Kalibrierung speichern",
+        "calibrationComplete": "Kalibrierung abgeschlossen",
+        "calibrationInfo": "Kalibrierungsinformationen",
+        "floor": "Etage",
+        "originActualCoordinates": "Tatsächliche Ursprungskoordinaten",
+        "meters": "Meter",
+        "calibrationPoint1": "Kalibrierungspunkt 1",
+        "calibrationPoint2": "Kalibrierungspunkt 2",
+        "pixels": "Pixel",
+        "complete": "Abgeschlossen",
+        "recalibrate": "Neu kalibrieren",
+        "mapStatusLabel": "Kartenstatus",
+        "manualAdd": "Manuell hinzufügen",
+        "reconnectCloud": "Cloud erneut verbinden",
+        "cloudGatewayDiscovery": "Cloud-Gateway-Suche",
+        "connectionNormal": "Verbindung normal",
+        "cloudMqttStatus": "Cloud-MQTT-Status",
+        "server": "Server",
+        "topic": "Thema",
+        "waitingForGatewayTopic": "Warte auf Inhalt: \"Gateway-Thema\"",
+        "error": "Fehler",
+        "discoveredGateways": "Entdeckte Gateways",
+        "onlineGateways": "Online-Gateways",
+        "mqttMessages": "MQTT-Nachrichten",
+        "discoveredCloudGateways": "Entdeckte Cloud-Gateways",
+        "status": {
+            "online": "Online",
+            "offline": "Offline",
+            "error": "Fehler"
+        },
+        "id": "ID",
+        "firmware": "Firmware",
+        "network": "Netzwerk",
+        "ap": "AP",
+        "voltage": "Spannung",
+        "lastUpdate": "Letzte Aktualisierung",
+        "addToSystem": "Zum System hinzufügen",
+        "noCloudGatewaysFound": "Keine Cloud-Gateways gefunden",
+        "pleaseConfirm": "Bitte bestätigen",
+        "cloudMqttSimulatorStarted": "Cloud-MQTT-Simulator wurde gestartet",
+        "simulatorSendsGatewayTopic": "Simulator sendet Daten im Inhaltsformat: \"Gateway-Thema\"",
+        "dataContainsGatewayIdAndName": "Daten enthalten \"Gateway-ID\" und Namensfeld",
+        "viewRawGatewayMqttData": "Gateway-MQTT-Rohdaten anzeigen (Debug)",
+        "clickDataToExpand": "Auf untenstehende Daten klicken zum Erweitern und vollständigen Inhalt anzeigen",
+        "gatewayDiscoveryConditions": "Gateway-Suchbedingungen",
+        "mustHaveGatewayTopic": "Muss Inhalt haben: \"Gateway-Thema\"",
+        "mustHaveGatewayIdAndName": "Muss \"Gateway-ID\" und Namensfeld haben",
+        "uwbJoinedAnd5VPluggedOnline": "UWB beigetreten: \"yes\" und 5V angeschlossen: \"yes\" wird als online betrachtet",
+        "belongingFloor": "Zugehörige Etage",
+        "macAddress": "MAC-Adresse",
+        "ipAddress": "IP-Adresse",
+        "lastConnection": "Letzte Verbindung",
+        "unknown": "Unbekannt",
+        "editGateway": "Gateway bearbeiten",
+        "addCloudGatewayToSystem": "Cloud-Gateway zum System hinzufügen",
+        "manualAddGateway": "Gateway manuell hinzufügen",
+        "addDiscoveredGatewayToFloor": "Entdecktes Cloud-Gateway (ID: {{id}}) zur ausgewählten Etage hinzufügen",
+        "gatewayName": "Gateway-Name",
+        "enterGatewayName": "Gateway-Namen eingeben",
+        "selectFloor": "Etage auswählen",
+        "reconnectAnchors": "Anker erneut verbinden",
+        "cloudAnchorDiscovery": "Cloud-Anker-Suche",
+        "anchorMqttStatus": "Anker-MQTT-Status",
+        "selectedGateway": "Ausgewähltes Gateway",
+        "notSelected": "Nicht ausgewählt",
+        "listeningTopic": "Hörendes Thema",
+        "none": "Keine",
+        "connectionStatus": "Verbindungsstatus",
+        "discoveredAnchors": "Entdeckte Anker",
+        "onlineAnchors": "Online-Anker",
+        "ackMessages": "Ack-Nachrichten",
+        "discoveredCloudAnchors": "Entdeckte Cloud-Anker",
+        "mainAnchor": "Haupt-Anker",
+        "gateway": "Gateway",
+        "on": "Ein",
+        "off": "Aus",
+        "position": "Position",
+        "configure": "Konfigurieren",
+        "gatewayAnchorConfigTopicCorrect": "Gateway-Anker-Konfigurationsthema korrekt",
+        "simulatorSendsAnchorConfigData": "Simulator sendet Daten im Inhaltsformat: \"config\", node: \"ANCHOR\"",
+        "dataContainsIdAndName": "Daten enthalten ID und Namensfeld",
+        "anchorPairing": {
+            "title": "Anker-Installationsverwaltung",
+            "localAnchorManagement": "Lokale Ankerverwaltung (Hinzugefügte Anker)",
+            "currentGateway": "Aktuell ausgewähltes Gateway",
+            "selectGateway": "Gateway auswählen",
+            "startSimulationPairing": "Simulations-Installation starten",
+            "pairingInProgress": "Installiert...",
+            "selectGatewayFirst": "Bitte Gateway oben auswählen, um Anker zu verwalten",
+            "noOnlineGateways": "Keine lokalen Online-Gateways für Installation verfügbar",
+            "simulationPairingProgress": "Simulations-Installationsfortschritt",
+            "scanningNearbyAnchors": "Anker-Geräte in der Nähe scannen...",
+            "discoveredNewAnchor": "Neuer Anker entdeckt",
+            "add": "Hinzufügen",
+            "noPairedAnchors": "Keine installierten Anker unter diesem Gateway",
+            "anchorStatus": {
+                "running": "Läuft",
+                "paired": "Installiert",
+                "calibrating": "Kalibriert",
+                "unpaired": "Nicht installiert",
+                "error": "Fehler"
+            },
+            "anchorInfo": {
+                "belongingGateway": "Zugehöriges Gateway",
+                "macAddress": "MAC-Adresse",
+                "cloudId": "Cloud-ID",
+                "position": "Positionskoordinaten",
+                "functionStatus": "Funktionsstatus",
+                "signalStrength": "Signalstärke",
+                "batteryLevel": "Batteriestand",
+                "lastConnection": "Letzte Verbindung"
+            },
+            "actions": {
+                "calibrate": "Koordinaten kalibrieren",
+                "sendConfigToCloud": "Konfiguration zur Cloud senden",
+                "deleteAnchor": "Anker löschen"
+            },
+            "functionStatus": {
+                "led": "LED",
+                "ble": "BLE",
+                "mainAnchor": "Haupt-Anker"
+            },
+            "mapLegend": {
+                "coordinateOrigin": "Koordinatenursprung",
+                "generalAnchor": "Allgemeiner Anker",
+                "mainAnchor": "Haupt-Anker"
+            },
+            "debug": {
+                "viewRawAnchorMqttData": "Anker-MQTT-Rohdaten anzeigen (Debug)",
+                "clickDataToExpand": "Auf untenstehende Daten klicken zum Erweitern und vollständigen Inhalt anzeigen",
+                "anchorDiscoveryConditions": "Anker-Suchbedingungen",
+                "mustHaveConfig": "Muss Inhalt haben: \"config\"",
+                "mustHaveNodeAnchor": "Muss node haben: \"ANCHOR\"",
+                "mustHaveIdAndName": "Muss ID und Namensfeld haben",
+                "initiatorMainAnchor": "initiator: 1 zeigt Haupt-Anker an",
+                "viewRawAckData": "Anker-MQTT-Rohdaten anzeigen (Debug) - Ack-Daten"
+            },
+            "noAvailableGateways": "Keine Gateways auf dieser Etage verfügbar",
+            "doubleClickToCalibrate": "Doppelklick zur Positionskalibrierung",
+            "mainAnchorOption": "Haupt-Anker",
+            "generalAnchorOption": "Allgemeiner Anker",
+            "currentStatus": "Aktueller Status",
+            "deviceId": "Geräte-ID",
+            "deviceName": "Gerätename",
+            "anchorDeviceInfo": "Anker-Geräteinformationen",
+            "sendConfigPreview": "Konfigurationssendung-Vorschau",
+            "sendConfigToCloud": "Konfiguration zur Cloud senden",
+            "cancelCalibration": "Kalibrierung abbrechen",
+            "cancel": "Abbrechen",
+            "confirm": "Bestätigen"
+        },
+        "notifications": {
+            "ackReceived": "Ack-Nachricht empfangen",
+            "gatewayId": "Gateway-ID",
+            "command": "Befehl",
+            "nodeType": "Node-Typ",
+            "deviceId": "Geräte-ID",
+            "topic": "Thema",
+            "receivedAt": "Empfangen um",
+            "messageType": "Nachrichtentyp",
+            "ackMessage": "Ack-Nachricht"
+        },
+        "anchorCalibration": {
+            "title": "{{name}} kalibrieren",
+            "mapClickMode": "Karten-Klick-Kalibrierungsmodus",
+            "mapClickInstruction": "Direkt auf linke Karte klicken, um neue Position für {{name}} festzulegen",
+            "manualInputInstruction": "Oder unten präzise Koordinatenwerte manuell eingeben",
+            "coordinateType": "Koordinatentyp",
+            "realCoordinates": "Reale Koordinaten (Meter)",
+            "pixelCoordinates": "Pixel-Koordinaten (px)",
+            "xCoordinate": "X-Koordinate",
+            "yCoordinate": "Y-Koordinate",
+            "zCoordinate": "Z-Koordinate (Meter)",
+            "realCoordinatesHint": "💡 Reale Weltkoordinaten eingeben (Einheit: Meter)",
+            "pixelCoordinatesHint": "💡 Pixel-Koordinaten auf Bild eingeben, System konvertiert automatisch zu realen Koordinaten",
+            "saveManualCoordinates": "Manuell eingegebene Koordinaten speichern",
+            "quickOperation": "⚡ Schnellbedienung",
+            "quickOperationDescription": "Linke Karte klicken = Schnelleinstellung | Manuelle Eingabe = Präzise Koordinaten",
+            "coordinatesUpdated": "Koordinaten von {{name}} aktualisiert!",
+            "sendToCloudQuestion": "Möchten Sie neue Koordinaten zur Cloud-Hardware senden?",
+            "sendToCloudInstruction": "Auf \"Bestätigen\" klicken für weitere Parameterkonfiguration und Senden",
+            "sendConfigToCloud": "Konfiguration zur Cloud senden - {{name}}",
+            "newCoordinatePosition": "📍 Neue Koordinatenposition",
+            "anchorConfigParameters": "🔧 Anker-Konfigurationsparameter",
+            "firmwareUpdate": "Firmware-Aktualisierung",
+            "ledStatus": "LED-Status",
+            "bleStatus": "BLE-Status",
+            "initiator": "Initiator",
+            "serialNo": "Seriennummer",
+            "serialNoRange": "Bereich: 1306-9999, erhöht sich automatisch nach jedem Senden",
+            "anchorDeviceInfo": "🏷️ Anker-Geräteinformationen:",
+            "deviceName": "Gerätename",
+            "deviceId": "Geräte-ID",
+            "macAddress": "MAC-Adresse",
+            "currentStatus": "Aktueller Status",
+            "sendConfigPreview": "📤 Konfigurationssendung-Vorschau:",
+            "topic": "Thema",
+            "gatewayId": "Gateway-ID",
+            "sending": "Sendet...",
+            "sendToCloudHardware": "Zur Cloud-Hardware senden",
+            "coordinatesSentToCloud": "Neue Koordinaten von {{name}} wurden zur Cloud-Hardware gesendet",
+            "on": "Ein",
+            "off": "Aus",
+            "generalAnchor": "Allgemeiner Anker",
+            "mainAnchor": "Haupt-Anker",
+            "unknown": "Unbekannt"
+        },
+        "tagManagement": {
+            "title": "Tag-Geräteverwaltung",
+            "subtitle": "UWB-Positions-Tag-Geräte verwalten, einschließlich Personal-Tags, Geräte-Tags und Vermögens-Tags",
+            "controls": {
+                "selectGateway": "Gateway auswählen",
+                "reconnectTags": "Tags erneut verbinden",
+                "addTag": "Tag hinzufügen"
+            },
+            "stats": {
+                "personnelTags": "Personal-Tags",
+                "activeTags": "Aktiv",
+                "cloudTags": "Cloud-Tags"
+            },
+            "cloudDiscovery": {
+                "title": "Cloud-Tag-Suche",
+                "mqttStatus": "Tag-MQTT-Status",
+                "selectedGateway": "Ausgewähltes Gateway",
+                "notSelected": "Nicht ausgewählt",
+                "listeningTopic": "Hörendes Thema",
+                "none": "Keine",
+                "connectionStatus": "Verbindungsstatus",
+                "gatewayNotSelected": "Gateway nicht ausgewählt",
+                "discoveredTags": "Entdeckte Tags",
+                "onlineTags": "Online-Tags",
+                "mqttMessages": "MQTT-Nachrichten",
+                "discoveredCloudTags": "Entdeckte Cloud-Tags",
+                "autoAddedToSystem": "Automatisch zum System hinzugefügt"
+            },
+            "tagList": {
+                "noTagsUnderGateway": "Keine Tag-Geräte unter diesem Gateway",
+                "pleaseConfirm": "Bitte bestätigen:",
+                "gatewayMessageLocationTopics": "1. Gateway-Nachrichten- und Standort-Themen korrekt",
+                "simulatorSendsInfoLocation": "2. Simulator sendet Daten im Inhaltsformat: \"info\"/\"location\", node: \"TAG\"",
+                "dataContainsFields": "3. Daten enthalten ID, Batteriestand, Position, Zeit und andere Felder",
+                "viewRawTagMqttData": "Tag-MQTT-Rohdaten anzeigen (Debug)",
+                "clickDataToExpand": "Auf untenstehende Daten klicken zum Erweitern und vollständigen Inhalt anzeigen",
+                "tagDiscoveryConditions": "Tag-Suchbedingungen:",
+                "messageTopic": "• Nachrichten-Thema: Inhalt: \"info\", node: \"TAG\"",
+                "locationTopic": "• Standort-Thema: Inhalt: \"location\", node: \"TAG\"",
+                "mustHaveId": "• Muss ID-Feld haben",
+                "messageContainsBattery": "• Nachricht enthält Batteriestandinformationen",
+                "locationContainsPosition": "• Standort enthält Positions- und Zeitinformationen"
+            },
+            "tagCard": {
+                "macAddress": "MAC-Adresse",
+                "type": "Typ",
+                "personnel": "Personal",
+                "assignedTo": "Zugewiesen an",
+                "batteryLevel": "Batteriestand",
+                "lastPosition": "Letzte Position",
+                "updateTime": "Aktualisierungszeit",
+                "cloud": "Cloud",
+                "edit": "Bearbeiten",
+                "delete": "Löschen"
+            },
+            "tagForm": {
+                "editTag": "Tag bearbeiten",
+                "addTag": "Tag hinzufügen",
+                "tagName": "Tag-Name",
+                "tagNamePlaceholder": "Tag-Namen eingeben",
+                "macAddress": "MAC-Adresse",
+                "macAddressPlaceholder": "AA:BB:CC:DD:EE:FF",
+                "tagType": "Tag-Typ",
+                "selectType": "Typ auswählen",
+                "person": "Personal",
+                "equipment": "Ausrüstung",
+                "asset": "Vermögen",
+                "assignedTo": "Zugewiesen an",
+                "assignedToPlaceholder": "Zugewiesen an (optional)",
+                "cancel": "Abbrechen",
+                "save": "Speichern"
+            },
+            "tagStatus": {
+                "running": "Läuft",
+                "inactive": "Inaktiv",
+                "lowBattery": "Batterie schwach",
+                "lost": "Verloren",
+                "online": "Online",
+                "offline": "Offline"
+            },
+            "tagTypes": {
+                "person": "Personal",
+                "equipment": "Ausrüstung",
+                "asset": "Vermögen"
+            },
+            "messages": {
+                "selectGatewayFirst": "Bitte zuerst Gateway auswählen",
+                "noTagsFound": "Noch keine Tags gefunden",
+                "connectionError": "Fehler",
+                "connectionNormal": "Verbindung normal",
+                "manualReconnecting": "Manuelle Neuverbindung..."
+            }
+        }
+    }
+}

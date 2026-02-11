@@ -1,0 +1,1743 @@
+{
+    "home": {
+        "title": "歡迎使用长者照护系统",
+        "subtitle": "提供全面的长者照护管理，确保长者得到最佳的照顧和关注。整合健康监测、位置追踪与智慧提醒功能。",
+        "features": {
+            "emergency": {
+                "title": "紧急呼叫",
+                "description": "快速发送紧急求助信号，确保及时獲得協助"
+            },
+            "health": {
+                "title": "健康监控",
+                "description": "即时监测长者健康状态与异常警示"
+            },
+            "reminders": {
+                "title": "定时提醒",
+                "description": "管理服药、喝水、測量等定时提醒"
+            },
+            "location": {
+                "title": "室内定位",
+                "description": "追踪长者与设备在院內的位置"
+            },
+            "temperature": {
+                "title": "体温监测",
+                "description": "即时监控长者体温變化与异常警示"
+            },
+            "heartRate": {
+                "title": "心跳监测",
+                "description": "即时监控长者心率變化与异常警示"
+            },
+            "heartTemp": {
+                "title": "心率体温监控",
+                "description": "單一頁面查看心率与体温监测"
+            },
+            "diaper": {
+                "title": "尿布监测",
+                "description": "即时监测尿布湿度状态与更换记录"
+            }
+        },
+        "stats": {
+            "totalResidents": "院友总数",
+            "todayTasks": "今日任務",
+            "healthAlerts": "健康警示",
+            "monthlyReport": "本月報表",
+            "completed": "已完成"
+        },
+        "actions": {
+            "startUsing": "立即开始使用",
+            "systemGuide": "系统功能指南"
+        }
+    },
+    "heartTemp": {
+        "title": "心率体温监控",
+        "subtitle": "合併心率与体温資料，單一连线即可監看 300B 裝置",
+        "tabs": {
+            "heart": "心率",
+            "temp": "体温"
+        },
+        "deviceNameFallback": "设备"
+    },
+    "residents": {
+        "title": "院友管理",
+        "subtitle": "管理院友資料与设备绑定",
+        "stats": {
+            "totalResidents": "總院友",
+            "activeDevices": "活跃设备",
+            "offlineDevices": "离线设备",
+            "errorDevices": "异常设备",
+            "unboundDevices": "未绑定设备"
+        },
+        "filters": {
+            "all": "全部",
+            "good": "良好",
+            "attention": "注意",
+            "critical": "危急"
+        },
+        "search": {
+            "placeholder": "搜索院友姓名、编号或房间號..."
+        },
+        "list": {
+            "title": "院友列表",
+            "count": "共 {{count}} 位院友",
+            "noDevices": "尚未绑定任何设备",
+            "boundDevices": "绑定设备:"
+        },
+        "actions": {
+            "addResident": "新增院友",
+            "showDeviceManagement": "显示设备管理",
+            "hideDeviceManagement": "隐藏设备管理",
+            "manageDevices": "管理设备",
+            "edit": "编辑",
+            "remove": "移除"
+        },
+        "form": {
+            "name": "姓名",
+            "age": "年龄",
+            "gender": "性别",
+            "room": "房间號",
+            "status": "状态",
+            "avatar": "头像",
+            "emergencyContact": "紧急联系人",
+            "relationship": "关系",
+            "phone": "电话",
+            "careNotes": "照护注意事项",
+            "male": "男",
+            "female": "女",
+            "good": "良好",
+            "attention": "需注意",
+            "critical": "危急"
+        },
+        "deviceManagement": {
+            "title": "未绑定设备",
+            "count": "{{count}} 個设备",
+            "bind": "绑定"
+        },
+        "deviceCount": "设备",
+        "id": "编号",
+        "room": "房间",
+        "ageUnit": "岁",
+        "boundDevices": "绑定设备",
+        "noDevicesBound": "尚未绑定任何设备",
+        "actions": {
+            "addResident": "新增院友",
+            "showDeviceManagement": "显示设备管理",
+            "hideDeviceManagement": "隐藏设备管理",
+            "manageDevices": "管理设备",
+            "edit": "编辑",
+            "remove": "移除",
+            "info": "详情",
+            "unbindDevice": "解除绑定"
+        },
+        "monitoring": {
+            "title": "设备监控",
+            "showControls": "显示控制面板",
+            "hideControls": "隐藏控制面板",
+            "showTest": "显示测试面板",
+            "hideTest": "隐藏测试面板",
+            "showDebug": "显示调试面板",
+            "hideDebug": "隐藏调试面板",
+            "boundDevices": "绑定设备",
+            "onlineDevices": "在线设备",
+            "offlineDevices": "离线设备",
+            "errorDevices": "异常设备"
+        },
+        "modal": {
+            "addResident": "新增院友",
+            "name": "姓名",
+            "age": "年龄",
+            "gender": "性别",
+            "room": "房间號",
+            "status": "状态",
+            "avatar": "头像",
+            "emergencyContactName": "紧急联系人姓名",
+            "relationship": "关系",
+            "phone": "电话",
+            "careNotes": "照护注意事项",
+            "placeholders": {
+                "name": "输入院友姓名",
+                "age": "输入年龄",
+                "room": "输入房间號",
+                "avatar": "输入表情符號或文字",
+                "emergencyContactName": "输入紧急联系人姓名",
+                "relationship": "输入关系",
+                "phone": "输入电话號碼",
+                "careNotes": "输入照护注意事项"
+            },
+            "genderOptions": {
+                "male": "男",
+                "female": "女"
+            }
+        },
+        "deviceBinding": {
+            "title": "设备绑定管理",
+            "currentBinding": "当前绑定",
+            "deviceBoundToResident": "设备 {{deviceName}} 已绑定至院友 {{residentName}}",
+            "unbind": "解除绑定",
+            "selectDevice": "选择设备",
+            "searchDevicePlaceholder": "搜索设备名称、硬件编号...",
+            "alreadyBound": "已绑定",
+            "selectResident": "选择院友",
+            "searchResidentPlaceholder": "搜索院友姓名、房间號...",
+            "bindingSettings": "绑定设置",
+            "bindingType": "绑定类型",
+            "primaryDevice": "主要设备",
+            "secondaryDevice": "輔助设备",
+            "notes": "备注",
+            "notesPlaceholder": "绑定备注（選填）",
+            "residentDevices": "{{name}} 的设备",
+            "confirmBind": "确认绑定"
+        },
+        "detailModal": {
+            "editInfo": "编辑院友信息",
+            "emergencyContact": "紧急联系人",
+            "careNotes": "照护注意事项",
+            "careNotesPlaceholder": "请输入照护注意事项...",
+            "noCareNotes": "暫无照护注意事项",
+            "editCareNotes": "编辑注意事项",
+            "addDevice": "添加设备",
+            "noDevicesBound": "尚未绑定任何设备",
+            "close": "关闭"
+        },
+        "unboundDevices": "未绑定设备",
+        "bindDevice": "绑定",
+        "alerts": {
+            "importSuccess": "✅ 数据导入成功！注意：院友数据需要通過系统管理更新",
+            "invalidFormat": "❌ 无效的数据格式",
+            "importFailed": "❌ 导入数据失败"
+        },
+        "confirms": {
+            "resetSettings": "确定要重置所有院友管理设定嗎？此操作不可撤銷！",
+            "removeResident": "确定要移除這個院友嗎？此操作无法復原。"
+        }
+    },
+    "deviceManagement": {
+        "title": "设备管理",
+        "subtitle": "管理所有类型的照护设备，支持300B手表、尿布传感器、运动传感器、定位标签",
+        "searchPlaceholder": "搜索设备名称、硬件编号或设备UID...",
+        "filters": {
+            "all": "全部",
+            "smartwatch300B": "300B手表",
+            "diaperSensor": "尿布传感器",
+            "pedometer": "运动传感器",
+            "uwbTag": "定位标签",
+            "uwbAnchor": "定位锚点",
+            "gateway": "UWB网关"
+        },
+        "actions": {
+            "addDevice": "新增设备",
+            "autoDiscovery": "自动发现设备",
+            "forceSave": "强制保存",
+            "exportSettings": "导出设定",
+            "importSettings": "导入设定",
+            "debugStorage": "调试存储"
+        },
+        "autoAdd": {
+            "enabled": "自动加入：已启用",
+            "disabled": "自动加入：已禁用"
+        },
+        "stats": {
+            "totalDevices": "總设备數",
+            "activeDevices": "活跃设备",
+            "smartwatch300B": "300B手表",
+            "diaperSensor": "尿布传感器",
+            "otherDevices": "其他设备"
+        },
+        "deviceList": {
+            "title": "设备列表",
+            "count": "共 {{count}} 個设备",
+            "noDevices": "没有找到符合条件的设备",
+            "hardwareId": "硬件编号",
+            "type": "类型",
+            "gateway": "网关",
+            "replace": "替换",
+            "remove": "移除"
+        },
+        "addModal": {
+            "title": "新增设备",
+            "deviceType": "设备类型",
+            "deviceName": "设备名称",
+            "hardwareId": "硬件编号",
+            "macAddress": "MAC 地址",
+            "deviceId": "设备ID",
+            "gatewayId": "网关ID (選填)",
+            "deviceTypes": {
+                "smartwatch300B": "300B 健康监测手表",
+                "diaperSensor": "智能尿布传感器",
+                "pedometer": "运动传感器",
+                "uwbTag": "UWB定位标签",
+                "uwbAnchor": "UWB定位锚点",
+                "gateway": "UWB网关"
+            },
+            "placeholders": {
+                "deviceName": "输入设备名称",
+                "hardwareId": "输入硬件编号",
+                "macAddress": "输入MAC地址 (如: E0:0E:08:36:93:F8)",
+                "deviceId": "输入设备ID (如: 5345)",
+                "gatewayId": "输入网关ID"
+            }
+        },
+        "replaceModal": {
+            "title": "替换设备",
+            "currentHardwareId": "当前硬件编号",
+            "deviceUid": "设备UID",
+            "newHardwareId": "新硬件编号",
+            "confirmReplace": "确认替换",
+            "placeholders": {
+                "newHardwareId": "输入新的硬件编号"
+            }
+        },
+        "alerts": {
+            "importSuccess": "✅ 数据导入成功！注意：设备数据需要通過系统管理更新",
+            "invalidFormat": "❌ 无效的数据格式",
+            "importFailed": "❌ 导入数据失败"
+        },
+        "confirms": {
+            "resetSettings": "确定要重置所有设备管理设定嗎？此操作不可撤銷！",
+            "removeDevice": "确定要移除這個设备嗎？"
+        },
+        "monitoring": {
+            "title": "设备监控",
+            "hideControls": "隐藏控制",
+            "showControls": "显示控制",
+            "hideTest": "隐藏测试",
+            "showTest": "显示测试",
+            "hideDebug": "隐藏调试",
+            "showDebug": "显示调试",
+            "boundDevices": "已绑定设备",
+            "onlineDevices": "在线设备",
+            "offlineDevices": "离线设备",
+            "errorDevices": "错误设备",
+            "deviceCount": "個设备",
+            "noDevices": "没有设备",
+            "noMatchingDevices": "没有符合筛选条件的设备"
+        },
+        "batchActions": {
+            "batchActions": "批量操作",
+            "selectedCount": "已选择",
+            "devices": "個设备",
+            "selectAll": "全選",
+            "deselectAll": "取消全選",
+            "batchUnbind": "批量解除绑定",
+            "batchUnbindShort": "解綁",
+            "batchRemove": "批量移除设备",
+            "batchRemoveShort": "移除",
+            "confirmUnbind": "确定要解除以下 {{count}} 個设备的绑定嗎？\n\n{{devices}}\n\n此操作无法撤銷。",
+            "confirmRemove": "确定要移除以下 {{count}} 個设备嗎？\n\n{{devices}}\n\n此操作无法撤銷。",
+            "noBindableDevices": "所选设备中没有已绑定的设备",
+            "noDevicesSelected": "請先选择要移除的设备",
+            "unbindSuccess": "已成功解除 {{count}} 個设备的绑定",
+            "removeSuccess": "已成功移除 {{count}} 個设备",
+            "gateway": {
+                "changeNetworkId": "更改UWB Network ID",
+                "changeLocation": "修改所属养老院及楼层"
+            },
+            "anchor": {
+                "changeHeight": "修改高度(Z坐標)",
+                "changePower": "修改功率",
+                "requestData": "要求锚点資料",
+                "requesting": "发送中..."
+            },
+            "tag": {
+                "changeConfig": "更改参数设定",
+                "changePower": "修改功率",
+                "requestData": "要求标签資料",
+                "requesting": "发送中...",
+                "tagName": "标签名称",
+                "tagId": "Tag ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "未设定"
+            },
+            "anchor": {
+                "anchorName": "锚点名称",
+                "anchorId": "Anchor ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "未设定",
+                "selectOneAnchor": "請选择1個定位锚点设备",
+                "selectAtLeastOneAnchor": "請至少选择1個定位锚点设备",
+                "enterValidZCoordinate": "请输入有效的Z坐標數值",
+                "enterAllPowerValues": "请输入所有功率值",
+                "powerValueRange": "功率值必须在 5.0~30.5 dB 范围內",
+                "commandSentSuccess": "✅ 已成功发送修改功率指令到 {{name}}",
+                "heightCommandSentSuccess": "✅ 已成功发送修改高度指令到 {{name}}\n新Z坐標: {{zValue}}",
+                "requestDataSuccess": "✅ 已成功发送要求資料指令到 {{count}} 個锚点设备",
+                "requestDataPartialSuccess": "⚠️ 已成功发送 {{successCount}} 個，失败 {{failCount}} 個\n失败设备: {{failedDevices}}",
+                "requestDataFailed": "❌ 所有指令发送失败\n失败设备: {{failedDevices}}"
+            },
+            "tag": {
+                "changeConfig": "更改参数设定",
+                "changePower": "修改功率",
+                "requestData": "要求标签資料",
+                "requesting": "发送中...",
+                "tagName": "标签名称",
+                "tagId": "Tag ID",
+                "gatewayId": "Gateway ID",
+                "notSet": "未设定",
+                "selectOneTag": "請选择1個定位标签设备",
+                "selectAtLeastOneTag": "請至少选择1個定位标签设备",
+                "enterAllParameterValues": "请输入所有参数值",
+                "enterAllPowerValues": "请输入所有功率值",
+                "powerValueRange": "功率值必须在 5.0~30.5 dB 范围內",
+                "configCommandSentSuccess": "✅ 已成功发送更改参数设定指令到 {{name}}",
+                "powerCommandSentSuccess": "✅ 已成功发送修改功率指令到 {{name}}",
+                "requestDataSuccess": "✅ 已成功发送要求資料指令到 {{count}} 個标签设备",
+                "requestDataPartialSuccess": "⚠️ 已成功发送 {{successCount}} 個，失败 {{failCount}} 個\n失败设备: {{failedDevices}}",
+                "requestDataFailed": "❌ 所有指令发送失败\n失败设备: {{failedDevices}}"
+            },
+            "gateway": {
+                "gatewayId": "Gateway ID",
+                "notSet": "未设定",
+                "selectOneGateway": "請选择1個网关设备",
+                "networkIdRange": "UWB Network ID 必须在 1~65535 范围內",
+                "networkIdCommandSentSuccess": "✅ 已成功发送更改UWB Network ID指令到 {{name}}\nNetwork ID: {{networkId}}",
+                "locationUpdatedSuccess": "网关所属养老院及楼层已更新成功！"
+            },
+            "common": {
+                "gatewayNotFound": "找不到對應的网关配置，請先在「UWB定位管理」中新增网关",
+                "downlinkTopicNotFound": "找不到對應的 Gateway 或 downlink 主题",
+                "mqttBusNotConnected": "MQTT Bus 未连线，无法发送指令",
+                "invalidDeviceIdOrGatewayId": "无法获取有效的{{deviceType}}ID或网关ID",
+                "selectFloor": "請选择楼层",
+                "commandSendFailed": "发送指令失败: {{error}}",
+                "commandSendError": "发送指令時發生错误: {{error}}",
+                "updateFailed": "更新失败: {{error}}"
+            }
+        },
+        "deviceInfo": {
+            "title": "设备信息",
+            "basicInfo": "基本信息",
+            "deviceName": "设备名称",
+            "deviceType": "设备类型",
+            "hardwareId": "硬件编号",
+            "macAddress": "MAC地址",
+            "deviceUid": "设备UID",
+            "uid": "UID",
+            "gatewayId": "网关ID",
+            "gatewayName": "网关名称",
+            "firmwareVersion": "固件版本",
+            "batteryLevel": "电量",
+            "status": "状态",
+            "bindingInfo": "关聯信息",
+            "residentId": "绑定院友",
+            "unbound": "未绑定",
+            "dataInfo": "数据信息",
+            "lastData": "最新数据",
+            "lastSeen": "最后上线",
+            "systemInfo": "系统信息",
+            "createdAt": "创建时间",
+            "updatedAt": "更新时间",
+            "close": "关闭"
+        },
+        "monitoringStatus": {
+            "title": "监控状态",
+            "connected": "已连接",
+            "disconnected": "未连接",
+            "gatewayCount": "{{count}}個Gateway",
+            "lastUpdate": "最后更新",
+            "monitoring": "监控中",
+            "stopped": "已停止",
+            "start": "开始",
+            "stop": "停止"
+        },
+        "monitoringControls": {
+            "title": "设备监控控制",
+            "selectGateway": "选择Gateway",
+            "stopMonitoring": "停止监控",
+            "online": "在线",
+            "offline": "离线"
+        },
+        "monitoringDebug": {
+            "title": "MQTT调试面板",
+            "monitoring": "监控中",
+            "stopped": "已停止",
+            "hide": "隐藏",
+            "show": "显示",
+            "maxMessages": "最大消息數",
+            "filterByTopic": "過濾主题",
+            "filterByDevice": "過濾设备",
+            "topicPlaceholder": "例如: Health, Loc",
+            "devicePlaceholder": "设备名称或ID",
+            "export": "导出",
+            "clear": "清除",
+            "totalMessages": "總消息",
+            "displaying": "显示中",
+            "healthData": "健康数据",
+            "locationData": "位置数据",
+            "ackMessages": "ACK消息",
+            "noMessages": "暫无调试消息",
+            "usageInstructions": "使用说明",
+            "instruction1": "此调试面板显示實時接收的MQTT消息",
+            "instruction2": "可以按主题或设备名称過濾消息",
+            "instruction3": "点击复制按钮可复制数据到剪贴板",
+            "instruction4": "支持导出调试数据为JSON文件",
+            "instruction5": "消息會自动更新,最多保留指定数量"
+        },
+        "deviceDiscovery": {
+            "title": "设备发现",
+            "discovering": "发现中...",
+            "existingDevices": "已存在的设备",
+            "newlyDiscovered": "新发现的设备",
+            "scanning": "正在扫描设备...",
+            "remove": "移除",
+            "add": "添加",
+            "confirm": "确认",
+            "cancel": "取消",
+            "stopDiscovery": "停止发现",
+            "deviceCount": "個设备",
+            "existingCount": "已存在",
+            "discoveredCount": "新发现"
+        },
+        "deviceCard": {
+            "online": "在线",
+            "offline": "离线",
+            "unknown": "未知",
+            "deviceInfo": "设备信息",
+            "bindDevice": "绑定设备",
+            "removeDevice": "移除设备",
+            "unbind": "解除绑定",
+            "battery": "电量",
+            "room": "房间",
+            "qrCode": "QR码"
+        }
+    },
+    "health": {
+        "systemTitle": "长者照护系统",
+        "monitoringTitle": "病患监控",
+        "actions": {
+            "forceSave": "强制保存",
+            "exportSettings": "导出设定",
+            "importSettings": "导入设定",
+            "debugStorage": "调试存储"
+        },
+        "stats": {
+            "totalResidents": "總院友數",
+            "activeDevices": "活跃设备",
+            "offlineDevices": "离线设备",
+            "errorDevices": "异常设备"
+        },
+        "filters": {
+            "全部": "全部",
+            "异常": "异常",
+            "正常": "正常",
+            "需注意": "需注意"
+        },
+        "patientInfo": {
+            "age": "年龄",
+            "room": "房间",
+            "devices": "设备"
+        },
+        "patientStatus": {
+            "normal": "正常",
+            "error": "异常",
+            "attention": "需注意",
+            "noDevices": "无设备"
+        },
+        "monitoringIcons": {
+            "temperature": "体温",
+            "heartRate": "心率",
+            "physiological": "生理",
+            "diaper": "尿布",
+            "activity": "运动",
+            "location": "定位",
+            "emergency": "紧急",
+            "reminders": "提醒",
+            "residents": "院友",
+            "devices": "设备"
+        },
+        "emptyState": {
+            "noPatients": "目前没有{{status}}状态的患者",
+            "goToResidentManagement": "前往院友管理设定设备"
+        },
+        "alerts": {
+            "importSuccess": "✅ 健康监控设定导入成功！",
+            "invalidFormat": "❌ 无效的数据格式",
+            "importFailed": "❌ 导入数据失败"
+        },
+        "confirms": {
+            "resetSettings": "确定要重置所有健康监控设定嗎？此操作不可撤銷！"
+        }
+    },
+    "emergencyCall": {
+        "title": "紧急呼叫",
+        "subtitle": "快速发送紧急求助信号，确保及时獲得協助",
+        "patient": "患者",
+        "location": "位置",
+        "selectPatient": "选择患者",
+        "selectLocation": "选择位置",
+        "emergencyButton": "紧急\n呼叫",
+        "callHistory": "呼叫记录",
+        "refreshStatus": "刷新状态",
+        "types": {
+            "fall": "跌倒",
+            "pain": "疼痛",
+            "toilet": "如廁協助",
+            "medicine": "药物協助",
+            "help": "其他協助"
+        },
+        "status": {
+            "responding": "正在响应中...",
+            "caregiverOnWay": "护理人员正赶往现场...",
+            "completed": "已解决",
+            "cancelled": "已取消",
+            "pending": "等待响应"
+        },
+        "info": {
+            "patient": "患者",
+            "location": "位置",
+            "type": "类型",
+            "callTime": "呼叫时间",
+            "waitTime": "等待时间",
+            "responder": "响应人员",
+            "responseTime": "响应时间"
+        },
+        "record": {
+            "callTime": "呼叫时间",
+            "completedTime": "处理时间",
+            "handler": "处理人员",
+            "cancelReason": "取消原因"
+        },
+        "emptyState": {
+            "noRecords": "暫无呼叫记录",
+            "completedCalls": "完成的紧急呼叫將显示在這裡"
+        },
+        "modals": {
+            "selectType": {
+                "title": "选择紧急类型"
+            },
+            "cancelCall": {
+                "title": "取消紧急呼叫",
+                "reasonLabel": "请输入取消原因",
+                "reasonPlaceholder": "取消原因",
+                "back": "返回",
+                "confirm": "确认取消"
+            }
+        },
+        "timeUnits": {
+            "minutes": "分",
+            "seconds": "秒"
+        }
+    },
+    "reminders": {
+        "title": "定时提醒",
+        "subtitle": "管理长者的服药、喝水和其他照护提醒",
+        "addReminder": "新增提醒",
+        "todayReminders": "今日提醒",
+        "complete": "完成",
+        "types": {
+            "medication": "服药提醒",
+            "water": "喝水提醒",
+            "physicalTherapy": "物理治疗"
+        },
+        "descriptions": {
+            "hypertension": "高血压药物",
+            "diabetes": "糖尿病药物",
+            "hydration": "确保水分摄取",
+            "rehabilitation": "进行日常复健运动"
+        },
+        "cards": {
+            "periodic": {
+                "title": "周期提醒",
+                "description": "管理每日、每周或自定义周期的提醒事项"
+            },
+            "statistics": {
+                "title": "提醒统计",
+                "description": "查看提醒完成情况和统计数据"
+            },
+            "settings": {
+                "title": "提醒设置",
+                "description": "自定义提醒通知方式和提醒规则"
+            }
+        }
+    },
+    "location": {
+        "title": "室内定位",
+        "subtitle": "追踪长者和设备在院內的位置，确保安全和照护",
+        "selectArea": {
+            "title": "选择监控区域",
+            "nursingHome": "养老院",
+            "floor": "楼层",
+            "gateway": "网关",
+            "selectNursingHome": "选择养老院",
+            "selectFloor": "选择楼层",
+            "selectGateway": "选择网关",
+            "local": "本地",
+            "noGateway": "无网关"
+        },
+        "mqttStatus": {
+            "title": "MQTT连接状态",
+            "refreshData": "刷新数据",
+            "refreshTitle": "刷新标定数据",
+            "status": "状态",
+            "topic": "主题",
+            "deviceCount": "设备数量",
+            "error": "错误",
+            "none": "无",
+            "mqttBus": "MQTT Bus",
+            "未连线": "未连线",
+            "已连线": "已连线",
+            "连接中...": "连接中...",
+            "重新连接中...": "重新连接中...",
+            "连接已关闭": "连接已关闭",
+            "客戶端离线": "客戶端离线",
+            "连接错误": "连接错误",
+            "未选择网关": "未选择网关",
+            "无法获取网关主题": "无法获取网关主题"
+        },
+        "connectionStatus": {
+            "title": "MQTT 状态",
+            "connected": "已连线",
+            "disconnected": "未连线",
+            "connecting": "连接中...",
+            "reconnecting": "重新连接中...",
+            "connectionError": "连接错误"
+        },
+        "searchFilter": {
+            "title": "搜索和過濾",
+            "searchPlaceholder": "搜索院友姓名或房间號...",
+            "allStatus": "全部状态",
+            "allDevices": "全部设备",
+            "watch": "手表",
+            "uwbTag": "定位标签"
+        },
+        "map": {
+            "realtimeMap": "即时位置地图",
+            "showDevices": "显示 {{count}} 個设备",
+            "zoomIn": "放大",
+            "zoomOut": "缩小",
+            "resetView": "重置视图",
+            "zoom": "缩放",
+            "hideMarkerInfo": "隐藏标记信息",
+            "showMarkerInfo": "显示标记信息",
+            "controls": "滾輪缩放 | 拖拽移动",
+            "noDevices": "尚无符合条件的设备",
+            "selectGateway": "請先选择网关并建立连接",
+            "noDimensions": "該楼层尚未设定地图尺寸",
+            "selectFloor": "請先选择楼层以显示地图",
+            "mapStatus": "地图状态",
+            "calibrated": "已标定",
+            "notCalibrated": "未标定",
+            "ratio": "比例",
+            "pixelsPerMeter": "像素/米",
+            "translate": "平移",
+            "totalDevices": "總设备數",
+            "onlineDevices": "在线设备",
+            "filtered": "過濾后"
+        },
+        "deviceList": {
+            "onlineDevices": "在线设备 ({{count}})",
+            "totalDevices": "總計 {{count}} 個设备",
+            "room": "房间",
+            "position": "位置",
+            "updated": "更新",
+            "online": "在线"
+        }
+    },
+    "temperature": {
+        "title": "体温监控",
+        "subtitle": "即时监控长者体温變化，及时发现健康异常",
+        "navigationFromHealth": "从健康监控頁面导航",
+        "currentPatient": "当前患者",
+        "reconnectLocal": "重连本地",
+        "reconnectCloud": "重连云端",
+        "tabs": {
+            "local": "本地 MQTT",
+            "cloud": "云端 MQTT"
+        },
+        "patientSelection": {
+            "title": "患者选择",
+            "selectPatient": "选择患者",
+            "patient": "患者"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "云端设备监控",
+            "connected": "连线正常",
+            "离线": "离线",
+            "连接中...": "连接中...",
+            "重新连接中...": "重新连接中...",
+            "连接已关闭": "连接已关闭",
+            "连接错误": "连接错误",
+            "未选择网关": "未选择网关",
+            "selectArea": "选择监控区域：",
+            "selectNursingHomeFirst": "請先选择养老院",
+            "selectFloorFirst": "請先选择楼层",
+            "currentGateway": "当前选择的网关：",
+            "listeningTopic": "监听主题",
+            "cannotGetTopic": "无法获取主题",
+            "discoveredDevices": "已发现设备",
+            "totalRecords": "總记录數",
+            "mqttMessages": "MQTT消息",
+            "selectDevice": "选择监控设备：",
+            "selectCloudDevice": "选择云端设备进行详细监控",
+            "records": "筆记录",
+            "noDevices": "尚未发现任何云端设备",
+            "pleaseConfirm": "請确认：",
+            "cloudMqttSimulator": "云端 MQTT 模拟器已啟動",
+            "simulatorFormat": "模拟器发送 content: \"300B\" 格式的数据",
+            "dataFields": "数据包含 MAC 和 \"skin temp\" 字段",
+            "recentData": "最近收到的数据：",
+            "device": "设备",
+            "temperature": "体温",
+            "roomTemperature": "室温",
+            "battery": "电量",
+            "diaperDevice": "尿布设备",
+            "humidity": "湿度",
+            "viewRawData": "查看原始MQTT数据 (调试用)",
+            "clickToExpand": "点击下方数据可展开查看完整内容",
+            "deviceCreationConditions": "设备创建条件检查：",
+            "condition1": "必须有 content: \"300B\"",
+            "condition2": "必须有 MAC 字段",
+            "condition3": "skin_temp 字段可以为空或0（已放宽条件）",
+            "condition4": "diaper DV1 类型数据目前不会创建设备记录"
+        },
+        "deviceTemperatureData": {
+            "title": "设备体温数据",
+            "unknownDevice": "未知设备",
+            "skinTemperature": "皮肤温度",
+            "roomTemperature": "环境温度",
+            "steps": "步数",
+            "battery": "电量",
+            "temperatureHigh": "体温过高",
+            "temperatureLow": "体温过低",
+            "normal": "正常"
+        },
+        "dateTabs": {
+            "today": "今日",
+            "yesterday": "昨天",
+            "dayBefore": "前天"
+        },
+        "temperatureChart": {
+            "title": "体温趋势图",
+            "cloudDevice": "云端设备",
+            "localUser": "本地用户",
+            "yAxisLabel": "体温 (°C)",
+            "time": "时间",
+            "temperature": "体温",
+            "highTempLine": "高温警戒线",
+            "lowTempLine": "低温警戒线",
+            "noData": "暫无{{date}}的体温数据",
+            "cloudSimulatorCheck": "請确认云端MQTT模拟器已啟動",
+            "selectValidDevice": "并选择有效的云端设备",
+            "localSimulatorCheck": "請确认本地MQTT模拟器已啟動"
+        },
+        "temperatureRecords": {
+            "title": "体温记录",
+            "filters": {
+                "all": "全部",
+                "high": "高温",
+                "low": "低温"
+            },
+            "timeRanges": {
+                "1day": "1天",
+                "3day": "3天",
+                "7day": "7天"
+            },
+            "noTemperatureData": "无温度数据",
+            "roomTemperature": "室温",
+            "temperatureHigh": "体温过高",
+            "temperatureLow": "体温过低",
+            "normal": "正常",
+            "noRecords": "暫无符合条件的记录",
+            "selectCloudDeviceFirst": "請先选择云端设备",
+            "selectedDeviceNoData": "所选设备暫无体温数据"
+        },
+        "connectionStatus": {
+            "title": "连线状态监控",
+            "localMqtt": "本地 MQTT",
+            "cloudMqtt": "云端 MQTT",
+            "error": "错误",
+            "hint": "提示：本地MQTT需要运行在localhost:9001，云端MQTT會自动连接到HiveMQ雲服务",
+            "connected": "已连线",
+            "disconnected": "未连线",
+            "connecting": "连接中...",
+            "reconnecting": "重新连接中...",
+            "connectionError": "连接错误"
+        }
+    },
+    "settings": {
+        "title": "系统设置",
+        "subtitle": "管理系统配置、個人设置和安全選項",
+        "categories": {
+            "personal": {
+                "title": "個人设置",
+                "description": "管理您的個人資料和賬戶设置"
+            },
+            "notifications": {
+                "title": "通知设定",
+                "description": "设定系统通知和提醒方式"
+            },
+            "security": {
+                "title": "安全设置",
+                "description": "密碼變更和賬戶安全设定"
+            },
+            "display": {
+                "title": "显示设置",
+                "description": "自定义界面外觀和主题"
+            },
+            "data": {
+                "title": "数据管理",
+                "description": "資料備份和导出设置"
+            },
+            "language": {
+                "title": "語言和地區",
+                "description": "设定系统語言和時區"
+            }
+        },
+        "systemInfo": {
+            "title": "系统信息",
+            "version": "系统版本",
+            "lastUpdate": "上次更新",
+            "terms": "服务條款",
+            "privacy": "隱私政策",
+            "view": "查看"
+        },
+        "actions": {
+            "enterSettings": "進入设置"
+        }
+    },
+    "placeholder": {
+        "title": "{{title}}",
+        "description": "此頁面正在开發中",
+        "more": "更多功能頁面",
+        "help": "帮助中心",
+        "notFound": "404 - 頁面不存在"
+    },
+    "heartRate": {
+        "title": "心跳监测",
+        "subtitle": "即时监控长者心率變化与异常警示",
+        "navigationFromHealth": "从健康监控頁面导航",
+        "currentPatient": "当前患者",
+        "reconnectLocal": "重连本地",
+        "reconnectCloud": "重连云端",
+        "tabs": {
+            "local": "本地 MQTT",
+            "cloud": "云端 MQTT"
+        },
+        "patientSelection": {
+            "title": "患者选择",
+            "selectPatient": "选择患者",
+            "patient": "患者"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "云端设备监控",
+            "connected": "连线正常",
+            "离线": "离线",
+            "连接中...": "连接中...",
+            "重新连接中...": "重新连接中...",
+            "连接已关闭": "连接已关闭",
+            "连接错误": "连接错误",
+            "未选择网关": "未选择网关",
+            "selectArea": "选择监控区域：",
+            "selectNursingHome": "养老院",
+            "selectNursingHomeFirst": "請先选择养老院",
+            "selectFloor": "楼层",
+            "selectFloorFirst": "請先选择楼层",
+            "selectGateway": "网关",
+            "currentGateway": "当前选择的网关：",
+            "listeningTopic": "监听主题",
+            "cannotGetTopic": "无法获取主题",
+            "discoveredDevices": "已发现设备",
+            "totalRecords": "總记录數",
+            "mqttMessages": "MQTT消息",
+            "selectDevice": "选择监控设备：",
+            "selectCloudDevice": "选择云端设备进行详细监控",
+            "records": "筆记录",
+            "noDevices": "尚未发现任何云端设备",
+            "pleaseConfirm": "請确认：",
+            "cloudMqttSimulator": "云端 MQTT 模拟器已啟動",
+            "simulatorFormat": "模拟器发送 content: \"300B\" 格式的数据",
+            "dataFields": "数据包含 MAC 和心率相关字段",
+            "recentData": "最近收到的数据：",
+            "device": "设备",
+            "heartRate": "心率",
+            "spo2": "血氧",
+            "bloodPressure": "血壓",
+            "temperature": "体温",
+            "diaperDevice": "尿布设备",
+            "humidity": "湿度",
+            "viewRawData": "查看原始MQTT数据 (调试用)",
+            "clickToExpand": "点击下方数据可展开查看完整内容",
+            "deviceCreationConditions": "设备创建条件检查：",
+            "condition1": "必须有 content: \"300B\"",
+            "condition2": "必须有 MAC 字段",
+            "condition3": "hr, SpO2, bp_syst, bp_diast 字段可以为空或0（已放宽条件）",
+            "condition4": "diaper DV1 类型数据目前不会创建设备记录"
+        },
+        "deviceHeartRateData": {
+            "title": "设备生命體征数据",
+            "unknownDevice": "未知设备",
+            "heartRate": "心率",
+            "spo2": "血氧",
+            "bloodPressure": "血壓",
+            "skinTemperature": "体温",
+            "steps": "步数",
+            "battery": "电量",
+            "noData": "无数据",
+            "noHeartRateData": "无心率数据",
+            "heartRateHigh": "心率过高",
+            "heartRateLow": "心率过低",
+            "normal": "正常"
+        },
+        "dateTabs": {
+            "today": "今日",
+            "yesterday": "昨天",
+            "dayBefore": "前天"
+        },
+        "heartRateTrendChart": {
+            "title": "心率趋势图"
+        },
+        "bloodPressureTrendChart": {
+            "title": "血壓趋势图",
+            "yAxisLabel": "血壓 (mmHg)",
+            "noData": "无血壓数据"
+        },
+        "recentMqttData": {
+            "title": "最近接收到的 MQTT 数据",
+            "device": "设备",
+            "heartRate": "心率",
+            "spo2": "血氧",
+            "bloodPressure": "血壓",
+            "diaperDevice": "尿布设备",
+            "temperature": "温度",
+            "humidity": "湿度"
+        },
+        "rawMqttData": {
+            "title": "查看原始MQTT数据 (调试用)",
+            "clickToExpand": "点击下方数据可展开查看完整内容",
+            "deviceConditions": {
+                "title": "心率设备创建条件检查",
+                "mustHaveContent": "必须有 content: \"300B\"",
+                "mustHaveMAC": "必须有 MAC 字段",
+                "fieldsCanBeEmpty": "hr, SpO2, bp_syst, bp_diast 字段可以为空或0 (已放宽条件)",
+                "abnormalWarning": "心率 > 100 BPM 或 < 60 BPM 时会触发异常警告"
+            }
+        },
+        "heartRateChart": {
+            "title": "心率趋势图",
+            "cloudDevice": "云端设备",
+            "localUser": "本地用户",
+            "yAxisLabel": "心率 (BPM)",
+            "time": "时间",
+            "heartRate": "心率",
+            "targetHeartRate": "目標心率",
+            "highHeartRateLine": "高心率警戒线",
+            "lowHeartRateLine": "低心率警戒线",
+            "noData": "暫无{{date}}的心率数据",
+            "cloudSimulatorCheck": "請确认云端MQTT模拟器已啟動",
+            "selectValidDevice": "并选择有效的云端设备",
+            "localSimulatorCheck": "請确认本地MQTT模拟器已啟動",
+            "hideReferenceLines": "隐藏參考线",
+            "showReferenceLines": "显示參考线",
+            "legend": {
+                "heartRate": "心率 (BPM)",
+                "systolicBP": "收縮壓 (mmHg)",
+                "diastolicBP": "舒張壓 (mmHg)",
+                "referenceLinesVisible": "參考线已显示"
+            },
+            "referenceLines": {
+                "normalSystolicBP": "正常收縮壓: 120",
+                "normalDiastolicBP": "正常舒張壓: 80",
+                "highSystolicBP": "高血压收縮壓: 140",
+                "highDiastolicBP": "高血压舒張壓: 90"
+            }
+        },
+        "heartRateRecords": {
+            "title": "心率记录",
+            "filters": {
+                "all": "全部",
+                "high": "高心率",
+                "low": "低心率",
+                "highBP": "高血压",
+                "lowBP": "低血壓"
+            },
+            "timeRanges": {
+                "1day": "1天",
+                "3day": "3天",
+                "7day": "7天"
+            },
+            "noHeartRateData": "无心率数据",
+            "temperature": "体温",
+            "bloodPressure": "血壓",
+            "heartRateHigh": "心率过高",
+            "heartRateLow": "心率过低",
+            "normal": "正常",
+            "noRecords": "暫无符合条件的记录",
+            "selectCloudDeviceFirst": "請先选择云端设备",
+            "selectedDeviceNoData": "所选设备暫无心率数据"
+        },
+        "connectionStatus": {
+            "title": "连线状态监控",
+            "localMqtt": "本地 MQTT",
+            "cloudMqtt": "云端 MQTT",
+            "error": "错误",
+            "hint": "提示：本地MQTT需要运行在localhost:9001，云端MQTT會自动连接到HiveMQ雲服务",
+            "connected": "已连线",
+            "disconnected": "未连线",
+            "connecting": "连接中...",
+            "reconnecting": "重新连接中...",
+            "connectionError": "连接错误"
+        }
+    },
+    "diaperMonitoring": {
+        "title": "尿布监测",
+        "subtitle": "即时监测长者尿布湿度状态，确保舒适与健康",
+        "navigationFromHealth": "从健康监控頁面导航",
+        "currentPatient": "当前患者",
+        "reconnectLocal": "重连本地",
+        "reconnectCloud": "重连云端",
+        "tabs": {
+            "local": "本地 MQTT",
+            "cloud": "云端 MQTT"
+        },
+        "patientSelection": {
+            "title": "患者选择",
+            "selectPatient": "选择患者",
+            "patient": "患者"
+        },
+        "connectionStatus": {
+            "title": "MQTT 状态",
+            "connected": "已连线",
+            "disconnected": "未连线",
+            "connecting": "连接中...",
+            "reconnecting": "重新连接中...",
+            "connectionError": "连接错误",
+            "cloudMqtt": "云端 MQTT",
+            "hint": "提示:本地MQTT需要运行在localhost:9001,云端MQTT會自动连接到HiveMQ雲服务"
+        },
+        "cloudDeviceMonitoring": {
+            "title": "云端尿布设备监控",
+            "connected": "连线正常",
+            "离线": "离线",
+            "连接中...": "连接中...",
+            "重新连接中...": "重新连接中...",
+            "连接已关闭": "连接已关闭",
+            "连接错误": "连接错误",
+            "未选择网关": "未选择网关",
+            "selectArea": "选择监控区域：",
+            "selectNursingHome": "养老院",
+            "selectNursingHomeFirst": "选择养老院",
+            "selectFloor": "楼层",
+            "selectFloorFirst": "請先选择养老院",
+            "selectGateway": "网关",
+            "selectGatewayFirst": "請先选择楼层",
+            "currentGateway": "当前选择的网关：",
+            "listeningTopic": "监听主题",
+            "cannotGetTopic": "无法获取主题",
+            "discoveredDevices": "已发现设备",
+            "totalRecords": "總记录數",
+            "mqttMessages": "MQTT消息",
+            "selectDevice": "选择监控设备：",
+            "selectCloudDevice": "选择云端尿布设备进行详细监控",
+            "noDevices": "尚未发现任何云端尿布设备",
+            "pleaseConfirm": "請确认：",
+            "cloudMqttSimulator": "云端 MQTT 模拟器已啟動",
+            "simulatorFormat": "模拟器发送 content: \"diaper DV1\" 格式的数据",
+            "dataFields": "数据包含 MAC 和湿度相关字段",
+            "recentData": "最近收到的数据：",
+            "device": "设备",
+            "humidity": "湿度",
+            "temperature": "温度",
+            "battery": "电量",
+            "deviceName": "设备名称",
+            "viewRawData": "查看原始MQTT数据 (调试用)",
+            "clickToExpand": "点击下方数据可展开查看完整内容",
+            "deviceCreationConditions": "尿布设备创建条件检查：",
+            "condition1": "必须有 content: \"diaper DV1\"",
+            "condition2": "必须有 MAC 字段",
+            "condition3": "humi, temp, battery level 字段可以为空或0（已放宽条件）",
+            "condition4": "湿度 > 75% 时会触发换尿布警告"
+        },
+        "deviceDiaperData": {
+            "title": "设备监测记录",
+            "unknownDevice": "未知设备",
+            "humidity": "湿度",
+            "temperature": "温度",
+            "battery": "电量",
+            "noData": "无数据",
+            "noHumidityData": "无湿度数据",
+            "needsChange": "需要更换",
+            "wet": "潮湿",
+            "normal": "正常",
+            "deviceStats": "设备统计信息",
+            "deviceMAC": "设备MAC",
+            "patientInfo": "病患信息",
+            "unboundPatient": "未绑定病患",
+            "lastConnection": "最后连接",
+            "totalRecords": "记录总数",
+            "currentStatus": "当前状态",
+            "needsAttention": "需要关注"
+        },
+        "dateTabs": {
+            "today": "今日",
+            "week": "本周",
+            "month": "本月"
+        },
+        "humidityChart": {
+            "title": "湿度趋势图",
+            "cloudDevice": "云端设备",
+            "localPatient": "本地患者",
+            "yAxisLabel": "湿度 (%)",
+            "time": "时间",
+            "humidity": "湿度",
+            "changeAlertLine": "更换警戒线: 75%",
+            "attentionLine": "注意线: 50%",
+            "normalLine": "正常线: 25%",
+            "noData": "暫无{{date}}的湿度数据",
+            "cloudSimulatorCheck": "請确认云端MQTT模拟器已啟動",
+            "selectValidDevice": "并选择有效的云端设备",
+            "localSimulatorCheck": "請确认本地MQTT模拟器已啟動"
+        },
+        "temperatureChart": {
+            "title": "温度趋势图",
+            "cloudDevice": "云端设备",
+            "localPatient": "本地患者",
+            "yAxisLabel": "温度 (°C)",
+            "time": "时间",
+            "temperature": "温度",
+            "highTempLine": "高温警戒线: 40°C",
+            "warmLine": "温暖线: 35°C",
+            "normalLine": "正常线: 30°C",
+            "coolLine": "凉爽线: 25°C",
+            "noData": "暫无{{date}}的温度数据",
+            "cloudSimulatorCheck": "請确认云端MQTT模拟器已啟動",
+            "selectValidDevice": "并选择有效的云端设备",
+            "localSimulatorCheck": "請确认本地MQTT模拟器已啟動"
+        },
+        "currentDiaperStatus": {
+            "title": "当前尿布状态",
+            "autoNotification": "自动通知",
+            "needsChange": "需要更换尿布！",
+            "humidity": "湿度",
+            "device": "设备",
+            "lastChangeTime": "上次更换时间",
+            "noRecords": "无记录",
+            "recordChange": "记录尿布更换"
+        },
+        "deviceStatus": {
+            "humidity": "湿度",
+            "temperature": "温度",
+            "battery": "电量",
+            "needsChange": "需要更换",
+            "noData": "无数据"
+        },
+        "diaperRecords": {
+            "title": "尿布更换记录",
+            "noRecords": "暫无更换记录",
+            "timestamp": "时间",
+            "status": "状态",
+            "nurse": "更换人"
+        },
+        "recordModal": {
+            "title": "记录尿布更换",
+            "diaperStatus": "尿布状态",
+            "nurse": "护理人员",
+            "cancel": "取消",
+            "confirm": "确认"
+        },
+        "diaperStatus": {
+            "dry": "干燥",
+            "slightlyWet": "微湿",
+            "wet": "潮湿",
+            "veryWet": "非常潮湿",
+            "soiled": "脏污"
+        }
+    },
+    "staffManagement": {
+        "title": "员工管理",
+        "searchPlaceholder": "搜索员工姓名、编号或部门...",
+        "filters": {
+            "all": "全部",
+            "active": "在职",
+            "onLeave": "休假"
+        },
+        "status": {
+            "active": "在职",
+            "onLeave": "休假"
+        },
+        "staffList": {
+            "title": "员工列表",
+            "count": "共 {{count}} 位员工",
+            "id": "编号"
+        },
+        "detailModal": {
+            "contactInfo": "联系方式",
+            "workInfo": "工作信息",
+            "hireDate": "入职日期",
+            "notes": "备注信息",
+            "notesPlaceholder": "请输入备注信息...",
+            "noNotes": "暫无备注信息",
+            "editNotes": "编辑备注",
+            "updateNotes": "更新备注"
+        }
+    },
+    "fieldManagementTest": {
+        "title": "场域管理测试",
+        "subtitle": "测试场域和楼层的增删改查功能",
+        "reload": "重新载入",
+        "homeSection": "场域管理",
+        "homesCount": "{{count}} 個场域",
+        "homeNamePlaceholder": "场域名称",
+        "descriptionPlaceholder": "描述",
+        "addressPlaceholder": "地址",
+        "createHome": "创建场域",
+        "updateHome": "更新场域",
+        "cancel": "取消",
+        "floorsCount": "{{count}} 楼层",
+        "floorSection": "楼层管理",
+        "floorsCountBadge": "{{count}} 個楼层",
+        "floorNamePlaceholder": "楼层名称",
+        "levelPlaceholder": "楼层",
+        "widthPlaceholder": "宽度(米)",
+        "heightPlaceholder": "高度(米)",
+        "createFloor": "创建楼层",
+        "updateFloor": "更新楼层",
+        "floorLevelFormat": "{{name}} - {{level}}樓",
+        "usageTitle": "使用说明",
+        "usage1": "1. 确保后端服务器正在运行 (node test-backend-with-db.js)",
+        "usage2": "2. 创建场域：填写场域信息并点击「创建场域」",
+        "usage3": "3. 创建楼层：选择场域后填写楼层信息并点击「创建楼层」",
+        "usage4": "4. 编辑：点击编辑按钮修改现有项目",
+        "usage5": "5. 删除：点击删除按钮移除项目",
+        "toast": {
+            "loadFail": "载入失败",
+            "loadFailDesc": "无法从后端载入数据",
+            "validationFail": "验证失败",
+            "homeNameRequired": "请输入场域名称",
+            "floorRequired": "请输入楼层名称并选择场域",
+            "updateSuccess": "更新成功",
+            "homeUpdated": "场域信息已更新",
+            "floorUpdated": "楼层信息已更新",
+            "createSuccess": "创建成功",
+            "homeCreated": "场域已创建",
+            "floorCreated": "楼层已创建",
+            "operationFail": "操作失败",
+            "deleteSuccess": "删除成功",
+            "homeDeleted": "场域已删除",
+            "floorDeleted": "楼层已删除",
+            "deleteFail": "删除失败",
+            "unknownError": "未知错误"
+        }
+    },
+    "uwbLocation": {
+        "title": "养老院管理",
+        "subtitle": "UWB定位系统的场域、楼层和网关配置管理",
+        "selectHome": "选择场域",
+        "tabs": {
+            "overview": "系统总览",
+            "homes": "场域管理",
+            "floors": "楼层管理",
+            "gateways": "网关管理",
+            "anchors": "锚点配对",
+            "tags": "标签管理"
+        },
+        "stats": {
+            "homes": "场域数量",
+            "floors": "楼层数量",
+            "gateways": "网关数量",
+            "anchors": "锚点数量",
+            "tags": "标签数量"
+        },
+        "actions": {
+            "addHome": "新增场域",
+            "editHome": "编辑场域",
+            "addFloor": "新增楼层",
+            "editFloor": "编辑楼层",
+            "addGateway": "新增网关",
+            "editGateway": "编辑网关",
+            "addAnchor": "新增锚点",
+            "addTag": "新增标签"
+        },
+        "forms": {
+            "homeName": "场域名称",
+            "homeNamePlaceholder": "请输入场域名称",
+            "homeDescription": "场域描述",
+            "homeDescriptionPlaceholder": "请输入场域描述",
+            "homeAddress": "场域地址",
+            "homeAddressPlaceholder": "请输入场域地址"
+        },
+        "homeCard": {
+            "floors": "楼层",
+            "gateways": "网关"
+        },
+        "floorCard": {
+            "mapPreview": "地图预览",
+            "ratio": "比例",
+            "anchorsCount": "個锚点"
+        },
+        "mapControls": {
+            "zoom": "缩放",
+            "mouseInstructions": "鼠标在地图上滚动缩放，拖拽移动"
+        },
+        "messages": {
+            "selectFieldFirst": "請先选择一个场域",
+            "addFloorFirst": "請先新增楼层才能配置网关",
+            "selectGatewayFirst": "請先选择网关",
+            "noAnchorsFound": "尚未发现任何锚点",
+            "noTagsFound": "尚未发现任何标签",
+            "noGatewaysFound": "尚未发现任何云端网关"
+        },
+        "currentFieldStatus": "当前场域状态",
+        "floorInfo": "楼层 {{level}} | {{width}}m × {{height}}m",
+        "mapStatus": {
+            "calibrated": "地图已标定",
+            "uploaded": "地图已上传",
+            "noMap": "无地图"
+        },
+        "gatewaysOnline": "网关在线",
+        "mapCalibrationProgress": "地图标定进度",
+        "calibrationStatus": {
+            "completed": "已完成标定",
+            "pending": "待标定",
+            "noMap": "未上传地图"
+        },
+        "overallProgress": "整体进度",
+        "floorForm": {
+            "name": "楼层名称",
+            "namePlaceholder": "请输入楼层名称",
+            "level": "楼层编号",
+            "realWidth": "实际宽度 (米)",
+            "realHeight": "实际高度 (米)"
+        },
+        "mapCalibration": "地图标定",
+        "anchorLocationMap": "锚点位置地图",
+        "showAnchorsOnMap": "在地图上显示锚点",
+        "doubleClickAnchorToCalibrate": "双击锚点进行校正",
+        "anchorCount": "锚点数量",
+        "calibrationMode": "校正模式",
+        "zoomMode": "缩放模式",
+        "close": "关闭",
+        "calibrationSteps": {
+            "upload": "上传地图",
+            "setOrigin": "设定原点",
+            "setScale": "设定比例"
+        },
+        "uploadFloorMap": "上传楼层地图",
+        "uploadInstructions": "請上传 {{floorName}} 的室内地图。支持 PNG、JPG、SVG 格式。",
+        "selectMapFile": "选择地图文件",
+        "dragImageHint": "或拖拽图片到此区域",
+        "actualSize": "实际大小",
+        "calibratedMap": "已标定地图",
+        "setCoordinateOrigin": "设定坐标原点",
+        "originInstructions": "請点击地图上的任意位置设定为坐标原点，然后输入该点的实际坐标。通常建议选择房间或走廊的角落作为参考点。",
+        "clickMapSetOrigin": "点击地图设定原点",
+        "clickMapSetNewPosition": "点击地图为 {{name}} 设定新位置",
+        "originPixelPosition": "原点像素位置",
+        "actualXCoordinate": "实际 X 坐标 (米)",
+        "actualYCoordinate": "实际 Y 坐标 (米)",
+        "reselectOrigin": "重选原点",
+        "nextStep": "下一步",
+        "setCoordinateScale": "设定坐标比例",
+        "scaleInstructions": "请在地图上点选两个点，然后输入這兩点之间的实际距离。系统將自动计算像素与米的转换比例。",
+        "clickTwoPointsSetScale": "点击两个点设定比例",
+        "selectedPoints": "选择的点",
+        "point1": "点1",
+        "point2": "点2",
+        "clickMapSelect": "請点击地图选择",
+        "pixelDistance": "像素距离",
+        "actualDistance": "实际距离 (米)",
+        "enterActualDistance": "输入兩点之间的实际距离",
+        "calculationResult": "计算结果",
+        "ratio": "比例",
+        "pixelsPerMeter": "像素/米",
+        "previousStep": "上一步",
+        "reselectPoints": "重选点",
+        "saveCalibration": "保存标定",
+        "calibrationComplete": "标定完成",
+        "calibrationInfo": "标定信息",
+        "floor": "楼层",
+        "originActualCoordinates": "原点实际坐标",
+        "meters": "米",
+        "calibrationPoint1": "标定点1",
+        "calibrationPoint2": "标定点2",
+        "pixels": "像素",
+        "complete": "完成",
+        "recalibrate": "重新标定",
+        "mapStatusLabel": "地图状态",
+        "manualAdd": "手动新增",
+        "reconnectCloud": "重连云端",
+        "cloudGatewayDiscovery": "云端网关发现",
+        "connectionNormal": "连线正常",
+        "cloudMqttStatus": "云端 MQTT 状态",
+        "server": "服务器",
+        "topic": "主题",
+        "waitingForGatewayTopic": "等待 content: \"gateway topic\"",
+        "error": "错误",
+        "discoveredGateways": "发现的网关",
+        "onlineGateways": "在线网关",
+        "mqttMessages": "MQTT消息",
+        "discoveredCloudGateways": "发现的云端网关",
+        "status": {
+            "online": "在线",
+            "offline": "离线",
+            "error": "错误"
+        },
+        "id": "ID",
+        "firmware": "固件",
+        "network": "网络",
+        "ap": "AP",
+        "voltage": "电压",
+        "lastUpdate": "最后更新",
+        "addToSystem": "加入系统",
+        "noCloudGatewaysFound": "尚未发现任何云端网关",
+        "pleaseConfirm": "請确认",
+        "cloudMqttSimulatorStarted": "云端 MQTT 模拟器已啟動",
+        "simulatorSendsGatewayTopic": "模拟器发送 content: \"gateway topic\" 格式的数据",
+        "dataContainsGatewayIdAndName": "数据包含 \"gateway id\" 和 name 字段",
+        "viewRawGatewayMqttData": "查看原始 Gateway MQTT 数据 (调试用)",
+        "clickDataToExpand": "点击下方数据可展开查看完整内容",
+        "gatewayDiscoveryConditions": "网关发现条件",
+        "mustHaveGatewayTopic": "必须有 content: \"gateway topic\"",
+        "mustHaveGatewayIdAndName": "必须有 \"gateway id\" 和 name 字段",
+        "uwbJoinedAnd5VPluggedOnline": "UWB Joined: \"yes\" 且 5V plugged: \"yes\" 視为在线",
+        "belongingFloor": "所属楼层",
+        "macAddress": "MAC 地址",
+        "ipAddress": "IP 地址",
+        "lastConnection": "最后连线",
+        "unknown": "未知",
+        "editGateway": "编辑网关",
+        "addCloudGatewayToSystem": "加入云端网关到系统",
+        "manualAddGateway": "手动新增网关",
+        "addDiscoveredGatewayToFloor": "从云端发现的网关 (ID: {{id}}) 加入到选定的楼层",
+        "gatewayName": "网关名称",
+        "enterGatewayName": "请输入网关名称",
+        "selectFloor": "选择楼层",
+        "reconnectAnchors": "重连锚点",
+        "cloudAnchorDiscovery": "云端锚点发现",
+        "anchorMqttStatus": "锚点 MQTT 状态",
+        "selectedGateway": "选择的网关",
+        "notSelected": "未选择",
+        "listeningTopic": "监听主题",
+        "none": "无",
+        "connectionStatus": "连线状态",
+        "discoveredAnchors": "发现的锚点",
+        "onlineAnchors": "在线锚点",
+        "ackMessages": "Ack消息",
+        "discoveredCloudAnchors": "发现的云端锚点",
+        "mainAnchor": "主锚点",
+        "gateway": "网关",
+        "on": "开",
+        "off": "关",
+        "position": "位置",
+        "configure": "配置",
+        "gatewayAnchorConfigTopicCorrect": "网关的锚点配置主题正确",
+        "simulatorSendsAnchorConfigData": "模拟器发送 content: \"config\", node: \"ANCHOR\" 格式的数据",
+        "dataContainsIdAndName": "数据包含 id 和 name 字段",
+        "anchorPairing": {
+            "title": "锚点配对管理",
+            "localAnchorManagement": "本地锚点管理 (已加入的锚点)",
+            "currentGateway": "当前选择的网关",
+            "selectGateway": "选择网关",
+            "startSimulationPairing": "开始模擬配对",
+            "pairingInProgress": "配对中...",
+            "selectGatewayFirst": "請先在上方选择网关以管理锚点",
+            "noOnlineGateways": "没有在线的本地网关可进行配对",
+            "simulationPairingProgress": "模擬配对进度",
+            "scanningNearbyAnchors": "正在扫描附近的锚点设备...",
+            "discoveredNewAnchor": "发现新锚点",
+            "add": "添加",
+            "noPairedAnchors": "該网关下暫无已配对的锚点",
+            "anchorStatus": {
+                "running": "运行中",
+                "paired": "已配对",
+                "calibrating": "标定中",
+                "unpaired": "未配对",
+                "error": "错误"
+            },
+            "anchorInfo": {
+                "belongingGateway": "所属网关",
+                "macAddress": "MAC 地址",
+                "cloudId": "云端 ID",
+                "position": "位置坐标",
+                "functionStatus": "功能状态",
+                "signalStrength": "信号强度",
+                "batteryLevel": "电池电量",
+                "lastConnection": "最后连线"
+            },
+            "actions": {
+                "calibrate": "校正坐标",
+                "sendConfigToCloud": "发送配置到云端",
+                "deleteAnchor": "删除锚点"
+            },
+            "functionStatus": {
+                "led": "LED",
+                "ble": "BLE",
+                "mainAnchor": "主锚点"
+            },
+            "mapLegend": {
+                "coordinateOrigin": "坐标原点",
+                "generalAnchor": "一般锚点",
+                "mainAnchor": "主锚点"
+            },
+            "debug": {
+                "viewRawAnchorMqttData": "查看原始 Anchor MQTT 数据 (调试用)",
+                "clickDataToExpand": "点击下方数据可展开查看完整内容",
+                "anchorDiscoveryConditions": "锚点发现条件",
+                "mustHaveConfig": "必须有 content: \"config\"",
+                "mustHaveNodeAnchor": "必须有 node: \"ANCHOR\"",
+                "mustHaveIdAndName": "必须有 id 和 name 字段",
+                "initiatorMainAnchor": "initiator: 1 表示主锚点",
+                "viewRawAckData": "查看原始 Anchor MQTT 数据 (调试用) - Ack 数据"
+            },
+            "noAvailableGateways": "該楼层暫无可用的网关",
+            "doubleClickToCalibrate": "双击校正位置",
+            "mainAnchorOption": "主锚点",
+            "generalAnchorOption": "一般锚点",
+            "currentStatus": "当前状态",
+            "deviceId": "设备 ID",
+            "deviceName": "设备名称",
+            "anchorDeviceInfo": "Anchor 设备信息",
+            "sendConfigPreview": "发送信息预览",
+            "sendConfigToCloud": "发送配置到云端",
+            "cancelCalibration": "取消校正",
+            "cancel": "取消",
+            "confirm": "确认"
+        },
+        "notifications": {
+            "ackReceived": "Ack 消息接收",
+            "gatewayId": "Gateway ID",
+            "command": "命令",
+            "nodeType": "节点类型",
+            "deviceId": "设备ID",
+            "topic": "主题",
+            "receivedAt": "接收时间",
+            "messageType": "消息类型",
+            "ackMessage": "Ack 消息"
+        },
+        "anchorCalibration": {
+            "title": "校正 {{name}}",
+            "mapClickMode": "地图点击校正模式",
+            "mapClickInstruction": "直接点击左侧地图来设定 {{name}} 的新位置",
+            "manualInputInstruction": "或者在下方手动输入精确坐标值",
+            "coordinateType": "坐标类型",
+            "realCoordinates": "真实坐标 (米)",
+            "pixelCoordinates": "像素坐标 (px)",
+            "xCoordinate": "X 坐标",
+            "yCoordinate": "Y 坐标",
+            "zCoordinate": "Z 坐标 (米)",
+            "realCoordinatesHint": "💡 输入真实世界的坐标（单位：米）",
+            "pixelCoordinatesHint": "💡 输入图片上的像素坐标，系统會自动转换为真实坐标",
+            "saveManualCoordinates": "保存手动输入坐标",
+            "quickOperation": "⚡ 快速操作",
+            "quickOperationDescription": "点击左侧地图 = 快速设定 | 手动输入 = 精确坐标",
+            "coordinatesUpdated": "{{name}} 坐标已更新！",
+            "sendToCloudQuestion": "是否要将新坐标发送到云端硬件？",
+            "sendToCloudInstruction": "点击「确定」可进一步配置参数并发送",
+            "sendConfigToCloud": "Send Config to Cloud - {{name}}",
+            "newCoordinatePosition": "📍 新坐标位置",
+            "anchorConfigParameters": "🔧 Anchor 配置参数",
+            "firmwareUpdate": "固件更新",
+            "ledStatus": "LED 状态",
+            "bleStatus": "BLE 状态",
+            "initiator": "发起者",
+            "serialNo": "Serial No",
+            "serialNoRange": "范围: 1306-9999，每次发送后會自动递增",
+            "anchorDeviceInfo": "🏷️ Anchor 设备信息:",
+            "deviceName": "设备名称",
+            "deviceId": "设备ID",
+            "macAddress": "MAC 地址",
+            "currentStatus": "当前状态",
+            "sendConfigPreview": "📤 发送信息预览:",
+            "topic": "主题",
+            "gatewayId": "Gateway ID",
+            "sending": "发送中...",
+            "sendToCloudHardware": "发送到云端硬件",
+            "coordinatesSentToCloud": "已将 {{name}} 的新坐标发送到云端硬件",
+            "on": "开启",
+            "off": "关闭",
+            "generalAnchor": "一般锚点",
+            "mainAnchor": "主锚点",
+            "unknown": "未知"
+        },
+        "tagManagement": {
+            "title": "标签设备管理",
+            "subtitle": "管理UWB定位标签设备，包括人员标签、设备标签和资产标签",
+            "controls": {
+                "selectGateway": "选择网关",
+                "reconnectTags": "重连标签",
+                "addTag": "新增标签"
+            },
+            "stats": {
+                "personnelTags": "人员标签",
+                "activeTags": "活跃中",
+                "cloudTags": "云端标签"
+            },
+            "cloudDiscovery": {
+                "title": "云端标签发现",
+                "mqttStatus": "标签 MQTT 状态",
+                "selectedGateway": "选择的网关",
+                "notSelected": "未选择",
+                "listeningTopic": "监听主题",
+                "none": "无",
+                "connectionStatus": "连线状态",
+                "gatewayNotSelected": "未选择网关",
+                "discoveredTags": "发现的标签",
+                "onlineTags": "在线标签",
+                "mqttMessages": "MQTT消息",
+                "discoveredCloudTags": "发现的云端标签",
+                "autoAddedToSystem": "已自动加入系统"
+            },
+            "tagList": {
+                "noTagsUnderGateway": "該网关下暫无标签设备",
+                "pleaseConfirm": "請确认：",
+                "gatewayMessageLocationTopics": "1. 网关的 message 和 location 主题正确",
+                "simulatorSendsInfoLocation": "2. 模拟器发送 content: \"info\"/\"location\", node: \"TAG\" 格式的数据",
+                "dataContainsFields": "3. 数据包含 id、battery level、position、time 等字段",
+                "viewRawTagMqttData": "查看原始 Tag MQTT 数据 (调试用)",
+                "clickDataToExpand": "点击下方数据可展开查看完整内容",
+                "tagDiscoveryConditions": "标签发现条件：",
+                "messageTopic": "• message 主题: content: \"info\", node: \"TAG\"",
+                "locationTopic": "• location 主题: content: \"location\", node: \"TAG\"",
+                "mustHaveId": "• 必须有 id 字段",
+                "messageContainsBattery": "• message 包含 battery level 信息",
+                "locationContainsPosition": "• location 包含 position 和 time 信息"
+            },
+            "tagCard": {
+                "macAddress": "MAC 地址",
+                "type": "类型",
+                "personnel": "人员",
+                "assignedTo": "分配给",
+                "batteryLevel": "电池电量",
+                "lastPosition": "最后位置",
+                "updateTime": "更新时间",
+                "cloud": "云端",
+                "edit": "编辑",
+                "delete": "删除"
+            },
+            "tagForm": {
+                "editTag": "编辑标签",
+                "addTag": "新增标签",
+                "tagName": "标签名称",
+                "tagNamePlaceholder": "请输入标签名称",
+                "macAddress": "MAC 地址",
+                "macAddressPlaceholder": "AA:BB:CC:DD:EE:FF",
+                "tagType": "标签类型",
+                "selectType": "选择类型",
+                "person": "人员",
+                "equipment": "设备",
+                "asset": "资产",
+                "assignedTo": "分配给",
+                "assignedToPlaceholder": "分配给谁（可选）",
+                "cancel": "取消",
+                "save": "保存"
+            },
+            "tagStatus": {
+                "running": "运行中",
+                "inactive": "未激活",
+                "lowBattery": "电量不足",
+                "lost": "失联",
+                "online": "在线",
+                "offline": "离线"
+            },
+            "tagTypes": {
+                "person": "人员",
+                "equipment": "设备",
+                "asset": "资产"
+            },
+            "messages": {
+                "selectGatewayFirst": "請先选择网关",
+                "noTagsFound": "尚未发现任何标签",
+                "connectionError": "错误",
+                "connectionNormal": "连线正常",
+                "manualReconnecting": "手动重连中..."
+            }
+        }
+    }
+}

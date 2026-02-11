@@ -1,0 +1,49 @@
+{
+    "device": {
+        "status": {
+            "active": "Hoạt động",
+            "inactive": "Không hoạt động",
+            "offline": "Ngoại tuyến",
+            "error": "Lỗi"
+        },
+        "types": {
+            "smartwatch": "Đồng hồ thông minh",
+            "diaperSensor": "Cảm biến tã",
+            "pedometer": "Máy đếm bước",
+            "uwbTag": "Thẻ UWB"
+        }
+    },
+    "resident": {
+        "status": {
+            "good": "Tốt",
+            "attention": "Chú ý",
+            "critical": "Nghiêm trọng",
+            "unknown": "Không xác định"
+        },
+        "gender": {
+            "male": "Nam",
+            "female": "Nữ"
+        }
+    },
+    "system": {
+        "persistence": {
+            "status": "Trạng thái lưu trữ:",
+            "saving": "Đang lưu...",
+            "saved": "Đã lưu",
+            "lastSave": "Lần lưu cuối:",
+            "loadError": "Lỗi tải:"
+        },
+        "actions": {
+            "forceSave": "Buộc lưu",
+            "exportSettings": "Xuất cài đặt",
+            "importSettings": "Nhập cài đặt",
+            "debugStorage": "Gỡ lỗi bộ nhớ"
+        }
+    },
+    "alerts": {
+        "emergency": "Khẩn cấp",
+        "priority": "Ưu tiên",
+        "warning": "Cảnh báo",
+        "info": "Thông tin"
+    }
+}

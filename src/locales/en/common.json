@@ -143,8 +143,12 @@
         }
     },
     "language": {
-        "chinese": "中文",
+        "chinese": "中文（繁體）",
+        "chineseSimplified": "中文（简体）",
         "english": "English",
+        "indonesian": "Bahasa Indonesia",
+        "vietnamese": "Tiếng Việt",
+        "german": "Deutsch",
         "japanese": "日本語"
     },
     "testing": {

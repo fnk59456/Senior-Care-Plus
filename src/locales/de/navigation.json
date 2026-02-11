@@ -1,0 +1,72 @@
+{
+    "sidebar": {
+        "title": "Senior Care Plus",
+        "sections": {
+            "main": "Hauptfunktionen",
+            "management": "Verwaltung",
+            "system": "System"
+        },
+        "items": {
+            "home": {
+                "name": "Startseite",
+                "description": "System-Startseite"
+            },
+            "emergency": {
+                "name": "Notruf",
+                "description": "Schnelles Notsignal"
+            },
+            "health": {
+                "name": "Gesundheitsüberwachung",
+                "description": "Live-Vitalwerte"
+            },
+            "reminders": {
+                "name": "Erinnerungen",
+                "description": "Medikamenten- & Pflegeerinnerungen"
+            },
+            "location": {
+                "name": "Innenortung",
+                "description": "Verfolgung & Sicherheitszonen"
+            },
+            "residents": {
+                "name": "Bewohnerverwaltung",
+                "description": "Bewohnerdaten & Aufzeichnungen"
+            },
+            "staff": {
+                "name": "Personalverwaltung",
+                "description": "Personal & Mitarbeiter"
+            },
+            "devices": {
+                "name": "Geräteverwaltung",
+                "description": "Pflegegeräte & Wartung"
+            },
+            "uwbLocation": {
+                "name": "Einrichtungsverwaltung",
+                "description": "UWB-Einrichtungsverwaltung"
+            },
+            "backendTest": {
+                "name": "Backend-Test",
+                "description": "Frontend-Backend-Verbindung"
+            },
+            "fieldManagementTest": {
+                "name": "Bereichsverwaltungstest",
+                "description": "Bereichs-CRUD-Operationen"
+            },
+            "more": {
+                "name": "Weitere Funktionen",
+                "description": "Intelligente Pflegefunktionen"
+            },
+            "settings": {
+                "name": "Einstellungen",
+                "description": "Einstellungen & Präferenzen"
+            },
+            "help": {
+                "name": "Hilfecenter",
+                "description": "Anleitung & Support"
+            }
+        }
+    },
+    "footer": {
+        "copyright": "© 2024 Senior Care Plus",
+        "version": "Professional"
+    }
+}
