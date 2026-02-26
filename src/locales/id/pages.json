@@ -629,6 +629,7 @@
     "location": {
         "title": "Lokasi Dalam Ruangan",
         "subtitle": "Lacak lokasi lansia dan perangkat di fasilitas untuk memastikan keamanan dan perawatan",
+        "unboundDeviceLabel": "Perangkat",
         "selectArea": {
             "title": "Pilih Area Pemantauan",
             "nursingHome": "Panti Jompo",
@@ -686,6 +687,7 @@
             "hideMarkerInfo": "Sembunyikan Info Penanda",
             "showMarkerInfo": "Tampilkan Info Penanda",
             "controls": "Roda untuk zoom | Seret untuk memindahkan",
+            "scrollToZoomHint": "Gulir di peta untuk zoom",
             "noDevices": "Tidak ada perangkat yang sesuai kriteria",
             "selectGateway": "Silakan pilih gateway dan buat koneksi terlebih dahulu",
             "noDimensions": "Lantai ini belum mengatur dimensi peta",

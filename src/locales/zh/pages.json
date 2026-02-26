@@ -651,6 +651,7 @@
     "location": {
         "title": "室內定位",
         "subtitle": "追蹤長者和設備在院內的位置，確保安全和照護",
+        "unboundDeviceLabel": "設備",
         "selectArea": {
             "title": "選擇監控區域",
             "nursingHome": "養老院",
@@ -708,6 +709,7 @@
             "hideMarkerInfo": "隱藏標記信息",
             "showMarkerInfo": "顯示標記信息",
             "controls": "滾輪縮放 | 拖拽移動",
+            "scrollToZoomHint": "滑鼠在地圖上滾動縮放",
             "noDevices": "尚無符合條件的設備",
             "selectGateway": "請先選擇閘道器並建立連接",
             "noDimensions": "該樓層尚未設定地圖尺寸",

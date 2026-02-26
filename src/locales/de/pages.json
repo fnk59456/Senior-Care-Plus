@@ -629,6 +629,7 @@
     "location": {
         "title": "Innenortung",
         "subtitle": "Verfolgen Sie Standorte von Senioren und Geräten in der Einrichtung für Sicherheit und Pflege",
+        "unboundDeviceLabel": "Gerät",
         "selectArea": {
             "title": "Überwachungsbereich auswählen",
             "nursingHome": "Pflegeheim",
@@ -686,6 +687,7 @@
             "hideMarkerInfo": "Marker-Info ausblenden",
             "showMarkerInfo": "Marker-Info anzeigen",
             "controls": "Rad zum Zoomen | Ziehen zum Verschieben",
+            "scrollToZoomHint": "Auf der Karte scrollen zum Zoomen",
             "noDevices": "Keine Geräte entsprechen den Kriterien",
             "selectGateway": "Bitte Gateway auswählen und Verbindung herstellen",
             "noDimensions": "Diese Etage hat noch keine Kartenabmessungen festgelegt",

@@ -629,6 +629,7 @@
     "location": {
         "title": "Vị trí trong nhà",
         "subtitle": "Theo dõi vị trí người cao tuổi và thiết bị trong cơ sở để đảm bảo an toàn và chăm sóc",
+        "unboundDeviceLabel": "Thiết bị",
         "selectArea": {
             "title": "Chọn khu vực giám sát",
             "nursingHome": "Viện dưỡng lão",
@@ -686,6 +687,7 @@
             "hideMarkerInfo": "Ẩn thông tin đánh dấu",
             "showMarkerInfo": "Hiển thị thông tin đánh dấu",
             "controls": "Cuộn để phóng to | Kéo để di chuyển",
+            "scrollToZoomHint": "Cuộn trên bản đồ để phóng to",
             "noDevices": "Không có thiết bị phù hợp với tiêu chí",
             "selectGateway": "Vui lòng chọn gateway và tạo kết nối trước",
             "noDimensions": "Tầng này chưa thiết lập kích thước bản đồ",

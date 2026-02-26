@@ -1685,6 +1685,7 @@
     "location": {
         "title": "屋内位置",
         "subtitle": "施設内の高齢者とデバイスの位置を追跡し、安全とケアを確保",
+        "unboundDeviceLabel": "デバイス",
         "selectArea": {
             "title": "監視エリア選択",
             "nursingHome": "老人ホーム",
@@ -1742,6 +1743,7 @@
             "hideMarkerInfo": "マーカー情報を非表示",
             "showMarkerInfo": "マーカー情報を表示",
             "controls": "ホイールでズーム | ドラッグで移動",
+            "scrollToZoomHint": "地図上でスクロールしてズーム",
             "noDevices": "条件に合うデバイスがありません",
             "selectGateway": "まずゲートウェイを選択して接続を確立してください",
             "noDimensions": "このフロアのマップサイズが設定されていません",

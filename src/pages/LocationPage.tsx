@@ -1263,7 +1263,7 @@ export default function LocationPage() {
                                 }}
                               >
                                 <div className="font-medium">
-                                  {patient.residentName || `設備-${patient.id}`}
+                                  {patient.residentName || `${t('pages:location.unboundDeviceLabel')}-${patient.id}`}
                                 </div>
                                 {patient.residentRoom && (
                                   <div className="text-gray-600 text-[10px]">
@@ -1341,7 +1341,7 @@ export default function LocationPage() {
 
                     {/* 操作提示 */}
                     <div className="absolute top-4 left-4 bg-blue-600/90 text-white px-3 py-1 rounded-lg shadow-lg text-sm z-10">
-                      {t('pages:location.map.controls')} | 滑鼠在地圖上滾動縮放
+                      {t('pages:location.map.controls')} | {t('pages:location.map.scrollToZoomHint')}
                     </div>
                   </div>
                 ) : (
@@ -1423,7 +1423,7 @@ export default function LocationPage() {
                             {/* 名稱和狀態徽章 */}
                             <div className="flex-1 flex items-center gap-2 min-w-0">
                               <h3 className="text-base font-semibold truncate">
-                                {patient.residentName || `設備-${patient.id}`}
+                                {patient.residentName || `${t('pages:location.unboundDeviceLabel')}-${patient.id}`}
                               </h3>
                               {statusInfo && statusInfo.badge}
                             </div>

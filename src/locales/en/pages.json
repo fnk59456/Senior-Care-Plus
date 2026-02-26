@@ -637,6 +637,7 @@
     "location": {
         "title": "Indoor Location",
         "subtitle": "Track the location of elderly and devices in the facility to ensure safety and care",
+        "unboundDeviceLabel": "Device",
         "selectArea": {
             "title": "Select Monitoring Area",
             "nursingHome": "Nursing Home",
@@ -694,6 +695,7 @@
             "hideMarkerInfo": "Hide Marker Info",
             "showMarkerInfo": "Show Marker Info",
             "controls": "Wheel to zoom | Drag to move",
+            "scrollToZoomHint": "Scroll on map to zoom",
             "noDevices": "No devices match the criteria",
             "selectGateway": "Please select a gateway and establish connection first",
             "noDimensions": "This floor has not set map dimensions",
