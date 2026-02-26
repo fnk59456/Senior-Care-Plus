@@ -200,7 +200,15 @@ export default function HeartTemperaturePage() {
         }
       }
     }
-    return null
+    return undefined
+  }
+
+  // 依目前語言顯示裝置名稱（未綁定時顯示「設備」+ ID，切換語言會更新）
+  const getDeviceDisplayName = (item: { MAC: string; residentName?: string; residentRoom?: string }) => {
+    if (item.residentName) {
+      return item.residentRoom ? `${item.residentName} (${item.residentRoom})` : item.residentName
+    }
+    return `${t('pages:heartTemp.deviceNameFallback')} ${item.MAC.slice(-8)}`
   }
 
   const getDeviceTypeIcon = (deviceType?: DeviceType) => {
@@ -718,8 +726,7 @@ export default function HeartTemperaturePage() {
                             >
                               <div className="flex items-center gap-2">
                                 {getDeviceTypeIcon(device.deviceType)}
-                                <span>{device.residentName || device.deviceName}</span>
-                                {device.residentRoom && <span className="text-xs text-muted-foreground">({device.residentRoom})</span>}
+                                <span>{getDeviceDisplayName(device)}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className={`px-2 py-1 rounded-full text-xs ${statusInfo.bgColor}`}>{statusInfo.badge}</span>
@@ -814,7 +821,7 @@ export default function HeartTemperaturePage() {
                   <Heart className="mr-2 h-5 w-5" />
                   {t("pages:heartRate.deviceHeartRateData.title")} - {(() => {
                     const device = heartDevices.find(d => d.MAC === selectedHeartDevice)
-                    return device?.residentName ? `${device.residentName} (${device.residentRoom})` : device?.deviceName || t("pages:heartRate.deviceHeartRateData.unknownDevice")
+                    return device ? getDeviceDisplayName(device) : t("pages:heartRate.deviceHeartRateData.unknownDevice")
                   })()}
                 </CardTitle>
               </CardHeader>
@@ -835,7 +842,7 @@ export default function HeartTemperaturePage() {
                           <div>
                             <div className="font-medium flex items-center gap-2">
                               {getDeviceTypeIcon(record.deviceType)}
-                              {record.residentName ? `${record.residentName} (${record.residentRoom})` : record.deviceName}
+                              {getDeviceDisplayName(record)}
                               {record.residentStatus && (
                                 <span className={`px-2 py-1 rounded-full text-xs ${getStatusInfo(record.residentStatus).bgColor}`}>
                                   {getStatusInfo(record.residentStatus).badge}
@@ -1137,8 +1144,7 @@ export default function HeartTemperaturePage() {
                             >
                               <div className="flex items-center gap-2">
                                 {getDeviceTypeIcon(device.deviceType)}
-                                <span>{device.residentName || device.deviceName}</span>
-                                {device.residentRoom && <span className="text-xs text-muted-foreground">({device.residentRoom})</span>}
+                                <span>{getDeviceDisplayName(device)}</span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className={`px-2 py-1 rounded-full text-xs ${statusInfo.bgColor}`}>{statusInfo.badge}</span>
@@ -1233,7 +1239,7 @@ export default function HeartTemperaturePage() {
                   <Thermometer className="mr-2 h-5 w-5" />
                   {t("pages:temperature.deviceTemperatureData.title")} - {(() => {
                     const device = tempDevices.find(d => d.MAC === selectedTempDevice)
-                    return device?.residentName ? `${device.residentName} (${device.residentRoom})` : device?.deviceName || t("pages:temperature.deviceTemperatureData.unknownDevice")
+                    return device ? getDeviceDisplayName(device) : t("pages:temperature.deviceTemperatureData.unknownDevice")
                   })()}
                 </CardTitle>
               </CardHeader>
@@ -1254,7 +1260,7 @@ export default function HeartTemperaturePage() {
                           <div>
                             <div className="font-medium flex items-center gap-2">
                               {getDeviceTypeIcon(record.deviceType)}
-                              {record.residentName ? `${record.residentName} (${record.residentRoom})` : record.deviceName}
+                              {getDeviceDisplayName(record)}
                               {record.residentStatus && (
                                 <span className={`px-2 py-1 rounded-full text-xs ${getStatusInfo(record.residentStatus).bgColor}`}>
                                   {getStatusInfo(record.residentStatus).badge}
