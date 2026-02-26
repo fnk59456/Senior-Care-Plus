@@ -19,11 +19,15 @@ import {
   Info
 } from 'lucide-react'
 
+// 職稱與部門使用 i18n 鍵，顯示時依語系翻譯
+type PositionKey = 'nursingDirector' | 'nurse' | 'doctor' | 'nutritionist' | 'physicalTherapist' | 'socialWorker'
+type DepartmentKey = 'nursingDept' | 'medicalDept' | 'nutritionDept' | 'rehabDept' | 'socialWorkDept'
+
 interface Staff {
   id: string
   name: string
-  position: string
-  department: string
+  positionKey: PositionKey
+  departmentKey: DepartmentKey
   phone: string
   email: string
   hireDate: string
@@ -34,78 +38,12 @@ interface Staff {
 
 // 示例數據
 const mockStaff: Staff[] = [
-  {
-    id: 'S001',
-    name: '張明德',
-    position: '護理主任',
-    department: '護理部',
-    phone: '0912-345-678',
-    email: 'zhang.mingde@careplus.com',
-    hireDate: '2018-05-15',
-    status: 'active',
-    notes: '負責所有護理人員的管理和排班工作。擁有10年護理經驗。',
-    avatar: '👨‍⚕️'
-  },
-  {
-    id: 'S002',
-    name: '李小梅',
-    position: '護士',
-    department: '護理部',
-    phone: '0923-456-789',
-    email: 'li.xiaomei@careplus.com',
-    hireDate: '2020-03-10',
-    status: 'on-leave',
-    notes: '專門負責夜班照護工作，對老人照顧很有耐心。',
-    avatar: '👩‍⚕️'
-  },
-  {
-    id: 'S003',
-    name: '王建國',
-    position: '醫生',
-    department: '醫療部',
-    phone: '0934-567-890',
-    email: 'wang.jianguo@careplus.com',
-    hireDate: '2019-08-22',
-    status: 'active',
-    notes: '內科專科醫師，負責住民的日常健康檢查和醫療諮詢。',
-    avatar: '👨‍⚕️'
-  },
-  {
-    id: 'S004',
-    name: '林美華',
-    position: '營養師',
-    department: '營養科',
-    phone: '0945-678-901',
-    email: 'lin.meihua@careplus.com',
-    hireDate: '2021-01-18',
-    status: 'active',
-    notes: '負責規劃住民的營養餐點，有豐富的老人營養管理經驗。',
-    avatar: '👩‍🍳'
-  },
-  {
-    id: 'S005',
-    name: '陳志偉',
-    position: '物理治療師',
-    department: '復健科',
-    phone: '0956-789-012',
-    email: 'chen.zhiwei@careplus.com',
-    hireDate: '2020-11-05',
-    status: 'active',
-    notes: '專精老人復健治療，幫助住民維持身體機能。',
-    avatar: '👨‍⚕️'
-  },
-  {
-    id: 'S006',
-    name: '黃淑芬',
-    position: '社工師',
-    department: '社工部',
-    phone: '0967-890-123',
-    email: 'huang.shufen@careplus.com',
-    hireDate: '2019-06-30',
-    status: 'active',
-    notes: '負責住民的心理輔導和家屬溝通協調工作。',
-    avatar: '👩‍💼'
-  }
+  { id: 'S001', name: '張明德', positionKey: 'nursingDirector', departmentKey: 'nursingDept', phone: '0912-345-678', email: 'zhang.mingde@careplus.com', hireDate: '2018-05-15', status: 'active', notes: '負責所有護理人員的管理和排班工作。擁有10年護理經驗。', avatar: '👨‍⚕️' },
+  { id: 'S002', name: '李小梅', positionKey: 'nurse', departmentKey: 'nursingDept', phone: '0923-456-789', email: 'li.xiaomei@careplus.com', hireDate: '2020-03-10', status: 'on-leave', notes: '專門負責夜班照護工作，對老人照顧很有耐心。', avatar: '👩‍⚕️' },
+  { id: 'S003', name: '王建國', positionKey: 'doctor', departmentKey: 'medicalDept', phone: '0934-567-890', email: 'wang.jianguo@careplus.com', hireDate: '2019-08-22', status: 'active', notes: '內科專科醫師，負責住民的日常健康檢查和醫療諮詢。', avatar: '👨‍⚕️' },
+  { id: 'S004', name: '林美華', positionKey: 'nutritionist', departmentKey: 'nutritionDept', phone: '0945-678-901', email: 'lin.meihua@careplus.com', hireDate: '2021-01-18', status: 'active', notes: '負責規劃住民的營養餐點，有豐富的老人營養管理經驗。', avatar: '👩‍🍳' },
+  { id: 'S005', name: '陳志偉', positionKey: 'physicalTherapist', departmentKey: 'rehabDept', phone: '0956-789-012', email: 'chen.zhiwei@careplus.com', hireDate: '2020-11-05', status: 'active', notes: '專精老人復健治療，幫助住民維持身體機能。', avatar: '👨‍⚕️' },
+  { id: 'S006', name: '黃淑芬', positionKey: 'socialWorker', departmentKey: 'socialWorkDept', phone: '0967-890-123', email: 'huang.shufen@careplus.com', hireDate: '2019-06-30', status: 'active', notes: '負責住民的心理輔導和家屬溝通協調工作。', avatar: '👩‍💼' }
 ]
 
 export default function StaffManagementPage() {
@@ -117,11 +55,12 @@ export default function StaffManagementPage() {
   const [isEditingNotes, setIsEditingNotes] = useState(false)
   const [editedNotes, setEditedNotes] = useState('')
 
-  // 篩選員工
+  // 篩選員工（搜尋含職稱、部門的翻譯文字）
   const filteredStaff = staff.filter(person => {
-    const matchesSearch = person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.department.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.position.toLowerCase().includes(searchTerm.toLowerCase())
+    const positionText = t(`pages:staffManagement.positions.${person.positionKey}`).toLowerCase()
+    const departmentText = t(`pages:staffManagement.departments.${person.departmentKey}`).toLowerCase()
+    const term = searchTerm.toLowerCase()
+    const matchesSearch = person.name.toLowerCase().includes(term) || positionText.includes(term) || departmentText.includes(term)
     const matchesStatus = statusFilter === 'all' || person.status === statusFilter
     return matchesSearch && matchesStatus
   })
@@ -239,7 +178,7 @@ export default function StaffManagementPage() {
                       {t('pages:staffManagement.staffList.id')}: {person.id}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {person.position}, {person.department}
+                      {t(`pages:staffManagement.positions.${person.positionKey}`)}, {t(`pages:staffManagement.departments.${person.departmentKey}`)}
                     </p>
                   </div>
                 </div>
@@ -262,7 +201,7 @@ export default function StaffManagementPage() {
               </div>
               <CardTitle className="text-xl">{selectedStaff.name}</CardTitle>
               <p className="text-muted-foreground">
-                {selectedStaff.position}, {selectedStaff.department}
+                {t(`pages:staffManagement.positions.${selectedStaff.positionKey}`)}, {t(`pages:staffManagement.departments.${selectedStaff.departmentKey}`)}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">

@@ -1246,6 +1246,21 @@
             "active": "Active",
             "onLeave": "On Leave"
         },
+        "positions": {
+            "nursingDirector": "Nursing Director",
+            "nurse": "Nurse",
+            "doctor": "Doctor",
+            "nutritionist": "Nutritionist",
+            "physicalTherapist": "Physical Therapist",
+            "socialWorker": "Social Worker"
+        },
+        "departments": {
+            "nursingDept": "Nursing Department",
+            "medicalDept": "Medical Department",
+            "nutritionDept": "Nutrition Department",
+            "rehabDept": "Rehabilitation Department",
+            "socialWorkDept": "Social Work Department"
+        },
         "staffList": {
             "title": "Staff List",
             "count": "{{count}} staff members",

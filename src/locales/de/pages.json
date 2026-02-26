@@ -1238,6 +1238,21 @@
             "active": "Aktiv",
             "onLeave": "Im Urlaub"
         },
+        "positions": {
+            "nursingDirector": "Pflegedirektor",
+            "nurse": "Pflegekraft",
+            "doctor": "Arzt",
+            "nutritionist": "Ernährungsberater",
+            "physicalTherapist": "Physiotherapeut",
+            "socialWorker": "Sozialarbeiter"
+        },
+        "departments": {
+            "nursingDept": "Pflegeabteilung",
+            "medicalDept": "Medizinische Abteilung",
+            "nutritionDept": "Ernährungsabteilung",
+            "rehabDept": "Rehabilitationsabteilung",
+            "socialWorkDept": "Sozialdienst"
+        },
         "staffList": {
             "title": "Personalliste",
             "count": "{{count}} Mitarbeiter",

@@ -1238,6 +1238,21 @@
             "active": "Aktif",
             "onLeave": "Cuti"
         },
+        "positions": {
+            "nursingDirector": "Direktur Keperawatan",
+            "nurse": "Perawat",
+            "doctor": "Dokter",
+            "nutritionist": "Ahli Gizi",
+            "physicalTherapist": "Fisioterapis",
+            "socialWorker": "Pekerja Sosial"
+        },
+        "departments": {
+            "nursingDept": "Departemen Keperawatan",
+            "medicalDept": "Departemen Medis",
+            "nutritionDept": "Departemen Gizi",
+            "rehabDept": "Departemen Rehabilitasi",
+            "socialWorkDept": "Departemen Pekerjaan Sosial"
+        },
         "staffList": {
             "title": "Daftar Staf",
             "count": "{{count}} anggota staf",

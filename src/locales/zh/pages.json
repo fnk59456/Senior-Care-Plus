@@ -1260,6 +1260,21 @@
             "active": "在職",
             "onLeave": "休假"
         },
+        "positions": {
+            "nursingDirector": "護理主任",
+            "nurse": "護士",
+            "doctor": "醫生",
+            "nutritionist": "營養師",
+            "physicalTherapist": "物理治療師",
+            "socialWorker": "社工師"
+        },
+        "departments": {
+            "nursingDept": "護理部",
+            "medicalDept": "醫療部",
+            "nutritionDept": "營養科",
+            "rehabDept": "復健科",
+            "socialWorkDept": "社工部"
+        },
         "staffList": {
             "title": "員工列表",
             "count": "共 {{count}} 位員工",

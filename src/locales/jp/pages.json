@@ -1779,6 +1779,21 @@
             "active": "在職",
             "onLeave": "休暇中"
         },
+        "positions": {
+            "nursingDirector": "看護主任",
+            "nurse": "看護師",
+            "doctor": "医師",
+            "nutritionist": "栄養士",
+            "physicalTherapist": "理学療法士",
+            "socialWorker": "ソーシャルワーカー"
+        },
+        "departments": {
+            "nursingDept": "看護部",
+            "medicalDept": "医療部",
+            "nutritionDept": "栄養科",
+            "rehabDept": "リハビリ科",
+            "socialWorkDept": "福祉部"
+        },
         "staffList": {
             "title": "スタッフ一覧",
             "count": "{{count}}名のスタッフ",

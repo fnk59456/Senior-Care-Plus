@@ -1238,6 +1238,21 @@
             "active": "Hoạt động",
             "onLeave": "Nghỉ phép"
         },
+        "positions": {
+            "nursingDirector": "Giám đốc điều dưỡng",
+            "nurse": "Y tá",
+            "doctor": "Bác sĩ",
+            "nutritionist": "Chuyên gia dinh dưỡng",
+            "physicalTherapist": "Vật lý trị liệu",
+            "socialWorker": "Công tác xã hội"
+        },
+        "departments": {
+            "nursingDept": "Khoa điều dưỡng",
+            "medicalDept": "Khoa y tế",
+            "nutritionDept": "Khoa dinh dưỡng",
+            "rehabDept": "Khoa phục hồi chức năng",
+            "socialWorkDept": "Phòng công tác xã hội"
+        },
         "staffList": {
             "title": "Danh sách nhân viên",
             "count": "{{count}} nhân viên",
