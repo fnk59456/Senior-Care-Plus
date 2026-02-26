@@ -27,6 +27,10 @@
                 "title": "Heart Rate Monitor",
                 "description": "Real-time monitoring of heart rate changes and alerts"
             },
+            "heartTemp": {
+                "title": "Heart Rate & Temperature Monitoring",
+                "description": "Single page view for heart rate and temperature monitoring"
+            },
             "diaper": {
                 "title": "Diaper Monitor",
                 "description": "Real-time monitoring of diaper moisture status and change records"

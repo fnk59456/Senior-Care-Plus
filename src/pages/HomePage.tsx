@@ -178,11 +178,11 @@ export default function HomePage() {
           <span className="mr-2">{t('navigation:sidebar.sections.main')}</span>
           <div className="h-1 flex-1 bg-gradient-to-r from-primary/50 to-transparent rounded-full"></div>
         </h2>
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
           {features.map((feature) => (
-            <Link to={feature.href} key={feature.title} className="group relative block">
+            <Link to={feature.href} key={feature.title} className="group relative block h-full">
               <Card
-                className={`card-float transition-transform hover:scale-[1.01] hover:shadow-lg border-0 overflow-hidden ${feature.priority
+                className={`h-full flex flex-col card-float transition-transform hover:scale-[1.01] hover:shadow-lg border-0 overflow-hidden ${feature.priority
                   ? 'ring-2 ring-red-200 dark:ring-red-800 shadow-lg'
                   : ''
                   } ${feature.bgLight} ${feature.bgDark}`}
@@ -193,7 +193,7 @@ export default function HomePage() {
                     {t('status:alerts.emergency')}
                   </div>
                 )}
-                <CardHeader>
+                <CardHeader className="flex-shrink-0">
                   <div className="flex items-center gap-4">
                     <div className={`icon-container ${feature.priority ? 'animate-pulse' : ''}`}>
                       {feature.icon}
@@ -203,9 +203,9 @@ export default function HomePage() {
                     </CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{feature.desc}</p>
-                  <div className={`mt-4 flex items-center text-sm font-medium ${feature.priority ? 'text-red-600 dark:text-red-400' : 'text-primary'
+                <CardContent className="flex-1 flex flex-col min-h-0">
+                  <p className="text-muted-foreground min-h-[2.75rem] flex-1">{feature.desc}</p>
+                  <div className={`mt-4 flex items-center text-sm font-medium flex-shrink-0 ${feature.priority ? 'text-red-600 dark:text-red-400' : 'text-primary'
                     }`}>
                     <span>{t('common:actions.view')} {t('common:placeholders.details', '詳情')}</span>
                     <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-2" />

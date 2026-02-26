@@ -10,16 +10,16 @@
       "id": 1770,
       "id(Hex)": "0x06EA",
       "position": {
-        "x": 0.37,
-        "y": -1.56,
-        "z": 3.06,
-        "quality": 72
+        "x": -0.04,
+        "y": -1.93,
+        "z": 3.73,
+        "quality": 73
       },
-      "time": "2026-043 01:08:03.85",
-      "sf number": 1408,
-      "serial no": 11366
+      "time": "2026-057 21:28:05.12",
+      "sf number": 405,
+      "serial no": 2288
     },
-    "timestamp": "2026-02-11T17:08:04.096Z"
+    "timestamp": "2026-02-26T13:28:05.346Z"
   },
   {
     "topic": "UWB/GW16B8_TagConf",
@@ -41,60 +41,75 @@
       "nominal udr(hz)": 1,
       "stationary udr(hz)": 0.2
     },
-    "timestamp": "2026-02-11T17:08:04.301Z"
+    "timestamp": "2026-02-26T13:28:05.650Z"
   },
   {
-    "topic": "UWB/GW16B8_Health",
+    "topic": "UWB/GW16B8_AncConf",
     "message": {
-      "content": "300B",
+      "content": "config",
       "gateway id": 4192540344,
       "region id": 0,
       "organiz id": 0,
-      "MAC": "D4:5D:0B:35:72:F7",
-      "SOS": 0,
-      "hr": 0,
-      "SpO2": 0,
-      "bp syst": 0,
-      "bp diast": 0,
-      "skin temp": 0,
-      "room temp": 22.09,
-      "steps": 0,
-      "sleep time": "00:00",
-      "wake time": "00:00",
-      "light sleep (min)": 0,
-      "deep sleep (min)": 0,
-      "move": 0,
-      "wear": 0,
-      "battery level": 90,
-      "serial no": 11367
+      "node": "ANCHOR",
+      "name": "DW4210",
+      "id": 16912,
+      "id(Hex)": "0x4210",
+      "fw update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 1,
+      "position": {
+        "x": 1.7,
+        "y": -3.8,
+        "z": 1.15
+      }
     },
-    "timestamp": "2026-02-11T17:08:05.875Z"
+    "timestamp": "2026-02-26T13:28:06.871Z"
   },
   {
-    "topic": "UWB/GW16B8_Health",
+    "topic": "UWB/GW16B8_AncConf",
     "message": {
-      "content": "300B",
+      "content": "config",
       "gateway id": 4192540344,
       "region id": 0,
       "organiz id": 0,
-      "MAC": "D7:2A:09:35:D6:F7",
-      "SOS": 0,
-      "hr": 0,
-      "SpO2": 0,
-      "bp syst": 0,
-      "bp diast": 0,
-      "skin temp": 0,
-      "room temp": 23.01,
-      "steps": 0,
-      "sleep time": "00:00",
-      "wake time": "00:00",
-      "light sleep (min)": 0,
-      "deep sleep (min)": 0,
-      "move": 0,
-      "wear": 0,
-      "battery level": 50,
-      "serial no": 11368
+      "node": "ANCHOR",
+      "name": "DW5B05",
+      "id": 23301,
+      "id(Hex)": "0x5B05",
+      "fw update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 0,
+      "position": {
+        "x": -1.85,
+        "y": 2.41,
+        "z": 1
+      }
     },
-    "timestamp": "2026-02-11T17:08:06.349Z"
+    "timestamp": "2026-02-26T13:28:07.082Z"
+  },
+  {
+    "topic": "UWB/GW16B8_AncConf",
+    "message": {
+      "content": "config",
+      "gateway id": 4192540344,
+      "region id": 0,
+      "organiz id": 0,
+      "node": "ANCHOR",
+      "name": "DW8E97",
+      "id": 36503,
+      "id(Hex)": "0x8E97",
+      "fw update": 0,
+      "led": 1,
+      "ble": 1,
+      "initiator": 0,
+      "position": {
+        "x": -2.03,
+        "y": 0.71,
+        "z": 2.6
+      }
+    },
+    "timestamp": "2026-02-26T13:28:07.393Z"
   }
 ]

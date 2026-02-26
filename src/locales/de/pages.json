@@ -27,6 +27,10 @@
                 "title": "Herzfrequenzüberwachung",
                 "description": "Echtzeitüberwachung von Herzfrequenzänderungen und Warnungen"
             },
+            "heartTemp": {
+                "title": "Herzfrequenz- & Temperaturüberwachung",
+                "description": "Herzfrequenz und Temperatur auf einer Seite"
+            },
             "diaper": {
                 "title": "Windelüberwachung",
                 "description": "Echtzeitüberwachung des Feuchtigkeitsstatus und Wechselaufzeichnungen"

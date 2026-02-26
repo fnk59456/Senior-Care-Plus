@@ -27,6 +27,10 @@
                 "title": "Pemantauan Detak Jantung",
                 "description": "Pemantauan waktu nyata perubahan detak jantung dan peringatan"
             },
+            "heartTemp": {
+                "title": "Pemantauan Detak Jantung & Suhu",
+                "description": "Lihat detak jantung dan suhu dalam satu halaman"
+            },
             "diaper": {
                 "title": "Pemantauan Popok",
                 "description": "Pemantauan waktu nyata status kelembaban popok dan catatan penggantian"

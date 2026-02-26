@@ -27,6 +27,10 @@
                 "title": "Giám sát nhịp tim",
                 "description": "Giám sát thời gian thực thay đổi nhịp tim và cảnh báo"
             },
+            "heartTemp": {
+                "title": "Giám sát nhịp tim & nhiệt độ",
+                "description": "Xem nhịp tim và nhiệt độ trên một trang"
+            },
             "diaper": {
                 "title": "Giám sát tã",
                 "description": "Giám sát thời gian thực tình trạng độ ẩm tã và hồ sơ thay đổi"

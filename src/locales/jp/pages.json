@@ -27,6 +27,10 @@
                 "title": "心拍監視",
                 "description": "心拍変化と異常警告のリアルタイム監視"
             },
+            "heartTemp": {
+                "title": "心拍・体温監視",
+                "description": "心拍と体温を1ページで表示"
+            },
             "diaper": {
                 "title": "おむつ監視",
                 "description": "おむつ湿度状態と交換記録のリアルタイム監視"
