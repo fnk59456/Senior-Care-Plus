@@ -1224,6 +1224,12 @@
             "wet": "Wet",
             "veryWet": "Very Wet",
             "soiled": "Soiled"
+        },
+        "nurseNames": {
+            "nurse_a": "Caregiver A",
+            "nurse_b": "Caregiver B",
+            "nurse_c": "Caregiver C",
+            "nurse_d": "Caregiver D"
         }
     },
     "staffManagement": {

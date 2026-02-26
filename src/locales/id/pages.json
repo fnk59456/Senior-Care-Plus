@@ -1216,6 +1216,12 @@
             "wet": "Basah",
             "veryWet": "Sangat Basah",
             "soiled": "Kotor"
+        },
+        "nurseNames": {
+            "nurse_a": "Pengasuh A",
+            "nurse_b": "Pengasuh B",
+            "nurse_c": "Pengasuh C",
+            "nurse_d": "Pengasuh D"
         }
     },
     "staffManagement": {

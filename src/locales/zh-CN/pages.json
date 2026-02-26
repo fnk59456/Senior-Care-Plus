@@ -1238,6 +1238,12 @@
             "wet": "潮湿",
             "veryWet": "非常潮湿",
             "soiled": "脏污"
+        },
+        "nurseNames": {
+            "nurse_a": "护工A",
+            "nurse_b": "护工B",
+            "nurse_c": "护工C",
+            "nurse_d": "护工D"
         }
     },
     "staffManagement": {

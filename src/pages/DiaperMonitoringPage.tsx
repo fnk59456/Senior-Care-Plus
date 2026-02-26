@@ -30,24 +30,20 @@ import { DeviceType } from "@/types/device-types"
 import { useTranslation } from "react-i18next"
 import { mqttBus } from "@/services/mqttBus"
 
-// 尿布狀態定義
+// 尿布狀態定義（顯示文字改由 i18n 依語系輸出）
 const DIAPER_STATUS = {
-  DRY: { label: "乾燥", color: "bg-green-100 text-green-700", value: 0 },
-  SLIGHTLY_WET: { label: "微濕", color: "bg-gray-100 text-gray-700", value: 1 },
-  WET: { label: "潮濕", color: "bg-orange-100 text-orange-700", value: 2 },
-  VERY_WET: { label: "非常潮濕", color: "bg-red-100 text-red-700", value: 3 },
-  SOILED: { label: "髒污", color: "bg-purple-100 text-purple-700", value: 4 }
+  DRY: { i18nKey: "dry" as const, color: "bg-green-100 text-green-700", value: 0 },
+  SLIGHTLY_WET: { i18nKey: "slightlyWet" as const, color: "bg-gray-100 text-gray-700", value: 1 },
+  WET: { i18nKey: "wet" as const, color: "bg-orange-100 text-orange-700", value: 2 },
+  VERY_WET: { i18nKey: "veryWet" as const, color: "bg-red-100 text-red-700", value: 3 },
+  SOILED: { i18nKey: "soiled" as const, color: "bg-purple-100 text-purple-700", value: 4 }
 }
 
-// 護理人員列表
-const NURSES = [
-  { id: "nurse_a", name: "護工A" },
-  { id: "nurse_b", name: "護工B" },
-  { id: "nurse_c", name: "護工C" },
-  { id: "nurse_d", name: "護工D" }
-]
+// 護理人員列表（顯示名稱改由 i18n 依語系輸出）
+const NURSE_IDS = ["nurse_a", "nurse_b", "nurse_c", "nurse_d"] as const
+const NURSES = NURSE_IDS.map(id => ({ id }))
 
-// 模擬患者數據
+// 模擬患者數據（nurse 存 id，顯示時依語系翻譯）
 const MOCK_PATIENTS = [
   {
     id: "patient_001",
@@ -59,27 +55,9 @@ const MOCK_PATIENTS = [
     batteryLevel: 86,
     lastUpdate: new Date(),
     records: [
-      {
-        id: "1",
-        timestamp: "2024-06-23 04:02",
-        status: DIAPER_STATUS.WET,
-        nurse: "護工A",
-        humidity: 78.2
-      },
-      {
-        id: "2",
-        timestamp: "2024-06-23 03:55",
-        status: DIAPER_STATUS.DRY,
-        nurse: "護工A",
-        humidity: 45.1
-      },
-      {
-        id: "3",
-        timestamp: "2024-06-22 21:21",
-        status: DIAPER_STATUS.WET,
-        nurse: "護工B",
-        humidity: 76.8
-      }
+      { id: "1", timestamp: "2024-06-23 04:02", status: DIAPER_STATUS.WET, nurse: "nurse_a", humidity: 78.2 },
+      { id: "2", timestamp: "2024-06-23 03:55", status: DIAPER_STATUS.DRY, nurse: "nurse_a", humidity: 45.1 },
+      { id: "3", timestamp: "2024-06-22 21:21", status: DIAPER_STATUS.WET, nurse: "nurse_b", humidity: 76.8 }
     ]
   },
   {
@@ -92,13 +70,7 @@ const MOCK_PATIENTS = [
     batteryLevel: 92,
     lastUpdate: new Date(),
     records: [
-      {
-        id: "4",
-        timestamp: "2024-06-23 02:15",
-        status: DIAPER_STATUS.DRY,
-        nurse: "護工C",
-        humidity: 42.1
-      }
+      { id: "4", timestamp: "2024-06-23 02:15", status: DIAPER_STATUS.DRY, nurse: "nurse_c", humidity: 42.1 }
     ]
   },
   {
@@ -111,13 +83,7 @@ const MOCK_PATIENTS = [
     batteryLevel: 78,
     lastUpdate: new Date(),
     records: [
-      {
-        id: "5",
-        timestamp: "2024-06-23 01:30",
-        status: DIAPER_STATUS.VERY_WET,
-        nurse: "護工A",
-        humidity: 85.2
-      }
+      { id: "5", timestamp: "2024-06-23 01:30", status: DIAPER_STATUS.VERY_WET, nurse: "nurse_a", humidity: 85.2 }
     ]
   }
 ]
@@ -406,6 +372,14 @@ export default function DiaperMonitoringPage() {
           bgColor: 'bg-gray-100'
         }
     }
+  }
+
+  // 依目前語系顯示護理人員名稱（nurse 存 id，如 nurse_a；舊資料可能為中文名則原樣顯示）
+  const getNurseDisplayName = (nurse: string) => {
+    if (NURSE_IDS.includes(nurse as typeof NURSE_IDS[number])) {
+      return t(`pages:diaperMonitoring.nurseNames.${nurse}`)
+    }
+    return nurse
   }
 
   // ✅ 修復頻率問題 - 只在有新消息時更新
@@ -741,7 +715,7 @@ export default function DiaperMonitoringPage() {
 
     const newRecord: DiaperRecord = {
       id: Date.now().toString(),
-      timestamp: new Date().toLocaleString('zh-TW', {
+      timestamp: new Date().toLocaleString(undefined, {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
@@ -749,7 +723,7 @@ export default function DiaperMonitoringPage() {
         minute: '2-digit'
       }).replace(/\//g, '-'),
       status: selectedStatus,
-      nurse: selectedNurse.name,
+      nurse: selectedNurse.id,
       humidity: currentPatient.currentHumidity
     }
 
@@ -1571,11 +1545,11 @@ export default function DiaperMonitoringPage() {
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-sm font-medium">{record.timestamp}</span>
                           <Badge className={record.status.color}>
-                            {t('pages:diaperMonitoring.diaperRecords.status')}: {record.status.label}
+                            {t('pages:diaperMonitoring.diaperRecords.status')}: {t(`pages:diaperMonitoring.diaperStatus.${record.status.i18nKey}`)}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {t('pages:diaperMonitoring.diaperRecords.nurse')}: {record.nurse}
+                          {t('pages:diaperMonitoring.diaperRecords.nurse')}: {getNurseDisplayName(record.nurse)}
                         </p>
                       </div>
                     </div>
@@ -1609,7 +1583,7 @@ export default function DiaperMonitoringPage() {
                         className="w-4 h-4"
                       />
                       <span className={`px-2 py-1 rounded text-sm ${status.color}`}>
-                        {status.label}
+                        {t(`pages:diaperMonitoring.diaperStatus.${status.i18nKey}`)}
                       </span>
                     </label>
                   ))}
@@ -1629,7 +1603,7 @@ export default function DiaperMonitoringPage() {
                         onChange={(e) => setRecordForm(prev => ({ ...prev, nurse: e.target.value }))}
                         className="w-4 h-4"
                       />
-                      <span className="text-sm">{nurse.name}</span>
+                      <span className="text-sm">{t(`pages:diaperMonitoring.nurseNames.${nurse.id}`)}</span>
                     </label>
                   ))}
                 </div>

@@ -1216,6 +1216,12 @@
             "wet": "Ướt",
             "veryWet": "Rất ướt",
             "soiled": "Bẩn"
+        },
+        "nurseNames": {
+            "nurse_a": "Điều dưỡng A",
+            "nurse_b": "Điều dưỡng B",
+            "nurse_c": "Điều dưỡng C",
+            "nurse_d": "Điều dưỡng D"
         }
     },
     "staffManagement": {

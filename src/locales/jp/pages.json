@@ -1553,6 +1553,12 @@
             "wet": "湿っている",
             "veryWet": "非常に湿っている",
             "soiled": "汚れ"
+        },
+        "nurseNames": {
+            "nurse_a": "介護職員A",
+            "nurse_b": "介護職員B",
+            "nurse_c": "介護職員C",
+            "nurse_d": "介護職員D"
         }
     },
     "temperature": {

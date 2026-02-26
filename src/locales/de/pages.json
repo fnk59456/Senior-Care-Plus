@@ -1216,6 +1216,12 @@
             "wet": "Feucht",
             "veryWet": "Sehr feucht",
             "soiled": "Verschmutzt"
+        },
+        "nurseNames": {
+            "nurse_a": "Pflegekraft A",
+            "nurse_b": "Pflegekraft B",
+            "nurse_c": "Pflegekraft C",
+            "nurse_d": "Pflegekraft D"
         }
     },
     "staffManagement": {
