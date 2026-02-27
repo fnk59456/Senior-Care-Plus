@@ -337,25 +337,19 @@
             "removeSuccess": "已成功移除 {{count}} 個设备",
             "gateway": {
                 "changeNetworkId": "更改UWB Network ID",
-                "changeLocation": "修改所属养老院及楼层"
+                "changeLocation": "修改所属养老院及楼层",
+                "gatewayId": "Gateway ID",
+                "notSet": "未设定",
+                "selectOneGateway": "請选择1個网关设备",
+                "networkIdRange": "UWB Network ID 必须在 1~65535 范围內",
+                "networkIdCommandSentSuccess": "✅ 已成功发送更改UWB Network ID指令到 {{name}}\nNetwork ID: {{networkId}}",
+                "locationUpdatedSuccess": "网关所属养老院及楼层已更新成功！"
             },
             "anchor": {
                 "changeHeight": "修改高度(Z坐標)",
                 "changePower": "修改功率",
                 "requestData": "要求锚点資料",
-                "requesting": "发送中..."
-            },
-            "tag": {
-                "changeConfig": "更改参数设定",
-                "changePower": "修改功率",
-                "requestData": "要求标签資料",
                 "requesting": "发送中...",
-                "tagName": "标签名称",
-                "tagId": "Tag ID",
-                "gatewayId": "Gateway ID",
-                "notSet": "未设定"
-            },
-            "anchor": {
                 "anchorName": "锚点名称",
                 "anchorId": "Anchor ID",
                 "gatewayId": "Gateway ID",
@@ -390,14 +384,6 @@
                 "requestDataSuccess": "✅ 已成功发送要求資料指令到 {{count}} 個标签设备",
                 "requestDataPartialSuccess": "⚠️ 已成功发送 {{successCount}} 個，失败 {{failCount}} 個\n失败设备: {{failedDevices}}",
                 "requestDataFailed": "❌ 所有指令发送失败\n失败设备: {{failedDevices}}"
-            },
-            "gateway": {
-                "gatewayId": "Gateway ID",
-                "notSet": "未设定",
-                "selectOneGateway": "請选择1個网关设备",
-                "networkIdRange": "UWB Network ID 必须在 1~65535 范围內",
-                "networkIdCommandSentSuccess": "✅ 已成功发送更改UWB Network ID指令到 {{name}}\nNetwork ID: {{networkId}}",
-                "locationUpdatedSuccess": "网关所属养老院及楼层已更新成功！"
             },
             "common": {
                 "gatewayNotFound": "找不到對應的网关配置，請先在「UWB定位管理」中新增网关",
