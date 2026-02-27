@@ -1320,6 +1320,8 @@
     "uwbLocation": {
         "title": "Pflegeheimverwaltung",
         "subtitle": "UWB-Positionssystem Bereichskonfiguration, Etagen und Gateways verwalten",
+        "backendModeLabel": "Backend-Modus (API)",
+        "localModeLabel": "Lokaler Modus (localStorage)",
         "selectHome": "Bereich auswählen",
         "tabs": {
             "overview": "Systemübersicht",
@@ -1393,6 +1395,11 @@
             "noMap": "Karte noch nicht hochgeladen"
         },
         "overallProgress": "Gesamtfortschritt",
+        "dataStatus": {
+            "title": "Datenstatus",
+            "saving": "Wird gespeichert...",
+            "synced": "Synchronisiert"
+        },
         "floorForm": {
             "name": "Etagenname",
             "namePlaceholder": "Etagenname eingeben",

@@ -488,6 +488,8 @@
     "uwbLocation": {
         "title": "高齢者施設管理",
         "subtitle": "UWB位置システムのフィールド、フロア、ゲートウェイ設定管理",
+        "backendModeLabel": "バックエンドモード (API)",
+        "localModeLabel": "ローカルモード (localStorage)",
         "selectHome": "フィールド選択",
         "tabs": {
             "overview": "システム概要",
@@ -558,6 +560,11 @@
             "noMap": "マップ未アップロード"
         },
         "overallProgress": "全体進捗",
+        "dataStatus": {
+            "title": "データ状態",
+            "saving": "保存中...",
+            "synced": "同期済み"
+        },
         "floorForm": {
             "name": "フロア名",
             "namePlaceholder": "フロア名を入力",

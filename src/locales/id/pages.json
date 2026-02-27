@@ -1320,6 +1320,8 @@
     "uwbLocation": {
         "title": "Manajemen Panti Jompo",
         "subtitle": "Manajemen konfigurasi area sistem posisi UWB, lantai dan gateway",
+        "backendModeLabel": "Mode Backend (API)",
+        "localModeLabel": "Mode Lokal (localStorage)",
         "selectHome": "Pilih Area",
         "tabs": {
             "overview": "Ikhtisar Sistem",
@@ -1393,6 +1395,11 @@
             "noMap": "Peta Belum Diunggah"
         },
         "overallProgress": "Kemajuan Keseluruhan",
+        "dataStatus": {
+            "title": "Status data",
+            "saving": "Sedang menyimpan...",
+            "synced": "Sudah disinkronkan"
+        },
         "floorForm": {
             "name": "Nama Lantai",
             "namePlaceholder": "Masukkan nama lantai",

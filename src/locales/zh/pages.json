@@ -1342,6 +1342,8 @@
     "uwbLocation": {
         "title": "養老院管理",
         "subtitle": "UWB定位系統的場域、樓層和閘道器配置管理",
+        "backendModeLabel": "後端模式 (API)",
+        "localModeLabel": "本地模式 (localStorage)",
         "selectHome": "選擇場域",
         "tabs": {
             "overview": "系統總覽",
@@ -1412,6 +1414,11 @@
             "noMap": "未上傳地圖"
         },
         "overallProgress": "整體進度",
+        "dataStatus": {
+            "title": "數據狀態",
+            "saving": "保存中...",
+            "synced": "已同步"
+        },
         "floorForm": {
             "name": "樓層名稱",
             "namePlaceholder": "請輸入樓層名稱",

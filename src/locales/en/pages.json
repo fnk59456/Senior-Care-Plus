@@ -1328,6 +1328,8 @@
     "uwbLocation": {
         "title": "Nursing Home Management",
         "subtitle": "UWB positioning system field, floor and gateway configuration management",
+        "backendModeLabel": "Backend Mode (API)",
+        "localModeLabel": "Local Mode (localStorage)",
         "selectHome": "Select Field",
         "tabs": {
             "overview": "System Overview",
@@ -1401,6 +1403,11 @@
             "noMap": "Map Not Uploaded"
         },
         "overallProgress": "Overall Progress",
+        "dataStatus": {
+            "title": "Data Status",
+            "saving": "Saving...",
+            "synced": "Synced"
+        },
         "floorForm": {
             "name": "Floor Name",
             "namePlaceholder": "Enter floor name",

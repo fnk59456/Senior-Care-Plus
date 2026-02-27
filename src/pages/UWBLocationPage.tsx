@@ -3854,12 +3854,12 @@ export default function UWBLocationPage() {
                             ) : backendAvailable ? (
                                 <Badge variant="default" className="flex items-center gap-1">
                                     <CheckCircle2 className="h-3 w-3" />
-                                    後端模式 (API)
+                                    {t('pages:uwbLocation.backendModeLabel')}
                                 </Badge>
                             ) : (
                                 <Badge variant="secondary" className="flex items-center gap-1">
                                     <AlertCircle className="h-3 w-3" />
-                                    本地模式 (localStorage)
+                                    {t('pages:uwbLocation.localModeLabel')}
                                 </Badge>
                             )}
                         </div>
@@ -3947,7 +3947,9 @@ export default function UWBLocationPage() {
                                     <div className="flex flex-col items-center text-center space-y-3">
                                         <Activity className="h-12 w-12 text-orange-500" />
                                         <div>
-                                            <p className="text-sm font-medium text-muted-foreground mb-1">活躍標籤</p>
+                                            <p className="text-sm font-medium text-muted-foreground mb-1">
+                                                {t('pages:uwbLocation.tagManagement.stats.activeTags')}
+                                            </p>
                                             <p className="text-3xl font-bold text-orange-600">
                                                 {tags.filter(t => t.status === 'active').length}
                                             </p>
@@ -3961,20 +3963,22 @@ export default function UWBLocationPage() {
                                     <div className="flex flex-col items-center text-center space-y-3">
                                         <Save className="h-12 w-12 text-blue-500" />
                                         <div>
-                                            <p className="text-sm font-medium text-muted-foreground mb-2">數據狀態</p>
+                                            <p className="text-sm font-medium text-muted-foreground mb-2">
+                                                {t('pages:uwbLocation.dataStatus.title')}
+                                            </p>
                                             <div className="flex justify-center mb-2">
                                                 {pendingSave ? (
                                                     <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-sm px-3 py-1">
-                                                        保存中...
+                                                        {t('pages:uwbLocation.dataStatus.saving')}
                                                     </Badge>
                                                 ) : (
                                                     <Badge className="bg-green-100 text-green-700 border-green-200 text-sm px-3 py-1">
-                                                        已同步
+                                                        {t('pages:uwbLocation.dataStatus.synced')}
                                                     </Badge>
                                                 )}
                                             </div>
                                             <p className="text-xs text-muted-foreground">
-                                                {lastSaveTime.toLocaleTimeString('zh-TW')}
+                                                {lastSaveTime.toLocaleTimeString()}
                                             </p>
                                             {process.env.NODE_ENV === 'development' && (
                                                 <p className="text-xs text-gray-400 mt-1">

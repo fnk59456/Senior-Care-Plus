@@ -1320,6 +1320,8 @@
     "uwbLocation": {
         "title": "Quản lý viện dưỡng lão",
         "subtitle": "Quản lý cấu hình khu vực hệ thống định vị UWB, tầng và gateway",
+        "backendModeLabel": "Chế độ Backend (API)",
+        "localModeLabel": "Chế độ cục bộ (localStorage)",
         "selectHome": "Chọn khu vực",
         "tabs": {
             "overview": "Tổng quan hệ thống",
@@ -1393,6 +1395,11 @@
             "noMap": "Bản đồ chưa tải lên"
         },
         "overallProgress": "Tiến độ tổng thể",
+        "dataStatus": {
+            "title": "Trạng thái dữ liệu",
+            "saving": "Đang lưu...",
+            "synced": "Đã đồng bộ"
+        },
         "floorForm": {
             "name": "Tên tầng",
             "namePlaceholder": "Nhập tên tầng",
