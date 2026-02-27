@@ -22,6 +22,7 @@ import {
 import { Device, Resident, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
 import BatteryIcon from '@/components/ui/battery-icon'
 import { useTranslation } from 'react-i18next'
+import { getDeviceDisplayName } from '@/utils/deviceDisplayName'
 
 interface DeviceListRowProps {
     device: Device & { realTimeData?: any }
@@ -111,8 +112,8 @@ export default function DeviceListRow({
 
             {/* 设备名称 - 固定宽度，超出省略 */}
             <div className="flex-shrink-0 w-32 lg:w-48">
-                <div className="text-sm font-semibold text-gray-900 truncate" title={device.name}>
-                    {device.name}
+                <div className="text-sm font-semibold text-gray-900 truncate" title={getDeviceDisplayName(device, t)}>
+                    {getDeviceDisplayName(device, t)}
                 </div>
             </div>
 

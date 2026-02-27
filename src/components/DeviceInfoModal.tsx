@@ -4,8 +4,9 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Device, DeviceStatus, DEVICE_TYPE_CONFIG } from '@/types/device-types'
+import { Device, DeviceStatus, DeviceType, DEVICE_TYPE_CONFIG } from '@/types/device-types'
 import { useTranslation } from 'react-i18next'
+import { getDeviceDisplayName, getDeviceTypeLabel } from '@/utils/deviceDisplayName'
 import {
     Watch,
     MapPin,
@@ -42,15 +43,16 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
     // 初始化編輯名稱 - Hooks 必須在條件返回之前調用
     React.useEffect(() => {
         if (device && isOpen) {
-            setEditedName(device.name)
+            setEditedName(getDeviceDisplayName(device, t))
             setIsEditingName(false)
         }
-    }, [device, isOpen])
+    }, [device, isOpen, t])
 
     // 處理保存名稱
     const handleSaveName = () => {
         if (!device) return
-        if (editedName.trim() && editedName !== device.name) {
+        const displayName = getDeviceDisplayName(device, t)
+        if (editedName.trim() && editedName !== displayName) {
             updateDevice(device.id, { name: editedName.trim() })
         }
         setIsEditingName(false)
@@ -59,7 +61,7 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
     // 處理取消編輯
     const handleCancelEdit = () => {
         if (!device) return
-        setEditedName(device.name)
+        setEditedName(getDeviceDisplayName(device, t))
         setIsEditingName(false)
     }
 
@@ -208,7 +210,7 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                                             </Button>
                                         </div>
                                     ) : (
-                                        <p className="text-sm font-semibold">{device.name}</p>
+                                        <p className="text-sm font-semibold">{getDeviceDisplayName(device, t)}</p>
                                     )}
                                 </div>
                                 <div>
@@ -227,7 +229,7 @@ export default function DeviceInfoModal({ isOpen, onClose, device }: DeviceInfoM
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.deviceInfo.deviceType')}</label>
-                                    <p className="text-sm">{config?.label || device.deviceType}</p>
+                                    <p className="text-sm">{getDeviceTypeLabel(device.deviceType, t)}</p>
                                 </div>
                             </div>
                             <div>

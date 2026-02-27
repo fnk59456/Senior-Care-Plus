@@ -50,6 +50,7 @@ import DeviceDiscoveryModal from "@/components/DeviceDiscoveryModal"
 import DeviceMonitorCard from "@/components/DeviceMonitorCard"
 import DeviceListRow from "@/components/DeviceListRow"
 import DeviceInfoModal from "@/components/DeviceInfoModal"
+import { getDeviceDisplayName, getDeviceNameSuffix } from "@/utils/deviceDisplayName"
 
 export default function DeviceManagementPage() {
   const { t } = useTranslation()
@@ -447,8 +448,9 @@ export default function DeviceManagementPage() {
 
   // 篩選設備
   const filteredDevices = devices.filter(device => {
+    const displayName = getDeviceDisplayName(device, t)
     const matchesSearch =
-      device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       device.hardwareId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       device.deviceUid.toLowerCase().includes(searchTerm.toLowerCase())
 
@@ -579,7 +581,7 @@ export default function DeviceManagementPage() {
       return
     }
 
-    const deviceNames = devicesToUnbind.map(d => d!.name).join('、')
+    const deviceNames = devicesToUnbind.map(d => getDeviceDisplayName(d!, t)).join('、')
     if (confirm(t('pages:deviceManagement.batchActions.confirmUnbind', {
       count: devicesToUnbind.length,
       devices: deviceNames
@@ -802,7 +804,7 @@ export default function DeviceManagementPage() {
     const position = lastData.position || { x: 0, y: 0, z: 0 }
 
     // 提取錨點名稱
-    const anchorName = extractAnchorName(selectedAnchorDevice.name)
+    const anchorName = getDeviceNameSuffix(selectedAnchorDevice, extractAnchorName(selectedAnchorDevice.name))
     const anchorId = parseInt(selectedAnchorDevice.hardwareId)
     const gatewayId = gateway.cloudData?.gateway_id || parseInt(selectedAnchorDevice.gatewayId || "0")
 
@@ -846,7 +848,7 @@ export default function DeviceManagementPage() {
       await mqttBus.publish(downlinkTopic, configMessage, 1)
 
       console.log('✅ 錨點修改高度指令已成功發送')
-      alert(t('pages:deviceManagement.batchActions.anchor.heightCommandSentSuccess', { name: selectedAnchorDevice.name, zValue }))
+      alert(t('pages:deviceManagement.batchActions.anchor.heightCommandSentSuccess', { name: getDeviceDisplayName(selectedAnchorDevice, t), zValue }))
 
       // 關閉對話框並重置狀態
       setShowAnchorHeightDialog(false)
@@ -976,7 +978,7 @@ export default function DeviceManagementPage() {
       await mqttBus.publish(downlinkTopic, configMessage, 1)
 
       console.log('✅ 錨點修改功率指令已成功發送')
-      alert(t('pages:deviceManagement.batchActions.anchor.commandSentSuccess', { name: selectedAnchorForPower.name }))
+      alert(t('pages:deviceManagement.batchActions.anchor.commandSentSuccess', { name: getDeviceDisplayName(selectedAnchorForPower, t) }))
 
       // 關閉對話框並重置狀態
       setShowAnchorPowerDialog(false)
@@ -1072,7 +1074,7 @@ export default function DeviceManagementPage() {
 
     const tagId = parseInt(selectedTagDevice.hardwareId)
     const gatewayId = gateway.cloudData?.gateway_id || parseInt(selectedTagDevice.gatewayId || "0")
-    const tagName = extractTagName(selectedTagDevice.name)
+    const tagName = getDeviceNameSuffix(selectedTagDevice, extractTagName(selectedTagDevice.name))
 
     if (isNaN(tagId) || isNaN(gatewayId)) {
       alert(t('pages:deviceManagement.batchActions.common.invalidDeviceIdOrGatewayId', { deviceType: '標籤' }))
@@ -1111,7 +1113,7 @@ export default function DeviceManagementPage() {
       await mqttBus.publish(downlinkTopic, configMessage, 1)
 
       console.log('✅ 標籤更改參數設定指令已成功發送')
-      alert(`✅ 已成功發送更改參數設定指令到 ${selectedTagDevice.name}`)
+      alert(`✅ 已成功發送更改參數設定指令到 ${getDeviceDisplayName(selectedTagDevice, t)}`)
 
       // 關閉對話框並重置狀態
       setShowTagConfigDialog(false)
@@ -1167,9 +1169,9 @@ export default function DeviceManagementPage() {
           // 獲取 Gateway 信息
           const gatewayInfo = getDeviceGatewayInfo(anchorDevice)
           if (!gatewayInfo) {
-            console.warn(`⚠️ 找不到錨點 ${anchorDevice.name} 對應的 Gateway 或 downlink 主題`)
+            console.warn(`⚠️ 找不到錨點 ${getDeviceDisplayName(anchorDevice, t)} 對應的 Gateway 或 downlink 主題`)
             failCount++
-            failedDevices.push(anchorDevice.name)
+            failedDevices.push(getDeviceDisplayName(anchorDevice, t))
             continue
           }
 
@@ -1178,9 +1180,9 @@ export default function DeviceManagementPage() {
           const gatewayId = gateway.cloudData?.gateway_id || parseInt(anchorDevice.gatewayId || "0")
 
           if (isNaN(anchorId) || isNaN(gatewayId)) {
-            console.warn(`⚠️ 錨點 ${anchorDevice.name} 的 ID 或 Gateway ID 無效`)
+            console.warn(`⚠️ 錨點 ${getDeviceDisplayName(anchorDevice, t)} 的 ID 或 Gateway ID 無效`)
             failCount++
-            failedDevices.push(anchorDevice.name)
+            failedDevices.push(getDeviceDisplayName(anchorDevice, t))
             continue
           }
 
@@ -1193,7 +1195,7 @@ export default function DeviceManagementPage() {
           }
 
           console.log(`🚀 準備發送錨點要求資料指令:`)
-          console.log(`- 錨點: ${anchorDevice.name}`)
+          console.log(`- 錨點: ${getDeviceDisplayName(anchorDevice, t)}`)
           console.log(`- 主題: ${downlinkTopic}`)
           console.log(`- Gateway ID: ${gatewayId}`)
           console.log(`- Anchor ID: ${anchorId}`)
@@ -1204,10 +1206,10 @@ export default function DeviceManagementPage() {
           await mqttBus.publish(downlinkTopic, requestMessage, 1)
           successCount++
 
-          console.log(`✅ 錨點 ${anchorDevice.name} 的要求資料指令已成功發送`)
+          console.log(`✅ 錨點 ${getDeviceDisplayName(anchorDevice, t)} 的要求資料指令已成功發送`)
 
         } catch (error: any) {
-          console.error(`❌ 發送錨點 ${anchorDevice.name} 的要求資料指令失敗:`, error)
+          console.error(`❌ 發送錨點 ${getDeviceDisplayName(anchorDevice, t)} 的要求資料指令失敗:`, error)
           failCount++
           failedDevices.push(anchorDevice.name)
         }
@@ -1347,7 +1349,7 @@ export default function DeviceManagementPage() {
       await mqttBus.publish(downlinkTopic, configMessage, 1)
 
       console.log('✅ 標籤修改功率指令已成功發送')
-      alert(t('pages:deviceManagement.batchActions.tag.powerCommandSentSuccess', { name: selectedTagForPower.name }))
+      alert(t('pages:deviceManagement.batchActions.tag.powerCommandSentSuccess', { name: getDeviceDisplayName(selectedTagForPower, t) }))
 
       // 關閉對話框並重置狀態
       setShowTagPowerDialog(false)
@@ -1394,9 +1396,9 @@ export default function DeviceManagementPage() {
           // 獲取 Gateway 信息
           const gatewayInfo = getDeviceGatewayInfo(tagDevice)
           if (!gatewayInfo) {
-            console.warn(`⚠️ 找不到標籤 ${tagDevice.name} 對應的 Gateway 或 downlink 主題`)
+            console.warn(`⚠️ 找不到標籤 ${getDeviceDisplayName(tagDevice, t)} 對應的 Gateway 或 downlink 主題`)
             failCount++
-            failedDevices.push(tagDevice.name)
+            failedDevices.push(getDeviceDisplayName(tagDevice, t))
             continue
           }
 
@@ -1405,9 +1407,9 @@ export default function DeviceManagementPage() {
           const gatewayId = gateway.cloudData?.gateway_id || parseInt(tagDevice.gatewayId || "0")
 
           if (isNaN(tagId) || isNaN(gatewayId)) {
-            console.warn(`⚠️ 標籤 ${tagDevice.name} 的 ID 或 Gateway ID 無效`)
+            console.warn(`⚠️ 標籤 ${getDeviceDisplayName(tagDevice, t)} 的 ID 或 Gateway ID 無效`)
             failCount++
-            failedDevices.push(tagDevice.name)
+            failedDevices.push(getDeviceDisplayName(tagDevice, t))
             continue
           }
 
@@ -1420,7 +1422,7 @@ export default function DeviceManagementPage() {
           }
 
           console.log(`🚀 準備發送標籤要求資料指令:`)
-          console.log(`- 標籤: ${tagDevice.name}`)
+          console.log(`- 標籤: ${getDeviceDisplayName(tagDevice, t)}`)
           console.log(`- 主題: ${downlinkTopic}`)
           console.log(`- Gateway ID: ${gatewayId}`)
           console.log(`- Tag ID: ${tagId}`)
@@ -1431,10 +1433,10 @@ export default function DeviceManagementPage() {
           await mqttBus.publish(downlinkTopic, requestMessage, 1)
           successCount++
 
-          console.log(`✅ 標籤 ${tagDevice.name} 的要求資料指令已成功發送`)
+          console.log(`✅ 標籤 ${getDeviceDisplayName(tagDevice, t)} 的要求資料指令已成功發送`)
 
         } catch (error: any) {
-          console.error(`❌ 發送標籤 ${tagDevice.name} 的要求資料指令失敗:`, error)
+          console.error(`❌ 發送標籤 ${getDeviceDisplayName(tagDevice, t)} 的要求資料指令失敗:`, error)
           failCount++
           failedDevices.push(tagDevice.name)
         }
@@ -1530,7 +1532,7 @@ export default function DeviceManagementPage() {
       await mqttBus.publish(downlinkTopic, configMessage, 1)
 
       console.log('✅ 閘道器更改UWB Network ID指令已成功發送')
-      alert(t('pages:deviceManagement.batchActions.gateway.networkIdCommandSentSuccess', { name: selectedGatewayDevice.name, networkId }))
+      alert(t('pages:deviceManagement.batchActions.gateway.networkIdCommandSentSuccess', { name: getDeviceDisplayName(selectedGatewayDevice, t), networkId }))
 
       // 關閉對話框並重置狀態
       setShowGatewayNetworkIdDialog(false)
@@ -1557,7 +1559,7 @@ export default function DeviceManagementPage() {
       return
     }
 
-    const deviceNames = devicesToRemove.map(d => d!.name).join('、')
+    const deviceNames = devicesToRemove.map(d => getDeviceDisplayName(d!, t)).join('、')
     if (confirm(t('pages:deviceManagement.batchActions.confirmRemove', {
       count: devicesToRemove.length,
       devices: deviceNames
@@ -2506,7 +2508,7 @@ export default function DeviceManagementPage() {
                 <>
                   <div>
                     <Label className="text-sm font-medium text-gray-600">閘道器名稱</Label>
-                    <p className="text-sm font-semibold mt-1">{selectedGatewayDevice.name}</p>
+                    <p className="text-sm font-semibold mt-1">{getDeviceDisplayName(selectedGatewayDevice, t)}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-gray-600">{t('pages:deviceManagement.batchActions.gateway.gatewayId')}</Label>
@@ -2583,7 +2585,7 @@ export default function DeviceManagementPage() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               {selectedTagForPower && (() => {
-                const tagName = extractTagName(selectedTagForPower.name)
+                const tagName = getDeviceNameSuffix(selectedTagForPower, extractTagName(selectedTagForPower.name))
                 const gatewayInfo = getDeviceGatewayInfo(selectedTagForPower)
 
                 return (
@@ -2726,7 +2728,7 @@ export default function DeviceManagementPage() {
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <Label className="text-xs font-medium text-gray-600">閘道器名稱</Label>
-                        <p className="font-semibold text-blue-800">{selectedGatewayDevice.name}</p>
+                        <p className="font-semibold text-blue-800">{getDeviceDisplayName(selectedGatewayDevice, t)}</p>
                       </div>
                       <div>
                         <Label className="text-xs font-medium text-gray-600">{t('pages:deviceManagement.batchActions.gateway.gatewayId')}</Label>
@@ -2846,7 +2848,7 @@ export default function DeviceManagementPage() {
               {selectedAnchorDevice && (() => {
                 const lastData = selectedAnchorDevice.lastData || {}
                 const position = lastData.position || { x: 0, y: 0, z: 0 }
-                const anchorName = extractAnchorName(selectedAnchorDevice.name)
+                const anchorName = getDeviceNameSuffix(selectedAnchorDevice, extractAnchorName(selectedAnchorDevice.name))
                 const gatewayInfo = getDeviceGatewayInfo(selectedAnchorDevice)
 
                 return (
@@ -2977,7 +2979,7 @@ export default function DeviceManagementPage() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               {selectedAnchorForPower && (() => {
-                const anchorName = extractAnchorName(selectedAnchorForPower.name)
+                const anchorName = getDeviceNameSuffix(selectedAnchorForPower, extractAnchorName(selectedAnchorForPower.name))
                 const gatewayInfo = getDeviceGatewayInfo(selectedAnchorForPower)
 
                 return (
@@ -3114,7 +3116,7 @@ export default function DeviceManagementPage() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               {selectedTagDevice && (() => {
-                const tagName = extractTagName(selectedTagDevice.name)
+                const tagName = getDeviceNameSuffix(selectedTagDevice, extractTagName(selectedTagDevice.name))
                 const gatewayInfo = getDeviceGatewayInfo(selectedTagDevice)
 
                 return (
@@ -3302,7 +3304,7 @@ export default function DeviceManagementPage() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               {selectedTagForPower && (() => {
-                const tagName = extractTagName(selectedTagForPower.name)
+                const tagName = getDeviceNameSuffix(selectedTagForPower, extractTagName(selectedTagForPower.name))
                 const gatewayInfo = getDeviceGatewayInfo(selectedTagForPower)
 
                 return (

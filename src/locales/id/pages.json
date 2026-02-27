@@ -227,6 +227,14 @@
             "enabled": "Tambah Otomatis: Aktif",
             "disabled": "Tambah Otomatis: Nonaktif"
         },
+        "deviceTypeLabels": {
+            "smartwatch300B": "Jam Tangan Pemantau Kesehatan",
+            "diaperSensor": "Sensor Popok Cerdas",
+            "pedometer": "Sensor Gerak",
+            "uwbTag": "Tag Posisi UWB",
+            "uwbAnchor": "Anker Posisi UWB",
+            "gateway": "Gerbang UWB"
+        },
         "stats": {
             "totalDevices": "Total Perangkat",
             "activeDevices": "Perangkat Aktif",

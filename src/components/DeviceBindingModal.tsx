@@ -21,6 +21,7 @@ import {
 import { useDeviceManagement } from '@/contexts/DeviceManagementContext'
 import { Device, Resident, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG, isBindableDevice } from '@/types/device-types'
 import { useTranslation } from 'react-i18next'
+import { getDeviceDisplayName } from '@/utils/deviceDisplayName'
 
 interface DeviceBindingModalProps {
     isOpen: boolean
@@ -64,7 +65,7 @@ export default function DeviceBindingModal({
         // 只顯示可綁定的設備類型
         isBindableDevice(device.deviceType) &&
         // 搜索過濾
-        (device.name.toLowerCase().includes(searchDevice.toLowerCase()) ||
+        (getDeviceDisplayName(device, t).toLowerCase().includes(searchDevice.toLowerCase()) ||
         device.hardwareId.toLowerCase().includes(searchDevice.toLowerCase()) ||
         device.deviceUid.toLowerCase().includes(searchDevice.toLowerCase()))
     )
@@ -153,7 +154,7 @@ export default function DeviceBindingModal({
                                 <div className="flex items-center gap-4">
                                     <div className="text-sm text-blue-700">
                                         {t('pages:residents.deviceBinding.deviceBoundToResident', {
-                                            deviceName: selectedDevice.name,
+                                            deviceName: selectedDevice ? getDeviceDisplayName(selectedDevice, t) : '',
                                             residentName: currentBinding.name
                                         })}
                                     </div>
@@ -209,7 +210,7 @@ export default function DeviceBindingModal({
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2">
-                                                        <h4 className="font-medium truncate">{device.name}</h4>
+                                                        <h4 className="font-medium truncate">{getDeviceDisplayName(device, t)}</h4>
                                                         {getStatusBadge(device.status)}
                                                     </div>
                                                     <p className="text-sm text-muted-foreground truncate">
@@ -330,7 +331,7 @@ export default function DeviceBindingModal({
                                     return (
                                         <div key={device.id} className="flex items-center gap-2 bg-white px-3 py-1 rounded-lg text-sm">
                                             <DeviceIcon className="h-3 w-3 text-green-600" />
-                                            <span>{device.name}</span>
+                                            <span>{getDeviceDisplayName(device, t)}</span>
                                             {getStatusBadge(device.status)}
                                         </div>
                                     )

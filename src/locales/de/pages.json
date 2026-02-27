@@ -227,6 +227,14 @@
             "enabled": "Auto-Hinzufügen: Ein",
             "disabled": "Auto-Hinzufügen: Aus"
         },
+        "deviceTypeLabels": {
+            "smartwatch300B": "Gesundheitsüberwachungsuhr",
+            "diaperSensor": "Intelligenter Windelsensor",
+            "pedometer": "Bewegungssensor",
+            "uwbTag": "UWB-Positionierungstag",
+            "uwbAnchor": "UWB-Positionierungsanker",
+            "gateway": "UWB-Gateway"
+        },
         "stats": {
             "totalDevices": "Gesamtzahl Geräte",
             "activeDevices": "Aktive Geräte",

@@ -235,6 +235,14 @@
             "enabled": "Auto Add: Enabled",
             "disabled": "Auto Add: Disabled"
         },
+        "deviceTypeLabels": {
+            "smartwatch300B": "Health Monitoring Watch",
+            "diaperSensor": "Smart Diaper Sensor",
+            "pedometer": "Motion Sensor",
+            "uwbTag": "UWB Positioning Tag",
+            "uwbAnchor": "UWB Positioning Anchor",
+            "gateway": "UWB Gateway"
+        },
         "stats": {
             "totalDevices": "Total Devices",
             "activeDevices": "Active Devices",

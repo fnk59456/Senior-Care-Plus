@@ -138,6 +138,10 @@ export interface Device {
     deviceUid: DeviceUID
     deviceType: DeviceType
     name: string
+    /** 自動加入時使用的後綴（id/hex/config.name 等），顯示時與 i18n 前綴組合；使用者自訂名稱時不依賴此欄位 */
+    nameSuffix?: string
+    /** 使用者自訂的顯示名稱；若有則優先顯示，不再使用前綴+nameSuffix */
+    customName?: string
     hardwareId: string
     status: DeviceStatus
     residentId?: string

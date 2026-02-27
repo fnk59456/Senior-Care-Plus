@@ -227,6 +227,14 @@
             "enabled": "Tự động thêm: Bật",
             "disabled": "Tự động thêm: Tắt"
         },
+        "deviceTypeLabels": {
+            "smartwatch300B": "Đồng hồ theo dõi sức khỏe",
+            "diaperSensor": "Cảm biến tã thông minh",
+            "pedometer": "Cảm biến chuyển động",
+            "uwbTag": "Thẻ định vị UWB",
+            "uwbAnchor": "Điểm neo định vị UWB",
+            "gateway": "Cổng UWB"
+        },
         "stats": {
             "totalDevices": "Tổng số thiết bị",
             "activeDevices": "Thiết bị hoạt động",

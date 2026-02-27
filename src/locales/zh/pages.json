@@ -235,6 +235,14 @@
             "enabled": "自動加入：已啟用",
             "disabled": "自動加入：已禁用"
         },
+        "deviceTypeLabels": {
+            "smartwatch300B": "健康監測手錶",
+            "diaperSensor": "智能尿布傳感器",
+            "pedometer": "運動傳感器",
+            "uwbTag": "UWB定位標籤",
+            "uwbAnchor": "UWB定位錨點",
+            "gateway": "UWB閘道器"
+        },
         "stats": {
             "totalDevices": "總設備數",
             "activeDevices": "活躍設備",

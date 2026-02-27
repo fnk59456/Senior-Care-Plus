@@ -227,7 +227,7 @@ const MOCK_BINDINGS: DeviceBinding[] = [
 ]
 
 export function DeviceManagementProvider({ children }: { children: React.ReactNode }) {
-    // 📦 從 localStorage 加載設備數據的輔助函數
+    // 📦 從 localStorage 加載設備數據的輔助函數（含舊資料遷移：無 nameSuffix/customName 時將 name 視為自訂名）
     const loadDevicesFromStorage = (): Device[] => {
         try {
             const stored = localStorage.getItem('device_mgmt_context_devices')
@@ -237,9 +237,13 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             }
 
             console.log('📦 開始解析存儲的設備數據')
-            const data = JSON.parse(stored)
+            const data: Device[] = JSON.parse(stored)
+            const migrated = data.map((d: Device) => {
+                if (d.nameSuffix != null || d.customName != null) return d
+                return { ...d, customName: d.name }
+            })
             console.log('✅ 設備數據加載完成')
-            return data
+            return migrated
         } catch (error) {
             console.warn('❌ 無法從 localStorage 加載設備數據:', error)
             return MOCK_DEVICES
@@ -405,17 +409,24 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
             ...deviceData,
             id: `D${Date.now()}`,
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
+            ...(deviceData.name != null && deviceData.name !== ''
+                ? { customName: deviceData.name }
+                : {})
         }
         setDevices(prev => [...prev, newDevice])
     }, [])
 
     const updateDevice = useCallback((id: string, updates: Partial<Device>) => {
-        setDevices(prev => prev.map(device =>
-            device.id === id
-                ? { ...device, ...updates, updatedAt: new Date().toISOString() }
-                : device
-        ))
+        setDevices(prev => prev.map(device => {
+            if (device.id !== id) return device
+            const next = { ...device, ...updates, updatedAt: new Date().toISOString() }
+            if (updates.name !== undefined) {
+                next.customName = updates.name
+                next.name = updates.name
+            }
+            return next
+        }))
     }, [])
 
     const removeDevice = useCallback((id: string) => {
@@ -575,11 +586,13 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                     return prevDevices // 不創建新設備，但返回原數組以保持狀態不變
                 }
 
+                const suffix = hardwareId.slice(-6)
                 const newDevice: Device = {
                     id: `D${Date.now()}`,
                     deviceUid,
                     deviceType,
-                    name: `${DEVICE_TYPE_CONFIG[deviceType].label} ${hardwareId.slice(-6)}`,
+                    name: suffix,
+                    nameSuffix: suffix,
                     hardwareId,
                     status: DeviceStatus.ACTIVE,
                     gatewayId,
@@ -724,16 +737,16 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                     return prevDevices // 不創建新設備，但返回原數組以保持狀態不變
                 }
 
-                // 使用格式：UWB定位標籤 ${id(Hex)}，如果沒有 id(Hex) 則使用默認名稱
-                const deviceName = tagHexId
-                    ? `${DEVICE_TYPE_CONFIG[DeviceType.UWB_TAG].label} ${tagHexId}`
-                    : `${DEVICE_TYPE_CONFIG[DeviceType.UWB_TAG].label} ${tagId}`
-
+                // 使用格式：前綴由 i18n 提供，此處只存後綴
+                const nameSuffix = tagHexId
+                    ? tagHexId
+                    : tagId.toString()
                 const newDevice: Device = {
                     id: `D${Date.now()}`,
                     deviceUid,
                     deviceType: DeviceType.UWB_TAG,
-                    name: deviceName,
+                    name: nameSuffix,
+                    nameSuffix,
                     hardwareId: tagId.toString(),
                     status: DeviceStatus.ACTIVE,
                     gatewayId: gatewayId?.toString(),
@@ -863,16 +876,14 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                     return prevDevices // 不創建新設備，但返回原數組以保持狀態不變
                 }
 
-                // 使用格式：UWB定位錨點 ${name}，如果沒有 name 則使用默認格式
-                const deviceName = anchorData.config?.name
-                    ? `${DEVICE_TYPE_CONFIG[DeviceType.UWB_ANCHOR].label} ${anchorData.config.name}`
-                    : `${DEVICE_TYPE_CONFIG[DeviceType.UWB_ANCHOR].label} ${anchorId}`
-
+                // 前綴由 i18n 提供，此處只存後綴（config.name 或 anchorId）
+                const nameSuffix = anchorData.config?.name ?? anchorId.toString()
                 const newDevice: Device = {
                     id: `D${Date.now()}`,
                     deviceUid,
                     deviceType: DeviceType.UWB_ANCHOR,
-                    name: deviceName,
+                    name: nameSuffix,
+                    nameSuffix,
                     hardwareId: anchorId.toString(),
                     status: DeviceStatus.ACTIVE,
                     gatewayId: gatewayId?.toString(),
@@ -1094,7 +1105,10 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                     id: `D${Date.now()}`,
                     deviceUid,
                     deviceType: DeviceType.GATEWAY,
-                    name: deviceName,
+                    name: payload.name != null && payload.name !== '' ? payload.name : hardwareId,
+                    ...(payload.name != null && payload.name !== ''
+                        ? { customName: payload.name }
+                        : { nameSuffix: hardwareId }),
                     hardwareId,
                     status,
                     gatewayId,
@@ -1124,8 +1138,11 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
                     lastSeen: timestamp.toISOString(),
                     status,
                     updatedAt: timestamp.toISOString(),
-                    name: deviceName, // Always update name from MQTT for gateways
+                    name: deviceName,
                     lastData: lastData // 更新 lastData 為完整的原始 payload（像錨點一樣）
+                }
+                if (payload.name != null && payload.name !== '') {
+                    updates.customName = payload.name
                 }
                 if (batteryLevel !== undefined) {
                     updates.batteryLevel = batteryLevel
@@ -1469,7 +1486,11 @@ export function DeviceManagementProvider({ children }: { children: React.ReactNo
     const importData = (data: any) => {
         try {
             if (data.devices && Array.isArray(data.devices)) {
-                setDevices(data.devices)
+                const migrated = data.devices.map((d: Device) => {
+                    if (d.nameSuffix != null || d.customName != null) return d
+                    return { ...d, customName: d.name }
+                })
+                setDevices(migrated)
             }
             if (data.residents && Array.isArray(data.residents)) {
                 setResidents(data.residents)

@@ -19,6 +19,7 @@ import { Device, Resident, DeviceType, DeviceStatus, DEVICE_TYPE_CONFIG } from '
 import DeviceActionHandler from './DeviceActionHandler'
 import BatteryIcon from '@/components/ui/battery-icon'
 import { useTranslation } from 'react-i18next'
+import { getDeviceDisplayName } from '@/utils/deviceDisplayName'
 
 interface DeviceMonitorCardProps {
     device: Device & { realTimeData?: any }
@@ -146,7 +147,7 @@ export default function DeviceMonitorCard({
                     </div>
 
                     {/* 設備名稱 - 完整显示 */}
-                    <span className="font-bold text-1xl text-gray-900 truncate">{device.name}</span>
+                    <span className="font-bold text-1xl text-gray-900 truncate">{getDeviceDisplayName(device, t)}</span>
                 </div>
 
                 {/* QR碼圖標 */}
@@ -242,7 +243,7 @@ export default function DeviceMonitorCard({
             {/* 操作按鈕 */}
             <DeviceActionHandler
                 deviceId={device.id}
-                deviceName={device.name}
+                deviceName={getDeviceDisplayName(device, t)}
                 onAction={onAction}
             />
         </Card>
